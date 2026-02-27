@@ -15,6 +15,9 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# CDK
+cdk/cdk.out/
+
 # Logs
 *.log
 npm-debug.log*
