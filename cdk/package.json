@@ -1,0 +1,21 @@
+{
+  "name": "classical-music-lake-cdk",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "cdk": "cdk",
+    "deploy": "cdk deploy --require-approval never",
+    "diff": "cdk diff",
+    "synth": "cdk synth"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.0.0",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.0.0",
+    "esbuild": "^0.25.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,55 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ----------------------------------------
+      # フロントエンド: Nuxt SPA ビルド
+      # ----------------------------------------
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run generate
+        env:
+          # API Gateway URL は GitHub Secrets に設定する
+          # 初回デプロイ後に CDK Outputs の ApiUrl を登録してください
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.API_BASE_URL }}
+
+      # ----------------------------------------
+      # CDK デプロイ
+      # ----------------------------------------
+      - name: Install CDK dependencies
+        run: npm install
+        working-directory: cdk
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: CDK Bootstrap
+        run: npx cdk bootstrap
+        working-directory: cdk
+
+      - name: CDK Deploy
+        run: npm run deploy
+        working-directory: cdk
