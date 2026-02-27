@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { CreateConcertInput } from '~/types'
 
+const apiBase = useApiBase()
+
 async function handleSubmit(values: CreateConcertInput) {
-  await $fetch('/api/concerts', { method: 'POST', body: values })
+  await $fetch(`${apiBase}/concerts`, { method: 'POST', body: values })
   await navigateTo('/concerts')
 }
 </script>

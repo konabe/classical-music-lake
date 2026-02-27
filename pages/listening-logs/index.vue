@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { ListeningLog } from '~/types'
 
-const { data: logs, refresh } = await useFetch<ListeningLog[]>('/api/listening-logs')
+const apiBase = useApiBase()
+const { data: logs, refresh } = await useFetch<ListeningLog[]>(`${apiBase}/listening-logs`)
 
 async function deleteLog(id: string) {
   if (!confirm('この記録を削除しますか？')) return
-  await $fetch(`/api/listening-logs/${id}`, { method: 'DELETE' })
+  await $fetch(`${apiBase}/listening-logs/${id}`, { method: 'DELETE' })
   await refresh()
 }
 

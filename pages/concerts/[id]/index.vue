@@ -2,7 +2,8 @@
 import type { Concert } from '~/types'
 
 const route = useRoute()
-const { data: concert } = await useFetch<Concert>(`/api/concerts/${route.params.id}`)
+const apiBase = useApiBase()
+const { data: concert } = await useFetch<Concert>(`${apiBase}/concerts/${route.params.id}`)
 
 function ratingStars(rating: number): string {
   return '★'.repeat(rating) + '☆'.repeat(5 - rating)

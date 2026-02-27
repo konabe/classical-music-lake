@@ -2,10 +2,11 @@
 import type { Concert, UpdateConcertInput } from '~/types'
 
 const route = useRoute()
-const { data: concert } = await useFetch<Concert>(`/api/concerts/${route.params.id}`)
+const apiBase = useApiBase()
+const { data: concert } = await useFetch<Concert>(`${apiBase}/concerts/${route.params.id}`)
 
 async function handleSubmit(values: UpdateConcertInput) {
-  await $fetch(`/api/concerts/${route.params.id}`, { method: 'PUT', body: values })
+  await $fetch(`${apiBase}/concerts/${route.params.id}`, { method: 'PUT', body: values })
   await navigateTo(`/concerts/${route.params.id}`)
 }
 </script>

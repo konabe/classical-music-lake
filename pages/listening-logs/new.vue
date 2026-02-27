@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { CreateListeningLogInput } from '~/types'
 
+const apiBase = useApiBase()
+
 async function handleSubmit(values: CreateListeningLogInput) {
-  await $fetch('/api/listening-logs', { method: 'POST', body: values })
+  await $fetch(`${apiBase}/listening-logs`, { method: 'POST', body: values })
   await navigateTo('/listening-logs')
 }
 </script>

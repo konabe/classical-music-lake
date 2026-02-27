@@ -2,10 +2,11 @@
 import type { ListeningLog, UpdateListeningLogInput } from '~/types'
 
 const route = useRoute()
-const { data: log } = await useFetch<ListeningLog>(`/api/listening-logs/${route.params.id}`)
+const apiBase = useApiBase()
+const { data: log } = await useFetch<ListeningLog>(`${apiBase}/listening-logs/${route.params.id}`)
 
 async function handleSubmit(values: UpdateListeningLogInput) {
-  await $fetch(`/api/listening-logs/${route.params.id}`, { method: 'PUT', body: values })
+  await $fetch(`${apiBase}/listening-logs/${route.params.id}`, { method: 'PUT', body: values })
   await navigateTo(`/listening-logs/${route.params.id}`)
 }
 </script>

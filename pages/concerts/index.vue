@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { Concert } from '~/types'
 
-const { data: concerts, refresh } = await useFetch<Concert[]>('/api/concerts')
+const apiBase = useApiBase()
+const { data: concerts, refresh } = await useFetch<Concert[]>(`${apiBase}/concerts`)
 
 async function deleteConcert(id: string) {
   if (!confirm('この記録を削除しますか？')) return
-  await $fetch(`/api/concerts/${id}`, { method: 'DELETE' })
+  await $fetch(`${apiBase}/concerts/${id}`, { method: 'DELETE' })
   await refresh()
 }
 
