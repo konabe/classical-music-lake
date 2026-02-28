@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || '',
+      apiBaseUrl: '', // NUXT_PUBLIC_API_BASE_URL 環境変数で上書き可能
     },
   },
 })
