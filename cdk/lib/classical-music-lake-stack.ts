@@ -42,12 +42,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     }
 
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, 'entry'> = {
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       environment: commonEnv,
       bundling: {
         minify: true,
         sourceMap: false,
-        target: 'es2020',
+        target: 'es2022',
       },
     }
 
