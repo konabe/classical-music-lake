@@ -7,9 +7,12 @@
 
 ### 1.2 主要機能
 - **視聴ログ管理**: CD・配信サービス等で聴いた録音の記録
-- **コンサート記録管理**: 実際に足を運んだコンサートの記録
 
-### 1.3 想定ユーザー
+### 1.3 スコープ
+- **現在**: 視聴ログ機能に集中
+- **将来的な拡張**: コンサート記録機能は後回し
+
+### 1.4 想定ユーザー
 クラシック音楽愛好家（個人利用を想定）
 
 ---
@@ -81,37 +84,6 @@ interface ListeningLog {
 #### バリデーション
 - `rating`: 1〜5の範囲
 - `listenedAt`: ISO 8601形式の日時文字列
-
-### 3.2 コンサート記録 (Concert)
-
-#### DynamoDBテーブル
-- **テーブル名**: `classical-music-concerts`
-- **パーティションキー**: `id` (String)
-- **課金モード**: オンデマンド
-
-#### データ構造
-```typescript
-interface Concert {
-  id: string                // UUID (自動生成)
-  date: string              // 公演日 (YYYY-MM-DD形式)
-  venue: string             // 会場名
-  title: string             // 公演タイトル
-  orchestra?: string        // オーケストラ・楽団名 (任意)
-  conductor?: string        // 指揮者名 (任意)
-  soloists?: string[]       // ソリスト名の配列 (任意)
-  program: string[]         // 演奏曲目のリスト
-  rating: number            // 評価 (1〜5の整数)
-  isFavorite: boolean       // お気に入りフラグ
-  memo?: string             // 感想・メモ (任意)
-  createdAt: string         // 作成日時 (ISO 8601形式)
-  updatedAt: string         // 更新日時 (ISO 8601形式)
-}
-```
-
-#### バリデーション
-- `rating`: 1〜5の範囲
-- `date`: YYYY-MM-DD形式の日付文字列
-- `program`: 最低1曲以上
 
 ---
 
@@ -232,59 +204,6 @@ DELETE /listening-logs/{id}
 - 成功: `200 OK`
 - 未存在: `404 Not Found`
 
-### 4.3 コンサートAPI
-
-#### `GET /concerts`
-コンサート記録の一覧を取得
-
-**リクエスト**
-```
-GET /concerts
-```
-
-**レスポンス**
-```json
-{
-  "statusCode": 200,
-  "body": [
-    {
-      "id": "uuid",
-      "date": "2024-03-20",
-      "venue": "サントリーホール",
-      "title": "新日本フィルハーモニー交響楽団 第600回定期演奏会",
-      "orchestra": "新日本フィルハーモニー交響楽団",
-      "conductor": "井上道義",
-      "soloists": ["辻井伸行"],
-      "program": [
-        "ラフマニノフ: ピアノ協奏曲第2番",
-        "チャイコフスキー: 交響曲第5番"
-      ],
-      "rating": 5,
-      "isFavorite": true,
-      "memo": "辻井さんの演奏が素晴らしかった",
-      "createdAt": "2024-03-20T22:00:00Z",
-      "updatedAt": "2024-03-20T22:00:00Z"
-    }
-  ]
-}
-```
-
-**ソート順**: `date` 降順（新しい順）
-
-#### `GET /concerts/{id}`
-特定のコンサート記録を取得
-
-#### `POST /concerts`
-新規コンサート記録を作成
-
-#### `PUT /concerts/{id}`
-既存のコンサート記録を更新
-
-#### `DELETE /concerts/{id}`
-コンサート記録を削除
-
-**※ 各エンドポイントの動作は視聴ログAPIと同様**
-
 ---
 
 ## 5. インフラ構成
@@ -293,15 +212,13 @@ GET /concerts
 
 #### DynamoDB
 - **ListeningLogs**: `classical-music-listening-logs`
-- **Concerts**: `classical-music-concerts`
 - **削除ポリシー**: RETAIN（データ保持）
 
 #### Lambda
 - **ランタイム**: Node.js 24.x
-- **関数数**: 10個（各リソース×5操作）
+- **関数数**: 5個（視聴ログ用CRUD操作）
 - **環境変数**:
   - `DYNAMO_TABLE_LISTENING_LOGS`
-  - `DYNAMO_TABLE_CONCERTS`
 
 #### API Gateway
 - **名前**: `classical-music-lake`

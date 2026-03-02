@@ -14,22 +14,3 @@ export interface ListeningLog {
 
 export type CreateListeningLogInput = Omit<ListeningLog, 'id' | 'createdAt' | 'updatedAt'>
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, 'id' | 'createdAt' | 'updatedAt'>>
-
-export interface Concert {
-  id: string
-  date: string
-  venue: string
-  title: string
-  orchestra?: string
-  conductor?: string
-  soloists?: string[]
-  program: string[]
-  rating: number
-  isFavorite: boolean
-  memo?: string
-  createdAt: string
-  updatedAt: string
-}
-
-export type CreateConcertInput = Omit<Concert, 'id' | 'createdAt' | 'updatedAt'>
-export type UpdateConcertInput = Partial<Omit<Concert, 'id' | 'createdAt' | 'updatedAt'>>
