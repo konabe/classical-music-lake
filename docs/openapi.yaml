@@ -16,16 +16,16 @@ paths:
       summary: 視聴ログ一覧取得
       operationId: listListeningLogs
       responses:
-        '200':
+        "200":
           description: 成功
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ListeningLog'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  $ref: "#/components/schemas/ListeningLog"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     post:
       summary: 視聴ログ作成
@@ -35,18 +35,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateListeningLogInput'
+              $ref: "#/components/schemas/CreateListeningLogInput"
       responses:
-        '201':
+        "201":
           description: 作成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListeningLog'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/ListeningLog"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /listening-logs/{id}:
     parameters:
@@ -61,18 +61,18 @@ paths:
       summary: 視聴ログ取得
       operationId: getListeningLog
       responses:
-        '200':
+        "200":
           description: 成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListeningLog'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/ListeningLog"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     put:
       summary: 視聴ログ更新
@@ -82,33 +82,33 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateListeningLogInput'
+              $ref: "#/components/schemas/UpdateListeningLogInput"
       responses:
-        '200':
+        "200":
           description: 更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListeningLog'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/ListeningLog"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     delete:
       summary: 視聴ログ削除
       operationId: deleteListeningLog
       responses:
-        '200':
+        "200":
           description: 削除成功
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
 components:
   schemas:
@@ -134,7 +134,7 @@ components:
           type: string
           format: date-time
           description: 視聴日時（ISO 8601）
-          example: '2024-01-15T19:30:00Z'
+          example: "2024-01-15T19:30:00Z"
         composer:
           type: string
           description: 作曲家名
@@ -243,7 +243,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             message: Request body is required
 
@@ -252,7 +252,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             message: Listening log not found
 
@@ -261,6 +261,6 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             message: Internal server error

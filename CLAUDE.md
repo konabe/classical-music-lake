@@ -21,33 +21,47 @@ CD・配信で聴いた演奏を記録し、作曲家・曲名・演奏家・指
 
 ## 重要なファイルの説明
 
-| ファイル/ディレクトリ | 役割 |
-|--------------------|------|
-| `docs/SPEC.md` | システム仕様書。API仕様・データモデル・インフラ構成を記載 |
-| `docs/ARCHITECTURE.md` | アーキテクチャ設計書。構成図・技術選定の理由・トレードオフ |
-| `docs/INCEPTION_DECK.md` | プロジェクトのビジョン・スコープ・フェーズ計画 |
-| `pages/` | Nuxt ページコンポーネント（フロントエンドのルーティング） |
-| `components/` | 再利用可能なUIコンポーネント |
-| `composables/` | Vue Composables（API呼び出しなどの共通ロジック） |
-| `types/index.ts` | フロントエンド共通の型定義 |
-| `backend/src/listening-logs/` | 視聴ログ用 Lambda 関数（create/list/get/update/delete） |
-| `backend/src/types/` | バックエンド共通の型定義 |
-| `backend/src/utils/dynamodb.ts` | DynamoDB クライアントのラッパー |
-| `cdk/lib/classical-music-lake-stack.ts` | AWSインフラ定義（CDK） |
+| ファイル/ディレクトリ                   | 役割                                                       |
+| --------------------------------------- | ---------------------------------------------------------- |
+| `docs/SPEC.md`                          | システム仕様書。API仕様・データモデル・インフラ構成を記載  |
+| `docs/ARCHITECTURE.md`                  | アーキテクチャ設計書。構成図・技術選定の理由・トレードオフ |
+| `docs/INCEPTION_DECK.md`                | プロジェクトのビジョン・スコープ・フェーズ計画             |
+| `pages/`                                | Nuxt ページコンポーネント（フロントエンドのルーティング）  |
+| `components/`                           | 再利用可能なUIコンポーネント                               |
+| `composables/`                          | Vue Composables（API呼び出しなどの共通ロジック）           |
+| `types/index.ts`                        | フロントエンド共通の型定義                                 |
+| `backend/src/listening-logs/`           | 視聴ログ用 Lambda 関数（create/list/get/update/delete）    |
+| `backend/src/types/`                    | バックエンド共通の型定義                                   |
+| `backend/src/utils/dynamodb.ts`         | DynamoDB クライアントのラッパー                            |
+| `cdk/lib/classical-music-lake-stack.ts` | AWSインフラ定義（CDK）                                     |
 
 ---
 
 ## コーディング規約
 
+命名規則・フォーマット・インポート順序は ESLint（[eslint.config.mjs](eslint.config.mjs)）と Prettier（[.prettierrc](.prettierrc)）で自動的に強制される。
+
+### 共通
+
 - **言語**: TypeScript（フロント・バック共通）
-- **フロントエンド**: Nuxt 3 / Vue 3 の Composition API を使用
-- **バックエンド**: Lambda 関数は1ファイル1エンドポイント
-- **型定義**: `any` の使用禁止。必ず型を定義する
-- **命名**:
-  - ファイル: kebab-case（例: `listening-logs.ts`）
-  - 変数・関数: camelCase
-  - 型・インターフェース: PascalCase
-  - Vue コンポーネント: PascalCase（例: `ListeningLogForm.vue`）
+- **型定義**: `any` 禁止（ESLint で error）
+- **コメント**: 自明なロジックへのコメント不要。複雑な処理のみ記述
+
+### フロントエンド（Nuxt 3 / Vue 3）
+
+- Composition API（`<script setup>`）を使用
+- `composables/` に API 呼び出しロジックをまとめる
+
+### バックエンド（Lambda）
+
+- 1ファイル1エンドポイント（`backend/src/{機能名}/{操作}.ts`）
+- レスポンスは `utils/response.ts` のヘルパーを使用
+- エラーは必ず `try/catch` で捕捉し `internalError()` を返す
+
+### TypeScript
+
+- strict モードを前提とした型付け
+- `interface` より `type` を優先（ただし拡張が必要な場合は `interface`）
 
 ---
 

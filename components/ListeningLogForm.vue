@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import type { CreateListeningLogInput } from '~/types'
+import type { CreateListeningLogInput } from "~/types";
 
 const props = defineProps<{
-  initialValues?: Partial<CreateListeningLogInput>
-  submitLabel?: string
-}>()
+  initialValues?: Partial<CreateListeningLogInput>;
+  submitLabel?: string;
+}>();
 
 const emit = defineEmits<{
-  submit: [values: CreateListeningLogInput]
-}>()
+  submit: [values: CreateListeningLogInput];
+}>();
 
 const form = reactive<CreateListeningLogInput>({
   listenedAt: props.initialValues?.listenedAt ?? new Date().toISOString().slice(0, 16),
-  composer: props.initialValues?.composer ?? '',
-  piece: props.initialValues?.piece ?? '',
-  performer: props.initialValues?.performer ?? '',
-  conductor: props.initialValues?.conductor ?? '',
+  composer: props.initialValues?.composer ?? "",
+  piece: props.initialValues?.piece ?? "",
+  performer: props.initialValues?.performer ?? "",
+  conductor: props.initialValues?.conductor ?? "",
   rating: props.initialValues?.rating ?? 3,
   isFavorite: props.initialValues?.isFavorite ?? false,
-  memo: props.initialValues?.memo ?? '',
-})
+  memo: props.initialValues?.memo ?? "",
+});
 
 function handleSubmit() {
-  emit('submit', { ...form })
+  emit("submit", { ...form });
 }
 </script>
 
@@ -65,7 +65,9 @@ function handleSubmit() {
           class="star-btn"
           :class="{ active: n <= form.rating }"
           @click="form.rating = n"
-        >★</button>
+        >
+          ★
+        </button>
       </div>
     </div>
 
@@ -83,7 +85,7 @@ function handleSubmit() {
 
     <div class="form-actions">
       <NuxtLink to="/listening-logs" class="btn-cancel">キャンセル</NuxtLink>
-      <button type="submit" class="btn-submit">{{ submitLabel ?? '保存する' }}</button>
+      <button type="submit" class="btn-submit">{{ submitLabel ?? "保存する" }}</button>
     </div>
   </form>
 </template>
@@ -120,8 +122,8 @@ label {
   color: #e05a5a;
 }
 
-input[type='text'],
-input[type='datetime-local'],
+input[type="text"],
+input[type="datetime-local"],
 textarea {
   border: 1px solid #d0c8bc;
   border-radius: 6px;

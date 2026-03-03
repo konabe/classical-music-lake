@@ -22,7 +22,7 @@
 }
 
 body {
-  font-family: 'Georgia', serif;
+  font-family: "Georgia", serif;
   background-color: #faf8f5;
   color: #2c2c2c;
 }

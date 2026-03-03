@@ -9,6 +9,7 @@
 ## 開発フロー
 
 1. `main` から作業ブランチを切る
+
    ```bash
    git checkout main
    git pull origin main
@@ -18,6 +19,7 @@
 2. 実装・動作確認
 
 3. コミット
+
    ```bash
    git add <ファイル>
    git commit -m "feat: 変更内容の要約"

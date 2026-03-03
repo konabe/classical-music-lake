@@ -32,9 +32,9 @@ cdk bootstrap aws://<AWS_ACCOUNT_ID>/ap-northeast-1
 
 ### 必要な GitHub Secrets
 
-| シークレット名 | 説明 |
-|--------------|------|
-| `AWS_ACCESS_KEY_ID` | AWSアクセスキーID |
+| シークレット名          | 説明                        |
+| ----------------------- | --------------------------- |
+| `AWS_ACCESS_KEY_ID`     | AWSアクセスキーID           |
 | `AWS_SECRET_ACCESS_KEY` | AWSシークレットアクセスキー |
 
 > `AWS_REGION` と `API_BASE_URL` はワークフロー内で自動取得するため不要。
@@ -80,8 +80,8 @@ aws cloudformation describe-stacks \
 
 Lambda 関数のログは自動的に CloudWatch Logs に収集される。
 
-| ロググループ | 内容 |
-|-----------|------|
+| ロググループ                       | 内容               |
+| ---------------------------------- | ------------------ |
 | `/aws/lambda/ClassicalMusicLake-*` | 各Lambda関数のログ |
 
 ログの確認：
@@ -98,10 +98,10 @@ aws logs tail /aws/lambda/ClassicalMusicLake-ListeningLogsCreate --follow
 
 ### 推奨アラート（今後設定予定）
 
-| メトリクス | 閾値 | アクション |
-|-----------|------|-----------|
-| Lambda Errors | 1件以上/5分 | メール通知 |
-| API Gateway 5XX | 1件以上/5分 | メール通知 |
+| メトリクス            | 閾値        | アクション |
+| --------------------- | ----------- | ---------- |
+| Lambda Errors         | 1件以上/5分 | メール通知 |
+| API Gateway 5XX       | 1件以上/5分 | メール通知 |
 | DynamoDB SystemErrors | 1件以上/5分 | メール通知 |
 
 ---
@@ -141,7 +141,7 @@ aws dynamodb restore-table-from-backup \
 
 ```typescript
 // cdk/lib/classical-music-lake-stack.ts
-pointInTimeRecovery: true
+pointInTimeRecovery: true;
 ```
 
 ### データのエクスポート（手動）

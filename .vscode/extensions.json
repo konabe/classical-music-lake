@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "vue.volar",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "EditorConfig.EditorConfig",
+    "amazonwebservices.aws-toolkit-vscode"
+  ]
+}
