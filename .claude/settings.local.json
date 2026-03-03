@@ -2,13 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Bash(npm install)",
       "Bash(npm run generate:*)",
       "Bash(npx tsc:*)",
-      "Bash(git checkout:*)",
-      "Bash(git pull:*)"
+      "Bash(gh pr view:*)",
+      "WebFetch(domain:docs.coderabbit.ai)"
     ],
     "ask": [
+      "Bash(npm install)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)"
     ]
