@@ -27,10 +27,6 @@
 
 4. PRを作成してレビュー後にマージ
 
-## コミットメッセージ規約
-
-[Conventional Commits](https://www.conventionalcommits.org/) に準拠する。
-
 ## PRのルール
 
 - 実装を含むPRは `docs/SPEC.md` を同じPR内で更新すること
