@@ -242,7 +242,6 @@ DELETE /listening-logs/{id}
 
 #### バックエンド（Lambda）
 - `DYNAMO_TABLE_LISTENING_LOGS`: 視聴ログテーブル名
-- `DYNAMO_TABLE_CONCERTS`: コンサートテーブル名
 
 ---
 
