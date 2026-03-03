@@ -24,13 +24,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     })
 
-    const concertsTable = new dynamodb.Table(this, 'ConcertsTable', {
-      tableName: 'classical-music-concerts',
-      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-    })
-
     // -------------------------
     // Lambda 共通設定
     // -------------------------
@@ -38,7 +31,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     const commonEnv: Record<string, string> = {
       DYNAMO_TABLE_LISTENING_LOGS: listeningLogsTable.tableName,
-      DYNAMO_TABLE_CONCERTS: concertsTable.tableName,
     }
 
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, 'entry'> = {
@@ -67,12 +59,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const listeningLogsUpdate = fn('ListeningLogsUpdate', 'listening-logs/update.ts')
     const listeningLogsDelete = fn('ListeningLogsDelete', 'listening-logs/delete.ts')
 
-    const concertsList   = fn('ConcertsList',   'concerts/list.ts')
-    const concertsGet    = fn('ConcertsGet',    'concerts/get.ts')
-    const concertsCreate = fn('ConcertsCreate', 'concerts/create.ts')
-    const concertsUpdate = fn('ConcertsUpdate', 'concerts/update.ts')
-    const concertsDelete = fn('ConcertsDelete', 'concerts/delete.ts')
-
     // -------------------------
     // DynamoDB 権限付与
     // -------------------------
@@ -81,12 +67,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogsTable.grantWriteData(listeningLogsCreate)
     listeningLogsTable.grantReadWriteData(listeningLogsUpdate)
     listeningLogsTable.grantWriteData(listeningLogsDelete)
-
-    concertsTable.grantReadData(concertsList)
-    concertsTable.grantReadData(concertsGet)
-    concertsTable.grantWriteData(concertsCreate)
-    concertsTable.grantReadWriteData(concertsUpdate)
-    concertsTable.grantWriteData(concertsDelete)
 
     // -------------------------
     // API Gateway
@@ -114,17 +94,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogResource.addMethod('GET',    integ(listeningLogsGet))
     listeningLogResource.addMethod('PUT',    integ(listeningLogsUpdate))
     listeningLogResource.addMethod('DELETE', integ(listeningLogsDelete))
-
-    // /concerts
-    const concertsResource = api.root.addResource('concerts')
-    concertsResource.addMethod('GET',  integ(concertsList))
-    concertsResource.addMethod('POST', integ(concertsCreate))
-
-    // /concerts/{id}
-    const concertResource = concertsResource.addResource('{id}')
-    concertResource.addMethod('GET',    integ(concertsGet))
-    concertResource.addMethod('PUT',    integ(concertsUpdate))
-    concertResource.addMethod('DELETE', integ(concertsDelete))
 
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)

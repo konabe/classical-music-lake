@@ -8,12 +8,7 @@
       <NuxtLink to="/listening-logs" class="card">
         <span class="card-icon">🎼</span>
         <h2>鑑賞記録</h2>
-        <p>曲・演奏家・感想・評価を記録する</p>
-      </NuxtLink>
-      <NuxtLink to="/concerts" class="card">
-        <span class="card-icon">🏛️</span>
-        <h2>コンサート記録</h2>
-        <p>参加した公演のプログラムや感想を残す</p>
+        <p>CD・配信・YouTubeなどで聴いた演奏を記録する</p>
       </NuxtLink>
     </section>
   </div>

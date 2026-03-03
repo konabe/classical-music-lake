@@ -5,7 +5,6 @@
         <NuxtLink to="/" class="logo">🎵 Classical Music Lake</NuxtLink>
         <ul class="nav-links">
           <li><NuxtLink to="/listening-logs">鑑賞記録</NuxtLink></li>
-          <li><NuxtLink to="/concerts">コンサート記録</NuxtLink></li>
         </ul>
       </nav>
     </header>
