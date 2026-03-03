@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('husky', {stdio: 'inherit'}) }\""
   },
   "dependencies": {
     "nuxt": "^3.15.0",
