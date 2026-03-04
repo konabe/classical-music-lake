@@ -5,12 +5,24 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "デプロイ先の環境"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - prod
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
+    env:
+      STAGE_NAME: ${{ github.event_name == 'push' && 'prod' || github.event.inputs.environment }}
 
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +47,18 @@ jobs:
           aws-region: ap-northeast-1
 
       # ----------------------------------------
+      # スタック名を決定
+      # ----------------------------------------
+      - name: Resolve stack name
+        id: stack
+        run: |
+          if [ "$STAGE_NAME" = "prod" ]; then
+            echo "name=ClassicalMusicLakeStack" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=ClassicalMusicLakeStack-${STAGE_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ----------------------------------------
       # デプロイ済みスタックから API Base URL を取得
       # CDK Outputs の ApiUrl を GITHUB_OUTPUT に書き出す
       # ----------------------------------------
@@ -42,10 +66,10 @@ jobs:
         id: get-api-url
         run: |
           API_URL=$(aws cloudformation describe-stacks \
-            --stack-name ClassicalMusicLakeStack \
+            --stack-name "${{ steps.stack.outputs.name }}" \
             --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
-            --output text)
-          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+            --output text 2>/dev/null || echo "")
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
       # ----------------------------------------
       # フロントエンド: Nuxt SPA ビルド
@@ -66,3 +90,5 @@ jobs:
       - name: CDK Deploy
         run: npm run deploy
         working-directory: cdk
+        env:
+          STAGE_NAME: ${{ env.STAGE_NAME }}

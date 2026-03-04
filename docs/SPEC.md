@@ -322,26 +322,72 @@ DELETE /listening-logs/{id}
 
 ## 6. デプロイメント
 
-### 6.1 デプロイフロー
+### 6.1 環境構成
+
+| 環境      | スタック名                        | DynamoDB テーブル名                      | 削除ポリシー |
+| --------- | --------------------------------- | ---------------------------------------- | ------------ |
+| `prod`    | `ClassicalMusicLakeStack`         | `classical-music-listening-logs`         | RETAIN       |
+| `staging` | `ClassicalMusicLakeStack-staging` | `classical-music-listening-logs-staging` | DESTROY      |
+
+### 6.2 デプロイフロー
 
 ```
-GitHub (main branch)
+GitHub (main branch) → prod 自動デプロイ
+GitHub (workflow_dispatch) → staging または prod を手動選択
   → GitHub Actions
     → Nuxt ビルド (npm run generate)
-    → CDK デプロイ
-      → Lambda + API Gateway + DynamoDB 作成
-      → S3 + CloudFront 作成
+    → CDK デプロイ (STAGE_NAME 環境変数で対象環境を指定)
+      → Lambda + API Gateway + DynamoDB 作成/更新
+      → S3 + CloudFront 作成/更新
       → SPAファイル デプロイ
 ```
 
-### 6.2 GitHub Actions
+### 6.3 GitHub Actions
 
-- **トリガー**: `push to main`, `workflow_dispatch`
-- **環境変数**:
+- **トリガー**:
+  - `push to main` → prod 環境へ自動デプロイ
+  - `workflow_dispatch` → staging または prod を選択してデプロイ
+- **Secrets**:
   - `AWS_ACCESS_KEY_ID`
   - `AWS_SECRET_ACCESS_KEY`
-  - `AWS_REGION`
-  - `API_BASE_URL`
+
+### 6.4 ロールバック戦略
+
+#### バックエンド (Lambda / API Gateway)
+
+CloudFormation はデプロイ失敗時に自動ロールバックする。
+手動でロールバックが必要な場合:
+
+```bash
+# 問題のあるコミットを revert してプッシュ（再デプロイが自動実行される）
+git revert <commit-hash>
+git push origin main
+```
+
+または CloudFormation コンソール / CLI で直前のスタックバージョンに戻す:
+
+```bash
+aws cloudformation cancel-update-stack --stack-name ClassicalMusicLakeStack
+```
+
+#### フロントエンド (S3 静的ファイル)
+
+prod の S3 バケットはバージョニング有効のため、以前のファイルバージョンに戻せる:
+
+```bash
+# バケット名を取得
+BUCKET=$(aws cloudformation describe-stacks \
+  --stack-name ClassicalMusicLakeStack \
+  --query 'Stacks[0].Outputs[?OutputKey==`SpaBucket`].OutputValue' \
+  --output text)
+
+# 前バージョンの index.html を確認
+aws s3api list-object-versions --bucket $BUCKET --prefix index.html
+
+# git revert + push で再デプロイするのが最も確実な方法
+git revert <commit-hash>
+git push origin main
+```
 
 ---
 

@@ -10,18 +10,32 @@ import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import type { Construct } from "constructs";
 import * as path from "path";
 
+export type StageName = "staging" | "prod";
+
+export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
+  stageName: StageName;
+}
+
 export class ClassicalMusicLakeStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
+
+    const { stageName } = props;
+    const isProd = stageName === "prod";
 
     // -------------------------
     // DynamoDB テーブル
     // -------------------------
+    const tableName = isProd
+      ? "classical-music-listening-logs"
+      : `classical-music-listening-logs-${stageName}`;
+
     const listeningLogsTable = new dynamodb.Table(this, "ListeningLogsTable", {
-      tableName: "classical-music-listening-logs",
+      tableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      // prod は RETAIN、staging は DESTROY（スタック削除時にテーブルも削除）
+      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
     });
 
     // -------------------------
@@ -72,8 +86,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // API Gateway
     // -------------------------
     const api = new apigateway.RestApi(this, "Api", {
-      restApiName: "classical-music-lake",
-      deployOptions: { stageName: "prod" },
+      restApiName: `classical-music-lake-${stageName}`,
+      deployOptions: { stageName },
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
@@ -101,6 +115,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
+      // prod は S3 バージョニング有効（静的ファイルのロールバック用）
+      versioned: isProd,
     });
 
     const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
