@@ -8,7 +8,7 @@ export default defineVitestConfig({
         domEnvironment: "happy-dom",
       },
     },
-    exclude: ["**/node_modules/**", "tests/e2e/**"],
+    exclude: ["**/node_modules/**", "tests/e2e/**", "backend/**"],
     coverage: {
       provider: "v8",
       include: ["composables/**/*.ts", "components/**/*.vue", "types/**/*.ts"],

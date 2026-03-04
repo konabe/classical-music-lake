@@ -25,6 +25,9 @@
     "vue": "^3.5.0",
     "vue-router": "^4.0.0"
   },
+  "overrides": {
+    "serialize-javascript": ">=7.0.3"
+  },
   "lint-staged": {
     "*.{ts,vue}": [
       "eslint --fix",
