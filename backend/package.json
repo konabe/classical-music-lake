@@ -7,7 +7,10 @@
     "build:watch": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:setup": "node scripts/setup-test-db.mjs",
+    "db:seed": "node scripts/seed-test-db.mjs",
+    "db:reset": "npm run db:setup && npm run db:seed"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.0.0",
