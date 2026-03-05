@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { ListeningLog } from '~/types'
+import type { ListeningLog } from "~/types";
 
-const route = useRoute()
-const apiBase = useApiBase()
-const { data: log } = await useFetch<ListeningLog>(`${apiBase}/listening-logs/${route.params.id}`)
+const route = useRoute();
+const apiBase = useApiBase();
+const { data: log } = await useFetch<ListeningLog>(`${apiBase}/listening-logs/${route.params.id}`);
 
 function ratingStars(rating: number): string {
-  return '★'.repeat(rating) + '☆'.repeat(5 - rating)
+  return "★".repeat(rating) + "☆".repeat(5 - rating);
 }
 </script>
 
@@ -36,7 +36,7 @@ function ratingStars(rating: number): string {
         </template>
 
         <dt>鑑賞日時</dt>
-        <dd>{{ log.listenedAt.replace('T', ' ').slice(0, 16) }}</dd>
+        <dd>{{ log.listenedAt.replace("T", " ").slice(0, 16) }}</dd>
 
         <dt>評価</dt>
         <dd class="rating">{{ ratingStars(log.rating) }}</dd>

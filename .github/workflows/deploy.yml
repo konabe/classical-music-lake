@@ -5,6 +5,15 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "デプロイ先の環境"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - prod
 
 jobs:
   deploy:
@@ -12,12 +21,15 @@ jobs:
     permissions:
       contents: read
 
+    env:
+      STAGE_NAME: ${{ github.event_name == 'push' && 'prod' || github.event.inputs.environment }}
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
 
       # ----------------------------------------
       # CDK 依存関係インストール & AWS 認証
@@ -35,6 +47,18 @@ jobs:
           aws-region: ap-northeast-1
 
       # ----------------------------------------
+      # スタック名を決定
+      # ----------------------------------------
+      - name: Resolve stack name
+        id: stack
+        run: |
+          if [ "$STAGE_NAME" = "prod" ]; then
+            echo "name=ClassicalMusicLakeStack" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=ClassicalMusicLakeStack-${STAGE_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ----------------------------------------
       # デプロイ済みスタックから API Base URL を取得
       # CDK Outputs の ApiUrl を GITHUB_OUTPUT に書き出す
       # ----------------------------------------
@@ -42,10 +66,15 @@ jobs:
         id: get-api-url
         run: |
           API_URL=$(aws cloudformation describe-stacks \
-            --stack-name ClassicalMusicLakeStack \
+            --stack-name "${{ steps.stack.outputs.name }}" \
             --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
             --output text)
-          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+
+          if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
+            echo "::error::ApiUrl output not found for stack ${{ steps.stack.outputs.name }}"
+            exit 1
+          fi
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
       # ----------------------------------------
       # フロントエンド: Nuxt SPA ビルド
@@ -66,3 +95,5 @@ jobs:
       - name: CDK Deploy
         run: npm run deploy
         working-directory: cdk
+        env:
+          STAGE_NAME: ${{ env.STAGE_NAME }}

@@ -1,4 +1,4 @@
 export function useApiBase(): string {
-  const config = useRuntimeConfig()
-  return config.public.apiBaseUrl
+  const config = useRuntimeConfig();
+  return config.public.apiBaseUrl;
 }

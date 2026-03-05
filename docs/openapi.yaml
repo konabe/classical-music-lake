@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: Classical Music Lake API
+  description: |
+    クラシック音楽の視聴ログを管理するAPI。
+
+    **認証について**: 現在 MVP フェーズのため認証は未実装です。書き込み系エンドポイント（POST/PUT/DELETE）は将来フェーズで認証を導入予定です。個人利用以外の本番公開時には認証の実装が必須です。
+  version: 1.0.0
+servers:
+  - url: https://{apiId}.execute-api.ap-northeast-1.amazonaws.com/prod
+    description: 本番環境
+    variables:
+      apiId:
+        default: xxxxxxxxxx
+
+paths:
+  /listening-logs:
+    get:
+      summary: 視聴ログ一覧取得
+      operationId: listListeningLogs
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ListeningLog"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      summary: 視聴ログ作成
+      operationId: createListeningLog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateListeningLogInput"
+      responses:
+        "201":
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListeningLog"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /listening-logs/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      summary: 視聴ログ取得
+      operationId: getListeningLog
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListeningLog"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      summary: 視聴ログ更新
+      operationId: updateListeningLog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateListeningLogInput"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListeningLog"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      summary: 視聴ログ削除
+      operationId: deleteListeningLog
+      responses:
+        "204":
+          description: 削除成功（レスポンスボディなし）
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  schemas:
+    ListeningLog:
+      type: object
+      required:
+        - id
+        - listenedAt
+        - composer
+        - piece
+        - performer
+        - rating
+        - isFavorite
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID（自動生成）
+          example: 550e8400-e29b-41d4-a716-446655440000
+        listenedAt:
+          type: string
+          format: date-time
+          description: 視聴日時（ISO 8601）
+          example: "2024-01-15T19:30:00Z"
+        composer:
+          type: string
+          description: 作曲家名
+          example: ベートーヴェン
+        piece:
+          type: string
+          description: 曲名
+          example: 交響曲第9番
+        performer:
+          type: string
+          description: 演奏家・楽団名
+          example: ベルリン・フィルハーモニー管弦楽団
+        conductor:
+          type: string
+          description: 指揮者名（任意）
+          example: ヘルベルト・フォン・カラヤン
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 評価（1〜5）
+          example: 5
+        isFavorite:
+          type: boolean
+          description: お気に入りフラグ
+          example: true
+        memo:
+          type: string
+          description: 感想・メモ（任意）
+          example: 圧倒的な迫力
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時（自動生成）
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時（自動更新）
+
+    CreateListeningLogInput:
+      type: object
+      required:
+        - listenedAt
+        - composer
+        - piece
+        - performer
+        - rating
+        - isFavorite
+      properties:
+        listenedAt:
+          type: string
+          format: date-time
+        composer:
+          type: string
+        piece:
+          type: string
+        performer:
+          type: string
+        conductor:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        isFavorite:
+          type: boolean
+        memo:
+          type: string
+
+    UpdateListeningLogInput:
+      type: object
+      description: 部分更新（すべてのフィールドが任意）
+      properties:
+        listenedAt:
+          type: string
+          format: date-time
+        composer:
+          type: string
+        piece:
+          type: string
+        performer:
+          type: string
+        conductor:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        isFavorite:
+          type: boolean
+        memo:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Listening log not found
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        将来フェーズで実装予定の Bearer 認証。現在（MVP フェーズ）は未実装。
+        個人利用以外の本番公開時には認証の実装が必須です。
+
+  responses:
+    BadRequest:
+      description: リクエストが不正
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Request body is required
+
+    NotFound:
+      description: リソースが存在しない
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Listening log not found
+
+    InternalServerError:
+      description: サーバー内部エラー
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Internal server error

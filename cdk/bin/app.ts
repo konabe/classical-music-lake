@@ -1,13 +1,26 @@
 #!/usr/bin/env node
-import 'source-map-support/register'
-import * as cdk from 'aws-cdk-lib'
-import { ClassicalMusicLakeStack } from '../lib/classical-music-lake-stack'
+import "source-map-support/register";
+import * as cdk from "aws-cdk-lib";
+import { ClassicalMusicLakeStack, type StageName } from "../lib/classical-music-lake-stack";
 
-const app = new cdk.App()
+const app = new cdk.App();
 
-new ClassicalMusicLakeStack(app, 'ClassicalMusicLakeStack', {
+const rawStageName = process.env.STAGE_NAME ?? "prod";
+const validStages: StageName[] = ["staging", "prod"];
+if (!validStages.includes(rawStageName as StageName)) {
+  throw new Error(
+    `Invalid STAGE_NAME: "${rawStageName}". Must be one of: ${validStages.join(", ")}`
+  );
+}
+const stageName = rawStageName as StageName;
+const stackName =
+  stageName === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stageName}`;
+
+new ClassicalMusicLakeStack(app, stackName, {
+  stageName,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION ?? 'ap-northeast-1',
+    region: process.env.CDK_DEFAULT_REGION ?? "ap-northeast-1",
   },
-})
+  terminationProtection: stageName === "prod",
+});

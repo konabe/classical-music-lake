@@ -1,0 +1,7 @@
+.nuxt/
+.output/
+dist/
+node_modules/
+backend/node_modules/
+cdk/node_modules/
+package-lock.json
