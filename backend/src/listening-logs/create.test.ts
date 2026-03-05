@@ -57,6 +57,18 @@ describe("POST /listening-logs (create)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Invalid JSON");
   });
 
+  it("JSON が null の場合は 400 を返す", async () => {
+    const result = await handler(makeEvent("null"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body must be a JSON object");
+  });
+
+  it("JSON が配列の場合は 400 を返す", async () => {
+    const result = await handler(makeEvent("[]"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body must be a JSON object");
+  });
+
   it("正常に作成して 201 を返す", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);

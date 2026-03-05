@@ -10,7 +10,11 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
   let input: CreateListeningLogInput;
   try {
-    input = JSON.parse(event.body);
+    const parsed: unknown = JSON.parse(event.body);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return badRequest("Request body must be a JSON object");
+    }
+    input = parsed as CreateListeningLogInput;
   } catch {
     return badRequest("Invalid JSON");
   }

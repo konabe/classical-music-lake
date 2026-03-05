@@ -240,6 +240,14 @@ components:
           type: string
           example: Listening log not found
 
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        将来フェーズで実装予定の Bearer 認証。現在（MVP フェーズ）は未実装。
+        個人利用以外の本番公開時には認証の実装が必須です。
+
   responses:
     BadRequest:
       description: リクエストが不正

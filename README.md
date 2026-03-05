@@ -77,7 +77,6 @@ cdk deploy
 | `AWS_SECRET_ACCESS_KEY` | AWSシークレットキー |
 
 > **⚠️ セキュリティ注意事項**: 長期 AWS アクセスキーは漏洩リスクがあります。将来的には **GitHub OIDC + IAM AssumeRole** を使ったキーレス認証への移行を推奨します。その場合は上記シークレットの代わりに `AWS_ROLE_TO_ASSUME`（AssumeRole 対象の IAM ロール ARN）を設定してください。
-
 > **注意**: `AWS_REGION` はワークフロー内に `ap-northeast-1` でハードコードされています。API GatewayのURLはCloudFormation Outputsから自動取得するため、シークレットとして設定する必要はありません。
 
 `main` ブランチへのプッシュで自動デプロイされます。
