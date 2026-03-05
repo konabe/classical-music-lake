@@ -79,7 +79,7 @@ AI（Claude等）と協力して効果的に開発を進めるために必要な
 
 - [x] .env.example の整備
 - [x] 環境変数の詳細説明（README.md）
-- [ ] ローカル開発用のモックデータ
+- [x] ローカル開発用のモックデータ（`backend/scripts/seed-test-db.mjs` で DynamoDB Local へ投入）
 - [ ] Docker環境（オプション）
 
 ### 3.2 開発ツール

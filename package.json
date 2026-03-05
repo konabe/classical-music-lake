@@ -40,10 +40,9 @@
   "devDependencies": {
     "@commitlint/cli": "^20.4.2",
     "@commitlint/config-conventional": "^20.4.2",
-    "@nuxt/devtools": "latest",
+    "@nuxt/devtools": "^3.1.0",
     "@nuxt/eslint": "^1.15.2",
     "@nuxt/test-utils": "^4.0.0",
-    "@nuxt/typescript-build": "latest",
     "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
     "eslint": "^9.39.3",

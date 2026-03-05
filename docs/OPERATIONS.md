@@ -39,6 +39,8 @@ cdk bootstrap aws://<AWS_ACCOUNT_ID>/ap-northeast-1
 
 > `AWS_REGION` と `API_BASE_URL` はワークフロー内で自動取得するため不要。
 
+> **⚠️ セキュリティ注意事項**: 長期 AWS アクセスキー（`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`）は常設シークレットとして管理しており、漏洩リスクが存在します。将来的には **GitHub OIDC + IAM AssumeRole** を使ったキーレス認証への移行を推奨します。
+
 ---
 
 ## ロールバック手順
@@ -67,8 +69,12 @@ cdk deploy
 ### 緊急時：CDK スタックの確認
 
 ```bash
+# <stage> には staging または prod を指定
+STAGE=<stage>
+STACK_NAME=$([ "$STAGE" = "prod" ] && echo "ClassicalMusicLakeStack" || echo "ClassicalMusicLakeStack-${STAGE}")
+
 aws cloudformation describe-stacks \
-  --stack-name ClassicalMusicLakeStack \
+  --stack-name "$STACK_NAME" \
   --query 'Stacks[0].StackStatus'
 ```
 

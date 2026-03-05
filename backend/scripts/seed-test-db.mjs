@@ -14,7 +14,12 @@
  */
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  ScanCommand,
+  DeleteCommand,
+} from "@aws-sdk/lib-dynamodb";
 
 const TABLE_NAME = process.env.DYNAMO_TABLE_LISTENING_LOGS ?? "classical-music-listening-logs";
 const ENDPOINT = process.env.DYNAMODB_LOCAL_ENDPOINT ?? "http://localhost:8000";
@@ -93,10 +98,23 @@ const seedData = [
   },
 ];
 
+async function deleteAll() {
+  const scan = await docClient.send(new ScanCommand({ TableName: TABLE_NAME }));
+  const items = scan.Items ?? [];
+  for (const item of items) {
+    await docClient.send(new DeleteCommand({ TableName: TABLE_NAME, Key: { id: item.id } }));
+  }
+  console.log(`  既存データ削除: ${items.length}件`);
+}
+
 async function main() {
   console.log(`DynamoDB Local エンドポイント: ${ENDPOINT}`);
   console.log(`テーブル名: ${TABLE_NAME}`);
   console.log(`シードデータ: ${seedData.length}件`);
+  console.log("");
+
+  console.log("既存データを全件削除中...");
+  await deleteAll();
   console.log("");
 
   for (const item of seedData) {

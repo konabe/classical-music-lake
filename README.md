@@ -107,7 +107,7 @@ API GatewayのURLが正しく設定されているか確認してください。
 
 ## ディレクトリ構造
 
-```
+```text
 classical-music-lake/
 ├── pages/                   # Nuxt ページ（ルーティング）
 │   └── listening-logs/      # 視聴ログ関連ページ（一覧・新規・詳細・編集）

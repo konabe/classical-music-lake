@@ -1,7 +1,10 @@
 openapi: 3.0.3
 info:
   title: Classical Music Lake API
-  description: クラシック音楽の視聴ログを管理するAPI
+  description: |
+    クラシック音楽の視聴ログを管理するAPI。
+
+    **認証について**: 現在 MVP フェーズのため認証は未実装です。書き込み系エンドポイント（POST/PUT/DELETE）は将来フェーズで認証を導入予定です。個人利用以外の本番公開時には認証の実装が必須です。
   version: 1.0.0
 servers:
   - url: https://{apiId}.execute-api.ap-northeast-1.amazonaws.com/prod

@@ -9,13 +9,19 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   if (!id) return badRequest("id is required");
   if (!event.body) return badRequest("Request body is required");
 
+  let input: UpdateListeningLogInput;
+  try {
+    input = JSON.parse(event.body);
+  } catch {
+    return badRequest("Invalid JSON");
+  }
+
   try {
     const existing = await dynamo.send(
       new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id } })
     );
     if (!existing.Item) return notFound("Listening log not found");
 
-    const input: UpdateListeningLogInput = JSON.parse(event.body);
     const updated: ListeningLog = {
       ...(existing.Item as ListeningLog),
       ...input,

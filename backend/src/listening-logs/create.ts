@@ -8,8 +8,14 @@ import type { CreateListeningLogInput, ListeningLog } from "../types";
 export const handler: APIGatewayProxyHandler = async (event) => {
   if (!event.body) return badRequest("Request body is required");
 
+  let input: CreateListeningLogInput;
   try {
-    const input: CreateListeningLogInput = JSON.parse(event.body);
+    input = JSON.parse(event.body);
+  } catch {
+    return badRequest("Invalid JSON");
+  }
+
+  try {
     const now = new Date().toISOString();
     const item: ListeningLog = {
       id: randomUUID(),

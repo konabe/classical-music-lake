@@ -113,8 +113,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     const spaBucket = new s3.Bucket(this, "SpaBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
+      // prod は RETAIN（本番アセットの誤削除防止）、staging は DESTROY
+      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: !isProd,
       // prod は S3 バージョニング有効（静的ファイルのロールバック用）
       versioned: isProd,
     });
@@ -153,7 +154,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     new cdk.CfnOutput(this, "ApiUrl", {
       value: api.url,
-      description: "API Gateway URL (API_BASE_URL に設定)",
+      description: "API Gateway URL (NUXT_PUBLIC_API_BASE_URL に設定)",
     });
 
     new cdk.CfnOutput(this, "SpaUrl", {

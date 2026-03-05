@@ -68,7 +68,12 @@ jobs:
           API_URL=$(aws cloudformation describe-stacks \
             --stack-name "${{ steps.stack.outputs.name }}" \
             --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
-            --output text 2>/dev/null || echo "")
+            --output text)
+
+          if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
+            echo "::error::ApiUrl output not found for stack ${{ steps.stack.outputs.name }}"
+            exit 1
+          fi
           echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
       # ----------------------------------------

@@ -65,8 +65,14 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body is required");
   });
 
+  it("不正な JSON の場合は 400 を返す", async () => {
+    const result = await handler(makeEvent("abc-123", "invalid json"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("Invalid JSON");
+  });
+
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: undefined });
+    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ rating: 4 })),
       mockContext,
@@ -77,8 +83,8 @@ describe("PUT /listening-logs/:id (update)", () => {
 
   it("正常更新して 200 を返す", async () => {
     vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingLog }) // GetCommand
-      .mockResolvedValueOnce({}); // PutCommand
+      .mockResolvedValueOnce({ Item: existingLog } as never) // GetCommand
+      .mockResolvedValueOnce({} as never); // PutCommand
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4, isFavorite: true })),
@@ -94,7 +100,9 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("updatedAt が更新されること", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: existingLog }).mockResolvedValueOnce({});
+    vi.mocked(dynamo.send)
+      .mockResolvedValueOnce({ Item: existingLog } as never)
+      .mockResolvedValueOnce({} as never);
 
     const before = new Date(existingLog.updatedAt).getTime();
     const result = await handler(
@@ -107,7 +115,9 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("id は上書きされない", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: existingLog }).mockResolvedValueOnce({});
+    vi.mocked(dynamo.send)
+      .mockResolvedValueOnce({ Item: existingLog } as never)
+      .mockResolvedValueOnce({} as never);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ id: "tampered-id", rating: 4 })),

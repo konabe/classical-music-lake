@@ -5,7 +5,14 @@ import { ClassicalMusicLakeStack, type StageName } from "../lib/classical-music-
 
 const app = new cdk.App();
 
-const stageName = (process.env.STAGE_NAME ?? "prod") as StageName;
+const rawStageName = process.env.STAGE_NAME ?? "prod";
+const validStages: StageName[] = ["staging", "prod"];
+if (!validStages.includes(rawStageName as StageName)) {
+  throw new Error(
+    `Invalid STAGE_NAME: "${rawStageName}". Must be one of: ${validStages.join(", ")}`
+  );
+}
+const stageName = rawStageName as StageName;
 const stackName =
   stageName === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stageName}`;
 
