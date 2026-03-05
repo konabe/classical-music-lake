@@ -41,7 +41,7 @@ describe("DELETE /listening-logs/:id (delete)", () => {
   });
 
   it("正常削除して 204 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({});
+    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");

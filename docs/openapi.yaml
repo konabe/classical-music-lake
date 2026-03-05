@@ -104,8 +104,8 @@ paths:
       summary: 視聴ログ削除
       operationId: deleteListeningLog
       responses:
-        "200":
-          description: 削除成功
+        "204":
+          description: 削除成功（レスポンスボディなし）
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":

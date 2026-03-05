@@ -18,8 +18,8 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   try {
     const now = new Date().toISOString();
     const item: ListeningLog = {
-      id: randomUUID(),
       ...input,
+      id: randomUUID(),
       createdAt: now,
       updatedAt: now,
     };

@@ -56,13 +56,13 @@ describe("GET /listening-logs/:id (get)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: undefined });
+    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
     const result = await handler(makeEvent("not-found-id"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
   });
 
   it("正常取得して 200 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: testLog });
+    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: testLog } as never);
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
 

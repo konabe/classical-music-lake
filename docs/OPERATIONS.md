@@ -6,7 +6,7 @@
 
 `main` ブランチへのプッシュで GitHub Actions が自動実行される。
 
-```
+```text
 push to main
   → Install CDK dependencies
   → Configure AWS credentials

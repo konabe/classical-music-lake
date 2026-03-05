@@ -34,14 +34,14 @@ describe("GET /listening-logs (list)", () => {
   });
 
   it("空リストの場合は 200 で空配列を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Items: [] });
+    vi.mocked(dynamo.send).mockResolvedValueOnce({ Items: [] } as never);
     const result = await handler(mockEvent, mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
     expect(JSON.parse(result?.body ?? "[]")).toEqual([]);
   });
 
   it("Items が undefined の場合も空配列を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({});
+    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(mockEvent, mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
     expect(JSON.parse(result?.body ?? "[]")).toEqual([]);
@@ -53,7 +53,7 @@ describe("GET /listening-logs (list)", () => {
       makeLog("2", "2024-01-15T00:00:00.000Z"),
       makeLog("3", "2024-01-05T00:00:00.000Z"),
     ];
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Items: logs });
+    vi.mocked(dynamo.send).mockResolvedValueOnce({ Items: logs } as never);
 
     const result = await handler(mockEvent, mockContext, mockCallback);
     const body: ListeningLog[] = JSON.parse(result?.body ?? "[]");

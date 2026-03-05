@@ -22,10 +22,12 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     );
     if (!existing.Item) return notFound("Listening log not found");
 
+    const current = existing.Item as ListeningLog;
     const updated: ListeningLog = {
-      ...(existing.Item as ListeningLog),
+      ...current,
       ...input,
       id,
+      createdAt: current.createdAt,
       updatedAt: new Date().toISOString(),
     };
     await dynamo.send(new PutCommand({ TableName: TABLE_LISTENING_LOGS, Item: updated }));
