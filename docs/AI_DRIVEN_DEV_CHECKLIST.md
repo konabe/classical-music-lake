@@ -159,9 +159,9 @@ AI（Claude等）と協力して効果的に開発を進めるために必要な
 
 ### 6.1 静的解析
 
-- [ ] ESLint設定の強化
-- [ ] TypeScript strict モード有効化
-- [ ] 未使用コードの検出・削除
+- [x] ESLint設定の強化（`@typescript-eslint/no-unused-vars` を error として追加）
+- [x] TypeScript strict モード有効化（フロントエンド・CDK に明示化）
+- [x] 未使用コードの検出・削除（tsc + ESLint でエラーゼロを確認）
 
 ### 6.2 型定義
 
