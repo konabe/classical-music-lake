@@ -13,7 +13,7 @@
     "db:reset": "npm run db:setup && npm run db:seed"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/client-dynamodb": "^3.1002.0",
     "@aws-sdk/lib-dynamodb": "^3.0.0"
   },
   "devDependencies": {
