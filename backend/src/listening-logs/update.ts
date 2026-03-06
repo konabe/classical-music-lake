@@ -3,6 +3,7 @@ import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { ok, notFound, badRequest, internalError } from "../utils/response";
 import type { ListeningLog, UpdateListeningLogInput } from "../types";
+import { isValidRating } from "../types";
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   const id = event.pathParameters?.id;
@@ -14,6 +15,10 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     input = JSON.parse(event.body);
   } catch {
     return badRequest("Invalid JSON");
+  }
+
+  if (input.rating !== undefined && !isValidRating(input.rating)) {
+    return badRequest("rating must be between 1 and 5");
   }
 
   try {

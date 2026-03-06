@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { created, badRequest, internalError } from "../utils/response";
 import type { CreateListeningLogInput, ListeningLog } from "../types";
+import { isValidRating } from "../types";
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   if (!event.body) return badRequest("Request body is required");
@@ -17,6 +18,10 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     input = parsed as CreateListeningLogInput;
   } catch {
     return badRequest("Invalid JSON");
+  }
+
+  if (!isValidRating(input.rating)) {
+    return badRequest("rating must be between 1 and 5");
   }
 
   try {
