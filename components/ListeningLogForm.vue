@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CreateListeningLogInput } from "~/types";
+import type { CreateListeningLogInput, Rating } from "~/types";
 
 const props = defineProps<{
   initialValues?: Partial<CreateListeningLogInput>;
@@ -64,7 +64,7 @@ function handleSubmit() {
           type="button"
           class="star-btn"
           :class="{ active: n <= form.rating }"
-          @click="form.rating = n"
+          @click="form.rating = n as Rating"
         >
           ★
         </button>

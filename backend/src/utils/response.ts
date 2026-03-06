@@ -1,4 +1,5 @@
 import type { APIGatewayProxyResult } from "aws-lambda";
+import type { ApiErrorResponse } from "../types";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": process.env.CORS_ALLOW_ORIGIN ?? "*",
@@ -24,27 +25,30 @@ export function created(body: unknown): APIGatewayProxyResult {
 }
 
 export function notFound(message: string): APIGatewayProxyResult {
+  const body: ApiErrorResponse = { message };
   return {
     statusCode: 404,
     headers: CORS_HEADERS,
-    body: JSON.stringify({ message }),
+    body: JSON.stringify(body),
   };
 }
 
 export function badRequest(message: string): APIGatewayProxyResult {
+  const body: ApiErrorResponse = { message };
   return {
     statusCode: 400,
     headers: CORS_HEADERS,
-    body: JSON.stringify({ message }),
+    body: JSON.stringify(body),
   };
 }
 
 export function internalError(error: unknown): APIGatewayProxyResult {
   console.error(error);
+  const body: ApiErrorResponse = { message: "Internal server error" };
   return {
     statusCode: 500,
     headers: CORS_HEADERS,
-    body: JSON.stringify({ message: "Internal server error" }),
+    body: JSON.stringify(body),
   };
 }
 
