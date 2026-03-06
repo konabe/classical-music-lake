@@ -69,6 +69,19 @@ describe("POST /listening-logs (create)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body must be a JSON object");
   });
 
+  it.each([0, 6, -1, 1.5, "5", null])(
+    "rating が不正な値（%s）の場合は 400 を返す",
+    async (invalidRating) => {
+      const result = await handler(
+        makeEvent(JSON.stringify({ ...validInput, rating: invalidRating })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("rating must be between 1 and 5");
+    }
+  );
+
   it("正常に作成して 201 を返す", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);

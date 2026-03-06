@@ -71,6 +71,32 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Invalid JSON");
   });
 
+  it.each([0, 6, -1, 1.5, "5", null])(
+    "rating が不正な値（%s）の場合は 400 を返す",
+    async (invalidRating) => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ rating: invalidRating })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("rating must be between 1 and 5");
+    }
+  );
+
+  it("rating を含まない更新は rating のバリデーションをスキップする", async () => {
+    vi.mocked(dynamo.send)
+      .mockResolvedValueOnce({ Item: existingLog } as never)
+      .mockResolvedValueOnce({} as never);
+
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ isFavorite: true })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(200);
+  });
+
   it("アイテムが存在しない場合は 404 を返す", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
     const result = await handler(
