@@ -25,7 +25,7 @@ jobs:
       STAGE_NAME: ${{ github.event_name == 'push' && 'prod' || github.event.inputs.environment }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
         with:
