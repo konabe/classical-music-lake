@@ -161,7 +161,7 @@ AI（Claude等）と協力して効果的に開発を進めるために必要な
 
 - [x] ESLint設定の強化（`@typescript-eslint/no-unused-vars` を error として追加）
 - [x] TypeScript strict モード有効化（フロントエンド・CDK に明示化）
-- [x] 未使用コードの検出・削除（tsc + ESLint でエラーゼロを確認）
+- [x] 未使用コードの検出・削除（`nuxt prepare && nuxt typecheck`（vue-tsc 経由で .vue と自動生成型を含む）+ ESLint でエラーゼロを確認）
 
 ### 6.2 型定義
 
