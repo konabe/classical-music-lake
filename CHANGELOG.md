@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.1...classical-music-lake-v0.1.2) (2026-03-07)
+
+
+### Features
+
+* セキュリティヘッダを cloudfront に追加（チェックリスト7.3） ([3f2b436](https://github.com/konabe/classical-music-lake/commit/3f2b43622c345b2c7007f43b1d748848e7c30594))
+* セキュリティ強化（チェックリスト7.1〜7.2） ([5f998ce](https://github.com/konabe/classical-music-lake/commit/5f998ce2766f8c5c0cbc7c35c4e9f42afc7dfee8))
+* セキュリティ監査対応（チェックリスト7.3） ([2e1808a](https://github.com/konabe/classical-music-lake/commit/2e1808a823f1f4f283b0adfa9c05c62160a5d036))
+
+
+### Bug Fixes
+
+* coderabbitレビューコメントへの対応（PR [#28](https://github.com/konabe/classical-music-lake/issues/28)） ([3cca3ae](https://github.com/konabe/classical-music-lake/commit/3cca3ae34602bb556d1a32a684b1d1ff9f2d8f22))
+
 ## [0.1.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.0...classical-music-lake-v0.1.1) (2026-03-07)
 
 ### Features
