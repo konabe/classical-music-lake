@@ -35,8 +35,6 @@ const existingLog: ListeningLog = {
   listenedAt: "2024-01-15T20:00:00.000Z",
   composer: "ベートーヴェン",
   piece: "交響曲第9番",
-  performer: "ベルリン・フィル",
-  conductor: "カラヤン",
   rating: 5,
   isFavorite: false,
   memo: "",

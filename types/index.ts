@@ -14,8 +14,6 @@ export interface ListeningLog {
   listenedAt: string; // ISO 8601 日時
   composer: string; // 作曲家
   piece: string; // 曲名
-  performer: string; // 演奏家・楽団
-  conductor?: string; // 指揮者（任意）
   rating: Rating; // 評価 1〜5
   isFavorite: boolean; // お気に入りフラグ
   memo?: string; // 感想・メモ

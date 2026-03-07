@@ -60,7 +60,6 @@ const testLog: ListeningLog = {
   listenedAt: "2024-01-15T20:00:00.000Z",
   composer: "ショパン",
   piece: "ピアノ協奏曲第1番",
-  performer: "アルゲリッチ",
   rating: 5,
   isFavorite: true,
   createdAt: "2024-01-15T21:00:00.000Z",
@@ -115,7 +114,6 @@ describe("DynamoDB 統合テスト", () => {
         listenedAt: "2024-01-20T18:00:00.000Z",
         composer: "バッハ",
         piece: "ゴルトベルク変奏曲",
-        performer: "グールド",
         rating: 5,
         isFavorite: false,
       };

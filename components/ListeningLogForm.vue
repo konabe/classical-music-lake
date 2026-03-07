@@ -14,8 +14,6 @@ const form = reactive<CreateListeningLogInput>({
   listenedAt: props.initialValues?.listenedAt ?? new Date().toISOString().slice(0, 16),
   composer: props.initialValues?.composer ?? "",
   piece: props.initialValues?.piece ?? "",
-  performer: props.initialValues?.performer ?? "",
-  conductor: props.initialValues?.conductor ?? "",
   rating: props.initialValues?.rating ?? 3,
   isFavorite: props.initialValues?.isFavorite ?? false,
   memo: props.initialValues?.memo ?? "",
@@ -41,17 +39,6 @@ function handleSubmit() {
       <div class="form-group">
         <label>曲名 <span class="required">*</span></label>
         <input v-model="form.piece" type="text" placeholder="例: 交響曲第9番" required />
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>演奏家・楽団 <span class="required">*</span></label>
-        <input v-model="form.performer" type="text" placeholder="例: ベルリン・フィル" required />
-      </div>
-      <div class="form-group">
-        <label>指揮者</label>
-        <input v-model="form.conductor" type="text" placeholder="例: カラヤン" />
       </div>
     </div>
 

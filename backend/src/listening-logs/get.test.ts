@@ -35,8 +35,6 @@ const testLog: ListeningLog = {
   listenedAt: "2024-01-15T20:00:00.000Z",
   composer: "ベートーヴェン",
   piece: "交響曲第9番",
-  performer: "ベルリン・フィル",
-  conductor: "カラヤン",
   rating: 5,
   isFavorite: true,
   memo: "素晴らしい演奏",
@@ -68,7 +66,7 @@ describe("GET /listening-logs/:id (get)", () => {
 
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBe("abc-123");
-    expect(body.composer).toBe("ベートーヴェン");
+    expect(body.piece).toBe("交響曲第9番");
   });
 
   it("DynamoDB エラー時に 500 を返す", async () => {

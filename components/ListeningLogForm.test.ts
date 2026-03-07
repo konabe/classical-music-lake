@@ -34,7 +34,6 @@ describe("ListeningLogForm", () => {
           initialValues: {
             composer: "モーツァルト",
             piece: "魔笛",
-            performer: "ウィーン・フィル",
             rating: 4,
             isFavorite: true,
           },
@@ -51,7 +50,7 @@ describe("ListeningLogForm", () => {
     it("初期評価が星の表示に反映される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm, {
         props: {
-          initialValues: { rating: 5, composer: "", piece: "", performer: "", isFavorite: false },
+          initialValues: { rating: 5, composer: "", piece: "", isFavorite: false },
         },
       });
 
@@ -62,7 +61,7 @@ describe("ListeningLogForm", () => {
     it("初期お気に入りが反映される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm, {
         props: {
-          initialValues: { isFavorite: true, composer: "", piece: "", performer: "", rating: 3 },
+          initialValues: { isFavorite: true, composer: "", piece: "", rating: 3 },
         },
       });
 
@@ -88,7 +87,6 @@ describe("ListeningLogForm", () => {
             listenedAt: "2024-01-15T20:00",
             composer: "ベートーヴェン",
             piece: "交響曲第9番",
-            performer: "ベルリン・フィル",
             rating: 5,
             isFavorite: false,
           },
@@ -106,7 +104,6 @@ describe("ListeningLogForm", () => {
             listenedAt: "2024-01-15T20:00",
             composer: "ベートーヴェン",
             piece: "交響曲第9番",
-            performer: "ベルリン・フィル",
             rating: 5,
             isFavorite: true,
           },
