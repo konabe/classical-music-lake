@@ -162,6 +162,25 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       allowHeaders: ["Content-Type"],
     });
 
+    // API Gateway 自身が返す 4XX/5XX にも CORS ヘッダを付与
+    api.addGatewayResponse("Default4xxCors", {
+      type: apigateway.ResponseType.DEFAULT_4XX,
+      responseHeaders: {
+        "Access-Control-Allow-Origin": `'${corsAllowOrigin}'`,
+        "Access-Control-Allow-Headers": "'Content-Type'",
+        "Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'",
+      },
+    });
+
+    api.addGatewayResponse("Default5xxCors", {
+      type: apigateway.ResponseType.DEFAULT_5XX,
+      responseHeaders: {
+        "Access-Control-Allow-Origin": `'${corsAllowOrigin}'`,
+        "Access-Control-Allow-Headers": "'Content-Type'",
+        "Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'",
+      },
+    });
+
     new s3deploy.BucketDeployment(this, "SpaDeployment", {
       sources: [s3deploy.Source.asset(path.join(__dirname, "../../.output/public"))],
       destinationBucket: spaBucket,

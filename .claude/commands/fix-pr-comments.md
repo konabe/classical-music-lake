@@ -15,7 +15,7 @@
 2. **レビューコメントの取得**
 
    ```bash
-   gh api repos/konabe/classical-music-lake/pulls/{pr_number}/comments
+   gh api --paginate repos/konabe/classical-music-lake/pulls/{pr_number}/comments
    ```
 
    で全レビューコメントを取得する。
@@ -47,7 +47,7 @@
 5. **コミット・プッシュ**
    変更ファイルを git add して以下の形式でコミット:
 
-   ```
+   ```text
    fix: coderabbitレビューコメントへの対応（PR #<番号>）
 
    - <対応内容1>

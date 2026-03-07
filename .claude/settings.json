@@ -14,7 +14,9 @@
       "Bash(npx tsc:*)",
       "Bash(gh pr view:*)",
       "WebFetch(domain:docs.coderabbit.ai)",
-      "Bash(gh api:*)"
+      "Bash(gh api repos/konabe/classical-music-lake/pulls/*)",
+      "Bash(gh api repos/konabe/classical-music-lake/issues/*)",
+      "Bash(gh issue comment*)"
     ],
     "ask": [
       "Bash(npm install)",
