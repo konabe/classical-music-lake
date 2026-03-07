@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.8](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.7...classical-music-lake-v0.1.8) (2026-03-07)
+
+
+### Features
+
+* response ヘルパーの CORS・JSON シリアライズを middy に移譲 ([b6c6cd3](https://github.com/konabe/classical-music-lake/commit/b6c6cd3cc6f7f0da7d152e1464fd6852052677b0))
+* response ヘルパーの cors・json を middy に移譲（issue [#8](https://github.com/konabe/classical-music-lake/issues/8)） ([e1b1331](https://github.com/konabe/classical-music-lake/commit/e1b1331174c2742f5101d78de0e38aaa5b7b6fe0))
+
 ## [0.1.7](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.6...classical-music-lake-v0.1.7) (2026-03-07)
 
 
