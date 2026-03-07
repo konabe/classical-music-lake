@@ -89,6 +89,15 @@ jobs:
           NUXT_PUBLIC_API_BASE_URL: ${{ steps.get-api-url.outputs.api_url }}
 
       # ----------------------------------------
+      # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
+      # ----------------------------------------
+      - name: CDK Bootstrap
+        run: npx cdk bootstrap
+        working-directory: cdk
+        env:
+          STAGE_NAME: ${{ env.STAGE_NAME }}
+
+      # ----------------------------------------
       # CDK デプロイ
       # (インフラ更新 + ビルド済みフロントエンドを S3 へ反映)
       # ----------------------------------------
