@@ -104,7 +104,7 @@ interface ListeningLog {
 
 - **ベースURL**: `https://{api-gateway-url}/prod`
 - **認証**: なし（現在は認証なし）
-- **CORS**: 全オリジン許可
+- **CORS**: CloudFront URL のみ許可（プリフライト・GatewayResponse の両方で設定）
 
 ### 4.2 視聴ログAPI
 
@@ -317,7 +317,7 @@ DELETE /listening-logs/{id}
 #### バックエンド（Lambda）
 
 - `DYNAMO_TABLE_LISTENING_LOGS`: 視聴ログテーブル名（CDK が自動設定）
-- `CORS_ALLOW_ORIGIN`: 許可する CORS オリジン（CDK が CloudFront URL を自動設定）
+- `CORS_ALLOW_ORIGIN`: 許可する CORS オリジン（CDK が CloudFront URL を自動設定。未設定時は `"*"` にフォールバックするが、本番・staging は CDK が必ず設定するため未設定にはならない）
 
 #### CI/CD（GitHub Secrets）
 
