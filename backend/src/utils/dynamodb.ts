@@ -9,3 +9,5 @@ export const dynamo = DynamoDBDocumentClient.from(client, {
 
 export const TABLE_LISTENING_LOGS =
   process.env.DYNAMO_TABLE_LISTENING_LOGS ?? "classical-music-listening-logs";
+
+export const TABLE_PIECES = process.env.DYNAMO_TABLE_PIECES ?? "classical-music-pieces";
