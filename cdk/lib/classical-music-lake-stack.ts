@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
+import * as logs from "aws-cdk-lib/aws-logs";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
@@ -58,6 +59,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       environment: commonEnv,
       // X-Ray トレーシング有効化（コールドスタート・レスポンスタイムの可視化）
       tracing: lambda.Tracing.ACTIVE,
+      // CloudWatch Logs の保持期間を 3 ヶ月に設定（デフォルトは無期限）
+      logRetention: logs.RetentionDays.THREE_MONTHS,
       bundling: {
         minify: true,
         sourceMap: false,
@@ -93,12 +96,32 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // API Gateway
     // -------------------------
+    // API Gateway アクセスログ用ロググループ（保持期間 3 ヶ月）
+    const apiAccessLogGroup = new logs.LogGroup(this, "ApiAccessLogs", {
+      logGroupName: `/aws/apigateway/classical-music-lake-${stageName}`,
+      retention: logs.RetentionDays.THREE_MONTHS,
+      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+    });
+
     const api = new apigateway.RestApi(this, "Api", {
       restApiName: `classical-music-lake-${stageName}`,
       deployOptions: {
         stageName,
         // X-Ray トレーシング有効化（API Gateway → Lambda のレスポンスタイム可視化）
         tracingEnabled: true,
+        // アクセスログ有効化（リクエスト・レスポンス・エラーを記録）
+        accessLogDestination: new apigateway.LogGroupLogDestination(apiAccessLogGroup),
+        accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields({
+          caller: false,
+          httpMethod: true,
+          ip: false,
+          protocol: true,
+          requestTime: true,
+          resourcePath: true,
+          responseLength: true,
+          status: true,
+          user: false,
+        }),
       },
     });
 
