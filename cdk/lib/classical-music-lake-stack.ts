@@ -49,6 +49,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry"> = {
       runtime: lambda.Runtime.NODEJS_24_X,
+      // ARM64（Graviton2）: x86_64 比で約 20% 安価かつ高速
+      architecture: lambda.Architecture.ARM_64,
+      // 256MB: DynamoDB CRUD に十分で、128MB より CPU 割当が増えコールドスタートも短縮
+      memorySize: 256,
+      // 10s: DynamoDB 操作に対して十分な余裕を持たせつつ過剰な課金を防ぐ
+      timeout: cdk.Duration.seconds(10),
       environment: commonEnv,
       // X-Ray トレーシング有効化（コールドスタート・レスポンスタイムの可視化）
       tracing: lambda.Tracing.ACTIVE,
