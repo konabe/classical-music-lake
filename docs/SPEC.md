@@ -76,14 +76,14 @@
 #### データ構造
 
 ```typescript
+type Rating = 1 | 2 | 3 | 4 | 5;
+
 interface ListeningLog {
   id: string; // UUID (自動生成)
   listenedAt: string; // 視聴日時 (ISO 8601形式)
   composer: string; // 作曲家名
   piece: string; // 曲名
-  performer: string; // 演奏家・楽団名
-  conductor?: string; // 指揮者名 (任意)
-  rating: number; // 評価 (1〜5の整数)
+  rating: Rating; // 評価 (1〜5の整数)
   isFavorite: boolean; // お気に入りフラグ
   memo?: string; // 感想・メモ (任意)
   createdAt: string; // 作成日時 (ISO 8601形式)
@@ -121,24 +121,19 @@ GET /listening-logs
 **レスポンス**
 
 ```json
-{
-  "statusCode": 200,
-  "body": [
-    {
-      "id": "uuid",
-      "listenedAt": "2024-01-15T19:30:00Z",
-      "composer": "ベートーヴェン",
-      "piece": "交響曲第9番",
-      "performer": "ベルリン・フィルハーモニー管弦楽団",
-      "conductor": "ヘルベルト・フォン・カラヤン",
-      "rating": 5,
-      "isFavorite": true,
-      "memo": "圧倒的な迫力",
-      "createdAt": "2024-01-15T20:00:00Z",
-      "updatedAt": "2024-01-15T20:00:00Z"
-    }
-  ]
-}
+[
+  {
+    "id": "uuid",
+    "listenedAt": "2024-01-15T19:30:00Z",
+    "composer": "ベートーヴェン",
+    "piece": "交響曲第9番",
+    "rating": 5,
+    "isFavorite": true,
+    "memo": "圧倒的な迫力",
+    "createdAt": "2024-01-15T20:00:00Z",
+    "updatedAt": "2024-01-15T20:00:00Z"
+  }
+]
 ```
 
 **ソート順**: `listenedAt` 降順（新しい順）
@@ -172,8 +167,6 @@ Content-Type: application/json
   "listenedAt": "2024-01-15T19:30:00Z",
   "composer": "ベートーヴェン",
   "piece": "交響曲第9番",
-  "performer": "ベルリン・フィルハーモニー管弦楽団",
-  "conductor": "ヘルベルト・フォン・カラヤン",
   "rating": 5,
   "isFavorite": true,
   "memo": "圧倒的な迫力"
@@ -230,8 +223,7 @@ DELETE /listening-logs/{id}
 
 **レスポンス**
 
-- 成功: `200 OK`
-- 未存在: `404 Not Found`
+- 成功: `204 No Content`
 
 ### 4.3 エラーレスポンス一覧
 
@@ -253,16 +245,14 @@ DELETE /listening-logs/{id}
 
 #### 視聴ログ（ListeningLog）
 
-| フィールド   | 型      | 必須 | バリデーション                             |
-| ------------ | ------- | ---- | ------------------------------------------ |
-| `listenedAt` | string  | ✅   | ISO 8601形式（例: `2024-01-15T19:30:00Z`） |
-| `composer`   | string  | ✅   | 空文字不可                                 |
-| `piece`      | string  | ✅   | 空文字不可                                 |
-| `performer`  | string  | ✅   | 空文字不可                                 |
-| `conductor`  | string  | -    | 任意                                       |
-| `rating`     | number  | ✅   | 1〜5の整数                                 |
-| `isFavorite` | boolean | ✅   | `true` または `false`                      |
-| `memo`       | string  | -    | 任意                                       |
+| フィールド   | 型                    | 必須 | バリデーション                             |
+| ------------ | --------------------- | ---- | ------------------------------------------ |
+| `listenedAt` | string                | ✅   | ISO 8601形式（例: `2024-01-15T19:30:00Z`） |
+| `composer`   | string                | ✅   | 空文字不可                                 |
+| `piece`      | string                | ✅   | 空文字不可                                 |
+| `rating`     | 1 \| 2 \| 3 \| 4 \| 5 | ✅   | 1〜5の整数                                 |
+| `isFavorite` | boolean               | ✅   | `true` または `false`                      |
+| `memo`       | string                | -    | 任意                                       |
 
 #### 自動生成フィールド（入力不可）
 
@@ -467,7 +457,8 @@ cdk deploy
 
 ## 9. 変更履歴
 
-| 日付       | バージョン | 変更内容         |
-| ---------- | ---------- | ---------------- |
-| 2026-03-02 | 1.0.1      | Node.js 24.x対応 |
-| 2026-03-02 | 1.0.0      | 初版作成         |
+| 日付       | バージョン | 変更内容                                                          |
+| ---------- | ---------- | ----------------------------------------------------------------- |
+| 2026-03-07 | 1.1.0      | performer・conductor フィールド削除、DELETE レスポンス 204 に修正 |
+| 2026-03-02 | 1.0.1      | Node.js 24.x対応                                                  |
+| 2026-03-02 | 1.0.0      | 初版作成                                                          |
