@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.3...classical-music-lake-v0.1.4) (2026-03-07)
+
+
+### Features
+
+* パフォーマンス・監視・データ管理を整備（チェックリスト8〜11） ([76e3f69](https://github.com/konabe/classical-music-lake/commit/76e3f699f79fbe945c0fe87aab3ad4a8f12f5d76))
+
 ## [0.1.3](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.2...classical-music-lake-v0.1.3) (2026-03-07)
 
 
