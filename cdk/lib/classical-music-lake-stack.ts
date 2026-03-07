@@ -88,11 +88,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const api = new apigateway.RestApi(this, "Api", {
       restApiName: `classical-music-lake-${stageName}`,
       deployOptions: { stageName },
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: ["Content-Type"],
-      },
     });
 
     const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
@@ -142,6 +137,50 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       ],
     });
 
+    // CloudFront URL を CORS オリジンとして Lambda 環境変数に設定
+    const corsAllowOrigin = `https://${distribution.distributionDomainName}`;
+    [
+      listeningLogsList,
+      listeningLogsGet,
+      listeningLogsCreate,
+      listeningLogsUpdate,
+      listeningLogsDelete,
+    ].forEach((fn) => {
+      fn.addEnvironment("CORS_ALLOW_ORIGIN", corsAllowOrigin);
+    });
+
+    // API Gateway の CORS オリジンも CloudFront URL に限定
+    listeningLogsResource.addCorsPreflight({
+      allowOrigins: [corsAllowOrigin],
+      allowMethods: ["GET", "POST", "OPTIONS"],
+      allowHeaders: ["Content-Type"],
+    });
+
+    listeningLogResource.addCorsPreflight({
+      allowOrigins: [corsAllowOrigin],
+      allowMethods: ["GET", "PUT", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type"],
+    });
+
+    // API Gateway 自身が返す 4XX/5XX にも CORS ヘッダを付与
+    api.addGatewayResponse("Default4xxCors", {
+      type: apigateway.ResponseType.DEFAULT_4XX,
+      responseHeaders: {
+        "Access-Control-Allow-Origin": `'${corsAllowOrigin}'`,
+        "Access-Control-Allow-Headers": "'Content-Type'",
+        "Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'",
+      },
+    });
+
+    api.addGatewayResponse("Default5xxCors", {
+      type: apigateway.ResponseType.DEFAULT_5XX,
+      responseHeaders: {
+        "Access-Control-Allow-Origin": `'${corsAllowOrigin}'`,
+        "Access-Control-Allow-Headers": "'Content-Type'",
+        "Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'",
+      },
+    });
+
     new s3deploy.BucketDeployment(this, "SpaDeployment", {
       sources: [s3deploy.Source.asset(path.join(__dirname, "../../.output/public"))],
       destinationBucket: spaBucket,
@@ -158,7 +197,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, "SpaUrl", {
-      value: `https://${distribution.distributionDomainName}`,
+      value: corsAllowOrigin,
       description: "CloudFront URL (フロントエンド)",
     });
   }
