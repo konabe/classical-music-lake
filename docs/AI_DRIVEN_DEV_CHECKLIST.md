@@ -194,8 +194,8 @@ AI（Claude等）と協力して効果的に開発を進めるために必要な
 ### 7.3 セキュリティ監査
 
 - [x] 依存関係の脆弱性スキャン（GitHub Actions の security.yml で frontend/backend/CDK を自動スキャン済み。ローカルでの手動 `npm audit` 実行は任意）
-- [ ] セキュリティベストプラクティスの適用
-- [ ] HTTPS強制
+- [x] セキュリティベストプラクティスの適用（CloudFront に ResponseHeadersPolicy を追加: HSTS・X-Frame-Options・X-Content-Type-Options・XSS-Protection・Referrer-Policy）
+- [x] HTTPS強制（CloudFront で `REDIRECT_TO_HTTPS` 設定済み。API Gateway は標準で HTTPS のみ）
 
 ---
 
