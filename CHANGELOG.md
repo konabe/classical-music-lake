@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.4...classical-music-lake-v0.1.5) (2026-03-07)
+
+
+### Bug Fixes
+
+* cdk bootstrap を ci に追加し deprecated api を修正 ([5828767](https://github.com/konabe/classical-music-lake/commit/582876713945247c63d656584bc6bbcbc36fd65a))
+* cdk bootstrap を ci に追加しデプロイエラーを修正 ([81caa47](https://github.com/konabe/classical-music-lake/commit/81caa47278d1602996c2ecfee338595f5f202097))
+
 ## [0.1.4](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.3...classical-music-lake-v0.1.4) (2026-03-07)
 
 
