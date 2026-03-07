@@ -58,7 +58,6 @@ function makeEvent(options: {
 const testLog: ListeningLog = {
   id: "test-id-123",
   listenedAt: "2024-01-15T20:00:00.000Z",
-  composer: "ショパン",
   piece: "ピアノ協奏曲第1番",
   performer: "アルゲリッチ",
   rating: 5,
@@ -113,7 +112,6 @@ describe("DynamoDB 統合テスト", () => {
 
       const input = {
         listenedAt: "2024-01-20T18:00:00.000Z",
-        composer: "バッハ",
         piece: "ゴルトベルク変奏曲",
         performer: "グールド",
         rating: 5,
@@ -130,7 +128,6 @@ describe("DynamoDB 統合テスト", () => {
         TableName: expect.any(String),
         Item: expect.objectContaining({
           id: expect.stringMatching(/^[0-9a-f-]{36}$/),
-          composer: "バッハ",
           piece: "ゴルトベルク変奏曲",
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
@@ -180,7 +177,7 @@ describe("DynamoDB 統合テスト", () => {
       expect(putArg.Item).toMatchObject({
         id: "test-id-123",
         rating: 4,
-        composer: "ショパン", // 既存データが保持される
+        piece: "ピアノ協奏曲第1番", // 既存データが保持される
       });
     });
   });

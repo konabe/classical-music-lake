@@ -36,9 +36,7 @@ function ratingStars(rating: number): string {
             </NuxtLink>
           </div>
           <div class="log-meta">
-            <span>{{ log.composer }}</span>
             <span>{{ log.performer }}</span>
-            <span v-if="log.conductor">指揮: {{ log.conductor }}</span>
           </div>
           <div class="log-sub">
             <span class="rating">{{ ratingStars(log.rating) }}</span>

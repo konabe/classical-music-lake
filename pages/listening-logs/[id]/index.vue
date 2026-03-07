@@ -23,17 +23,11 @@ function ratingStars(rating: number): string {
           <span v-if="log.isFavorite" class="favorite">♥</span>
           {{ log.piece }}
         </h1>
-        <p class="composer">{{ log.composer }}</p>
       </header>
 
       <dl class="detail-list">
         <dt>演奏家・楽団</dt>
         <dd>{{ log.performer }}</dd>
-
-        <template v-if="log.conductor">
-          <dt>指揮者</dt>
-          <dd>{{ log.conductor }}</dd>
-        </template>
 
         <dt>鑑賞日時</dt>
         <dd>{{ log.listenedAt.replace("T", " ").slice(0, 16) }}</dd>
@@ -89,11 +83,6 @@ function ratingStars(rating: number): string {
 
 .favorite {
   color: #e05a5a;
-}
-
-.composer {
-  color: #666;
-  margin-top: 0.3rem;
 }
 
 .detail-list {
