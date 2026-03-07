@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Piece } from "../types";
 
@@ -70,7 +71,13 @@ describe("GET /pieces (list)", () => {
     const body: Piece[] = JSON.parse(result?.body ?? "[]");
 
     expect(dynamo.send).toHaveBeenCalledTimes(2);
+    const secondCall = vi.mocked(dynamo.send).mock.calls[1]?.[0] as ScanCommand;
+    expect(secondCall.input.ExclusiveStartKey).toEqual({ id: "1" });
     expect(body).toHaveLength(2);
+    const sortedIds = [...page1, ...page2]
+      .sort((a, b) => a.title.localeCompare(b.title, "ja"))
+      .map((p) => p.id);
+    expect(body.map((p) => p.id)).toEqual(sortedIds);
   });
 
   it("DynamoDB エラー時に 500 を返す", async () => {
