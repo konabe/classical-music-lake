@@ -1,6 +1,7 @@
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { randomUUID } from "crypto";
 import createError, { isHttpError } from "http-errors";
+import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler } from "../utils/middleware";
 import type { CreateListeningLogInput, ListeningLog } from "../types";
@@ -32,5 +33,5 @@ export const handler = createHandler(async (event) => {
     updatedAt: now,
   };
   await dynamo.send(new PutCommand({ TableName: TABLE_LISTENING_LOGS, Item: item }));
-  return { statusCode: 201, body: item };
+  return { statusCode: StatusCodes.CREATED, body: item };
 });

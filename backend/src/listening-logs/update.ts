@@ -1,5 +1,6 @@
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
+import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler } from "../utils/middleware";
 import type { ListeningLog, UpdateListeningLogInput } from "../types";
@@ -35,5 +36,5 @@ export const handler = createHandler(async (event) => {
     updatedAt: new Date().toISOString(),
   };
   await dynamo.send(new PutCommand({ TableName: TABLE_LISTENING_LOGS, Item: updated }));
-  return { statusCode: 200, body: updated };
+  return { statusCode: StatusCodes.OK, body: updated };
 });

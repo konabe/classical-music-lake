@@ -1,5 +1,6 @@
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
+import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler } from "../utils/middleware";
 import type { ListeningLog } from "../types";
@@ -12,5 +13,5 @@ export const handler = createHandler(async (event) => {
     new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id } })
   );
   if (!result.Item) throw new createError.NotFound("Listening log not found");
-  return { statusCode: 200, body: result.Item as ListeningLog };
+  return { statusCode: StatusCodes.OK, body: result.Item as ListeningLog };
 });
