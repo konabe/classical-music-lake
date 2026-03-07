@@ -109,6 +109,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const listeningLogsDelete = fn("ListeningLogsDelete", "listening-logs/delete.ts");
 
     const listPieces = fn("ListPieces", "pieces/list.ts");
+    const createPiece = fn("CreatePiece", "pieces/create.ts");
 
     // -------------------------
     // DynamoDB 権限付与
@@ -119,6 +120,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogsTable.grantReadWriteData(listeningLogsUpdate);
     listeningLogsTable.grantWriteData(listeningLogsDelete);
     piecesTable.grantReadData(listPieces);
+    piecesTable.grantWriteData(createPiece);
 
     // -------------------------
     // API Gateway
@@ -185,6 +187,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // /pieces
     const piecesResource = api.root.addResource("pieces");
     piecesResource.addMethod("GET", integ(listPieces));
+    piecesResource.addMethod("POST", integ(createPiece));
 
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)
@@ -267,6 +270,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       listeningLogsUpdate,
       listeningLogsDelete,
       listPieces,
+      createPiece,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", corsAllowOrigin);
     });
@@ -286,7 +290,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     piecesResource.addCorsPreflight({
       allowOrigins: [corsAllowOrigin],
-      allowMethods: ["GET", "OPTIONS"],
+      allowMethods: ["GET", "POST", "OPTIONS"],
       allowHeaders: ["Content-Type"],
     });
 
@@ -326,6 +330,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       listeningLogsUpdate,
       listeningLogsDelete,
       listPieces,
+      createPiece,
     ];
 
     // Lambda エラー監視：全関数のエラー合計が 1 以上でアラーム
