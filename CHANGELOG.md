@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.9](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.8...classical-music-lake-v0.1.9) (2026-03-07)
+
+
+### Features
+
+* 作曲家・指揮者フィールドを削除 ([302ccb5](https://github.com/konabe/classical-music-lake/commit/302ccb5696c4e0c3c69d46cd9439eb302c98b6b8))
+
+
+### Bug Fixes
+
+* performer を削除し composer を復元 ([a28b59b](https://github.com/konabe/classical-music-lake/commit/a28b59bd25b20bcb4169d263d3fffdcf5f5b1e4e))
+
 ## [0.1.8](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.7...classical-music-lake-v0.1.8) (2026-03-07)
 
 
