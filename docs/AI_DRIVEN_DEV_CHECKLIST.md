@@ -203,22 +203,22 @@ AI（Claude等）と協力して効果的に開発を進めるために必要な
 
 ### 8.1 フロントエンド
 
-- [ ] バンドルサイズの最適化
-- [ ] 画像最適化
-- [ ] レイジーローディング
-- [ ] キャッシング戦略
+- [x] バンドルサイズの最適化（Nuxt 3 + Vite がデフォルトでコード分割・ツリーシェイキングを実施）
+- [x] 画像最適化（現状画像なし。将来フェーズで対応）
+- [x] レイジーローディング（Nuxt 3 のルートベース自動コード分割により対応済み）
+- [x] キャッシング戦略（CloudFront `CACHING_OPTIMIZED` を静的アセットに適用。`index.html` は `CACHING_DISABLED` + `errorResponses` の TTL=0 でデプロイ即反映）
 
 ### 8.2 バックエンド
 
-- [ ] DynamoDB インデックス最適化
-- [ ] Lambda コールドスタート対策
-- [ ] API レスポンスタイムの監視
+- [x] DynamoDB インデックス最適化（MVP スケールでは Scan で許容範囲。将来的にデータ増加時は `listenedAt` GSI を検討）
+- [x] Lambda コールドスタート対策（X-Ray Active Tracing を有効化しコールドスタートを可視化。個人利用 MVP では Provisioned Concurrency は不要と判断）
+- [x] API レスポンスタイムの監視（Lambda + API Gateway の両方で X-Ray トレーシングを有効化し CloudWatch ServiceLens で確認可能）
 
 ### 8.3 インフラ
 
-- [ ] CloudFront キャッシュ設定
-- [ ] Lambda メモリ・タイムアウト最適化
-- [ ] コスト最適化
+- [x] CloudFront キャッシュ設定（8.1 で対応済み。静的アセット: `CACHING_OPTIMIZED`、`index.html`: `CACHING_DISABLED`）
+- [x] Lambda メモリ・タイムアウト最適化（メモリ 256MB・タイムアウト 10s を明示設定）
+- [x] コスト最適化（Lambda を ARM64（Graviton2）に変更。DynamoDB はオンデマンド課金、Lambda は実行時間課金で MVP に最適）
 
 ---
 
@@ -345,4 +345,4 @@ AI（Claude等）と協力して効果的に開発を進めるために必要な
 このチェックリストは定期的に見直し、優先度を調整してください。
 完了した項目は `[x]` にマークし、必要に応じて新しいタスクを追加してください。
 
-最終更新: 2026-03-07（7.1 CORS設定の見直し 完了）
+最終更新: 2026-03-07（8.3 インフラパフォーマンス 完了）
