@@ -1,5 +1,68 @@
 # Changelog
 
+## [0.1.8](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.7...classical-music-lake-v0.1.8) (2026-03-07)
+
+
+### Features
+
+* response ヘルパーの CORS・JSON シリアライズを middy に移譲 ([b6c6cd3](https://github.com/konabe/classical-music-lake/commit/b6c6cd3cc6f7f0da7d152e1464fd6852052677b0))
+* response ヘルパーの cors・json を middy に移譲（issue [#8](https://github.com/konabe/classical-music-lake/issues/8)） ([e1b1331](https://github.com/konabe/classical-music-lake/commit/e1b1331174c2742f5101d78de0e38aaa5b7b6fe0))
+
+## [0.1.7](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.6...classical-music-lake-v0.1.7) (2026-03-07)
+
+
+### Bug Fixes
+
+* api gateway アクセスログ用 cloudwatch ロールをアカウントに設定 ([f2f0da9](https://github.com/konabe/classical-music-lake/commit/f2f0da9ef0c3eaa2169717e679352314417662f3))
+* api gateway アクセスログ用 cloudwatch ロールを設定 ([a5aa1be](https://github.com/konabe/classical-music-lake/commit/a5aa1be0cb139ef4f2383089eb173da00c5b1776))
+* ロールバック後の孤立ロググループによるデプロイ失敗を修正 ([84a7e07](https://github.com/konabe/classical-music-lake/commit/84a7e07d84ce559f8b2ee6fed7e69cb0975bffa3))
+* 孤立ロググループによるデプロイ失敗を修正 ([5b2161e](https://github.com/konabe/classical-music-lake/commit/5b2161ee57ba1adbf27c6b7231a74925ff9a5467))
+
+## [0.1.6](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.5...classical-music-lake-v0.1.6) (2026-03-07)
+
+
+### Bug Fixes
+
+* bootstrap 前に ecr リポジトリを再作成しデプロイを修正 ([c574a92](https://github.com/konabe/classical-music-lake/commit/c574a92c45b4a2eedb132a0670a6c8b898231e71))
+
+## [0.1.5](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.4...classical-music-lake-v0.1.5) (2026-03-07)
+
+
+### Bug Fixes
+
+* cdk bootstrap を ci に追加し deprecated api を修正 ([5828767](https://github.com/konabe/classical-music-lake/commit/582876713945247c63d656584bc6bbcbc36fd65a))
+* cdk bootstrap を ci に追加しデプロイエラーを修正 ([81caa47](https://github.com/konabe/classical-music-lake/commit/81caa47278d1602996c2ecfee338595f5f202097))
+
+## [0.1.4](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.3...classical-music-lake-v0.1.4) (2026-03-07)
+
+
+### Features
+
+* パフォーマンス・監視・データ管理を整備（チェックリスト8〜11） ([76e3f69](https://github.com/konabe/classical-music-lake/commit/76e3f699f79fbe945c0fe87aab3ad4a8f12f5d76))
+
+## [0.1.3](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.2...classical-music-lake-v0.1.3) (2026-03-07)
+
+
+### Features
+
+* インフラパフォーマンス・コスト最適化（チェックリスト8.3） ([a1eba03](https://github.com/konabe/classical-music-lake/commit/a1eba03d0c1510a21b785d1cb1101290cccac355))
+* バックエンドパフォーマンス改善（チェックリスト8.2） ([f5b8a7c](https://github.com/konabe/classical-music-lake/commit/f5b8a7c7b04fbbd72fa07222b2ad4c71c2a810fa))
+* フロントエンドパフォーマンス改善（チェックリスト8.1） ([e7522f6](https://github.com/konabe/classical-music-lake/commit/e7522f64cbd9ca68b6c66426ab787226fbce254b))
+
+## [0.1.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.1...classical-music-lake-v0.1.2) (2026-03-07)
+
+
+### Features
+
+* セキュリティヘッダを cloudfront に追加（チェックリスト7.3） ([3f2b436](https://github.com/konabe/classical-music-lake/commit/3f2b43622c345b2c7007f43b1d748848e7c30594))
+* セキュリティ強化（チェックリスト7.1〜7.2） ([5f998ce](https://github.com/konabe/classical-music-lake/commit/5f998ce2766f8c5c0cbc7c35c4e9f42afc7dfee8))
+* セキュリティ監査対応（チェックリスト7.3） ([2e1808a](https://github.com/konabe/classical-music-lake/commit/2e1808a823f1f4f283b0adfa9c05c62160a5d036))
+
+
+### Bug Fixes
+
+* coderabbitレビューコメントへの対応（PR [#28](https://github.com/konabe/classical-music-lake/issues/28)） ([3cca3ae](https://github.com/konabe/classical-music-lake/commit/3cca3ae34602bb556d1a32a684b1d1ff9f2d8f22))
+
 ## [0.1.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.0...classical-music-lake-v0.1.1) (2026-03-07)
 
 ### Features
