@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.11](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.10...classical-music-lake-v0.1.11) (2026-03-07)
+
+
+### Features
+
+* ワーク1 楽曲一覧 ([1d0198f](https://github.com/konabe/classical-music-lake/commit/1d0198fcd6d6a8b048ccacff07b3c4a588c29844))
+
+
+### Bug Fixes
+
+* coderabbitレビューコメントへの対応（PR [#47](https://github.com/konabe/classical-music-lake/issues/47) 第2弾） ([3383b01](https://github.com/konabe/classical-music-lake/commit/3383b01fb00cc954c12abd788873d8ad19979fa6))
+* coderabbitレビューコメントへの対応（PR [#47](https://github.com/konabe/classical-music-lake/issues/47)） ([6f5f681](https://github.com/konabe/classical-music-lake/commit/6f5f681e73d6fb897aedecdc161e5574ddb6ca27))
+
 ## [0.1.10](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.9...classical-music-lake-v0.1.10) (2026-03-07)
 
 
