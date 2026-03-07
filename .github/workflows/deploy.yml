@@ -101,6 +101,14 @@ jobs:
             || aws ecr create-repository --repository-name "$REPO" 2>/dev/null \
             || true
 
+      # ----------------------------------------
+      # 孤立リソースのクリーンアップ
+      # ロールバック時に残ったロググループを削除（存在しない場合は無視）
+      # ----------------------------------------
+      - name: Cleanup orphaned log groups
+        run: |
+          aws logs delete-log-group --log-group-name "/aws/apigateway/classical-music-lake-${STAGE_NAME}" 2>/dev/null || true
+
       - name: CDK Bootstrap
         run: npx cdk bootstrap
         working-directory: cdk

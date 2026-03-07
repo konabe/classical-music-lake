@@ -120,8 +120,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
 
     // API Gateway アクセスログ用ロググループ（保持期間 3 ヶ月）
+    // logGroupName を指定しない（CDK 自動生成名）ことで既存リソースとの名前衝突を回避
     const apiAccessLogGroup = new logs.LogGroup(this, "ApiAccessLogs", {
-      logGroupName: `/aws/apigateway/classical-music-lake-${stageName}`,
       retention: logs.RetentionDays.THREE_MONTHS,
       removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
     });
