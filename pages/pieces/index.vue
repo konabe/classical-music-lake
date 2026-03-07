@@ -2,7 +2,7 @@
 import type { Piece } from "~/types";
 
 const apiBase = useApiBase();
-const { data: pieces } = await useFetch<Piece[]>(`${apiBase}/pieces`);
+const { data: pieces, error } = await useFetch<Piece[]>(`${apiBase}/pieces`);
 </script>
 
 <template>
@@ -12,7 +12,10 @@ const { data: pieces } = await useFetch<Piece[]>(`${apiBase}/pieces`);
       <NuxtLink to="/pieces/new" class="btn-primary">+ 新しい楽曲</NuxtLink>
     </div>
 
-    <div v-if="!pieces?.length" class="empty-state">
+    <div v-if="error" class="empty-state">
+      <p>楽曲一覧の取得に失敗しました。時間をおいて再度お試しください。</p>
+    </div>
+    <div v-else-if="!pieces?.length" class="empty-state">
       <p>楽曲が登録されていません。最初の楽曲を追加しましょう。</p>
     </div>
 

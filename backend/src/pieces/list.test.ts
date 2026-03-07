@@ -59,6 +59,20 @@ describe("GET /pieces (list)", () => {
     expect(body.map((p) => p.id)).toEqual(sorted.map((p) => p.id));
   });
 
+  it("LastEvaluatedKey がある場合はページングして全件取得する", async () => {
+    const page1 = [makePiece("1", "交響曲第9番")];
+    const page2 = [makePiece("2", "アイネ・クライネ・ナハトムジーク")];
+    vi.mocked(dynamo.send)
+      .mockResolvedValueOnce({ Items: page1, LastEvaluatedKey: { id: "1" } } as never)
+      .mockResolvedValueOnce({ Items: page2 } as never);
+
+    const result = await handler(mockEvent, mockContext, mockCallback);
+    const body: Piece[] = JSON.parse(result?.body ?? "[]");
+
+    expect(dynamo.send).toHaveBeenCalledTimes(2);
+    expect(body).toHaveLength(2);
+  });
+
   it("DynamoDB エラー時に 500 を返す", async () => {
     vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(mockEvent, mockContext, mockCallback);
