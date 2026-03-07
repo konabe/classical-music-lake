@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.3](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.2...classical-music-lake-v0.1.3) (2026-03-07)
+
+
+### Features
+
+* インフラパフォーマンス・コスト最適化（チェックリスト8.3） ([a1eba03](https://github.com/konabe/classical-music-lake/commit/a1eba03d0c1510a21b785d1cb1101290cccac355))
+* バックエンドパフォーマンス改善（チェックリスト8.2） ([f5b8a7c](https://github.com/konabe/classical-music-lake/commit/f5b8a7c7b04fbbd72fa07222b2ad4c71c2a810fa))
+* フロントエンドパフォーマンス改善（チェックリスト8.1） ([e7522f6](https://github.com/konabe/classical-music-lake/commit/e7522f64cbd9ca68b6c66426ab787226fbce254b))
+
 ## [0.1.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.1...classical-music-lake-v0.1.2) (2026-03-07)
 
 
