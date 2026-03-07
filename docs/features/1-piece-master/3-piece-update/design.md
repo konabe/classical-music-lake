@@ -77,4 +77,4 @@ pieceById.addMethod("PUT", new apigateway.LambdaIntegration(updatePiece));
 
 ## レビュー結果
 
-<!-- レビュー後にここに記載 -->
+OK

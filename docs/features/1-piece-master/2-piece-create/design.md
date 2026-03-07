@@ -57,4 +57,4 @@ pieces.addMethod("POST", new apigateway.LambdaIntegration(createPiece));
 
 ## レビュー結果
 
-<!-- レビュー後にここに記載 -->
+OK

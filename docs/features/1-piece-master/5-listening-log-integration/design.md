@@ -29,4 +29,4 @@ export const usePieces = () => {
 
 ## レビュー結果
 
-<!-- レビュー後にここに記載 -->
+OK

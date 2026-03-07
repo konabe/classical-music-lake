@@ -35,4 +35,4 @@ pieceById.addMethod("DELETE", new apigateway.LambdaIntegration(deletePiece));
 
 ## レビュー結果
 
-<!-- レビュー後にここに記載 -->
+OK
