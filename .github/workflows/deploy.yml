@@ -90,7 +90,17 @@ jobs:
 
       # ----------------------------------------
       # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
+      # CDKToolkit が参照する ECR リポジトリが削除されていると bootstrap が
+      # 失敗するため、事前に存在確認・作成する
       # ----------------------------------------
+      - name: Ensure ECR repository for CDK bootstrap
+        run: |
+          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+          REPO="cdk-hnb659fds-container-assets-${ACCOUNT}-ap-northeast-1"
+          aws ecr describe-repositories --repository-names "$REPO" 2>/dev/null \
+            || aws ecr create-repository --repository-name "$REPO" 2>/dev/null \
+            || true
+
       - name: CDK Bootstrap
         run: npx cdk bootstrap
         working-directory: cdk
