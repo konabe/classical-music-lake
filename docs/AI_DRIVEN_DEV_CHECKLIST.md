@@ -171,9 +171,9 @@ AI（Claude等）と協力して効果的に開発を進めるために必要な
 
 ### 6.3 コードレビュー
 
-- [ ] PRテンプレート
-- [ ] レビューガイドライン
-- [ ] コードオーナー設定（CODEOWNERS）
+- [x] PRテンプレート（`.github/PULL_REQUEST_TEMPLATE.md`）
+- [x] レビューガイドライン（`docs/REVIEW_GUIDELINES.md`）
+- [x] コードオーナー設定（`.github/CODEOWNERS`）
 
 ---
 
