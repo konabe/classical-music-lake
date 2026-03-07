@@ -5,3 +5,5 @@ node_modules/
 backend/node_modules/
 cdk/node_modules/
 package-lock.json
+# release-please が自動生成するため除外
+CHANGELOG.md
