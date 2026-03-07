@@ -7,21 +7,22 @@ import type { CreateListeningLogInput, ListeningLog } from "../types";
 import { isValidRating } from "../types";
 
 export const handler = createHandler(async (event) => {
-  if (!event.body) throw createError(400, "Request body is required");
+  if (!event.body) throw new createError.BadRequest("Request body is required");
 
   let input: CreateListeningLogInput;
   try {
     const parsed: unknown = JSON.parse(event.body);
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw createError(400, "Request body must be a JSON object");
+      throw new createError.BadRequest("Request body must be a JSON object");
     }
     input = parsed as CreateListeningLogInput;
   } catch (err) {
     if ((err as { status?: number }).status === 400) throw err;
-    throw createError(400, "Invalid JSON");
+    throw new createError.BadRequest("Invalid JSON");
   }
 
-  if (!isValidRating(input.rating)) throw createError(400, "rating must be between 1 and 5");
+  if (!isValidRating(input.rating))
+    throw new createError.BadRequest("rating must be between 1 and 5");
 
   const now = new Date().toISOString();
   const item: ListeningLog = {

@@ -7,24 +7,24 @@ import { isValidRating } from "../types";
 
 export const handler = createHandler(async (event) => {
   const id = event.pathParameters?.id;
-  if (!id) throw createError(400, "id is required");
-  if (!event.body) throw createError(400, "Request body is required");
+  if (!id) throw new createError.BadRequest("id is required");
+  if (!event.body) throw new createError.BadRequest("Request body is required");
 
   let input: UpdateListeningLogInput;
   try {
     input = JSON.parse(event.body);
   } catch {
-    throw createError(400, "Invalid JSON");
+    throw new createError.BadRequest("Invalid JSON");
   }
 
   if (input.rating !== undefined && !isValidRating(input.rating)) {
-    throw createError(400, "rating must be between 1 and 5");
+    throw new createError.BadRequest("rating must be between 1 and 5");
   }
 
   const existing = await dynamo.send(
     new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id } })
   );
-  if (!existing.Item) throw createError(404, "Listening log not found");
+  if (!existing.Item) throw new createError.NotFound("Listening log not found");
 
   const current = existing.Item as ListeningLog;
   const updated: ListeningLog = {
