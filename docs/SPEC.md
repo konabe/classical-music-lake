@@ -294,7 +294,7 @@ DELETE /listening-logs/{id}
 
 - **名前**: `classical-music-lake`
 - **ステージ**: `prod`
-- **CORS**: 有効（全オリジン許可）
+- **CORS**: CloudFront URL のみ許可（プリフライト・GatewayResponse の両方で設定）
 
 #### S3
 
@@ -316,7 +316,17 @@ DELETE /listening-logs/{id}
 
 #### バックエンド（Lambda）
 
-- `DYNAMO_TABLE_LISTENING_LOGS`: 視聴ログテーブル名
+- `DYNAMO_TABLE_LISTENING_LOGS`: 視聴ログテーブル名（CDK が自動設定）
+- `CORS_ALLOW_ORIGIN`: 許可する CORS オリジン（CDK が CloudFront URL を自動設定）
+
+#### CI/CD（GitHub Secrets）
+
+| シークレット名          | 用途                                |
+| ----------------------- | ----------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | CDK デプロイ用 IAM アクセスキー     |
+| `AWS_SECRET_ACCESS_KEY` | CDK デプロイ用 IAM シークレットキー |
+
+> **シークレット管理方針**: AWS クレデンシャルは GitHub Secrets で管理。Lambda 環境変数に秘密情報は含まれない（テーブル名・CORS オリジンのみ）。将来フェーズで認証機能を追加する場合は AWS Secrets Manager の導入を検討すること。
 
 ---
 
