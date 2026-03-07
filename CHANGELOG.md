@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.9...classical-music-lake-v0.1.10) (2026-03-07)
+
+
+### Bug Fixes
+
+* CI でバックエンド依存関係をインストールするステップを追加 ([634e3f0](https://github.com/konabe/classical-music-lake/commit/634e3f0a28f801cc5a88374a280026b9520a0ddc))
+
 ## [0.1.9](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.8...classical-music-lake-v0.1.9) (2026-03-07)
 
 
