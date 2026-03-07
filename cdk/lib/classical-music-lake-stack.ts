@@ -147,18 +147,30 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         responseHeadersPolicy: securityHeadersPolicy,
       },
+      // index.html はキャッシュしない（SPA デプロイ後に即反映させるため）
+      additionalBehaviors: {
+        "/index.html": {
+          origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          responseHeadersPolicy: securityHeadersPolicy,
+        },
+      },
       defaultRootObject: "index.html",
       errorResponses: [
         // SPA のクライアントサイドルーティング対応
+        // ttl を 0 にして index.html の古いキャッシュが返らないようにする
         {
           httpStatus: 403,
           responseHttpStatus: 200,
           responsePagePath: "/index.html",
+          ttl: cdk.Duration.seconds(0),
         },
         {
           httpStatus: 404,
           responseHttpStatus: 200,
           responsePagePath: "/index.html",
+          ttl: cdk.Duration.seconds(0),
         },
       ],
     });
