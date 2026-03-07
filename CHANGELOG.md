@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.7](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.6...classical-music-lake-v0.1.7) (2026-03-07)
+
+
+### Bug Fixes
+
+* api gateway アクセスログ用 cloudwatch ロールをアカウントに設定 ([f2f0da9](https://github.com/konabe/classical-music-lake/commit/f2f0da9ef0c3eaa2169717e679352314417662f3))
+* api gateway アクセスログ用 cloudwatch ロールを設定 ([a5aa1be](https://github.com/konabe/classical-music-lake/commit/a5aa1be0cb139ef4f2383089eb173da00c5b1776))
+* ロールバック後の孤立ロググループによるデプロイ失敗を修正 ([84a7e07](https://github.com/konabe/classical-music-lake/commit/84a7e07d84ce559f8b2ee6fed7e69cb0975bffa3))
+* 孤立ロググループによるデプロイ失敗を修正 ([5b2161e](https://github.com/konabe/classical-music-lake/commit/5b2161ee57ba1adbf27c6b7231a74925ff9a5467))
+
 ## [0.1.6](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.5...classical-music-lake-v0.1.6) (2026-03-07)
 
 
