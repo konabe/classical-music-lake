@@ -1,6 +1,6 @@
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { randomUUID } from "crypto";
-import createError from "http-errors";
+import createError, { isHttpError } from "http-errors";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler } from "../utils/middleware";
 import type { CreateListeningLogInput, ListeningLog } from "../types";
@@ -17,7 +17,7 @@ export const handler = createHandler(async (event) => {
     }
     input = parsed as CreateListeningLogInput;
   } catch (err) {
-    if ((err as { status?: number }).status === 400) throw err;
+    if (isHttpError(err)) throw err;
     throw new createError.BadRequest("Invalid JSON");
   }
 
