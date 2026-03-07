@@ -39,7 +39,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       // prod は RETAIN、staging は DESTROY（スタック削除時にテーブルも削除）
       removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
       // ポイントインタイムリカバリ（PITR）有効化（35日間のバックアップ自動保持）
-      pointInTimeRecovery: true,
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
     // -------------------------
@@ -51,7 +51,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       DYNAMO_TABLE_LISTENING_LOGS: listeningLogsTable.tableName,
     };
 
-    const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry"> = {
+    const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry" | "logGroup"> = {
       runtime: lambda.Runtime.NODEJS_24_X,
       // ARM64（Graviton2）: x86_64 比で約 20% 安価かつ高速
       architecture: lambda.Architecture.ARM_64,
@@ -62,8 +62,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       environment: commonEnv,
       // X-Ray トレーシング有効化（コールドスタート・レスポンスタイムの可視化）
       tracing: lambda.Tracing.ACTIVE,
-      // CloudWatch Logs の保持期間を 3 ヶ月に設定（デフォルトは無期限）
-      logRetention: logs.RetentionDays.THREE_MONTHS,
       bundling: {
         minify: true,
         sourceMap: false,
@@ -71,12 +69,19 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       },
     };
 
-    const fn = (id: string, entry: string): lambdaNodejs.NodejsFunction =>
-      new lambdaNodejs.NodejsFunction(this, id, {
+    const fn = (id: string, entry: string): lambdaNodejs.NodejsFunction => {
+      // CloudWatch Logs 保持期間を 3 ヶ月に設定（カスタムリソース不要の explicit LogGroup）
+      const logGroup = new logs.LogGroup(this, `${id}LogGroup`, {
+        retention: logs.RetentionDays.THREE_MONTHS,
+        removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      });
+      return new lambdaNodejs.NodejsFunction(this, id, {
         ...commonFnProps,
         entry: path.join(backendSrcDir, entry),
         handler: "handler",
+        logGroup,
       });
+    };
 
     // -------------------------
     // Lambda 関数
