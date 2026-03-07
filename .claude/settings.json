@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run lint:fix)",
+      "Bash(npm run format:check)",
+      "Bash(npm run format)",
+      "Bash(npm run prepare)",
+      "Bash(npm test)",
+      "Bash(npm run test:e2e)",
+      "Bash(npx lint-staged --version)",
+      "Bash(git add:*)",
+      "Bash(npm run generate:*)",
+      "Bash(npx tsc:*)",
+      "Bash(gh pr view:*)",
+      "WebFetch(domain:docs.coderabbit.ai)",
+      "Bash(gh api:*)"
+    ],
+    "ask": [
+      "Bash(npm install)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}
