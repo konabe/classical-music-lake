@@ -31,8 +31,8 @@ function makeEvent(body: string | null): APIGatewayProxyEvent {
 
 const validInput = {
   listenedAt: "2024-01-15T20:00:00.000Z",
+  composer: "ベートーヴェン",
   piece: "交響曲第9番",
-  performer: "ベルリン・フィル",
   rating: 5,
   isFavorite: true,
   memo: "素晴らしい演奏",
@@ -87,6 +87,7 @@ describe("POST /listening-logs (create)", () => {
 
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBeDefined();
+    expect(body.composer).toBe("ベートーヴェン");
     expect(body.piece).toBe("交響曲第9番");
     expect(body.createdAt).toBeDefined();
     expect(body.updatedAt).toBeDefined();

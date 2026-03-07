@@ -18,6 +18,7 @@ function makeLog(id: string, listenedAt: string): ListeningLog {
   return {
     id,
     listenedAt,
+    composer: "作曲家",
     piece: "曲名",
     performer: "演奏家",
     rating: 3,

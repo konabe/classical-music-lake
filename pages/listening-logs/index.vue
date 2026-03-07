@@ -36,7 +36,7 @@ function ratingStars(rating: number): string {
             </NuxtLink>
           </div>
           <div class="log-meta">
-            <span>{{ log.performer }}</span>
+            <span>{{ log.composer }}</span>
           </div>
           <div class="log-sub">
             <span class="rating">{{ ratingStars(log.rating) }}</span>

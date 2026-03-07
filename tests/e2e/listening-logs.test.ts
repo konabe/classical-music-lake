@@ -15,8 +15,8 @@ await setup({
 const testLog: ListeningLog = {
   id: "e2e-test-id-001",
   listenedAt: "2024-01-15T20:00:00.000Z",
+  composer: "ベートーヴェン",
   piece: "交響曲第9番「合唱」",
-  performer: "ベルリン・フィルハーモニー管弦楽団",
   rating: 5,
   isFavorite: true,
   memo: "圧倒的な第4楽章",
@@ -27,8 +27,8 @@ const testLog: ListeningLog = {
 const testLog2: ListeningLog = {
   id: "e2e-test-id-002",
   listenedAt: "2024-01-10T15:00:00.000Z",
+  composer: "モーツァルト",
   piece: "レクイエム",
-  performer: "ウィーン・フィルハーモニー管弦楽団",
   rating: 4,
   isFavorite: false,
   createdAt: "2024-01-10T16:00:00.000Z",
@@ -72,7 +72,9 @@ describe("鑑賞記録 E2E テスト", () => {
 
       const bodyText = await page.textContent("body");
       expect(bodyText).toContain("交響曲第9番「合唱」");
+      expect(bodyText).toContain("ベートーヴェン");
       expect(bodyText).toContain("レクイエム");
+      expect(bodyText).toContain("モーツァルト");
     });
 
     it("お気に入りバッジが表示される", async () => {
@@ -120,7 +122,7 @@ describe("鑑賞記録 E2E テスト", () => {
 
       const bodyText = await page.textContent("body");
       expect(bodyText).toContain("鑑賞記録を追加");
-      expect(bodyText).toContain("曲名");
+      expect(bodyText).toContain("作曲家");
     });
 
     it("送信ボタンのラベルが「記録する」", async () => {
@@ -150,7 +152,7 @@ describe("鑑賞記録 E2E テスト", () => {
 
       const bodyText = await page.textContent("body");
       expect(bodyText).toContain("交響曲第9番「合唱」");
-      expect(bodyText).toContain("ベルリン・フィルハーモニー管弦楽団");
+      expect(bodyText).toContain("ベートーヴェン");
     });
 
     it("メモが表示される", async () => {

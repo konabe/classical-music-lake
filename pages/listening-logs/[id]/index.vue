@@ -26,8 +26,8 @@ function ratingStars(rating: number): string {
       </header>
 
       <dl class="detail-list">
-        <dt>演奏家・楽団</dt>
-        <dd>{{ log.performer }}</dd>
+        <dt>作曲家</dt>
+        <dd>{{ log.composer }}</dd>
 
         <dt>鑑賞日時</dt>
         <dd>{{ log.listenedAt.replace("T", " ").slice(0, 16) }}</dd>
