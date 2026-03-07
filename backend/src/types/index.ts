@@ -28,3 +28,16 @@ export interface ListeningLog {
 
 export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
+
+// 楽曲マスタ
+// フロントエンドの types/index.ts と同期を保つこと
+export interface Piece {
+  id: string;
+  title: string;
+  composer: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreatePieceInput = Omit<Piece, "id" | "createdAt" | "updatedAt">;
+export type UpdatePieceInput = Partial<CreatePieceInput>;

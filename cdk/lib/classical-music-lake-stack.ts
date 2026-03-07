@@ -48,8 +48,23 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     const backendSrcDir = path.join(__dirname, "../../backend/src");
 
+    // -------------------------
+    // DynamoDB テーブル（楽曲マスタ）
+    // -------------------------
+    const piecesTableName = isProd
+      ? "classical-music-pieces"
+      : `classical-music-pieces-${stageName}`;
+
+    const piecesTable = new dynamodb.Table(this, "PiecesTable", {
+      tableName: piecesTableName,
+      partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
     const commonEnv: Record<string, string> = {
       DYNAMO_TABLE_LISTENING_LOGS: listeningLogsTable.tableName,
+      DYNAMO_TABLE_PIECES: piecesTable.tableName,
     };
 
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry" | "logGroup"> = {
@@ -93,6 +108,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const listeningLogsUpdate = fn("ListeningLogsUpdate", "listening-logs/update.ts");
     const listeningLogsDelete = fn("ListeningLogsDelete", "listening-logs/delete.ts");
 
+    const listPieces = fn("ListPieces", "pieces/list.ts");
+
     // -------------------------
     // DynamoDB 権限付与
     // -------------------------
@@ -101,6 +118,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogsTable.grantWriteData(listeningLogsCreate);
     listeningLogsTable.grantReadWriteData(listeningLogsUpdate);
     listeningLogsTable.grantWriteData(listeningLogsDelete);
+    piecesTable.grantReadData(listPieces);
 
     // -------------------------
     // API Gateway
@@ -163,6 +181,10 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogResource.addMethod("GET", integ(listeningLogsGet));
     listeningLogResource.addMethod("PUT", integ(listeningLogsUpdate));
     listeningLogResource.addMethod("DELETE", integ(listeningLogsDelete));
+
+    // /pieces
+    const piecesResource = api.root.addResource("pieces");
+    piecesResource.addMethod("GET", integ(listPieces));
 
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)
@@ -244,6 +266,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       listeningLogsCreate,
       listeningLogsUpdate,
       listeningLogsDelete,
+      listPieces,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", corsAllowOrigin);
     });
@@ -258,6 +281,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogResource.addCorsPreflight({
       allowOrigins: [corsAllowOrigin],
       allowMethods: ["GET", "PUT", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type"],
+    });
+
+    piecesResource.addCorsPreflight({
+      allowOrigins: [corsAllowOrigin],
+      allowMethods: ["GET", "OPTIONS"],
       allowHeaders: ["Content-Type"],
     });
 
@@ -296,6 +325,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       listeningLogsCreate,
       listeningLogsUpdate,
       listeningLogsDelete,
+      listPieces,
     ];
 
     // Lambda エラー監視：全関数のエラー合計が 1 以上でアラーム
