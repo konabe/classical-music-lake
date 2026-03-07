@@ -50,6 +50,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry"> = {
       runtime: lambda.Runtime.NODEJS_24_X,
       environment: commonEnv,
+      // X-Ray トレーシング有効化（コールドスタート・レスポンスタイムの可視化）
+      tracing: lambda.Tracing.ACTIVE,
       bundling: {
         minify: true,
         sourceMap: false,
@@ -87,7 +89,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     const api = new apigateway.RestApi(this, "Api", {
       restApiName: `classical-music-lake-${stageName}`,
-      deployOptions: { stageName },
+      deployOptions: {
+        stageName,
+        // X-Ray トレーシング有効化（API Gateway → Lambda のレスポンスタイム可視化）
+        tracingEnabled: true,
+      },
     });
 
     const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
