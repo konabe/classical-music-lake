@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as logs from "aws-cdk-lib/aws-logs";
@@ -104,6 +105,20 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // API Gateway
     // -------------------------
+    // API Gateway が CloudWatch Logs に書き込むためのアカウントレベル設定
+    // （アカウントに一度設定すれば全リージョン共通だが CDK では Stack ごとに管理）
+    const apiGatewayCloudWatchRole = new iam.Role(this, "ApiGatewayCloudWatchRole", {
+      assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          "service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+        ),
+      ],
+    });
+    const apiGatewayAccount = new apigateway.CfnAccount(this, "ApiGatewayAccount", {
+      cloudWatchRoleArn: apiGatewayCloudWatchRole.roleArn,
+    });
+
     // API Gateway アクセスログ用ロググループ（保持期間 3 ヶ月）
     const apiAccessLogGroup = new logs.LogGroup(this, "ApiAccessLogs", {
       logGroupName: `/aws/apigateway/classical-music-lake-${stageName}`,
@@ -132,6 +147,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
         }),
       },
     });
+
+    // CfnAccount の設定完了後に API Gateway ステージが作成されるよう順序を保証
+    api.node.addDependency(apiGatewayAccount);
 
     const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
 
