@@ -1,9 +1,9 @@
-import type { APIGatewayProxyHandler } from "aws-lambda";
 import { DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { noContent, badRequest, internalError } from "../utils/response";
+import { createHandler } from "../utils/middleware";
 
-export const handler: APIGatewayProxyHandler = async (event) => {
+export const handler = createHandler(async (event) => {
   const id = event.pathParameters?.id;
   if (!id) return badRequest("id is required");
 
@@ -13,4 +13,4 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   } catch (err) {
     return internalError(err);
   }
-};
+});

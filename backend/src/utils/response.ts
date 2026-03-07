@@ -1,61 +1,26 @@
-import type { APIGatewayProxyResult } from "aws-lambda";
 import type { ApiErrorResponse } from "../types";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": process.env.CORS_ALLOW_ORIGIN ?? "*",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-  "Content-Type": "application/json",
+// CORS ヘッダーと JSON シリアライズは @middy/http-cors・@middy/http-response-serializer が担当。
+// ここではステータスコードとボディ構造のみを定義する。
+
+export const ok = (body: unknown) => ({ statusCode: 200, body });
+
+export const created = (body: unknown) => ({ statusCode: 201, body });
+
+export const notFound = (message: string) => {
+  const body: ApiErrorResponse = { message };
+  return { statusCode: 404, body };
 };
 
-export function ok(body: unknown): APIGatewayProxyResult {
-  return {
-    statusCode: 200,
-    headers: CORS_HEADERS,
-    body: JSON.stringify(body),
-  };
-}
-
-export function created(body: unknown): APIGatewayProxyResult {
-  return {
-    statusCode: 201,
-    headers: CORS_HEADERS,
-    body: JSON.stringify(body),
-  };
-}
-
-export function notFound(message: string): APIGatewayProxyResult {
+export const badRequest = (message: string) => {
   const body: ApiErrorResponse = { message };
-  return {
-    statusCode: 404,
-    headers: CORS_HEADERS,
-    body: JSON.stringify(body),
-  };
-}
+  return { statusCode: 400, body };
+};
 
-export function badRequest(message: string): APIGatewayProxyResult {
-  const body: ApiErrorResponse = { message };
-  return {
-    statusCode: 400,
-    headers: CORS_HEADERS,
-    body: JSON.stringify(body),
-  };
-}
-
-export function internalError(error: unknown): APIGatewayProxyResult {
+export const internalError = (error: unknown) => {
   console.error(error);
   const body: ApiErrorResponse = { message: "Internal server error" };
-  return {
-    statusCode: 500,
-    headers: CORS_HEADERS,
-    body: JSON.stringify(body),
-  };
-}
+  return { statusCode: 500, body };
+};
 
-export function noContent(): APIGatewayProxyResult {
-  return {
-    statusCode: 204,
-    headers: CORS_HEADERS,
-    body: "",
-  };
-}
+export const noContent = () => ({ statusCode: 204, body: "" });

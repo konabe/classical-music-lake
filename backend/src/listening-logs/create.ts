@@ -1,12 +1,12 @@
-import type { APIGatewayProxyHandler } from "aws-lambda";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { randomUUID } from "crypto";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { created, badRequest, internalError } from "../utils/response";
+import { createHandler } from "../utils/middleware";
 import type { CreateListeningLogInput, ListeningLog } from "../types";
 import { isValidRating } from "../types";
 
-export const handler: APIGatewayProxyHandler = async (event) => {
+export const handler = createHandler(async (event) => {
   if (!event.body) return badRequest("Request body is required");
 
   let input: CreateListeningLogInput;
@@ -37,4 +37,4 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   } catch (err) {
     return internalError(err);
   }
-};
+});

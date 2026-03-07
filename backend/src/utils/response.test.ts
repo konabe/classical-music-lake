@@ -8,17 +8,9 @@ describe("response helpers", () => {
       expect(result.statusCode).toBe(200);
     });
 
-    it("ボディを JSON 文字列で返す", () => {
+    it("ボディをオブジェクトで返す（JSON シリアライズは middy が担当）", () => {
       const result = ok({ foo: "bar" });
-      expect(JSON.parse(result.body)).toEqual({ foo: "bar" });
-    });
-
-    it("CORS ヘッダーを含む", () => {
-      const result = ok({});
-      expect(result.headers).toMatchObject({
-        "Access-Control-Allow-Origin": expect.any(String),
-        "Content-Type": "application/json",
-      });
+      expect(result.body).toEqual({ foo: "bar" });
     });
   });
 
@@ -28,9 +20,9 @@ describe("response helpers", () => {
       expect(result.statusCode).toBe(201);
     });
 
-    it("ボディを JSON 文字列で返す", () => {
+    it("ボディをオブジェクトで返す（JSON シリアライズは middy が担当）", () => {
       const result = created({ id: "123" });
-      expect(JSON.parse(result.body)).toEqual({ id: "123" });
+      expect(result.body).toEqual({ id: "123" });
     });
   });
 
@@ -42,7 +34,7 @@ describe("response helpers", () => {
 
     it("メッセージをボディに含む", () => {
       const result = notFound("Not found");
-      expect(JSON.parse(result.body)).toEqual({ message: "Not found" });
+      expect(result.body).toEqual({ message: "Not found" });
     });
   });
 
@@ -54,7 +46,7 @@ describe("response helpers", () => {
 
     it("メッセージをボディに含む", () => {
       const result = badRequest("Bad request");
-      expect(JSON.parse(result.body)).toEqual({ message: "Bad request" });
+      expect(result.body).toEqual({ message: "Bad request" });
     });
   });
 
@@ -69,7 +61,7 @@ describe("response helpers", () => {
     it("汎用エラーメッセージを返す（詳細を漏洩しない）", () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const result = internalError(new Error("DB connection failed"));
-      expect(JSON.parse(result.body)).toEqual({ message: "Internal server error" });
+      expect(result.body).toEqual({ message: "Internal server error" });
       consoleSpy.mockRestore();
     });
 
