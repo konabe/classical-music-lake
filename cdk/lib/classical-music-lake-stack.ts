@@ -3,6 +3,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as logs from "aws-cdk-lib/aws-logs";
+import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
@@ -37,6 +38,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       // prod は RETAIN、staging は DESTROY（スタック削除時にテーブルも削除）
       removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      // ポイントインタイムリカバリ（PITR）有効化（35日間のバックアップ自動保持）
+      pointInTimeRecovery: true,
     });
 
     // -------------------------
@@ -259,6 +262,64 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       destinationBucket: spaBucket,
       distribution,
       distributionPaths: ["/*"],
+    });
+
+    // -------------------------
+    // CloudWatch アラーム
+    // -------------------------
+    const allFunctions = [
+      listeningLogsList,
+      listeningLogsGet,
+      listeningLogsCreate,
+      listeningLogsUpdate,
+      listeningLogsDelete,
+    ];
+
+    // Lambda エラー監視：全関数のエラー合計が 1 以上でアラーム
+    const lambdaErrorExpression = new cloudwatch.MathExpression({
+      expression: allFunctions.map((_, i) => `m${i + 1}`).join("+"),
+      usingMetrics: Object.fromEntries(
+        allFunctions.map((f, i) => [
+          `m${i + 1}`,
+          f.metricErrors({ period: cdk.Duration.minutes(5) }),
+        ])
+      ),
+      period: cdk.Duration.minutes(5),
+    });
+
+    new cloudwatch.Alarm(this, "LambdaErrorsAlarm", {
+      alarmName: `classical-music-lake-${stageName}-lambda-errors`,
+      alarmDescription: "いずれかの Lambda 関数でエラーが発生しています",
+      metric: lambdaErrorExpression,
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // API Gateway 5xx エラー監視
+    new cloudwatch.Alarm(this, "ApiGateway5xxAlarm", {
+      alarmName: `classical-music-lake-${stageName}-api-5xx`,
+      alarmDescription: "API Gateway で 5xx エラーが発生しています",
+      metric: api.metricServerError({ period: cdk.Duration.minutes(5) }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // DynamoDB スロットリング監視
+    new cloudwatch.Alarm(this, "DynamoThrottleAlarm", {
+      alarmName: `classical-music-lake-${stageName}-dynamo-throttle`,
+      alarmDescription: "DynamoDB でスロットリングが発生しています",
+      metric: listeningLogsTable.metric("ThrottledRequests", {
+        statistic: "Sum",
+        period: cdk.Duration.minutes(5),
+      }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
 
     // -------------------------
