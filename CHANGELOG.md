@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.5...classical-music-lake-v0.1.6) (2026-03-07)
+
+
+### Bug Fixes
+
+* bootstrap 前に ecr リポジトリを再作成しデプロイを修正 ([c574a92](https://github.com/konabe/classical-music-lake/commit/c574a92c45b4a2eedb132a0670a6c8b898231e71))
+
 ## [0.1.5](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.4...classical-music-lake-v0.1.5) (2026-03-07)
 
 
