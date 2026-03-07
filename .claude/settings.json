@@ -12,11 +12,13 @@
       "Bash(git add:*)",
       "Bash(npm run generate:*)",
       "Bash(npx tsc:*)",
+      "Bash(npx prettier:*)",
       "Bash(gh pr view:*)",
       "WebFetch(domain:docs.coderabbit.ai)",
       "Bash(gh api repos/konabe/classical-music-lake/pulls/*)",
       "Bash(gh api repos/konabe/classical-music-lake/issues/*)",
-      "Bash(gh issue comment*)"
+      "Bash(gh issue comment:*)",
+      "Bash(gh pr list:*"
     ],
     "ask": [
       "Bash(npm install)",
