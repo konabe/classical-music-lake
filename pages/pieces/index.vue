@@ -2,7 +2,19 @@
 import type { Piece } from "~/types";
 
 const apiBase = useApiBase();
-const { data: pieces, error } = await useFetch<Piece[]>(`${apiBase}/pieces`);
+const { data: pieces, error, refresh } = await useFetch<Piece[]>(`${apiBase}/pieces`);
+
+async function deletePiece(piece: Piece) {
+  if (!confirm(`「${piece.title}」を削除しますか？`)) return;
+  try {
+    await $fetch(`${apiBase}/pieces/${piece.id}`, { method: "DELETE" });
+    await refresh();
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "削除に失敗しました。もう一度お試しください。";
+    alert(message);
+  }
+}
 </script>
 
 <template>
@@ -27,7 +39,7 @@ const { data: pieces, error } = await useFetch<Piece[]>(`${apiBase}/pieces`);
         </div>
         <div class="piece-actions">
           <NuxtLink :to="`/pieces/${piece.id}/edit`" class="btn-secondary">編集</NuxtLink>
-          <button class="btn-danger" disabled>削除</button>
+          <button class="btn-danger" @click="deletePiece(piece)">削除</button>
         </div>
       </li>
     </ul>
@@ -125,7 +137,11 @@ const { data: pieces, error } = await useFetch<Piece[]>(`${apiBase}/pieces`);
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
   font-size: 0.85rem;
-  cursor: not-allowed;
-  opacity: 0.5;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #ffe0e0;
 }
 </style>

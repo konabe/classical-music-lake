@@ -12,7 +12,7 @@ vi.mock("../utils/dynamodb", () => ({
 }));
 
 const mockContext = {} as Context;
-const mockCallback = vi.fn();
+const mockCallback = { signal: new AbortController().signal };
 const mockEvent = {} as APIGatewayProxyEvent;
 
 function makePiece(id: string, title: string): Piece {
