@@ -6,8 +6,14 @@ const { data: pieces, error, refresh } = await useFetch<Piece[]>(`${apiBase}/pie
 
 async function deletePiece(piece: Piece) {
   if (!confirm(`「${piece.title}」を削除しますか？`)) return;
-  await $fetch(`${apiBase}/pieces/${piece.id}`, { method: "DELETE" });
-  await refresh();
+  try {
+    await $fetch(`${apiBase}/pieces/${piece.id}`, { method: "DELETE" });
+    await refresh();
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "削除に失敗しました。もう一度お試しください。";
+    alert(message);
+  }
 }
 </script>
 

@@ -37,9 +37,13 @@ const httpErrorMiddleware = (): middy.MiddlewareObj<
  * - httpErrorMiddleware: throw された http-errors を { message } JSON に変換
  * - @middy/http-response-serializer: 正常レスポンスのボディを JSON シリアライズ
  */
+type MiddyHandler = Parameters<
+  ReturnType<typeof middy<APIGatewayProxyEvent, APIGatewayProxyResult>>["handler"]
+>[0];
+
 export const createHandler = (handler: Handler) =>
   middy<APIGatewayProxyEvent, APIGatewayProxyResult>()
-    .handler(handler as Parameters<typeof middy>[0])
+    .handler(handler as unknown as MiddyHandler)
     .use(
       httpCors({
         origin: process.env.CORS_ALLOW_ORIGIN ?? "*",
@@ -53,7 +57,10 @@ export const createHandler = (handler: Handler) =>
         serializers: [
           {
             regex: /^application\/json$/,
-            serializer: ({ body }) => (body === "" ? "" : JSON.stringify(body)),
+            serializer: (response) => {
+              const { body } = response as { body: unknown };
+              return body === "" ? "" : JSON.stringify(body);
+            },
           },
         ],
         defaultContentType: "application/json",

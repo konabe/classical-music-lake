@@ -11,7 +11,7 @@ vi.mock("../utils/dynamodb", () => ({
 }));
 
 const mockContext = {} as Context;
-const mockCallback = vi.fn();
+const mockCallback = { signal: new AbortController().signal };
 const mockEvent = {} as APIGatewayProxyEvent;
 
 function makeLog(id: string, listenedAt: string): ListeningLog {
@@ -20,7 +20,6 @@ function makeLog(id: string, listenedAt: string): ListeningLog {
     listenedAt,
     composer: "作曲家",
     piece: "曲名",
-    performer: "演奏家",
     rating: 3,
     isFavorite: false,
     createdAt: "2024-01-01T00:00:00.000Z",

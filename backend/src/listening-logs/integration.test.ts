@@ -31,7 +31,7 @@ vi.mock("@aws-sdk/lib-dynamodb", () => ({
 }));
 
 const mockContext = {} as Context;
-const mockCallback = vi.fn();
+const mockCallback = { signal: new AbortController().signal };
 
 function makeEvent(options: {
   method: string;
