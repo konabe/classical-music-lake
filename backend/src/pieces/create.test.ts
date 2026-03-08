@@ -4,10 +4,6 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { handler } from "./create";
 import { dynamo } from "../utils/dynamodb";
 
-function isValidUUID(id: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-}
-
 vi.mock("../utils/dynamodb", () => ({
   dynamo: { send: vi.fn() },
   TABLE_PIECES: "test-pieces",
@@ -108,7 +104,7 @@ describe("POST /pieces (create)", () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
     const body = JSON.parse(result?.body ?? "{}");
-    expect(isValidUUID(body.id)).toBe(true);
+    expect(body.id).toBeUUID();
   });
 
   it("createdAt と updatedAt が同じ値かつ現在時刻で設定される", async () => {
