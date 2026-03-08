@@ -1,0 +1,33 @@
+import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import createError from "http-errors";
+import { StatusCodes } from "http-status-codes";
+import { dynamo, TABLE_PIECES } from "../utils/dynamodb";
+import { createHandler } from "../utils/middleware";
+import type { Piece, UpdatePieceInput } from "../types";
+
+export const handler = createHandler(async (event) => {
+  const id = event.pathParameters?.id;
+  if (!id) throw new createError.BadRequest("id is required");
+  if (!event.body) throw new createError.BadRequest("Request body is required");
+
+  let input: UpdatePieceInput;
+  try {
+    input = JSON.parse(event.body);
+  } catch {
+    throw new createError.BadRequest("Invalid JSON");
+  }
+
+  const existing = await dynamo.send(new GetCommand({ TableName: TABLE_PIECES, Key: { id } }));
+  if (!existing.Item) throw new createError.NotFound("Piece not found");
+
+  const current = existing.Item as Piece;
+  const updated: Piece = {
+    ...current,
+    ...input,
+    id,
+    createdAt: current.createdAt,
+    updatedAt: new Date().toISOString(),
+  };
+  await dynamo.send(new PutCommand({ TableName: TABLE_PIECES, Item: updated }));
+  return { statusCode: StatusCodes.OK, body: updated };
+});
