@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.12](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.11...classical-music-lake-v0.1.12) (2026-03-08)
+
+
+### Features
+
+* ワーク2 楽曲登録の実装 ([92be6bf](https://github.com/konabe/classical-music-lake/commit/92be6bf820189cffd3d43cb14e24e8fe0c1b17d2))
+* 楽曲編集機能を実装（GET/PUT /pieces/{id}） ([0f8ef96](https://github.com/konabe/classical-music-lake/commit/0f8ef961c7ea27ba4923c92b2603c9ef9643f322))
+* 楽曲編集機能を実装（GET/PUT /pieces/{id}） ([a220c38](https://github.com/konabe/classical-music-lake/commit/a220c3897ab8a852c163f43863f0a9e336e8b4ad))
+
+
+### Bug Fixes
+
+* coderabbitレビューコメントへの対応（PR [#49](https://github.com/konabe/classical-music-lake/issues/49)） ([0b601fe](https://github.com/konabe/classical-music-lake/commit/0b601fea49ff99d5378a738338335be5dfce2088))
+* feature/piece-create とのコンフリクトを解消 ([3e5379e](https://github.com/konabe/classical-music-lake/commit/3e5379e3cdc9bea8a34bf17ee45195f539539a35))
+* PRレビュー指摘を修正（get/update/edit.vue） ([5ad8571](https://github.com/konabe/classical-music-lake/commit/5ad85711be064752076595bca99f7072bb46c725))
+* vitest.d.ts の ESLint エラーを抑制 ([933e588](https://github.com/konabe/classical-music-lake/commit/933e5888ba6062d566ebfc10416bd36e9c0f29ea))
+* vitest.d.ts の no-empty-object-type のみをファイル単位で off に変更 ([9a64452](https://github.com/konabe/classical-music-lake/commit/9a64452eecfda27469cca56aa6c5e1b5e61bf2c7))
+
 ## [0.1.11](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.10...classical-music-lake-v0.1.11) (2026-03-07)
 
 
