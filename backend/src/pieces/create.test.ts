@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { handler } from "./create";
@@ -37,6 +37,10 @@ const validInput = {
 describe("POST /pieces (create)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("body がない場合は 400 を返す", async () => {
@@ -100,13 +104,19 @@ describe("POST /pieces (create)", () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
     const body = JSON.parse(result?.body ?? "{}");
-    expect(body.id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(body.id).toBeUUID();
   });
 
-  it("createdAt と updatedAt が同じ値で設定される", async () => {
+  it("createdAt と updatedAt が同じ値かつ現在時刻で設定される", async () => {
+    const now = new Date("2026-03-08T00:00:00.000Z");
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
+
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
     const body = JSON.parse(result?.body ?? "{}");
+    expect(body.createdAt).toBe(now.toISOString());
+    expect(body.updatedAt).toBe(now.toISOString());
     expect(body.createdAt).toBe(body.updatedAt);
   });
 
