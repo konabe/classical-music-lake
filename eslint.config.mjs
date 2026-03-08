@@ -5,7 +5,10 @@ import withNuxt from "./.nuxt/eslint.config.mjs";
 export default withNuxt(
   prettierConfig,
   {
-    ignores: ["backend/src/test/vitest.d.ts"],
+    files: ["backend/src/test/vitest.d.ts"],
+    rules: {
+      "@typescript-eslint/no-empty-object-type": "off",
+    },
   },
   {
     rules: {
