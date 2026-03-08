@@ -110,6 +110,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     const listPieces = fn("ListPieces", "pieces/list.ts");
     const createPiece = fn("CreatePiece", "pieces/create.ts");
+    const getPiece = fn("GetPiece", "pieces/get.ts");
+    const updatePiece = fn("UpdatePiece", "pieces/update.ts");
 
     // -------------------------
     // DynamoDB 権限付与
@@ -121,6 +123,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogsTable.grantWriteData(listeningLogsDelete);
     piecesTable.grantReadData(listPieces);
     piecesTable.grantWriteData(createPiece);
+    piecesTable.grantReadData(getPiece);
+    piecesTable.grantReadWriteData(updatePiece);
 
     // -------------------------
     // API Gateway
@@ -188,6 +192,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const piecesResource = api.root.addResource("pieces");
     piecesResource.addMethod("GET", integ(listPieces));
     piecesResource.addMethod("POST", integ(createPiece));
+
+    // /pieces/{id}
+    const pieceResource = piecesResource.addResource("{id}");
+    pieceResource.addMethod("GET", integ(getPiece));
+    pieceResource.addMethod("PUT", integ(updatePiece));
 
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)
@@ -271,6 +280,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       listeningLogsDelete,
       listPieces,
       createPiece,
+      getPiece,
+      updatePiece,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", corsAllowOrigin);
     });
@@ -291,6 +302,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     piecesResource.addCorsPreflight({
       allowOrigins: [corsAllowOrigin],
       allowMethods: ["GET", "POST", "OPTIONS"],
+      allowHeaders: ["Content-Type"],
+    });
+
+    pieceResource.addCorsPreflight({
+      allowOrigins: [corsAllowOrigin],
+      allowMethods: ["GET", "PUT", "OPTIONS"],
       allowHeaders: ["Content-Type"],
     });
 
@@ -331,6 +348,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       listeningLogsDelete,
       listPieces,
       createPiece,
+      getPiece,
+      updatePiece,
     ];
 
     // Lambda エラー監視：全関数のエラー合計が 1 以上でアラーム
