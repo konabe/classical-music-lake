@@ -3,13 +3,18 @@ import type { Piece, UpdatePieceInput } from "~/types";
 
 const route = useRoute();
 const apiBase = useApiBase();
-const id = route.params.id as string;
+const id = computed(() => route.params.id as string);
 
-const { data: piece, error } = await useFetch<Piece>(`${apiBase}/pieces/${id}`);
+const { data: piece, error } = await useFetch<Piece>(() => `${apiBase}/pieces/${id.value}`);
 
 const form = reactive<UpdatePieceInput>({
   title: piece.value?.title ?? "",
   composer: piece.value?.composer ?? "",
+});
+
+watch(piece, (p) => {
+  form.title = p?.title ?? "";
+  form.composer = p?.composer ?? "";
 });
 
 const errorMessage = ref("");
@@ -17,7 +22,7 @@ const errorMessage = ref("");
 async function handleSubmit() {
   errorMessage.value = "";
   try {
-    await $fetch(`${apiBase}/pieces/${id}`, { method: "PUT", body: form });
+    await $fetch(`${apiBase}/pieces/${id.value}`, { method: "PUT", body: form });
     await navigateTo("/pieces");
   } catch {
     errorMessage.value = "更新に失敗しました。入力内容を確認してください。";
