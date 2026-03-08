@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.13](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.12...classical-music-lake-v0.1.13) (2026-03-08)
+
+
+### Features
+
+* ワーク4 楽曲削除の実装 ([e6ed915](https://github.com/konabe/classical-music-lake/commit/e6ed915417f3d921b779e90f7b75d3df2ea4573e))
+* 楽曲削除機能の実装 ([0227584](https://github.com/konabe/classical-music-lake/commit/02275844eb58d46c9641c93d3d8e32408c187f4f))
+
+
+### Bug Fixes
+
+* typescript エラーを修正（mockCallback 型・middleware 型キャスト・performer フィールド削除） ([b480615](https://github.com/konabe/classical-music-lake/commit/b4806158881a56ec36780ea2772c963892a24233))
+
 ## [0.1.12](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.11...classical-music-lake-v0.1.12) (2026-03-08)
 
 
