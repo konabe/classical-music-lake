@@ -1,6 +1,32 @@
-import { describe, it, expect } from "vitest";
-import { mountSuspended } from "@nuxt/test-utils/runtime";
+import { ref } from "vue";
+import { describe, it, expect, vi } from "vitest";
+import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import ListeningLogForm from "./ListeningLogForm.vue";
+import type { Piece } from "~/types";
+
+const { mockPieces } = vi.hoisted(() => {
+  const mockPieces: Piece[] = [
+    {
+      id: "piece-1",
+      title: "交響曲第9番",
+      composer: "ベートーヴェン",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+    {
+      id: "piece-2",
+      title: "魔笛",
+      composer: "モーツァルト",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+  ];
+  return { mockPieces };
+});
+
+mockNuxtImport("usePieces", () =>
+  vi.fn().mockReturnValue({ data: ref(mockPieces), error: ref(null), pending: ref(false) })
+);
 
 describe("ListeningLogForm", () => {
   describe("デフォルト値でのレンダリング", () => {
@@ -117,6 +143,50 @@ describe("ListeningLogForm", () => {
       expect(emittedData.composer).toBe("ベートーヴェン");
       expect(emittedData.piece).toBe("交響曲第9番");
       expect(emittedData.isFavorite).toBe(true);
+    });
+  });
+
+  describe("楽曲選択", () => {
+    it("楽曲選択セレクトボックスが表示される", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      expect(wrapper.find("select.piece-select").exists()).toBe(true);
+    });
+
+    it("「選択しない」オプションが含まれる", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const options = wrapper.findAll("select.piece-select option");
+      expect(options[0].text()).toBe("選択しない");
+    });
+
+    it("楽曲一覧がオプションに表示される", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const options = wrapper.findAll("select.piece-select option");
+      expect(options[1].text()).toBe("交響曲第9番 / ベートーヴェン");
+      expect(options[2].text()).toBe("魔笛 / モーツァルト");
+    });
+
+    it("楽曲を選択すると曲名・作曲家が自動入力される", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const select = wrapper.find("select.piece-select");
+      await select.setValue("piece-1");
+
+      const composerInput = wrapper.find('input[placeholder="例: ベートーヴェン"]');
+      const pieceInput = wrapper.find('input[placeholder="例: 交響曲第9番"]');
+      expect((composerInput.element as HTMLInputElement).value).toBe("ベートーヴェン");
+      expect((pieceInput.element as HTMLInputElement).value).toBe("交響曲第9番");
+    });
+
+    it("「選択しない」を選ぶと曲名・作曲家がクリアされる", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const select = wrapper.find("select.piece-select");
+
+      await select.setValue("piece-1");
+      await select.setValue("");
+
+      const composerInput = wrapper.find('input[placeholder="例: ベートーヴェン"]');
+      const pieceInput = wrapper.find('input[placeholder="例: 交響曲第9番"]');
+      expect((composerInput.element as HTMLInputElement).value).toBe("");
+      expect((pieceInput.element as HTMLInputElement).value).toBe("");
     });
   });
 
