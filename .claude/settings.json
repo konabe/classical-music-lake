@@ -11,6 +11,7 @@
       "Bash(npx lint-staged --version)",
       "Bash(git add:*)",
       "Bash(npm run generate:*)",
+      "Bash(npm test:*)",
       "Bash(npx tsc:*)",
       "Bash(npx prettier:*)",
       "Bash(gh pr view:*)",
