@@ -1,10 +1,13 @@
+import { ref } from "vue";
 import { describe, it, expect, vi } from "vitest";
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { usePieces } from "./usePieces";
 
 const { mockUseFetch } = vi.hoisted(() => ({
-  mockUseFetch: vi.fn(() => ({ data: { value: [] }, error: { value: null } })),
+  mockUseFetch: vi.fn(),
 }));
+
+mockUseFetch.mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false) });
 
 mockNuxtImport("useApiBase", () => () => "/api");
 mockNuxtImport("useFetch", () => mockUseFetch);
