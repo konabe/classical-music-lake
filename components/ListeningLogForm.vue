@@ -21,17 +21,12 @@ const form = reactive<CreateListeningLogInput>({
   memo: props.initialValues?.memo ?? "",
 });
 
-const selectedPieceId = ref("");
-
-watch(
-  selectedPieceId,
-  (id) => {
-    const found = pieces.value?.find((p) => p.id === id);
-    form.piece = found?.title ?? "";
-    form.composer = found?.composer ?? "";
-  },
-  { flush: "sync" }
-);
+function handlePieceSelect(e: Event) {
+  const id = (e.target as HTMLSelectElement).value;
+  const found = pieces.value?.find((p) => p.id === id);
+  form.piece = found?.title ?? "";
+  form.composer = found?.composer ?? "";
+}
 
 function handleSubmit() {
   emit("submit", { ...form });
@@ -47,7 +42,7 @@ function handleSubmit() {
 
     <div class="form-group">
       <label>楽曲マスタから選択</label>
-      <select v-model="selectedPieceId" class="piece-select">
+      <select class="piece-select" @change="handlePieceSelect">
         <option value="">選択しない</option>
         <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
           {{ piece.title }} / {{ piece.composer }}

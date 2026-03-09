@@ -1,6 +1,5 @@
 import { ref } from "vue";
 import { describe, it, expect, vi } from "vitest";
-import { flushPromises } from "@vue/test-utils";
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import ListeningLogForm from "./ListeningLogForm.vue";
 import type { Piece } from "~/types";
@@ -170,7 +169,6 @@ describe("ListeningLogForm", () => {
       const wrapper = await mountSuspended(ListeningLogForm);
       const select = wrapper.find("select.piece-select");
       await select.setValue("piece-1");
-      await flushPromises();
 
       const composerInput = wrapper.find('input[placeholder="例: ベートーヴェン"]');
       const pieceInput = wrapper.find('input[placeholder="例: 交響曲第9番"]');
@@ -183,9 +181,7 @@ describe("ListeningLogForm", () => {
       const select = wrapper.find("select.piece-select");
 
       await select.setValue("piece-1");
-      await flushPromises();
       await select.setValue("");
-      await flushPromises();
 
       const composerInput = wrapper.find('input[placeholder="例: ベートーヴェン"]');
       const pieceInput = wrapper.find('input[placeholder="例: 交響曲第9番"]');
