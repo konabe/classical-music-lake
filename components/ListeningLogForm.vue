@@ -10,7 +10,7 @@ const emit = defineEmits<{
   submit: [values: CreateListeningLogInput];
 }>();
 
-const { data: pieces } = await usePieces();
+const { data: pieces, pending: piecesPending } = usePieces();
 
 const form = reactive<CreateListeningLogInput>({
   listenedAt: props.initialValues?.listenedAt ?? new Date().toISOString().slice(0, 16),
@@ -42,8 +42,8 @@ function handleSubmit() {
 
     <div class="form-group">
       <label>楽曲マスタから選択</label>
-      <select class="piece-select" @change="handlePieceSelect">
-        <option value="">選択しない</option>
+      <select class="piece-select" :disabled="piecesPending" @change="handlePieceSelect">
+        <option value="">{{ piecesPending ? "読み込み中..." : "選択しない" }}</option>
         <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
           {{ piece.title }} / {{ piece.composer }}
         </option>

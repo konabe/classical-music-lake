@@ -25,7 +25,7 @@ const { mockPieces } = vi.hoisted(() => {
 });
 
 mockNuxtImport("usePieces", () =>
-  vi.fn().mockResolvedValue({ data: ref(mockPieces), error: ref(null) })
+  vi.fn().mockReturnValue({ data: ref(mockPieces), error: ref(null), pending: ref(false) })
 );
 
 describe("ListeningLogForm", () => {
