@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.15](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.14...classical-music-lake-v0.1.15) (2026-03-09)
+
+
+### Features
+
+* ワーク5 鑑賞ログ連携（楽曲マスタからの自動入力） ([b9eaa76](https://github.com/konabe/classical-music-lake/commit/b9eaa7694bdcc77fa0c57eb9ea875c63980e7adf))
+
+
+### Bug Fixes
+
+* usePieces の await を削除しフォームを即時レンダリング可能にする ([050c79b](https://github.com/konabe/classical-music-lake/commit/050c79b449e83812e849eae42a99409fd0eef36d))
+
 ## [0.1.14](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.13...classical-music-lake-v0.1.14) (2026-03-09)
 
 
