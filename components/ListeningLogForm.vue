@@ -10,6 +10,8 @@ const emit = defineEmits<{
   submit: [values: CreateListeningLogInput];
 }>();
 
+const { data: pieces } = await usePieces();
+
 const form = reactive<CreateListeningLogInput>({
   listenedAt: props.initialValues?.listenedAt ?? new Date().toISOString().slice(0, 16),
   composer: props.initialValues?.composer ?? "",
@@ -18,6 +20,18 @@ const form = reactive<CreateListeningLogInput>({
   isFavorite: props.initialValues?.isFavorite ?? false,
   memo: props.initialValues?.memo ?? "",
 });
+
+const selectedPieceId = ref("");
+
+watch(
+  selectedPieceId,
+  (id) => {
+    const found = pieces.value?.find((p) => p.id === id);
+    form.piece = found?.title ?? "";
+    form.composer = found?.composer ?? "";
+  },
+  { flush: "sync" }
+);
 
 function handleSubmit() {
   emit("submit", { ...form });
@@ -29,6 +43,16 @@ function handleSubmit() {
     <div class="form-group">
       <label>鑑賞日時 <span class="required">*</span></label>
       <input v-model="form.listenedAt" type="datetime-local" required />
+    </div>
+
+    <div class="form-group">
+      <label>楽曲マスタから選択</label>
+      <select v-model="selectedPieceId" class="piece-select">
+        <option value="">選択しない</option>
+        <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
+          {{ piece.title }} / {{ piece.composer }}
+        </option>
+      </select>
     </div>
 
     <div class="form-row">
@@ -111,7 +135,8 @@ label {
 
 input[type="text"],
 input[type="datetime-local"],
-textarea {
+textarea,
+select {
   border: 1px solid #d0c8bc;
   border-radius: 6px;
   padding: 0.6rem 0.8rem;
