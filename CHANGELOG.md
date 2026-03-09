@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.14](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.13...classical-music-lake-v0.1.14) (2026-03-09)
+
+
+### Bug Fixes
+
+* deployワークフローにconcurrencyを追加して同時デプロイを防止 ([ab88d60](https://github.com/konabe/classical-music-lake/commit/ab88d603090baff3637c1e52cf448dd66af06191))
+* deployワークフローにconcurrencyを追加して同時デプロイを防止 ([f468423](https://github.com/konabe/classical-music-lake/commit/f468423818a2c6131f7b57684ea60e4a3398c529))
+* GitHub Actionsのアクションバージョンをv6からv4に修正 ([4166b3e](https://github.com/konabe/classical-music-lake/commit/4166b3ecf42bf627608221eb49d091d6a8f76cc4))
+
 ## [0.1.13](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.12...classical-music-lake-v0.1.13) (2026-03-08)
 
 
