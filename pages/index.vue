@@ -11,6 +11,11 @@
         <p>CD・配信・YouTubeなどで聴いた演奏を記録する</p>
       </NuxtLink>
     </section>
+    <section class="admin-links">
+      <ul>
+        <li><NuxtLink to="/pieces">楽曲マスタ</NuxtLink></li>
+      </ul>
+    </section>
   </div>
 </template>
 
@@ -72,5 +77,29 @@
 .card p {
   color: #888;
   font-size: 0.95rem;
+}
+
+.admin-links {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.admin-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.admin-links a {
+  color: #888;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.admin-links a:hover {
+  text-decoration: underline;
 }
 </style>

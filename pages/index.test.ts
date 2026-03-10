@@ -1,0 +1,21 @@
+import { describe, it, expect } from "vitest";
+import { mountSuspended } from "@nuxt/test-utils/runtime";
+import IndexPage from "./index.vue";
+
+describe("IndexPage", () => {
+  it("管理者向けリンクセクションが表示される", async () => {
+    const wrapper = await mountSuspended(IndexPage);
+    expect(wrapper.find("section.admin-links").exists()).toBe(true);
+  });
+
+  it("楽曲マスタへのリンクが表示される", async () => {
+    const wrapper = await mountSuspended(IndexPage);
+    expect(wrapper.find('a[href="/pieces"]').exists()).toBe(true);
+    expect(wrapper.find('a[href="/pieces"]').text()).toBe("楽曲マスタ");
+  });
+
+  it("鑑賞記録カードが引き続き表示される", async () => {
+    const wrapper = await mountSuspended(IndexPage);
+    expect(wrapper.find('a[href="/listening-logs"]').exists()).toBe(true);
+  });
+});
