@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.16](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.15...classical-music-lake-v0.1.16) (2026-03-10)
+
+
+### Features
+
+* top画面に管理者向けリンクセクションを追加 ([aeff851](https://github.com/konabe/classical-music-lake/commit/aeff8515d9af2d724fdd88620ea979d72a6a6ed9))
+* top画面に管理者向けリンクセクションを追加（楽曲マスタ導線） ([099ada9](https://github.com/konabe/classical-music-lake/commit/099ada999c33a68747a60056bee258ba3e257767))
+* TOP画面への管理者向けリンクセクション追加 ([ca94b53](https://github.com/konabe/classical-music-lake/commit/ca94b53e2c75517a928cf39d9f029d936bdf0789))
+
 ## [0.1.15](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.14...classical-music-lake-v0.1.15) (2026-03-09)
 
 
