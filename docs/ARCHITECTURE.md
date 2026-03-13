@@ -32,12 +32,18 @@
 ```
 classical-music-lake/
 ├── pages/                        # Nuxt ページ（ルーティング）
-│   ├── index.vue                 # トップページ
-│   └── listening-logs/           # 視聴ログ関連ページ
+│   ├── index.vue                 # トップページ（管理者向けリンクセクション含む）
+│   ├── index.test.ts             # トップページのコンポーネントテスト
+│   ├── listening-logs/           # 視聴ログ関連ページ
+│   │   ├── index.vue             # 一覧
+│   │   ├── new.vue               # 新規作成
+│   │   └── [id]/
+│   │       ├── index.vue         # 詳細
+│   │       └── edit.vue          # 編集
+│   └── pieces/                   # 楽曲マスタ関連ページ
 │       ├── index.vue             # 一覧
 │       ├── new.vue               # 新規作成
 │       └── [id]/
-│           ├── index.vue         # 詳細
 │           └── edit.vue          # 編集
 ├── components/                   # 共通UIコンポーネント
 ├── composables/                  # Vue Composables（共通ロジック）
