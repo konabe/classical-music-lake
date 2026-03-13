@@ -8,6 +8,6 @@
 
 対応した内容を下記に反映すること
 
-- `docs\ARCHITECTURE.md` アーキテクチャ設計書
-- `docs\SPEC.md` システム仕様書
-- `docs\OPERATIONS.md` 運用ドキュメント
+- `docs/ARCHITECTURE.md` アーキテクチャ設計書
+- `docs/SPEC.md` システム仕様書
+- `docs/OPERATIONS.md` 運用ドキュメント
