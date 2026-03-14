@@ -120,32 +120,4 @@ async function handleSubmit() {
   margin-top: 1.5rem;
 }
 
-.btn-primary {
-  background: #1a1a2e;
-  color: #fff;
-  padding: 0.6rem 1.4rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-primary:hover {
-  background: #2d2d50;
-}
-
-.btn-secondary {
-  background: #f0ece4;
-  color: #333;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: background 0.2s;
-}
-
-.btn-secondary:hover {
-  background: #e0d8cc;
-}
 </style>

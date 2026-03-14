@@ -145,47 +145,4 @@ async function deleteLog(id: string) {
   flex-shrink: 0;
 }
 
-.btn-primary {
-  background: #1a1a2e;
-  color: #fff;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: background 0.2s;
-}
-
-.btn-primary:hover {
-  background: #2d2d50;
-}
-
-.btn-secondary {
-  background: #f0ece4;
-  color: #333;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.85rem;
-  text-align: center;
-  transition: background 0.2s;
-}
-
-.btn-secondary:hover {
-  background: #e0d8cc;
-}
-
-.btn-danger {
-  background: #fff0f0;
-  color: #c0392b;
-  border: 1px solid #f5c6c6;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-danger:hover {
-  background: #ffe0e0;
-}
 </style>

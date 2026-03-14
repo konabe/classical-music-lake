@@ -90,8 +90,8 @@ function handleSubmit() {
     </div>
 
     <div class="form-actions">
-      <NuxtLink to="/listening-logs" class="btn-cancel">キャンセル</NuxtLink>
-      <button type="submit" class="btn-submit">{{ submitLabel ?? "保存する" }}</button>
+      <NuxtLink to="/listening-logs" class="btn-secondary">キャンセル</NuxtLink>
+      <button type="submit" class="btn-primary">{{ submitLabel ?? "保存する" }}</button>
     </div>
   </form>
 </template>
@@ -180,27 +180,4 @@ textarea:focus {
   margin-top: 1rem;
 }
 
-.btn-cancel {
-  padding: 0.6rem 1.4rem;
-  border-radius: 6px;
-  background: #f0ece4;
-  color: #333;
-  text-decoration: none;
-  font-size: 0.95rem;
-}
-
-.btn-submit {
-  padding: 0.6rem 1.4rem;
-  border-radius: 6px;
-  background: #1a1a2e;
-  color: #fff;
-  border: none;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-submit:hover {
-  background: #2d2d50;
-}
 </style>
