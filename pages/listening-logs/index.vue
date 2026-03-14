@@ -3,15 +3,12 @@ import type { ListeningLog } from "~/types";
 
 const apiBase = useApiBase();
 const { data: logs, refresh } = await useFetch<ListeningLog[]>(`${apiBase}/listening-logs`);
+const { ratingStars } = useRatingDisplay();
 
 async function deleteLog(id: string) {
   if (!confirm("この記録を削除しますか？")) return;
   await $fetch(`${apiBase}/listening-logs/${id}`, { method: "DELETE" });
   await refresh();
-}
-
-function ratingStars(rating: number): string {
-  return "★".repeat(rating) + "☆".repeat(5 - rating);
 }
 </script>
 
