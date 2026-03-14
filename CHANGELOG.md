@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.17](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.16...classical-music-lake-v0.1.17) (2026-03-14)
+
+
+### Bug Fixes
+
+* coderabbitレビューコメントへの対応（PR [#75](https://github.com/konabe/classical-music-lake/issues/75)） ([28d1dc7](https://github.com/konabe/classical-music-lake/commit/28d1dc70a5fff793155c181d9a5ddaa5b58ca2ad))
+* フロントエンドの脆弱性パッケージを修正（npm audit fix） ([9ec5920](https://github.com/konabe/classical-music-lake/commit/9ec59207880441643457b62f3ea9bd56735def75))
+
 ## [0.1.16](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.15...classical-music-lake-v0.1.16) (2026-03-10)
 
 
