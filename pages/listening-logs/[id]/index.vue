@@ -4,10 +4,7 @@ import type { ListeningLog } from "~/types";
 const route = useRoute();
 const apiBase = useApiBase();
 const { data: log } = await useFetch<ListeningLog>(`${apiBase}/listening-logs/${route.params.id}`);
-
-function ratingStars(rating: number): string {
-  return "★".repeat(rating) + "☆".repeat(5 - rating);
-}
+const { ratingStars } = useRatingDisplay();
 </script>
 
 <template>

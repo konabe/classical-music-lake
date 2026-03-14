@@ -48,6 +48,14 @@
 - **ビルドモード**: SPA (SSR無効)
 - **ホスティング**: S3 + CloudFront
 
+#### フロントエンド Composables
+
+| Composable         | 役割                                               |
+| ------------------ | -------------------------------------------------- |
+| `useApiBase`       | API Gateway のベース URL を返す                    |
+| `usePieces`        | 曲一覧を取得する                                   |
+| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`) |
+
 #### バックエンド
 
 - **ランタイム**: Node.js 24.x
