@@ -16,4 +16,19 @@ describe("useRatingDisplay", () => {
     const { ratingStars } = useRatingDisplay();
     expect(ratingStars(5)).toBe("★★★★★");
   });
+
+  it("ratingStars: 評価が負数のとき☆5つを返す", () => {
+    const { ratingStars } = useRatingDisplay();
+    expect(ratingStars(-1)).toBe("☆☆☆☆☆");
+  });
+
+  it("ratingStars: 評価が5を超えるとき★5つを返す", () => {
+    const { ratingStars } = useRatingDisplay();
+    expect(ratingStars(6)).toBe("★★★★★");
+  });
+
+  it("ratingStars: 評価が小数のとき切り捨てて返す", () => {
+    const { ratingStars } = useRatingDisplay();
+    expect(ratingStars(2.9)).toBe("★★☆☆☆");
+  });
 });
