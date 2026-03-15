@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.17](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.16...classical-music-lake-v0.1.17) (2026-03-15)
+
+
+### Features
+
+* upgrade to Nuxt 4 ([ab000d9](https://github.com/konabe/classical-music-lake/commit/ab000d983ed7f72240c12b37e6ee56d2ef635e16))
+
+
+### Bug Fixes
+
+* .btn-secondary に cursor: pointer と border: none を追加し他ボタンと統一 ([91fb158](https://github.com/konabe/classical-music-lake/commit/91fb158ee1abd547745ffe8e25f88c17fb1c0f07))
+* address coderabbit review comments on PR [#94](https://github.com/konabe/classical-music-lake/issues/94) ([f082d24](https://github.com/konabe/classical-music-lake/commit/f082d24ad720624f833358047811c41bf2fb97d4))
+* coderabbitレビューコメントへの対応（PR [#75](https://github.com/konabe/classical-music-lake/issues/75)） ([28d1dc7](https://github.com/konabe/classical-music-lake/commit/28d1dc70a5fff793155c181d9a5ddaa5b58ca2ad))
+* GitHub Actions のアクションバージョンを v6 から v4 に修正 ([ab36295](https://github.com/konabe/classical-music-lake/commit/ab362959b91024fccef4ee02443c8475eb29230e))
+* GitHub Actions のアクションバージョンを v6 から v4 に修正 ([044efdd](https://github.com/konabe/classical-music-lake/commit/044efdd843164b0820cdb7c2ff4e91aaf1950639))
+* parsing.test.ts の Prettier フォーマット違反を修正 ([3fee8a0](https://github.com/konabe/classical-music-lake/commit/3fee8a0bd01bcdd494a0a3cd2327d3b9386e8bc5))
+* regenerate package-lock.json for Nuxt 4 ([f031c8e](https://github.com/konabe/classical-music-lake/commit/f031c8e7127f7667fb0e96bbf4e0808dc3f9bb6b))
+* フロントエンドの脆弱性パッケージを修正（npm audit fix） ([9ec5920](https://github.com/konabe/classical-music-lake/commit/9ec59207880441643457b62f3ea9bd56735def75))
+
 ## [0.1.16](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.15...classical-music-lake-v0.1.16) (2026-03-10)
 
 
