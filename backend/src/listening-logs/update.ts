@@ -4,12 +4,12 @@ import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
+import { getIdParam } from "../utils/path-params";
 import type { ListeningLog, UpdateListeningLogInput } from "../types";
 import { isValidRating } from "../types";
 
 export const handler = createHandler(async (event) => {
-  const id = event.pathParameters?.id;
-  if (!id) throw new createError.BadRequest("id is required");
+  const id = getIdParam(event);
   const input = parseRequestBody<UpdateListeningLogInput>(event.body as unknown);
 
   if (input.rating !== undefined && !isValidRating(input.rating)) {
