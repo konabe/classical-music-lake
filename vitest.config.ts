@@ -11,7 +11,7 @@ export default defineVitestConfig({
     exclude: ["**/node_modules/**", "tests/e2e/**", "backend/**"],
     coverage: {
       provider: "v8",
-      include: ["composables/**/*.ts", "components/**/*.vue", "types/**/*.ts"],
+      include: ["app/composables/**/*.ts", "app/components/**/*.vue", "app/types/**/*.ts"],
       exclude: ["node_modules", ".nuxt"],
     },
   },
