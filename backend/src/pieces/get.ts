@@ -3,11 +3,11 @@ import createError, { isHttpError } from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_PIECES } from "../utils/dynamodb";
 import { createHandler } from "../utils/middleware";
+import { getIdParam } from "../utils/path-params";
 import type { Piece } from "../types";
 
 export const handler = createHandler(async (event) => {
-  const id = event.pathParameters?.id;
-  if (!id) throw new createError.BadRequest("id is required");
+  const id = getIdParam(event);
 
   try {
     const result = await dynamo.send(new GetCommand({ TableName: TABLE_PIECES, Key: { id } }));
