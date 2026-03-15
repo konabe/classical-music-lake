@@ -63,10 +63,10 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body is required");
   });
 
-  it("不正な JSON の場合は 400 を返す", async () => {
+  it("不正な JSON の場合は 422 を返す", async () => {
     const result = await handler(makeEvent("abc-123", "invalid json"), mockContext, mockCallback);
-    expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("Invalid JSON");
+    expect(result?.statusCode).toBe(422);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("Invalid or malformed JSON was provided");
   });
 
   it.each([0, 6, -1, 1.5, "5", null])(

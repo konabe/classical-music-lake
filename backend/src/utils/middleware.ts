@@ -1,5 +1,6 @@
 import middy from "@middy/core";
 import httpCors from "@middy/http-cors";
+import httpJsonBodyParser from "@middy/http-json-body-parser";
 import httpResponseSerializer from "@middy/http-response-serializer";
 import type { HttpError } from "http-errors";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
@@ -30,6 +31,13 @@ const httpErrorMiddleware = (): middy.MiddlewareObj<
     };
   },
 });
+
+/**
+ * リクエストボディを JSON としてパースする middy ミドルウェア。
+ * Content-Type チェックを無効化し、不正な JSON の場合は 422 を返す。
+ * ボディが必要なハンドラー（create / update）に個別適用すること。
+ */
+export const jsonBodyParser = httpJsonBodyParser({ disableContentTypeCheck: true });
 
 /**
  * Lambda ハンドラーに共通ミドルウェアを適用する。
