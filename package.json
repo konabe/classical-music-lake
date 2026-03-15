@@ -21,7 +21,7 @@
     "prepare": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('husky', {stdio: 'inherit'}) }\""
   },
   "dependencies": {
-    "nuxt": "^3.15.0",
+    "nuxt": "^4.4.2",
     "vue": "^3.5.30",
     "vue-router": "^4.0.0"
   },
