@@ -13,7 +13,7 @@
     "db:reset": "npm run db:setup && npm run db:seed"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1002.0",
+    "@aws-sdk/client-dynamodb": "^3.1006.0",
     "@aws-sdk/lib-dynamodb": "^3.1003.0",
     "@middy/core": "^7.1.4",
     "@middy/http-cors": "^7.1.3",
