@@ -1,0 +1,19 @@
+name: Auto Approve
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  auto-approve:
+    name: Auto Approve (konabe)
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    if: github.event.pull_request.user.login == 'konabe'
+
+    steps:
+      - uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
