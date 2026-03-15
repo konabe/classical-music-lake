@@ -3,14 +3,12 @@ import { randomUUID } from "crypto";
 import createError from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_PIECES } from "../utils/dynamodb";
-import { createHandler } from "../utils/middleware";
+import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import type { CreatePieceInput, Piece } from "../types";
 
 export const handler = createHandler(async (event) => {
-  if (!event.body) throw new createError.BadRequest("Request body is required");
-
-  const input = parseRequestBody<CreatePieceInput>(event.body);
+  const input = parseRequestBody<CreatePieceInput>(event.body as unknown);
 
   if (!input.title) throw new createError.BadRequest("title is required");
   if (!input.composer) throw new createError.BadRequest("composer is required");
@@ -24,4 +22,4 @@ export const handler = createHandler(async (event) => {
   };
   await dynamo.send(new PutCommand({ TableName: TABLE_PIECES, Item: item }));
   return { statusCode: StatusCodes.CREATED, body: item };
-});
+}).use(jsonBodyParser);

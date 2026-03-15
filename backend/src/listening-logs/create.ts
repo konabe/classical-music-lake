@@ -3,15 +3,13 @@ import { randomUUID } from "crypto";
 import createError from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
-import { createHandler } from "../utils/middleware";
+import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import type { CreateListeningLogInput, ListeningLog } from "../types";
 import { isValidRating } from "../types";
 
 export const handler = createHandler(async (event) => {
-  if (!event.body) throw new createError.BadRequest("Request body is required");
-
-  const input = parseRequestBody<CreateListeningLogInput>(event.body);
+  const input = parseRequestBody<CreateListeningLogInput>(event.body as unknown);
 
   if (!isValidRating(input.rating))
     throw new createError.BadRequest("rating must be between 1 and 5");
@@ -25,4 +23,4 @@ export const handler = createHandler(async (event) => {
   };
   await dynamo.send(new PutCommand({ TableName: TABLE_LISTENING_LOGS, Item: item }));
   return { statusCode: StatusCodes.CREATED, body: item };
-});
+}).use(jsonBodyParser);

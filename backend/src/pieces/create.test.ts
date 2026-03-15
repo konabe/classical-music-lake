@@ -49,16 +49,16 @@ describe("POST /pieces (create)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body is required");
   });
 
-  it("不正な JSON の場合は 400 を返す", async () => {
+  it("不正な JSON の場合は 422 を返す", async () => {
     const result = await handler(makeEvent("invalid json"), mockContext, mockCallback);
-    expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("Invalid JSON");
+    expect(result?.statusCode).toBe(422);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("Invalid or malformed JSON was provided");
   });
 
   it("JSON が null の場合は 400 を返す", async () => {
     const result = await handler(makeEvent("null"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body must be a JSON object");
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body is required");
   });
 
   it("JSON が配列の場合は 400 を返す", async () => {
