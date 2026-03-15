@@ -11,9 +11,18 @@ const emit = defineEmits<{
 }>();
 
 const form = reactive<CreatePieceInput>({
-  title: props.initialValues?.title ?? "",
-  composer: props.initialValues?.composer ?? "",
+  title: "",
+  composer: "",
 });
+
+watch(
+  () => props.initialValues,
+  (initialValues) => {
+    form.title = initialValues?.title ?? "";
+    form.composer = initialValues?.composer ?? "";
+  },
+  { immediate: true }
+);
 
 function handleSubmit() {
   emit("submit", { ...form });
