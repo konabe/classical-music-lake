@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CreatePieceInput } from "~/types";
 
-const apiBase = useApiBase();
+const { createPiece } = usePieces();
 
 const form = reactive<CreatePieceInput>({
   title: "",
@@ -13,7 +13,7 @@ const errorMessage = ref("");
 async function handleSubmit() {
   errorMessage.value = "";
   try {
-    await $fetch(`${apiBase}/pieces`, { method: "POST", body: form });
+    await createPiece(form);
     await navigateTo("/pieces");
   } catch {
     errorMessage.value = "登録に失敗しました。入力内容を確認してください。";

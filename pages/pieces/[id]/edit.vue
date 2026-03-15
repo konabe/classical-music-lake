@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { Piece, UpdatePieceInput } from "~/types";
+import type { UpdatePieceInput } from "~/types";
 
 const route = useRoute();
-const apiBase = useApiBase();
 const id = computed(() => route.params.id as string);
 
-const { data: piece, error } = await useFetch<Piece>(() => `${apiBase}/pieces/${id.value}`);
+const { data: piece, error } = await usePiece(() => id.value);
+const { updatePiece } = usePieces();
 
 const form = reactive<UpdatePieceInput>({
   title: piece.value?.title ?? "",
@@ -22,7 +22,7 @@ const errorMessage = ref("");
 async function handleSubmit() {
   errorMessage.value = "";
   try {
-    await $fetch(`${apiBase}/pieces/${id.value}`, { method: "PUT", body: form });
+    await updatePiece(id.value, form);
     await navigateTo("/pieces");
   } catch {
     errorMessage.value = "更新に失敗しました。入力内容を確認してください。";
