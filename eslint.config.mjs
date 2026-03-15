@@ -25,5 +25,11 @@ export default withNuxt(
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
     },
+  },
+  {
+    files: ["app/pages/**/*.vue"],
+    rules: {
+      "vue/multi-word-component-names": "off",
+    },
   }
 );
