@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "nuxt": "^3.15.0",
-    "vue": "^3.5.0",
+    "vue": "^3.5.30",
     "vue-router": "^4.0.0"
   },
   "overrides": {
