@@ -5,11 +5,11 @@ import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_PIECES } from "../utils/dynamodb";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
+import { getIdParam } from "../utils/path-params";
 import type { Piece, UpdatePieceInput } from "../types";
 
 export const handler = createHandler(async (event) => {
-  const id = event.pathParameters?.id;
-  if (!id) throw new createError.BadRequest("id is required");
+  const id = getIdParam(event);
   const input = parseRequestBody<UpdatePieceInput>(event.body as unknown);
 
   if (input.title !== undefined && !input.title) {
