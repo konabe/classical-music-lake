@@ -7,22 +7,12 @@ const id = computed(() => route.params.id as string);
 const { data: piece, error } = await usePiece(() => id.value);
 const { updatePiece } = usePieces();
 
-const form = reactive<UpdatePieceInput>({
-  title: piece.value?.title ?? "",
-  composer: piece.value?.composer ?? "",
-});
-
-watch(piece, (p) => {
-  form.title = p?.title ?? "";
-  form.composer = p?.composer ?? "";
-});
-
 const errorMessage = ref("");
 
-async function handleSubmit() {
+async function handleSubmit(values: UpdatePieceInput) {
   errorMessage.value = "";
   try {
-    await updatePiece(id.value, form);
+    await updatePiece(id.value, values);
     await navigateTo("/pieces");
   } catch {
     errorMessage.value = "更新に失敗しました。入力内容を確認してください。";
@@ -36,30 +26,14 @@ async function handleSubmit() {
 
     <div v-if="error" class="error-message">楽曲の取得に失敗しました。</div>
 
-    <form v-else class="piece-form" @submit.prevent="handleSubmit">
+    <template v-else>
       <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
-
-      <div class="form-group">
-        <label for="title">曲名 <span class="required">*</span></label>
-        <input id="title" v-model="form.title" type="text" required placeholder="例：交響曲第9番" />
-      </div>
-
-      <div class="form-group">
-        <label for="composer">作曲家 <span class="required">*</span></label>
-        <input
-          id="composer"
-          v-model="form.composer"
-          type="text"
-          required
-          placeholder="例：ベートーヴェン"
-        />
-      </div>
-
-      <div class="form-actions">
-        <NuxtLink to="/pieces" class="btn-secondary">キャンセル</NuxtLink>
-        <button type="submit" class="btn-primary">更新する</button>
-      </div>
-    </form>
+      <PieceForm
+        :initial-values="{ title: piece?.title, composer: piece?.composer }"
+        submit-label="更新する"
+        @submit="handleSubmit"
+      />
+    </template>
   </div>
 </template>
 
@@ -70,10 +44,6 @@ async function handleSubmit() {
   margin-bottom: 1.5rem;
 }
 
-.piece-form {
-  max-width: 480px;
-}
-
 .error-message {
   background: #fff0f0;
   border: 1px solid #f5c6c6;
@@ -82,41 +52,5 @@ async function handleSubmit() {
   border-radius: 6px;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-}
-
-.form-group {
-  margin-bottom: 1.2rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 0.4rem;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.required {
-  color: #c0392b;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #1a1a2e;
-}
-
-.form-actions {
-  display: flex;
-  gap: 0.8rem;
-  margin-top: 1.5rem;
 }
 </style>
