@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ListeningLog } from "../types";
 
@@ -60,6 +61,26 @@ describe("GET /listening-logs (list)", () => {
     expect(body[0].id).toBe("2"); // 最新
     expect(body[1].id).toBe("1");
     expect(body[2].id).toBe("3"); // 最古
+  });
+
+  it("LastEvaluatedKey がある場合はページングして全件取得する", async () => {
+    const page1 = [makeLog("1", "2024-01-10T00:00:00.000Z")];
+    const page2 = [makeLog("2", "2024-01-15T00:00:00.000Z")];
+    vi.mocked(dynamo.send)
+      .mockResolvedValueOnce({ Items: page1, LastEvaluatedKey: { id: "1" } } as never)
+      .mockResolvedValueOnce({ Items: page2 } as never);
+
+    const result = await handler(mockEvent, mockContext, mockCallback);
+    const body: ListeningLog[] = JSON.parse(result?.body ?? "[]");
+
+    expect(dynamo.send).toHaveBeenCalledTimes(2);
+    const secondCall = vi.mocked(dynamo.send).mock.calls[1]?.[0] as ScanCommand;
+    expect(secondCall.input.ExclusiveStartKey).toEqual({ id: "1" });
+    expect(body).toHaveLength(2);
+    const sortedIds = [...page1, ...page2]
+      .sort((a, b) => b.listenedAt.localeCompare(a.listenedAt))
+      .map((l) => l.id);
+    expect(body.map((l) => l.id)).toEqual(sortedIds);
   });
 
   it("DynamoDB エラー時に 500 を返す", async () => {
