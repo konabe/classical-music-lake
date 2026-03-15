@@ -18,9 +18,11 @@
   background: #f0ece4;
   color: #333;
   padding: 0.6rem 1.2rem;
+  border: none;
   border-radius: 6px;
-  text-decoration: none;
   font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
   transition: background 0.2s;
 }
 
