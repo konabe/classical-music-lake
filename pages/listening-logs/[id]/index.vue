@@ -111,17 +111,4 @@ dt {
   line-height: 1.7;
   color: #444;
 }
-
-.btn-secondary {
-  background: #f0ece4;
-  color: #333;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-.btn-secondary:hover {
-  background: #e0d8cc;
-}
 </style>
