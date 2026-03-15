@@ -119,5 +119,4 @@ async function handleSubmit() {
   gap: 0.8rem;
   margin-top: 1.5rem;
 }
-
 </style>

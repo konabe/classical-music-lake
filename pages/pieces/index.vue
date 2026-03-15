@@ -100,5 +100,4 @@ async function deletePiece(piece: Piece) {
   gap: 0.5rem;
   flex-shrink: 0;
 }
-
 </style>

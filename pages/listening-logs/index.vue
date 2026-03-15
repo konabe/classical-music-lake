@@ -144,5 +144,4 @@ async function deleteLog(id: string) {
   gap: 0.5rem;
   flex-shrink: 0;
 }
-
 </style>
