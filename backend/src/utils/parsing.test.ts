@@ -27,7 +27,10 @@ describe("parseRequestBody", () => {
   });
 
   it("オブジェクトの場合はそのまま返す", () => {
-    expect(parseRequestBody<TestInput>({ name: "test", value: 1 })).toEqual({ name: "test", value: 1 });
+    expect(parseRequestBody<TestInput>({ name: "test", value: 1 })).toEqual({
+      name: "test",
+      value: 1,
+    });
   });
 
   it("空オブジェクトの場合はそのまま返す", () => {
