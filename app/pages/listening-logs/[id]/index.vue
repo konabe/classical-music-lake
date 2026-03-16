@@ -4,10 +4,7 @@ import type { ListeningLog } from "~/types";
 const route = useRoute();
 const apiBase = useApiBase();
 const { data: log } = await useFetch<ListeningLog>(`${apiBase}/listening-logs/${route.params.id}`);
-
-function ratingStars(rating: number): string {
-  return "★".repeat(rating) + "☆".repeat(5 - rating);
-}
+const { ratingStars } = useRatingDisplay();
 </script>
 
 <template>
@@ -113,18 +110,5 @@ dt {
 .memo p {
   line-height: 1.7;
   color: #444;
-}
-
-.btn-secondary {
-  background: #f0ece4;
-  color: #333;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-.btn-secondary:hover {
-  background: #e0d8cc;
 }
 </style>

@@ -2,16 +2,15 @@ import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
-import { createHandler } from "../utils/middleware";
+import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseBody } from "../utils/parseBody";
+import { getIdParam } from "../utils/path-params";
 import type { ListeningLog } from "../types";
 import { updateListeningLogSchema } from "./schemas";
 
 export const handler = createHandler(async (event) => {
-  const id = event.pathParameters?.id;
-  if (!id) throw new createError.BadRequest("id is required");
-
-  const input = parseBody(event.body, updateListeningLogSchema);
+  const id = getIdParam(event);
+  const input = parseBody(event.body as unknown, updateListeningLogSchema);
 
   const existing = await dynamo.send(
     new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id } })
@@ -28,4 +27,4 @@ export const handler = createHandler(async (event) => {
   };
   await dynamo.send(new PutCommand({ TableName: TABLE_LISTENING_LOGS, Item: updated }));
   return { statusCode: StatusCodes.OK, body: updated };
-});
+}).use(jsonBodyParser);

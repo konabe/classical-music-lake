@@ -3,32 +3,15 @@ import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import createError, { isHttpError } from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_PIECES } from "../utils/dynamodb";
-import { createHandler } from "../utils/middleware";
-import type { Piece, UpdatePieceInput } from "../types";
+import { createHandler, jsonBodyParser } from "../utils/middleware";
+import { parseBody } from "../utils/parseBody";
+import { getIdParam } from "../utils/path-params";
+import type { Piece } from "../types";
+import { updatePieceSchema } from "./schemas";
 
 export const handler = createHandler(async (event) => {
-  const id = event.pathParameters?.id;
-  if (!id) throw new createError.BadRequest("id is required");
-  if (!event.body) throw new createError.BadRequest("Request body is required");
-
-  let input: UpdatePieceInput;
-  try {
-    const parsed: unknown = JSON.parse(event.body);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw new createError.BadRequest("Request body must be a JSON object");
-    }
-    input = parsed as UpdatePieceInput;
-  } catch (err) {
-    if (isHttpError(err)) throw err;
-    throw new createError.BadRequest("Invalid JSON");
-  }
-
-  if (input.title !== undefined && !input.title) {
-    throw new createError.BadRequest("title must be a non-empty string");
-  }
-  if (input.composer !== undefined && !input.composer) {
-    throw new createError.BadRequest("composer must be a non-empty string");
-  }
+  const id = getIdParam(event);
+  const input = parseBody(event.body as unknown, updatePieceSchema);
 
   try {
     const existing = await dynamo.send(new GetCommand({ TableName: TABLE_PIECES, Key: { id } }));
@@ -58,4 +41,4 @@ export const handler = createHandler(async (event) => {
     }
     throw new createError.InternalServerError("Failed to update piece");
   }
-});
+}).use(jsonBodyParser);
