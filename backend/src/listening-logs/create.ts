@@ -1,29 +1,14 @@
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { randomUUID } from "crypto";
-import createError, { isHttpError } from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler } from "../utils/middleware";
-import type { CreateListeningLogInput, ListeningLog } from "../types";
-import { isValidRating } from "../types";
+import { parseBody } from "../utils/parseBody";
+import type { ListeningLog } from "../types";
+import { createListeningLogSchema } from "./schemas";
 
 export const handler = createHandler(async (event) => {
-  if (!event.body) throw new createError.BadRequest("Request body is required");
-
-  let input: CreateListeningLogInput;
-  try {
-    const parsed: unknown = JSON.parse(event.body);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw new createError.BadRequest("Request body must be a JSON object");
-    }
-    input = parsed as CreateListeningLogInput;
-  } catch (err) {
-    if (isHttpError(err)) throw err;
-    throw new createError.BadRequest("Invalid JSON");
-  }
-
-  if (!isValidRating(input.rating))
-    throw new createError.BadRequest("rating must be between 1 and 5");
+  const input = parseBody(event.body, createListeningLogSchema);
 
   const now = new Date().toISOString();
   const item: ListeningLog = {

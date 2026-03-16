@@ -3,24 +3,15 @@ import createError from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler } from "../utils/middleware";
-import type { ListeningLog, UpdateListeningLogInput } from "../types";
-import { isValidRating } from "../types";
+import { parseBody } from "../utils/parseBody";
+import type { ListeningLog } from "../types";
+import { updateListeningLogSchema } from "./schemas";
 
 export const handler = createHandler(async (event) => {
   const id = event.pathParameters?.id;
   if (!id) throw new createError.BadRequest("id is required");
-  if (!event.body) throw new createError.BadRequest("Request body is required");
 
-  let input: UpdateListeningLogInput;
-  try {
-    input = JSON.parse(event.body);
-  } catch {
-    throw new createError.BadRequest("Invalid JSON");
-  }
-
-  if (input.rating !== undefined && !isValidRating(input.rating)) {
-    throw new createError.BadRequest("rating must be between 1 and 5");
-  }
+  const input = parseBody(event.body, updateListeningLogSchema);
 
   const existing = await dynamo.send(
     new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id } })

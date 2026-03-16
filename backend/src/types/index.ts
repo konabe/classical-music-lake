@@ -2,10 +2,6 @@
 // フロントエンドの types/index.ts と同期を保つこと
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
-export function isValidRating(value: unknown): value is Rating {
-  return typeof value === "number" && [1, 2, 3, 4, 5].includes(value);
-}
-
 // APIエラーレスポンスのボディ型
 // フロントエンドの types/index.ts と同期を保つこと
 export type ApiErrorResponse = {
