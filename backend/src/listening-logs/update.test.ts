@@ -82,6 +82,41 @@ describe("PUT /listening-logs/:id (update)", () => {
     }
   );
 
+  it.each(["", "not-a-date", "2024-01-15"])(
+    "listenedAt が不正な値（%s）の場合は 400 を返す",
+    async (invalidListenedAt) => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ listenedAt: invalidListenedAt })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe(
+        "listenedAt must be a valid ISO 8601 datetime"
+      );
+    }
+  );
+
+  it("composer が空文字の場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ composer: "" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("composer is required");
+  });
+
+  it("piece が空文字の場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ piece: "" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("piece is required");
+  });
+
   it("rating を含まない更新は rating のバリデーションをスキップする", async () => {
     vi.mocked(dynamo.send)
       .mockResolvedValueOnce({ Item: existingLog } as never)

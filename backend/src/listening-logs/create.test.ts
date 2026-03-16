@@ -80,6 +80,41 @@ describe("POST /listening-logs (create)", () => {
     }
   );
 
+  it.each(["", "not-a-date", "2024-01-15"])(
+    "listenedAt が不正な値（%s）の場合は 400 を返す",
+    async (invalidListenedAt) => {
+      const result = await handler(
+        makeEvent(JSON.stringify({ ...validInput, listenedAt: invalidListenedAt })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe(
+        "listenedAt must be a valid ISO 8601 datetime"
+      );
+    }
+  );
+
+  it("composer が空文字の場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent(JSON.stringify({ ...validInput, composer: "" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("composer is required");
+  });
+
+  it("piece が空文字の場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent(JSON.stringify({ ...validInput, piece: "" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("piece is required");
+  });
+
   it("正常に作成して 201 を返す", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);

@@ -9,19 +9,31 @@ const ratingSchema = z.any().superRefine((val, ctx) => {
   }
 }) as z.ZodType<1 | 2 | 3 | 4 | 5>;
 
+const listenedAtSchema = z.iso.datetime({
+  error: "listenedAt must be a valid ISO 8601 datetime",
+});
+
+const nonEmptyString = (requiredMsg: string) =>
+  z.any().superRefine((val, ctx) => {
+    if (typeof val !== "string" || val.length === 0) {
+      ctx.addIssue({ code: "custom", message: requiredMsg });
+      return z.NEVER;
+    }
+  }) as z.ZodType<string>;
+
 export const createListeningLogSchema = z.object({
-  listenedAt: z.string(),
-  composer: z.string(),
-  piece: z.string(),
+  listenedAt: listenedAtSchema,
+  composer: nonEmptyString("composer is required"),
+  piece: nonEmptyString("piece is required"),
   rating: ratingSchema,
   isFavorite: z.boolean(),
   memo: z.string().optional(),
 });
 
 export const updateListeningLogSchema = z.object({
-  listenedAt: z.string().optional(),
-  composer: z.string().optional(),
-  piece: z.string().optional(),
+  listenedAt: listenedAtSchema.optional(),
+  composer: nonEmptyString("composer is required").optional(),
+  piece: nonEmptyString("piece is required").optional(),
   rating: ratingSchema.optional(),
   isFavorite: z.boolean().optional(),
   memo: z.string().optional(),
