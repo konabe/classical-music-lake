@@ -5,19 +5,13 @@ import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_PIECES } from "../utils/dynamodb";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
+import { updatePieceSchema } from "../utils/schemas";
 import { getIdParam } from "../utils/path-params";
-import type { Piece, UpdatePieceInput } from "../types";
+import type { Piece } from "../types";
 
 export const handler = createHandler(async (event) => {
   const id = getIdParam(event);
-  const input = parseRequestBody<UpdatePieceInput>(event.body as unknown);
-
-  if (input.title !== undefined && !input.title) {
-    throw new createError.BadRequest("title must be a non-empty string");
-  }
-  if (input.composer !== undefined && !input.composer) {
-    throw new createError.BadRequest("composer must be a non-empty string");
-  }
+  const input = parseRequestBody(event.body as unknown, updatePieceSchema);
 
   try {
     const existing = await dynamo.send(new GetCommand({ TableName: TABLE_PIECES, Key: { id } }));

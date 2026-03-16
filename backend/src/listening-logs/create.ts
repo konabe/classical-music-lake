@@ -1,18 +1,14 @@
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { randomUUID } from "crypto";
-import createError from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
-import type { CreateListeningLogInput, ListeningLog } from "../types";
-import { isValidRating } from "../types";
+import { createListeningLogSchema } from "../utils/schemas";
+import type { ListeningLog } from "../types";
 
 export const handler = createHandler(async (event) => {
-  const input = parseRequestBody<CreateListeningLogInput>(event.body as unknown);
-
-  if (!isValidRating(input.rating))
-    throw new createError.BadRequest("rating must be between 1 and 5");
+  const input = parseRequestBody(event.body as unknown, createListeningLogSchema);
 
   const now = new Date().toISOString();
   const item: ListeningLog = {
