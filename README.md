@@ -71,9 +71,9 @@ cdk deploy
 
 以下のシークレットをリポジトリに設定してください：
 
-| シークレット名       | 説明                                  |
-| -------------------- | ------------------------------------- |
-| `AWS_ROLE_TO_ASSUME` | AssumeRole 対象の IAM ロール ARN      |
+| シークレット名       | 説明                             |
+| -------------------- | -------------------------------- |
+| `AWS_ROLE_TO_ASSUME` | AssumeRole 対象の IAM ロール ARN |
 
 > **注意**: `AWS_REGION` はワークフロー内に `ap-northeast-1` でハードコードされています。API GatewayのURLはCloudFormation Outputsから自動取得するため、シークレットとして設定する必要はありません。
 
@@ -82,7 +82,11 @@ cdk deploy
 このワークフローは GitHub Actions OIDC を使ったキーレス認証を採用しています。事前に以下を設定してください：
 
 1. AWS IAM で ID プロバイダー（`token.actions.githubusercontent.com`）を作成
-2. 最小権限の IAM ロールを作成し、上記 ID プロバイダーからの Assume Role を許可
+2. 最小権限の IAM ロールを作成し、信頼ポリシーに以下を設定：
+   - **Action**: `sts:AssumeRoleWithWebIdentity`
+   - **Condition**:
+     - `token.actions.githubusercontent.com:aud` = `sts.amazonaws.com`
+     - `token.actions.githubusercontent.com:sub` = `repo:<org>/<repo>:ref:refs/heads/<branch>`（例: `repo:konabe/classical-music-lake:ref:refs/heads/main`）
 3. ロール ARN を `AWS_ROLE_TO_ASSUME` シークレットに設定
 
 `main` ブランチへのプッシュで自動デプロイされます。

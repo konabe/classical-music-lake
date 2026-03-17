@@ -360,11 +360,18 @@ DELETE /listening-logs/{id}
 
 #### CI/CD（GitHub Secrets）
 
-| シークレット名       | 用途                                     |
-| -------------------- | ---------------------------------------- |
+| シークレット名       | 用途                                          |
+| -------------------- | --------------------------------------------- |
 | `AWS_ROLE_TO_ASSUME` | GitHub OIDC で AssumeRole する IAM ロール ARN |
 
 > **シークレット管理方針**: CI/CD 認証は GitHub Actions OIDC + IAM Role Assume によるキーレス認証を採用。長期 AWS アクセスキーを使用しない。Lambda 環境変数に秘密情報は含まれない（テーブル名・CORS オリジンのみ）。将来フェーズで認証機能を追加する場合は AWS Secrets Manager の導入を検討すること。
+>
+> **IAM 信頼ポリシー要件**: IAM ロールの信頼ポリシーには以下を必ず設定すること。誤設定を防ぐため、Action・Condition キー・値を明記する。
+>
+> - **Action**: `sts:AssumeRoleWithWebIdentity`
+> - **Condition**:
+>   - `token.actions.githubusercontent.com:aud` = `sts.amazonaws.com`
+>   - `token.actions.githubusercontent.com:sub` = `repo:<org>/<repo>:ref:refs/heads/<branch>`（例: `repo:konabe/classical-music-lake:ref:refs/heads/main`）
 
 ---
 
