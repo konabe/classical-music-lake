@@ -25,12 +25,8 @@ export const updateListeningLogSchema = z.object({
 });
 
 export const createPieceSchema = z.object({
-  title: z
-    .string({ error: () => "title is required" })
-    .min(1, "title is required"),
-  composer: z
-    .string({ error: () => "composer is required" })
-    .min(1, "composer is required"),
+  title: z.string({ error: () => "title is required" }).min(1, "title is required"),
+  composer: z.string({ error: () => "composer is required" }).min(1, "composer is required"),
 });
 
 export const updatePieceSchema = z.object({
