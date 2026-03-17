@@ -54,16 +54,17 @@ describe("PUT /pieces/{id} (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
   });
 
-  it("body がない場合は 400 を返す", async () => {
-    const result = await handler(makeEvent("abc-123", null), mockContext, mockCallback);
-    expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("Request body is required");
-  });
-
-  it("不正な JSON の場合は 422 を返す", async () => {
-    const result = await handler(makeEvent("abc-123", "invalid json"), mockContext, mockCallback);
-    expect(result?.statusCode).toBe(422);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("Invalid or malformed JSON was provided");
+  describe("リクエストボディ異常系", () => {
+    it.each<[string | null, number, string]>([
+      [null, 400, "Request body is required"],
+      ["null", 400, "Request body is required"],
+      ["[]", 400, "Request body must be a JSON object"],
+      ["invalid json", 422, "Invalid or malformed JSON was provided"],
+    ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
+      const result = await handler(makeEvent("abc-123", body), mockContext, mockCallback);
+      expect(result?.statusCode).toBe(statusCode);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
+    });
   });
 
   it("title が空文字の場合は 400 を返す", async () => {
