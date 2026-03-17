@@ -1,5 +1,5 @@
 import createError from "http-errors";
-import { z } from "zod";
+import type { z } from "zod";
 
 export function parseRequestBody<T>(body: unknown, schema?: z.ZodType<T>): T {
   if (body === null || body === undefined) {
