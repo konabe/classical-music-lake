@@ -89,7 +89,9 @@ describe("POST /listening-logs (create)", () => {
       mockCallback
     );
     expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be 100 characters or less");
+    expect(JSON.parse(result?.body ?? "{}").message).toBe(
+      "composer must be 100 characters or less"
+    );
   });
 
   it.each(["   ", "\t", "\n"])(
