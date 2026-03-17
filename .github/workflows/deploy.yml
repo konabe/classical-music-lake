@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
 
     env:
       STAGE_NAME: ${{ github.event_name == 'push' && 'prod' || github.event.inputs.environment }}
@@ -51,11 +52,23 @@ jobs:
         run: npm install
         working-directory: cdk
 
+      # ----------------------------------------
+      # AWS_ROLE_TO_ASSUME シークレットの存在確認
+      # 未設定の場合は後続ステップが不明なエラーで落ちるため事前に検出する
+      # ----------------------------------------
+      - name: Validate required secrets
+        env:
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          if [ -z "$AWS_ROLE_TO_ASSUME" ]; then
+            echo "::error::AWS_ROLE_TO_ASSUME secret is not set. Please configure GitHub OIDC and set the IAM role ARN as AWS_ROLE_TO_ASSUME in repository secrets."
+            exit 1
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ap-northeast-1
 
       # ----------------------------------------
