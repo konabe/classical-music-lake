@@ -1,28 +1,21 @@
 import { z } from "zod";
 
-const ratingSchema = z.unknown().superRefine((val, ctx) => {
-  if (typeof val !== "number" || !Number.isInteger(val) || val < 1 || val > 5) {
-    ctx.addIssue({ code: "custom", message: "rating must be between 1 and 5" });
-  }
-});
+const ratingSchema = z
+  .number({ error: () => "rating must be between 1 and 5" })
+  .int({ message: "rating must be between 1 and 5" })
+  .min(1, { message: "rating must be between 1 and 5" })
+  .max(5, { message: "rating must be between 1 and 5" });
 
 export const createListeningLogSchema = z.object({
-  listenedAt: z.string(),
-  composer: z.string(),
-  piece: z.string(),
+  listenedAt: z.iso.datetime({ offset: false }),
+  composer: z.string().min(1),
+  piece: z.string().min(1),
   rating: ratingSchema,
   isFavorite: z.boolean(),
   memo: z.string().optional(),
 });
 
-export const updateListeningLogSchema = z.object({
-  listenedAt: z.string().optional(),
-  composer: z.string().optional(),
-  piece: z.string().optional(),
-  rating: ratingSchema.optional(),
-  isFavorite: z.boolean().optional(),
-  memo: z.string().optional(),
-});
+export const updateListeningLogSchema = createListeningLogSchema.partial();
 
 export const createPieceSchema = z.object({
   title: z.string({ error: () => "title is required" }).min(1, "title is required"),
