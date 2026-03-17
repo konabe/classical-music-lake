@@ -110,8 +110,40 @@ interface ListeningLog {
 
 - `rating`: 1〜5の範囲
 - `listenedAt`: ISO 8601形式の日時文字列
+- `composer`: 空文字・空白のみ不可、最大100文字
+- `piece`: 空文字・空白のみ不可、最大200文字
+- `memo`: 最大1000文字
 
 > バリデーションは `utils/schemas.ts` に定義した Zod スキーマで実施し、`parseRequestBody` のパース処理と統合されている。
+
+---
+
+### 3.2 楽曲マスタ (Piece)
+
+#### DynamoDBテーブル
+
+- **テーブル名**: `classical-music-pieces`
+- **パーティションキー**: `id` (String)
+- **課金モード**: オンデマンド
+
+#### データ構造
+
+```typescript
+interface Piece {
+  id: string;      // UUID (自動生成)
+  title: string;   // 曲名
+  composer: string; // 作曲家名
+  createdAt: string; // 作成日時 (ISO 8601形式)
+  updatedAt: string; // 更新日時 (ISO 8601形式)
+}
+```
+
+#### バリデーション
+
+- `title`: 空文字・空白のみ不可、最大200文字
+- `composer`: 空文字・空白のみ不可、最大100文字
+
+> バリデーションは `utils/schemas.ts` に定義した Zod スキーマで実施する。
 
 ---
 
@@ -265,11 +297,11 @@ DELETE /listening-logs/{id}
 | フィールド   | 型                    | 必須 | バリデーション                             |
 | ------------ | --------------------- | ---- | ------------------------------------------ |
 | `listenedAt` | string                | ✅   | ISO 8601形式（例: `2024-01-15T19:30:00Z`） |
-| `composer`   | string                | ✅   | 空文字不可                                 |
-| `piece`      | string                | ✅   | 空文字不可                                 |
+| `composer`   | string                | ✅   | 空文字・空白のみ不可、最大100文字          |
+| `piece`      | string                | ✅   | 空文字・空白のみ不可、最大200文字          |
 | `rating`     | 1 \| 2 \| 3 \| 4 \| 5 | ✅   | 1〜5の整数                                 |
 | `isFavorite` | boolean               | ✅   | `true` または `false`                      |
-| `memo`       | string                | -    | 任意                                       |
+| `memo`       | string                | -    | 最大1000文字                               |
 
 #### 自動生成フィールド（入力不可）
 
@@ -476,6 +508,7 @@ cdk deploy
 
 | 日付       | バージョン | 変更内容                                                          |
 | ---------- | ---------- | ----------------------------------------------------------------- |
+| 2026-03-17 | 1.2.4      | Create入力の実体バリデーション強化（空白のみ禁止・最大文字数制限）|
 | 2026-03-16 | 1.2.3      | Zod を導入しリクエストボディのパース処理にバリデーションを統合    |
 | 2026-03-15 | 1.2.2      | `listening-logs/list.ts` を DynamoDB ページネーション対応に統一   |
 | 2026-03-15 | 1.2.1      | バックエンドの JSON パース処理を `utils/parsing.ts` に共通化      |

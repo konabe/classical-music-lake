@@ -69,6 +69,62 @@ describe("POST /listening-logs (create)", () => {
     }
   );
 
+  it.each(["   ", "\t", "\n"])(
+    "composer が空白のみ（%j）の場合は 400 を返す",
+    async (whitespaceComposer) => {
+      const result = await handler(
+        makeEvent(JSON.stringify({ ...validInput, composer: whitespaceComposer })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be a non-empty string");
+    }
+  );
+
+  it("composer が 100 文字を超える場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent(JSON.stringify({ ...validInput, composer: "あ".repeat(101) })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be 100 characters or less");
+  });
+
+  it.each(["   ", "\t", "\n"])(
+    "piece が空白のみ（%j）の場合は 400 を返す",
+    async (whitespacePiece) => {
+      const result = await handler(
+        makeEvent(JSON.stringify({ ...validInput, piece: whitespacePiece })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be a non-empty string");
+    }
+  );
+
+  it("piece が 200 文字を超える場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent(JSON.stringify({ ...validInput, piece: "あ".repeat(201) })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be 200 characters or less");
+  });
+
+  it("memo が 1000 文字を超える場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent(JSON.stringify({ ...validInput, memo: "あ".repeat(1001) })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("memo must be 1000 characters or less");
+  });
+
   it("正常に作成して 201 を返す", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
