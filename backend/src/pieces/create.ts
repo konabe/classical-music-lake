@@ -1,17 +1,14 @@
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { randomUUID } from "crypto";
-import createError from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_PIECES } from "../utils/dynamodb";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
-import type { CreatePieceInput, Piece } from "../types";
+import { createPieceSchema } from "../utils/schemas";
+import type { Piece } from "../types";
 
 export const handler = createHandler(async (event) => {
-  const input = parseRequestBody<CreatePieceInput>(event.body as unknown);
-
-  if (!input.title) throw new createError.BadRequest("title is required");
-  if (!input.composer) throw new createError.BadRequest("composer is required");
+  const input = parseRequestBody(event.body as unknown, createPieceSchema);
 
   const now = new Date().toISOString();
   const item: Piece = {
