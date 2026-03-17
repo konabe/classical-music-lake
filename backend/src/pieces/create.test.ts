@@ -66,6 +66,29 @@ describe("POST /pieces (create)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("title is required");
   });
 
+  it.each(["   ", "\t", "\n"])(
+    "title が空白のみ（%j）の場合は 400 を返す",
+    async (whitespaceTitle) => {
+      const result = await handler(
+        makeEvent(JSON.stringify({ ...validInput, title: whitespaceTitle })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("title is required");
+    }
+  );
+
+  it("title が 200 文字を超える場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent(JSON.stringify({ ...validInput, title: "あ".repeat(201) })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be 200 characters or less");
+  });
+
   it("composer がない場合は 400 を返す", async () => {
     const result = await handler(
       makeEvent(JSON.stringify({ title: "交響曲第9番" })),
@@ -74,6 +97,31 @@ describe("POST /pieces (create)", () => {
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("composer is required");
+  });
+
+  it.each(["   ", "\t", "\n"])(
+    "composer が空白のみ（%j）の場合は 400 を返す",
+    async (whitespaceComposer) => {
+      const result = await handler(
+        makeEvent(JSON.stringify({ ...validInput, composer: whitespaceComposer })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("composer is required");
+    }
+  );
+
+  it("composer が 100 文字を超える場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent(JSON.stringify({ ...validInput, composer: "あ".repeat(101) })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe(
+      "composer must be 100 characters or less"
+    );
   });
 
   it("正常に作成して 201 を返す", async () => {
