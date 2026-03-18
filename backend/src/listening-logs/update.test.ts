@@ -84,6 +84,73 @@ describe("PUT /listening-logs/:id (update)", () => {
     }
   );
 
+  it.each(["   ", "\t", "\n"])(
+    "composer が空白のみ（%j）の場合は 400 を返す",
+    async (whitespaceComposer) => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ composer: whitespaceComposer })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be a non-empty string");
+    }
+  );
+
+  it("composer が 100 文字を超える場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ composer: "あ".repeat(101) })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe(
+      "composer must be 100 characters or less"
+    );
+  });
+
+  it.each(["   ", "\t", "\n"])(
+    "piece が空白のみ（%j）の場合は 400 を返す",
+    async (whitespacePiece) => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ piece: whitespacePiece })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be a non-empty string");
+    }
+  );
+
+  it("piece が 200 文字を超える場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ piece: "あ".repeat(201) })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be 200 characters or less");
+  });
+
+  it("memo が 1000 文字を超える場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ memo: "あ".repeat(1001) })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("memo must be 1000 characters or less");
+  });
+
+  it("listenedAt が不正なフォーマットの場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ listenedAt: "2024-01-15" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+  });
+
   it("rating を含まない更新は rating のバリデーションをスキップする", async () => {
     vi.mocked(dynamodb.updateItem).mockResolvedValueOnce({
       ...existingLog,
