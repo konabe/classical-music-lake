@@ -6,10 +6,14 @@ import type { Piece } from "../types";
 import { handler } from "./update";
 import { dynamo } from "../utils/dynamodb";
 
-vi.mock("../utils/dynamodb", () => ({
-  dynamo: { send: vi.fn() },
-  TABLE_PIECES: "test-pieces",
-}));
+vi.mock("../utils/dynamodb", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../utils/dynamodb")>();
+  return {
+    ...actual,
+    dynamo: { send: vi.fn() },
+    TABLE_PIECES: "test-pieces",
+  };
+});
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };

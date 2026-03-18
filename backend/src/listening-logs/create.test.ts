@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+import type { Context } from "aws-lambda";
 
 import { handler } from "./create";
 import { dynamo } from "../utils/dynamodb";
+import { makeEvent } from "../test/fixtures";
 
 vi.mock("../utils/dynamodb", () => ({
   dynamo: { send: vi.fn() },
@@ -11,23 +12,6 @@ vi.mock("../utils/dynamodb", () => ({
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
-
-function makeEvent(body: string | null): APIGatewayProxyEvent {
-  return {
-    body,
-    headers: {},
-    multiValueHeaders: {},
-    httpMethod: "POST",
-    isBase64Encoded: false,
-    path: "/listening-logs",
-    pathParameters: null,
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
-    resource: "",
-  };
-}
 
 const validInput = {
   listenedAt: "2024-01-15T20:00:00.000Z",
@@ -50,7 +34,11 @@ describe("POST /listening-logs (create)", () => {
       ["[]", 400, "Request body must be a JSON object"],
       ["invalid json", 422, "Invalid or malformed JSON was provided"],
     ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(makeEvent(body), mockContext, mockCallback);
+      const result = await handler(
+        makeEvent({ body, httpMethod: "POST", path: "/listening-logs" }),
+        mockContext,
+        mockCallback
+      );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
     });
@@ -60,7 +48,11 @@ describe("POST /listening-logs (create)", () => {
     "rating が不正な値（%s）の場合は 400 を返す",
     async (invalidRating) => {
       const result = await handler(
-        makeEvent(JSON.stringify({ ...validInput, rating: invalidRating })),
+        makeEvent({
+          body: JSON.stringify({ ...validInput, rating: invalidRating }),
+          httpMethod: "POST",
+          path: "/listening-logs",
+        }),
         mockContext,
         mockCallback
       );
@@ -73,7 +65,11 @@ describe("POST /listening-logs (create)", () => {
     "composer が空白のみ（%j）の場合は 400 を返す",
     async (whitespaceComposer) => {
       const result = await handler(
-        makeEvent(JSON.stringify({ ...validInput, composer: whitespaceComposer })),
+        makeEvent({
+          body: JSON.stringify({ ...validInput, composer: whitespaceComposer }),
+          httpMethod: "POST",
+          path: "/listening-logs",
+        }),
         mockContext,
         mockCallback
       );
@@ -84,7 +80,11 @@ describe("POST /listening-logs (create)", () => {
 
   it("composer が 100 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(JSON.stringify({ ...validInput, composer: "あ".repeat(101) })),
+      makeEvent({
+        body: JSON.stringify({ ...validInput, composer: "あ".repeat(101) }),
+        httpMethod: "POST",
+        path: "/listening-logs",
+      }),
       mockContext,
       mockCallback
     );
@@ -98,7 +98,11 @@ describe("POST /listening-logs (create)", () => {
     "piece が空白のみ（%j）の場合は 400 を返す",
     async (whitespacePiece) => {
       const result = await handler(
-        makeEvent(JSON.stringify({ ...validInput, piece: whitespacePiece })),
+        makeEvent({
+          body: JSON.stringify({ ...validInput, piece: whitespacePiece }),
+          httpMethod: "POST",
+          path: "/listening-logs",
+        }),
         mockContext,
         mockCallback
       );
@@ -109,7 +113,11 @@ describe("POST /listening-logs (create)", () => {
 
   it("piece が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(JSON.stringify({ ...validInput, piece: "あ".repeat(201) })),
+      makeEvent({
+        body: JSON.stringify({ ...validInput, piece: "あ".repeat(201) }),
+        httpMethod: "POST",
+        path: "/listening-logs",
+      }),
       mockContext,
       mockCallback
     );
@@ -119,7 +127,11 @@ describe("POST /listening-logs (create)", () => {
 
   it("memo が 1000 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(JSON.stringify({ ...validInput, memo: "あ".repeat(1001) })),
+      makeEvent({
+        body: JSON.stringify({ ...validInput, memo: "あ".repeat(1001) }),
+        httpMethod: "POST",
+        path: "/listening-logs",
+      }),
       mockContext,
       mockCallback
     );
@@ -129,7 +141,11 @@ describe("POST /listening-logs (create)", () => {
 
   it("正常に作成して 201 を返す", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
-    const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
+    const result = await handler(
+      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/listening-logs" }),
+      mockContext,
+      mockCallback
+    );
     expect(result?.statusCode).toBe(201);
 
     const body = JSON.parse(result?.body ?? "{}");
@@ -142,21 +158,33 @@ describe("POST /listening-logs (create)", () => {
 
   it("作成アイテムに UUID が付与される", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
-    const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
+    const result = await handler(
+      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/listening-logs" }),
+      mockContext,
+      mockCallback
+    );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toMatch(/^[0-9a-f-]{36}$/);
   });
 
   it("createdAt と updatedAt が同じ値で設定される", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
-    const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
+    const result = await handler(
+      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/listening-logs" }),
+      mockContext,
+      mockCallback
+    );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.createdAt).toBe(body.updatedAt);
   });
 
   it("DynamoDB エラー時に 500 を返す", async () => {
     vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
-    const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
+    const result = await handler(
+      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/listening-logs" }),
+      mockContext,
+      mockCallback
+    );
     expect(result?.statusCode).toBe(500);
   });
 });
