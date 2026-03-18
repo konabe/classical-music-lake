@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toDatetimeLocal } from "~/utils/date";
 import type { CreateListeningLogInput, Rating } from "~/types";
 
 const props = defineProps<{
@@ -13,7 +14,7 @@ const emit = defineEmits<{
 const { data: pieces, pending: piecesPending } = usePieces();
 
 const form = reactive<CreateListeningLogInput>({
-  listenedAt: props.initialValues?.listenedAt ?? new Date().toISOString().slice(0, 16),
+  listenedAt: props.initialValues?.listenedAt ?? toDatetimeLocal(new Date().toISOString()),
   composer: props.initialValues?.composer ?? "",
   piece: props.initialValues?.piece ?? "",
   rating: props.initialValues?.rating ?? 3,
