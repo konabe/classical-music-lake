@@ -10,8 +10,7 @@ export const useListeningLogs = () => {
   const update = (id: string, input: UpdateListeningLogInput) =>
     $fetch<ListeningLog>(`${apiBase}/listening-logs/${id}`, { method: "PUT", body: input });
 
-  const deleteLog = (id: string) =>
-    $fetch(`${apiBase}/listening-logs/${id}`, { method: "DELETE" });
+  const deleteLog = (id: string) => $fetch(`${apiBase}/listening-logs/${id}`, { method: "DELETE" });
 
   return { ...list, create, update, deleteLog };
 };
