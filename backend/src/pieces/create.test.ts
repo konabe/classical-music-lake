@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+import type { Context } from "aws-lambda";
 
 import { handler } from "./create";
 import { dynamo } from "../utils/dynamodb";
+import { makeEvent } from "../test/fixtures";
 
 vi.mock("../utils/dynamodb", () => ({
   dynamo: { send: vi.fn() },
@@ -11,23 +12,6 @@ vi.mock("../utils/dynamodb", () => ({
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
-
-function makeEvent(body: string | null): APIGatewayProxyEvent {
-  return {
-    body,
-    headers: {},
-    multiValueHeaders: {},
-    httpMethod: "POST",
-    isBase64Encoded: false,
-    path: "/pieces",
-    pathParameters: null,
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
-    resource: "",
-  };
-}
 
 const validInput = {
   title: "交響曲第9番",
@@ -50,7 +34,11 @@ describe("POST /pieces (create)", () => {
       ["[]", 400, "Request body must be a JSON object"],
       ["invalid json", 422, "Invalid or malformed JSON was provided"],
     ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(makeEvent(body), mockContext, mockCallback);
+      const result = await handler(
+        makeEvent({ body, httpMethod: "POST", path: "/pieces" }),
+        mockContext,
+        mockCallback
+      );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
     });
@@ -58,7 +46,11 @@ describe("POST /pieces (create)", () => {
 
   it("title がない場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(JSON.stringify({ composer: "ベートーヴェン" })),
+      makeEvent({
+        body: JSON.stringify({ composer: "ベートーヴェン" }),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
       mockContext,
       mockCallback
     );
@@ -70,7 +62,11 @@ describe("POST /pieces (create)", () => {
     "title が空白のみ（%j）の場合は 400 を返す",
     async (whitespaceTitle) => {
       const result = await handler(
-        makeEvent(JSON.stringify({ ...validInput, title: whitespaceTitle })),
+        makeEvent({
+          body: JSON.stringify({ ...validInput, title: whitespaceTitle }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
         mockContext,
         mockCallback
       );
@@ -81,7 +77,11 @@ describe("POST /pieces (create)", () => {
 
   it("title が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(JSON.stringify({ ...validInput, title: "あ".repeat(201) })),
+      makeEvent({
+        body: JSON.stringify({ ...validInput, title: "あ".repeat(201) }),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
       mockContext,
       mockCallback
     );
@@ -91,7 +91,11 @@ describe("POST /pieces (create)", () => {
 
   it("composer がない場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(JSON.stringify({ title: "交響曲第9番" })),
+      makeEvent({
+        body: JSON.stringify({ title: "交響曲第9番" }),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
       mockContext,
       mockCallback
     );
@@ -103,7 +107,11 @@ describe("POST /pieces (create)", () => {
     "composer が空白のみ（%j）の場合は 400 を返す",
     async (whitespaceComposer) => {
       const result = await handler(
-        makeEvent(JSON.stringify({ ...validInput, composer: whitespaceComposer })),
+        makeEvent({
+          body: JSON.stringify({ ...validInput, composer: whitespaceComposer }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
         mockContext,
         mockCallback
       );
@@ -114,7 +122,11 @@ describe("POST /pieces (create)", () => {
 
   it("composer が 100 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(JSON.stringify({ ...validInput, composer: "あ".repeat(101) })),
+      makeEvent({
+        body: JSON.stringify({ ...validInput, composer: "あ".repeat(101) }),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
       mockContext,
       mockCallback
     );
@@ -126,7 +138,11 @@ describe("POST /pieces (create)", () => {
 
   it("正常に作成して 201 を返す", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
-    const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
+    const result = await handler(
+      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+      mockContext,
+      mockCallback
+    );
     expect(result?.statusCode).toBe(201);
 
     const body = JSON.parse(result?.body ?? "{}");
@@ -139,7 +155,11 @@ describe("POST /pieces (create)", () => {
 
   it("作成アイテムに UUID が付与される", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
-    const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
+    const result = await handler(
+      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+      mockContext,
+      mockCallback
+    );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBeUUID();
   });
@@ -150,7 +170,11 @@ describe("POST /pieces (create)", () => {
     vi.setSystemTime(now);
 
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
-    const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
+    const result = await handler(
+      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+      mockContext,
+      mockCallback
+    );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.createdAt).toBe(now.toISOString());
     expect(body.updatedAt).toBe(now.toISOString());
@@ -159,7 +183,11 @@ describe("POST /pieces (create)", () => {
 
   it("DynamoDB エラー時に 500 を返す", async () => {
     vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
-    const result = await handler(makeEvent(JSON.stringify(validInput)), mockContext, mockCallback);
+    const result = await handler(
+      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+      mockContext,
+      mockCallback
+    );
     expect(result?.statusCode).toBe(500);
   });
 });

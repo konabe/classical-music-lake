@@ -5,7 +5,7 @@ import httpResponseSerializer from "@middy/http-response-serializer";
 import type { HttpError } from "http-errors";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 
-type Handler = (
+export type LambdaHandler = (
   event: APIGatewayProxyEvent,
   context: Context
 ) => Promise<{ statusCode: number; body: unknown }>;
@@ -45,13 +45,12 @@ export const jsonBodyParser = httpJsonBodyParser({ disableContentTypeCheck: true
  * - httpErrorMiddleware: throw された http-errors を { message } JSON に変換
  * - @middy/http-response-serializer: 正常レスポンスのボディを JSON シリアライズ
  */
-type MiddyHandler = Parameters<
-  ReturnType<typeof middy<APIGatewayProxyEvent, APIGatewayProxyResult>>["handler"]
->[0];
-
-export const createHandler = (handler: Handler) =>
+export const createHandler = (handler: LambdaHandler) =>
   middy<APIGatewayProxyEvent, APIGatewayProxyResult>()
-    .handler(handler as unknown as MiddyHandler)
+    // LambdaHandler returns `body: unknown` while APIGatewayProxyResult expects
+    // `body: string`. The cast is safe because httpResponseSerializer will
+    // JSON.stringify the body at runtime before the response is returned.
+    .handler(handler as middy.Handler<APIGatewayProxyEvent, APIGatewayProxyResult>)
     .use(
       httpCors({
         origin: process.env.CORS_ALLOW_ORIGIN ?? "*",

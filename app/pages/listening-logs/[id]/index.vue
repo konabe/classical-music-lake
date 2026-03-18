@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { ListeningLog } from "~/types";
+import { formatDatetime } from "~/utils/date";
 
 const route = useRoute();
-const apiBase = useApiBase();
-const { data: log } = await useFetch<ListeningLog>(`${apiBase}/listening-logs/${route.params.id}`);
+const { data: log } = await useListeningLog(() => route.params.id as string);
 const { ratingStars } = useRatingDisplay();
 </script>
 
@@ -27,7 +26,7 @@ const { ratingStars } = useRatingDisplay();
         <dd>{{ log.composer }}</dd>
 
         <dt>鑑賞日時</dt>
-        <dd>{{ log.listenedAt.replace("T", " ").slice(0, 16) }}</dd>
+        <dd>{{ formatDatetime(log.listenedAt) }}</dd>
 
         <dt>評価</dt>
         <dd class="rating">{{ ratingStars(log.rating) }}</dd>

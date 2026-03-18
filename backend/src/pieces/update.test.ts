@@ -6,10 +6,14 @@ import type { Piece } from "../types";
 import { handler } from "./update";
 import { dynamo } from "../utils/dynamodb";
 
-vi.mock("../utils/dynamodb", () => ({
-  dynamo: { send: vi.fn() },
-  TABLE_PIECES: "test-pieces",
-}));
+vi.mock("../utils/dynamodb", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../utils/dynamodb")>();
+  return {
+    ...actual,
+    dynamo: { send: vi.fn() },
+    TABLE_PIECES: "test-pieces",
+  };
+});
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
@@ -67,24 +71,52 @@ describe("PUT /pieces/{id} (update)", () => {
     });
   });
 
-  it("title が空文字の場合は 400 を返す", async () => {
+  it.each(["", "   ", "\t", "\n"])(
+    "title が空または空白のみ（%j）の場合は 400 を返す",
+    async (invalidTitle) => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ title: invalidTitle })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be a non-empty string");
+    }
+  );
+
+  it("title が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "" })),
+      makeEvent("abc-123", JSON.stringify({ title: "あ".repeat(201) })),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be a non-empty string");
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be 200 characters or less");
   });
 
-  it("composer が空文字の場合は 400 を返す", async () => {
+  it.each(["", "   ", "\t", "\n"])(
+    "composer が空または空白のみ（%j）の場合は 400 を返す",
+    async (invalidComposer) => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ composer: invalidComposer })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be a non-empty string");
+    }
+  );
+
+  it("composer が 100 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ composer: "" })),
+      makeEvent("abc-123", JSON.stringify({ composer: "あ".repeat(101) })),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be a non-empty string");
+    expect(JSON.parse(result?.body ?? "{}").message).toBe(
+      "composer must be 100 characters or less"
+    );
   });
 
   it("title を含まない更新は title のバリデーションをスキップする", async () => {

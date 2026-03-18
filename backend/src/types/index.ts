@@ -1,19 +1,36 @@
+/**
+ * バックエンド共通型定義
+ *
+ * ## 管理方針
+ * - このファイルはバックエンド（Lambda）専用の型定義を管理する
+ * - app/types/index.ts と共有すべき型（ListeningLog, Piece, Rating など）は
+ *   両ファイルで重複定義する（パッケージを分離しているため）
+ * - 共有型を変更する場合は、必ず app/types/index.ts も同時に更新すること
+ * - isValidRating などのバックエンド固有のバリデーション関数はこのファイルにのみ存在する
+ *   （フロントエンド側には不要なため移植しない）
+ *
+ * ## 変更時のチェックリスト
+ * - [ ] 共有型を変更した場合、app/types/index.ts にも同じ変更を加えたか
+ * - [ ] バックエンド固有の型・関数のみを追加・変更した場合、フロントエンド側への影響はないか確認したか
+ */
+
 // 評価値（1〜5 の整数）
-// フロントエンドの types/index.ts と同期を保つこと
+// ※ app/types/index.ts と同期を保つこと
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
+// バックエンド固有: Rating のバリデーション関数（フロントエンド側には存在しない）
 export function isValidRating(value: unknown): value is Rating {
   return typeof value === "number" && [1, 2, 3, 4, 5].includes(value);
 }
 
 // APIエラーレスポンスのボディ型
-// フロントエンドの types/index.ts と同期を保つこと
+// ※ app/types/index.ts と同期を保つこと
 export type ApiErrorResponse = {
   message: string;
 };
 
 // 鑑賞ログ（曲・演奏家の記録）
-// フロントエンドの types/index.ts と同期を保つこと
+// ※ app/types/index.ts と同期を保つこと
 export interface ListeningLog {
   id: string;
   listenedAt: string; // ISO 8601 日時
@@ -30,7 +47,7 @@ export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "u
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
 
 // 楽曲マスタ
-// フロントエンドの types/index.ts と同期を保つこと
+// ※ app/types/index.ts と同期を保つこと
 export interface Piece {
   id: string;
   title: string;

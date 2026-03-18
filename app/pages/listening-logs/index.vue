@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import type { ListeningLog } from "~/types";
+import { formatDate } from "~/utils/date";
 
-const apiBase = useApiBase();
-const { data: logs, refresh } = await useFetch<ListeningLog[]>(`${apiBase}/listening-logs`);
+const { data: logs, refresh, deleteLog } = await useListeningLogs();
 const { ratingStars } = useRatingDisplay();
 
-async function deleteLog(id: string) {
+async function handleDelete(id: string) {
   if (!confirm("この記録を削除しますか？")) return;
-  await $fetch(`${apiBase}/listening-logs/${id}`, { method: "DELETE" });
+  await deleteLog(id);
   await refresh();
 }
 </script>
@@ -37,13 +36,13 @@ async function deleteLog(id: string) {
           </div>
           <div class="log-sub">
             <span class="rating">{{ ratingStars(log.rating) }}</span>
-            <span class="date">{{ log.listenedAt.slice(0, 10) }}</span>
+            <span class="date">{{ formatDate(log.listenedAt) }}</span>
           </div>
           <p v-if="log.memo" class="log-memo">{{ log.memo }}</p>
         </div>
         <div class="log-actions">
           <NuxtLink :to="`/listening-logs/${log.id}/edit`" class="btn-secondary">編集</NuxtLink>
-          <button class="btn-danger" @click="deleteLog(log.id)">削除</button>
+          <button class="btn-danger" @click="handleDelete(log.id)">削除</button>
         </div>
       </li>
     </ul>
