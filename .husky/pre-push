@@ -1,1 +1,4 @@
+# pre-commit (lint-staged) はステージ済みファイルのみ prettier --write で自動修正する。
+# 過去のコミットで既にフォーマット違反があったファイルはステージされないため検査されない。
+# push 前に全ファイルを prettier --check して、そのギャップを埋める。
 npm run format:check
