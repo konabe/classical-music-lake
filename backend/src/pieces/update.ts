@@ -7,15 +7,11 @@ import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { updatePieceSchema } from "../utils/schemas";
 import { getIdParam } from "../utils/path-params";
-import { validatePieceTitle, validatePieceComposer } from "./validators";
 import type { Piece } from "../types";
 
 export const handler = createHandler(async (event) => {
   const id = getIdParam(event);
   const input = parseRequestBody(event.body as unknown, updatePieceSchema);
-
-  if (input.title !== undefined) validatePieceTitle(input.title);
-  if (input.composer !== undefined) validatePieceComposer(input.composer);
 
   const existing = await dynamo.send(new GetCommand({ TableName: TABLE_PIECES, Key: { id } }));
   if (!existing.Item) throw new createError.NotFound("Piece not found");
