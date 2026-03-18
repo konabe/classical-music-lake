@@ -6,6 +6,7 @@ import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
+import type { IResource } from "aws-cdk-lib/aws-apigateway";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
@@ -20,6 +21,8 @@ export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
 }
 
 export class ClassicalMusicLakeStack extends cdk.Stack {
+  private corsAllowOrigin: string = "";
+
   constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
 
@@ -274,7 +277,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
 
     // CloudFront URL を CORS オリジンとして Lambda 環境変数に設定
-    const corsAllowOrigin = `https://${distribution.distributionDomainName}`;
+    this.corsAllowOrigin = `https://${distribution.distributionDomainName}`;
     [
       listeningLogsList,
       listeningLogsGet,
@@ -287,39 +290,20 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       updatePiece,
       deletePiece,
     ].forEach((fn) => {
-      fn.addEnvironment("CORS_ALLOW_ORIGIN", corsAllowOrigin);
+      fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigin);
     });
 
     // API Gateway の CORS オリジンも CloudFront URL に限定
-    listeningLogsResource.addCorsPreflight({
-      allowOrigins: [corsAllowOrigin],
-      allowMethods: ["GET", "POST", "OPTIONS"],
-      allowHeaders: ["Content-Type"],
-    });
-
-    listeningLogResource.addCorsPreflight({
-      allowOrigins: [corsAllowOrigin],
-      allowMethods: ["GET", "PUT", "DELETE", "OPTIONS"],
-      allowHeaders: ["Content-Type"],
-    });
-
-    piecesResource.addCorsPreflight({
-      allowOrigins: [corsAllowOrigin],
-      allowMethods: ["GET", "POST", "OPTIONS"],
-      allowHeaders: ["Content-Type"],
-    });
-
-    pieceResource.addCorsPreflight({
-      allowOrigins: [corsAllowOrigin],
-      allowMethods: ["GET", "PUT", "DELETE", "OPTIONS"],
-      allowHeaders: ["Content-Type"],
-    });
+    this.addCors(listeningLogsResource, ["GET", "POST", "OPTIONS"]);
+    this.addCors(listeningLogResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
+    this.addCors(piecesResource, ["GET", "POST", "OPTIONS"]);
+    this.addCors(pieceResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
 
     // API Gateway 自身が返す 4XX/5XX にも CORS ヘッダを付与
     api.addGatewayResponse("Default4xxCors", {
       type: apigateway.ResponseType.DEFAULT_4XX,
       responseHeaders: {
-        "Access-Control-Allow-Origin": `'${corsAllowOrigin}'`,
+        "Access-Control-Allow-Origin": `'${this.corsAllowOrigin}'`,
         "Access-Control-Allow-Headers": "'Content-Type'",
         "Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'",
       },
@@ -328,7 +312,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     api.addGatewayResponse("Default5xxCors", {
       type: apigateway.ResponseType.DEFAULT_5XX,
       responseHeaders: {
-        "Access-Control-Allow-Origin": `'${corsAllowOrigin}'`,
+        "Access-Control-Allow-Origin": `'${this.corsAllowOrigin}'`,
         "Access-Control-Allow-Headers": "'Content-Type'",
         "Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'",
       },
@@ -413,8 +397,16 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, "SpaUrl", {
-      value: corsAllowOrigin,
+      value: this.corsAllowOrigin,
       description: "CloudFront URL (フロントエンド)",
+    });
+  }
+
+  private addCors(resource: IResource, methods: string[]): void {
+    resource.addCorsPreflight({
+      allowOrigins: [this.corsAllowOrigin],
+      allowMethods: methods,
+      allowHeaders: ["Content-Type"],
     });
   }
 }
