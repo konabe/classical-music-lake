@@ -1,4 +1,4 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { ConditionalCheckFailedException, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 
@@ -44,6 +44,20 @@ export async function updateItem<T extends { id: string; createdAt: string; upda
     createdAt: current.createdAt,
     updatedAt: new Date().toISOString(),
   };
-  await dynamo.send(new PutCommand({ TableName: tableName, Item: updated }));
+  try {
+    await dynamo.send(
+      new PutCommand({
+        TableName: tableName,
+        Item: updated,
+        ConditionExpression: "updatedAt = :prevUpdatedAt",
+        ExpressionAttributeValues: { ":prevUpdatedAt": current.updatedAt },
+      })
+    );
+  } catch (err) {
+    if (err instanceof ConditionalCheckFailedException) {
+      throw new createError.Conflict("Item was updated by another request");
+    }
+    throw err;
+  }
   return updated;
 }

@@ -47,6 +47,9 @@ export const jsonBodyParser = httpJsonBodyParser({ disableContentTypeCheck: true
  */
 export const createHandler = (handler: LambdaHandler) =>
   middy<APIGatewayProxyEvent, APIGatewayProxyResult>()
+    // LambdaHandler returns `body: unknown` while APIGatewayProxyResult expects
+    // `body: string`. The cast is safe because httpResponseSerializer will
+    // JSON.stringify the body at runtime before the response is returned.
     .handler(handler as middy.Handler<APIGatewayProxyEvent, APIGatewayProxyResult>)
     .use(
       httpCors({

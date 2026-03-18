@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { Conflict, NotFound } from "http-errors";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ListeningLog } from "../types";
 
@@ -99,7 +100,6 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    const { NotFound } = await import("http-errors");
     vi.mocked(dynamodb.updateItem).mockRejectedValueOnce(new NotFound("Item not found"));
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ rating: 4 })),
@@ -161,6 +161,19 @@ describe("PUT /listening-logs/:id (update)", () => {
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBe("abc-123");
+  });
+
+  it("楽観的ロック競合時に 409 を返す", async () => {
+    vi.mocked(dynamodb.updateItem).mockRejectedValueOnce(
+      new Conflict("Item was updated by another request")
+    );
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ rating: 4 })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(409);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("Item was updated by another request");
   });
 
   it("DynamoDB エラー時に 500 を返す", async () => {
