@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.18](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.17...classical-music-lake-v0.1.18) (2026-03-19)
+
+
+### Features
+
+* Zodを使ってリクエストボディのパース処理にバリデーションを統合 (issue [#88](https://github.com/konabe/classical-music-lake/issues/88)) ([63f770a](https://github.com/konabe/classical-music-lake/commit/63f770a5f8f2c33d73b8849d1c24807979af9143))
+* Zodを使ってリクエストボディのパース処理にバリデーションを統合 (issue [#88](https://github.com/konabe/classical-music-lake/issues/88)) ([f6496b1](https://github.com/konabe/classical-music-lake/commit/f6496b1da2a6d1ea493e11bd4d53b2427a9c8315))
+* ユーザー認証機能の設計・要件定義ドキュメント追加 ([#123](https://github.com/konabe/classical-music-lake/issues/123)) ([a175eec](https://github.com/konabe/classical-music-lake/commit/a175eec55091fbe128dc7087d41686fe26715d1b))
+
+
+### Bug Fixes
+
+* address code review findings ([a01be5a](https://github.com/konabe/classical-music-lake/commit/a01be5ad701db7bdb50e6b2e0d26be5ce40d83af))
+* Create入力の実体バリデーション強化（issue [#22](https://github.com/konabe/classical-music-lake/issues/22)） ([3d2627f](https://github.com/konabe/classical-music-lake/commit/3d2627f025319197e4a53d85d2373aca64c00d37))
+* GitHub OIDC + IAM AssumeRole によるキーレス認証に移行 (issue [#9](https://github.com/konabe/classical-music-lake/issues/9)) ([eb38b8a](https://github.com/konabe/classical-music-lake/commit/eb38b8a8eede5388fba8780bf42dea7725b80cf1))
+* parsing.tsのzodインポートをimport typeに変更 ([044d249](https://github.com/konabe/classical-music-lake/commit/044d249b1880214149789b7f3d50448025cfd549))
+* PR レビュー対応 - シークレット検証・OIDC 信頼ポリシー詳細化・Prettier 整形 ([fee6a6b](https://github.com/konabe/classical-music-lake/commit/fee6a6b8332ceebfbe033006b9a5cf82a07b29ed))
+* schemas.tsのPrettierフォーマットを修正 ([2f61d77](https://github.com/konabe/classical-music-lake/commit/2f61d774db21ce3e1c7d3d6c4c35dafaab2148bf))
+* **security:** pin fast-xml-parser override to exact version 5.5.6 ([f7c35ac](https://github.com/konabe/classical-music-lake/commit/f7c35ac3a9c83b40fc5fad80477a65ff657e7560))
+* **security:** pin fast-xml-parser to 5.5.6 via overrides to fix CVE-2026-26278 ([17cc1e6](https://github.com/konabe/classical-music-lake/commit/17cc1e6da74dff69ef8e96cfdab5096ffd197cde))
+* スキーマバリデーションの厳密化 ([c927daa](https://github.com/konabe/classical-music-lake/commit/c927daab7fba2babe0a045c0452c77557f02dc35))
+
 ## [0.1.17](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.16...classical-music-lake-v0.1.17) (2026-03-15)
 
 
