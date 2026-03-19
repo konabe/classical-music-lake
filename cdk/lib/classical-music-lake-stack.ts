@@ -190,15 +190,24 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     // 登録関数用 Lambda（003-2）
     const registerFunction = fn("Register", "auth/register.ts");
-    registerFunction.role?.addToPrincipalPolicy(cognitoPolicy);
+    if (!registerFunction.role) {
+      throw new Error("Register function role is not defined");
+    }
+    registerFunction.role.addToPrincipalPolicy(cognitoPolicy);
 
     // ログイン関数用 Lambda（003-3）
     const loginFunction = fn("Login", "auth/login.ts");
-    loginFunction.role?.addToPrincipalPolicy(cognitoPolicy);
+    if (!loginFunction.role) {
+      throw new Error("Login function role is not defined");
+    }
+    loginFunction.role.addToPrincipalPolicy(cognitoPolicy);
 
     // ログアウト関数用 Lambda（003-4）
     const logoutFunction = fn("Logout", "auth/logout.ts");
-    logoutFunction.role?.addToPrincipalPolicy(cognitoPolicy);
+    if (!logoutFunction.role) {
+      throw new Error("Logout function role is not defined");
+    }
+    logoutFunction.role.addToPrincipalPolicy(cognitoPolicy);
 
     // -------------------------
     // DynamoDB 権限付与
@@ -263,13 +272,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // CfnAccount の設定完了後に API Gateway ステージが作成されるよう順序を保証
     api.node.addDependency(apiGatewayAccount);
 
-    // -------------------------
-    // API Gateway Cognito Authorizer（003-5 で使用）
-    // -------------------------
-    new apigateway.CognitoUserPoolsAuthorizer(this, "CognitoAuthorizer", {
-      cognitoUserPools: [userPool],
-      identitySource: "method.request.header.Authorization",
-    });
+    // Note: API Gateway Cognito Authorizer は 003-5 で /listening-logs の保護時に追加する
 
     const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
 
@@ -380,6 +383,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       getPiece,
       updatePiece,
       deletePiece,
+      registerFunction,
+      loginFunction,
+      logoutFunction,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigin);
     });
