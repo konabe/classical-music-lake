@@ -6,7 +6,7 @@
 
 ## 2. 一斉設計
 
-- ワークごとの`work.md`をもとに、それぞれ`design.md`を作成する。
+- `work.md`をもとに、`design.md`を **`work.md` と同じディレクトリ**（`/docs/features/{index}-{feature-title}/{index}-{index-of-work}-{work}/design.md`）に作成する。
 - `design.md`にレビュー結果の記載を求める。
 
 ## 3. レビュー結果の反映

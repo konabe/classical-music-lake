@@ -13,6 +13,7 @@
 - 開発の内容からタイトル(`{feature-title}`)を確定する。
 - フィーチャーブランチ`feature/{feature-title}`を作成
 - `/docs/features/{index}-{feature-title}/requirement.md` を作成し、要件を記載する。
+- **PR 提出直前に再確認**: PR 作成前に `/docs/features/` 内に同一の `{index}` が存在しないかを再スキャンする。同一が見つかった場合は最大値を再取得して `{index}` を再インクリメントし、ディレクトリ名およびファイル内参照を差し替える。
 
 ## ルール
 
