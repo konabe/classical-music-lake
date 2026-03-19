@@ -19,7 +19,7 @@
       "Bash(gh api repos/konabe/classical-music-lake/pulls/*)",
       "Bash(gh api repos/konabe/classical-music-lake/issues/*)",
       "Bash(gh issue comment:*)",
-      "Bash(gh pr list:*"
+      "Bash(gh pr list:*)"
     ],
     "ask": [
       "Bash(npm install)",

@@ -26,7 +26,8 @@
     "vue-router": "^4.0.0"
   },
   "overrides": {
-    "serialize-javascript": ">=7.0.3"
+    "serialize-javascript": ">=7.0.3",
+    "h3-next": "npm:h3@2.0.1-rc.16"
   },
   "lint-staged": {
     "*.{ts,vue}": [
