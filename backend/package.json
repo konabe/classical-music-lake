@@ -13,11 +13,11 @@
     "db:reset": "npm run db:setup && npm run db:seed"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1006.0",
-    "@aws-sdk/lib-dynamodb": "^3.1009.0",
-    "@middy/core": "^7.1.4",
+    "@aws-sdk/client-dynamodb": "^3.1012.0",
+    "@aws-sdk/lib-dynamodb": "^3.1011.0",
+    "@middy/core": "^7.2.1",
     "@middy/http-cors": "^7.1.6",
-    "@middy/http-error-handler": "^7.1.4",
+    "@middy/http-error-handler": "^7.1.7",
     "@middy/http-json-body-parser": "^7.1.6",
     "@middy/http-response-serializer": "^7.1.3",
     "http-errors": "^2.0.1",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.0",
     "@types/http-errors": "^2.0.5",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/coverage-v8": "^4.1.0",
     "typescript": "^5.0.0",
     "vitest": "^4.0.18"
   }
