@@ -1,5 +1,5 @@
 {
   "permissions": {
-    "allow": ["Bash(gh pr:*)", "Bash(gh run:*)"]
+    "allow": ["Bash(npm audit:*)"]
   }
 }
