@@ -73,4 +73,4 @@
 
 ## 依存関係
 
-- `3-1-aws-cognito-setup` (完了後に実装開始可能)
+- `003-1-aws-cognito-setup` (完了後に実装開始可能)

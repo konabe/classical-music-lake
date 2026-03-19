@@ -14,6 +14,7 @@
 - フィーチャーブランチ`feature/{feature-title}`を作成
 - `/docs/features/`のディレクトリの状態を確認し、最大値をインクリメントした{index}を採番する
   - 採番ルールは `001`, `002` のように単純なインクリメントで、3桁でゼロ埋め
+  - PR 提出直前に `/docs/features/` 内で同一の `{index}` が存在しないか再スキャンし、競合があれば再採番する
 - `/docs/features/{index}-{feature-title}/requirement.md` を作成し、要件を記載する。
 
 ## ルール

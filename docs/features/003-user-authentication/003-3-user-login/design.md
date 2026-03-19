@@ -6,7 +6,7 @@
 
 ## システムフロー
 
-```
+```text
 ユーザー入力
     ↓
 [ログインフォーム (Nuxt)]
@@ -60,14 +60,20 @@ JWT トークン返却
 - **Secure Cookie**: XSS 対策、実装複雑、CSRF 対策が別途必要
 - **SessionStorage**: タブごとに独立、一定のセキュリティ性
 
-**採用**: **localStorage** （MVP では XSS 対策を信頼、将来 Secure Cookie への移行可能）
+**採用**: **Secure Cookie（HttpOnly、Secure）** （XSS 攻撃によるトークン窃取を防止）
 
 ### トークン管理の実装方針
 
-- アクセストークンを `localStorage` に保存
-- API 呼び出し時に自動付加（Interceptor/Plugin）
-- ログアウト時にトークンを削除
-- トークン有効期限管理（Refresh Token の自動更新は後フェーズで実装予定）
+- **refresh token**: HttpOnly Secure Cookie に保存（JavaScript からアクセス不可でセキュリティを確保）
+- **access token**: 短寿命化（60 分以下）し、必要に応じて refresh token で更新する
+- API 呼び出し時に access token を Authorization ヘッダーへ自動付加する。ヘッダー注入は `useApiBase` ラッパーを通じてリクエストを集中管理し、`usePieces.ts` と `useListeningLogs.ts` が単一の composable HTTP ラッパー（`useApiBase`）を呼ぶ構成とする
+- ログアウト時には Cookie と localStorage の両方をクリアする
+
+#### Interceptor/Plugin 採用パターン
+
+- 採用パターン: composables ベース（`useApiBase` ラッパー）
+- Authorization ヘッダーの注入責任: `useApiBase` が一元管理
+- 影響する symbol: `usePieces.ts`、`useListeningLogs.ts`、`useApiBase`
 
 ### UI フロー
 
@@ -85,7 +91,7 @@ JWT トークン返却
 
 ### エンドポイント
 
-```
+```http
 POST /auth/login
 Content-Type: application/json
 
@@ -161,12 +167,12 @@ Content-Type: application/json
 
 ## トレードオフ・判断理由
 
-| 項目                 | 選択                 | 理由                                                |
-| -------------------- | -------------------- | --------------------------------------------------- |
-| **認証フロー**       | USER_PASSWORD_AUTH   | シンプル、Cognito 標準                              |
-| **トークン保存**     | localStorage         | MVP での実装速度優先。将来 Secure Cookie へ移行可能 |
-| **エラーメッセージ** | 汎用化               | セキュリティ（ユーザー存在有無の推測防止）          |
-| **Refresh Token**    | 実装しない（初期版） | MVP スコープ削減。トークン有効期限 60 分で対応      |
+| 項目                 | 選択                      | 理由                                                                                               |
+| -------------------- | ------------------------- | -------------------------------------------------------------------------------------------------- |
+| **認証フロー**       | USER_PASSWORD_AUTH        | シンプル、Cognito 標準                                                                             |
+| **トークン保存**     | Secure Cookie（HttpOnly） | XSS によるトークン窃取を防止。refresh token は HttpOnly Secure Cookie、access token は短寿命で管理 |
+| **エラーメッセージ** | 汎用化                    | セキュリティ（ユーザー存在有無の推測防止）                                                         |
+| **Refresh Token**    | 実装しない（初期版）      | MVP スコープ削減。トークン有効期限 60 分で対応                                                     |
 
 ## レビュー結果
 

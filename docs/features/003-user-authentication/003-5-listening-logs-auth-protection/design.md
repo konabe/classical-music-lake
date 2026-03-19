@@ -6,7 +6,7 @@
 
 ## システムフロー
 
-```
+```text
 フロントエンド
     ↓
 API 呼び出し（Authorization ヘッダーに JWT トークン）
@@ -41,7 +41,7 @@ DynamoDB
 
 ### 認可フロー
 
-```
+```text
 ステップ 1: JWT トークン取得
   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
@@ -51,7 +51,8 @@ DynamoDB
   - ユーザー ID（sub）抽出
 
 ステップ 3: Lambda にコンテキスト渡す
-  event.requestContext.authorizer.sub → ユーザー ID
+  event.requestContext.authorizer.claims.sub → ユーザー ID
+  （Cognito Authorizer 設定では sub は authorizer.claims オブジェクト内に格納される）
 
 ステップ 4: Lambda が自分のデータのみ処理
 ```
@@ -83,18 +84,21 @@ DynamoDB
 
 #### 新スキーマ（変更）
 
-```
+```text
 テーブル: ListeningLogs
-パーティションキー: userId（Cognito sub）
-ソートキー: createdAt（ISO 8601）
-グローバルセカンダリインデックス (GSI):
-  - パーティションキー: userId
-  - ソートキー: createdAt
-    （実質的に同じだが、クエリ柔軟性向上）
+パーティションキー: id（UUID）← PK は id のまま維持
+ソートキー: （なし）
+グローバルセカンダリインデックス (GSI1):
+  - パーティションキー: userId（Cognito sub）
+  - ソートキー: createdAt（ISO 8601）
 属性: id (UUID), userId, piece, performance, rating, memo, createdAt, updatedAt
 ```
 
-**背景**: 既存は id（UUID）をパーティションキーとしていたが、ユーザーごとのアクセス制御のため userId をパーティションキーに変更。
+**背景・設計理由**:
+
+- `/listening-logs/{id}` の Get / Update / Delete は PK の `id`（UUID）で一意解決する。`PK=userId, SK=createdAt` では id による一意解決ができないため、PK は `id` を維持する。
+- ユーザー別の一覧取得（List）は GSI1（userId + createdAt）を使ってクエリする。
+- Get / Update / Delete は PK の `id` で直接検索し、取得後に `userId` を照合してアクセス制御を行う。
 
 ### Lambda 関数の変更
 
@@ -102,59 +106,63 @@ DynamoDB
 
 **Create (POST /listening-logs)**:
 
-```
+```text
 1. Authorization ヘッダーから JWT 抽出
 2. API Gateway Authorizer が検証、sub をコンテキストに埋め込み
-3. Lambda が event.requestContext.authorizer.sub から userId を取得
+3. Lambda が event.requestContext.authorizer.claims.sub から userId を取得
 4. リクエストボディの piece, performance 等から新しいドキュメントを作成
-5. userId と createdAt をドキュメントに追加
-6. DynamoDB に保存（パーティションキー: userId, ソートキー: createdAt）
+5. id（UUID）を生成し、userId と createdAt をドキュメントに追加
+6. DynamoDB に保存（PK: id）
 7. 201 Created + ドキュメント返却
 ```
 
 **List (GET /listening-logs)**:
 
-```
-1. userId を取得
-2. Query: userId でパーティション内のすべてのアイテムを取得
+```text
+1. event.requestContext.authorizer.claims.sub から userId を取得
+2. GSI1 を使って Query: userId でユーザーのすべてのアイテムを取得（ソートキー: createdAt）
 3. 自動的に自分のログのみ返却
 ```
 
 **Get (GET /listening-logs/{id})**:
 
-```
-1. userId を取得
-2. Query: userId と createdAt（id から抽出またはリクエストから受け取り）で検索
-3. マッチしたアイテムのみ返却（他ユーザーのアイテムは 404）
+```text
+1. event.requestContext.authorizer.claims.sub から userId を取得
+2. GetItem: PK の id（UUID）で直接検索
+3. 取得したアイテムの userId と リクエストの userId を照合
+4. 一致しない場合（他ユーザーのアイテム）は 404 Not Found（存在を隠蔽）
+5. 一致した場合のみアイテムを返却
 ```
 
 **Update (PUT /listening-logs/{id})**:
 
-```
-1. userId を取得
-2. 既存アイテムが自分のものか確認（userId 一致確認）
-3. 一致しない場合は 403 Forbidden
-4. 更新・保存
+```text
+1. event.requestContext.authorizer.claims.sub から userId を取得
+2. GetItem: PK の id（UUID）で既存アイテムを取得
+3. 取得したアイテムの userId と リクエストの userId を照合
+4. 一致しない場合は 404 Not Found（存在を隠蔽）
+5. 更新・保存
 ```
 
 **Delete (DELETE /listening-logs/{id})**:
 
-```
-1. userId を取得
-2. 既存アイテムが自分のものか確認
-3. 一致しない場合は 403 Forbidden
-4. 削除
+```text
+1. event.requestContext.authorizer.claims.sub から userId を取得
+2. GetItem: PK の id（UUID）で既存アイテムを取得
+3. 取得したアイテムの userId と リクエストの userId を照合
+4. 一致しない場合は 404 Not Found（存在を隠蔽）
+5. 削除
 ```
 
 ### エラーハンドリング
 
-| シナリオ                       | HTTP ステータス  | レスポンス                                                                    |
-| ------------------------------ | ---------------- | ----------------------------------------------------------------------------- |
-| Authorization ヘッダーなし     | 401 Unauthorized | API Gateway が自動返却                                                        |
-| JWT 無効                       | 401 Unauthorized | API Gateway が自動返却                                                        |
-| JWT 期限切れ                   | 401 Unauthorized | API Gateway が自動返却                                                        |
-| 他ユーザーのアイテムにアクセス | 403 Forbidden    | `{ error: "Forbidden", message: "You do not have access to this resource." }` |
-| アイテムが見つからない         | 404 Not Found    | `{ error: "NotFound", message: "..." }`                                       |
+| シナリオ                       | HTTP ステータス  | レスポンス                                                                                                                       |
+| ------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Authorization ヘッダーなし     | 401 Unauthorized | API Gateway が自動返却                                                                                                           |
+| JWT 無効                       | 401 Unauthorized | API Gateway が自動返却                                                                                                           |
+| JWT 期限切れ                   | 401 Unauthorized | API Gateway が自動返却                                                                                                           |
+| 他ユーザーのアイテムにアクセス | 404 Not Found    | `{ error: "NotFound", message: "The requested resource was not found." }` （存在を隠蔽し、他ユーザーのリソース存在の推測を防止） |
+| アイテムが見つからない         | 404 Not Found    | `{ error: "NotFound", message: "..." }`                                                                                          |
 
 ## フロントエンド設計
 
@@ -162,10 +170,10 @@ DynamoDB
 
 **Composable**: `composables/useApiBase.ts`（既存）を拡張
 
-```
+```text
 - API 呼び出し時に自動的に Authorization ヘッダーを付加
   - ヘッダー形式: Authorization: Bearer {token}
-  - token は localStorage から取得
+  - token は Cookie から取得（useApiBase が一元管理）
 ```
 
 ### エラーハンドリング
@@ -173,25 +181,30 @@ DynamoDB
 **401 エラー時**:
 
 - トークン期限切れの可能性
-- localStorage からトークン削除
+- Cookie と localStorage のトークンを削除
 - ログイン画面へリダイレクト
 - 「セッションが切れました。再度ログインしてください。」メッセージ表示
 
-**403 エラー時**:
+**404 エラー時**（他ユーザーリソースへのアクセス含む）:
 
-- 権限なしの可能性
-- エラーメッセージ表示（「このアイテムにアクセスする権限がありません。」）
+- リソースが存在しないか、アクセス権限がない可能性
+- エラーメッセージ表示（「お探しのアイテムは見つかりませんでした。」）
 
 ## マイグレーション戦略
 
 ### 既存データの扱い
 
-- 既存の視聴ログには userId がないため、デプロイ時にすべてのレコードをマイグレーション
-- マイグレーション方式:
-  1. デプロイ前に全データをバックアップ
+**採用方式: `userId=null`（未帰属）としてマイグレーション**
+
+既存の視聴ログには userId がないため、`userId=null`（未帰属）としてマイグレーションする。未帰属データは通常ユーザーには非表示とし、将来的に管理者専用移管フロー（監査証跡付き）で特定ユーザーへの帰属を行う。
+
+- マイグレーション手順:
+  1. デプロイ前に全データをバックアップ（DynamoDB の Point-in-Time Recovery 有効化）
   2. Lambda または CDK のカスタムリソースでマイグレーション実行
-  3. 各レコードに userId（デフォルトユーザー ID など）を割り当て
-  4. 検証後、旧データ削除
+  3. 各レコードの `userId` を `null` に設定（デフォルトユーザー ID は割り当てない）
+  4. 通常ユーザー向けの List / Get / Update / Delete では `userId != null` かつ `userId == リクエストユーザー` の条件でフィルタリング
+  5. バリデーション: マイグレーション後、全レコードの `id`（UUID）が一意であること・既存属性（piece, performance 等）が欠損していないことを確認
+  6. クリーンアップ: 検証完了後、不要なバックアップデータを削除
 
 ### 事前準備
 
@@ -214,11 +227,11 @@ DynamoDB
 
 ## トレードオフ・判断理由
 
-| 項目                           | 選択                       | 理由                                           |
-| ------------------------------ | -------------------------- | ---------------------------------------------- |
-| **パーティションキー変更**     | userId                     | アクセス制御とスケーラビリティ向上             |
-| **既存データマイグレーション** | CDK カスタムリソース       | 自動化、デプロイ時に実行                       |
-| **404 vs 403**                 | 他ユーザーのアイテム = 403 | セキュリティ（アイテム存在推測防止）と UX 両立 |
+| 項目                           | 選択                                             | 理由                                                                                       |
+| ------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| **パーティションキー**         | id（UUID）を維持、userId+createdAt の GSI を追加 | Get/Update/Delete の一意解決に id が必要。ユーザー別検索は GSI で対応                      |
+| **既存データマイグレーション** | userId=null（未帰属）として保持                  | デフォルトユーザー割り当ては責任の所在が不明確。未帰属として管理者フローで移管する方が安全 |
+| **404 vs 403**                 | 他ユーザーのアイテム = 404                       | アイテムの存在を隠蔽してリソース推測を防止。ドキュメント全体で 404 に統一                  |
 
 ## レビュー結果
 

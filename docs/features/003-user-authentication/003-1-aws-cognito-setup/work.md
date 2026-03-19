@@ -36,8 +36,8 @@ Classical Music Lake で使用する AWS Cognito User Pool を作成・設定し
    - Allow の OAuth フローが適切に設定されていること
 
 3. **Lambda 関数が Cognito へアクセス可能**
-   - Lambda 実行ロールに `cognito-idp:*` 権限が付与されていること
-   - IAM ロール確認で権限が確認可能
+   - Lambda 実行ロールに必要なアクション（例: `AdminGetUser`、`ListUsers`、`AdminUpdateUserAttributes`、`AdminDisableUser` 等）のみが付与されていること（最小権限の原則に従う）
+   - IAM ロール確認で、付与されているアクション一覧・対象リソース ARN・ポリシーの適用状況が確認可能であること
 
 4. **メール送信設定が有効**
    - User Pool がメール送信対象 SES を認識していること

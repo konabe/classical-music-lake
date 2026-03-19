@@ -26,7 +26,7 @@ AWS Cognito User Pool
 
 - **Email**: サインイン時のプライマリ属性
 - **Email_verified**: メール確認フロー用
-- **Custom attributes**: `sub` (ユーザーID) は Cognito が自動採番
+- **sub**: OpenID Connect 仕様に基づく Cognito の標準（予約済み）属性であり、Cognito が自動採番する。カスタム属性として定義することはできない
 
 ### パスワードポリシー
 
@@ -53,7 +53,7 @@ AWS Cognito User Pool
 
 - **Authorization Code Flow**: フロントエンドから使用
 - **Implicit Flow**: 使用しない（セキュリティ考慮）
-- **Client Credentials Flow**: バックエンド専用（管理用 Lambda で使用）
+- **管理用 Lambda からの Cognito 管理 API 呼び出し**: Client Credentials Flow は使用しない。管理用 Lambda から Cognito 管理 API（AdminGetUser 等）を呼び出す場合は、Lambda 実行ロールに付与した IAM ロールを使用する。なお、Client Credentials Flow は M2M 通信やカスタムスコープ付きトークン取得向けであり、管理操作（ユーザー管理 API の呼び出し）には適していない
 
 ### トークン設定
 
@@ -70,8 +70,14 @@ AWS Cognito User Pool
 
 ### IAM ポリシー
 
-- Lambda 実行ロールに `cognito-idp:*` を付与（Cognito API 呼び出し用）
-- スコープ: 該当の User Pool リソースのみ
+- Lambda 実行ロールには最小権限の原則に従い、必要なアクションのみを付与する
+- 付与するアクション:
+  - `cognito-idp:AdminGetUser`
+  - `cognito-idp:AdminUpdateUserAttributes`
+  - `cognito-idp:AdminCreateUser`
+  - `cognito-idp:AdminDeleteUser`
+  - `cognito-idp:ListUsers`
+- リソース: 特定の User Pool ARN のみに限定する（例: `arn:aws:cognito-idp:{region}:{account-id}:userpool/{user-pool-id}`）
 
 ### API Gateway との連携
 
@@ -93,12 +99,12 @@ AWS Cognito User Pool
 
 ## トレードオフ・判断理由
 
-| 項目                              | 選択             | 理由                                       |
-| --------------------------------- | ---------------- | ------------------------------------------ |
-| **Email vs Username**             | Email            | ユーザーフレンドリー、一意性が保証される   |
-| **自前実装 vs Cognito Hosted UI** | カスタムフォーム | UI/UX の完全制御、既存デザインとの統一     |
-| **Client Credentials Flow**       | 実装             | 管理用 Lambda で必要（将来の検索機能など） |
-| **Refresh Token TTL**             | 30 日            | セッション持続性と セキュリティのバランス  |
+| 項目                              | 選択             | 理由                                                                                                               |
+| --------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Email vs Username**             | Email            | ユーザーフレンドリー、一意性が保証される                                                                           |
+| **自前実装 vs Cognito Hosted UI** | カスタムフォーム | UI/UX の完全制御、既存デザインとの統一                                                                             |
+| **管理用 Lambda の Cognito 操作** | IAM ロール使用   | 管理 API 呼び出しには IAM ロールが適切。Client Credentials Flow は M2M・カスタムスコープ向けであり管理操作には不適 |
+| **Refresh Token TTL**             | 30 日            | セッション持続性と セキュリティのバランス                                                                          |
 
 ## レビュー結果
 
