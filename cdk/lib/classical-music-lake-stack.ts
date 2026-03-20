@@ -341,26 +341,17 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       deletePiece,
     ];
 
-    // Lambda エラー監視：全関数のエラー合計が 1 以上でアラーム
-    const lambdaErrorExpression = new cloudwatch.MathExpression({
-      expression: allFunctions.map((_, i) => `m${i + 1}`).join("+"),
-      usingMetrics: Object.fromEntries(
-        allFunctions.map((f, i) => [
-          `m${i + 1}`,
-          f.metricErrors({ period: cdk.Duration.minutes(5) }),
-        ])
-      ),
-      period: cdk.Duration.minutes(5),
-    });
-
-    new cloudwatch.Alarm(this, "LambdaErrorsAlarm", {
-      alarmName: `classical-music-lake-${stageName}-lambda-errors`,
-      alarmDescription: "いずれかの Lambda 関数でエラーが発生しています",
-      metric: lambdaErrorExpression,
-      threshold: 1,
-      evaluationPeriods: 1,
-      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    // Lambda エラー監視：各関数ごとにアラーム作成
+    allFunctions.forEach((f, i) => {
+      new cloudwatch.Alarm(this, `LambdaErrorAlarm${i}`, {
+        alarmName: `classical-music-lake-${stageName}-lambda-${f.functionName}-errors`,
+        alarmDescription: `Lambda 関数 ${f.functionName} でエラーが発生しています`,
+        metric: f.metricErrors({ period: cdk.Duration.minutes(5) }),
+        threshold: 1,
+        evaluationPeriods: 1,
+        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
     });
 
     // API Gateway 5xx エラー監視
