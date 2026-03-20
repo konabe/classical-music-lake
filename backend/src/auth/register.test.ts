@@ -251,6 +251,27 @@ describe("POST /auth/register", () => {
 
       expect(result?.statusCode).toBe(500);
     });
+
+    it("リクエスト過多時に 429 を返す", async () => {
+      const error: { Code: string; message: string } = {
+        Code: "TooManyRequestsException",
+        message: "TooManyRequestsException",
+      };
+      mockSignUp.mockRejectedValue(error);
+
+      const result = await handler(
+        makeEvent({
+          body: JSON.stringify(validInput),
+          httpMethod: "POST",
+          path: "/auth/register",
+        }),
+        mockContext,
+        mockCallback
+      );
+
+      expect(result?.statusCode).toBe(429);
+      expect(JSON.parse(result?.body ?? "{}").message).toContain("again later");
+    });
   });
 
   describe("必須フィールド検証", () => {
