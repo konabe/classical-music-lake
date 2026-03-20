@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useAuth } from "../../composables/useAuth";
+import { useAuth } from "./useAuth";
 
 const mockFetch = vi.fn();
 
