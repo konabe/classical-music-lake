@@ -173,41 +173,20 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // Cognito 権限付与（管理 Lambda用）
     // -------------------------
-    // 登録・ログイン・ログアウト機能を実装する Lambda 関数に権限を付与
-    const cognitoPolicy = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: [
-        "cognito-idp:AdminGetUser",
-        "cognito-idp:AdminUpdateUserAttributes",
-        "cognito-idp:AdminCreateUser",
-        "cognito-idp:AdminDeleteUser",
-        "cognito-idp:ListUsers",
-        "cognito-idp:AdminInitiateAuth",
-        "cognito-idp:AdminUserGlobalSignOut",
-      ],
-      resources: [userPool.userPoolArn],
-    });
-
-    // 登録関数用 Lambda（003-2）
-    const registerFunction = fn("Register", "auth/register.ts");
-    if (!registerFunction.role) {
-      throw new Error("Register function role is not defined");
-    }
-    registerFunction.role.addToPrincipalPolicy(cognitoPolicy);
-
-    // ログイン関数用 Lambda（003-3）
-    const loginFunction = fn("Login", "auth/login.ts");
-    if (!loginFunction.role) {
-      throw new Error("Login function role is not defined");
-    }
-    loginFunction.role.addToPrincipalPolicy(cognitoPolicy);
-
-    // ログアウト関数用 Lambda（003-4）
-    const logoutFunction = fn("Logout", "auth/logout.ts");
-    if (!logoutFunction.role) {
-      throw new Error("Logout function role is not defined");
-    }
-    logoutFunction.role.addToPrincipalPolicy(cognitoPolicy);
+    // TODO: 登録・ログイン・ログアウト機能は 003-2, 003-3, 003-4 で実装予定
+    // const cognitoPolicy = new iam.PolicyStatement({
+    //   effect: iam.Effect.ALLOW,
+    //   actions: [
+    //     "cognito-idp:AdminGetUser",
+    //     "cognito-idp:AdminUpdateUserAttributes",
+    //     "cognito-idp:AdminCreateUser",
+    //     "cognito-idp:AdminDeleteUser",
+    //     "cognito-idp:ListUsers",
+    //     "cognito-idp:AdminInitiateAuth",
+    //     "cognito-idp:AdminUserGlobalSignOut",
+    //   ],
+    //   resources: [userPool.userPoolArn],
+    // });
 
     // -------------------------
     // DynamoDB 権限付与
@@ -383,9 +362,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       getPiece,
       updatePiece,
       deletePiece,
-      registerFunction,
-      loginFunction,
-      logoutFunction,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigin);
     });
