@@ -25,10 +25,6 @@ export const handler = createHandler(async (event) => {
           Name: "email",
           Value: input.email,
         },
-        {
-          Name: "email_verified",
-          Value: "false",
-        },
       ],
     });
 
