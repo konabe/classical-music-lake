@@ -5,6 +5,9 @@ const mockFetch = vi.fn();
 
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
+  vi.stubGlobal("useRuntimeConfig", () => ({
+    public: { apiBaseUrl: "" },
+  }));
   mockFetch.mockClear();
 });
 
@@ -126,7 +129,7 @@ describe("useAuth", () => {
 
       expect(result.success).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining("/auth/register"),
+        "auth/register",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com", password: "ValidPassword123" }),
