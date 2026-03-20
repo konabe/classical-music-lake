@@ -170,23 +170,20 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const updatePiece = fn("UpdatePiece", "pieces/update.ts");
     const deletePiece = fn("DeletePiece", "pieces/delete.ts");
 
+    const authRegister = fn("AuthRegister", "auth/register.ts");
+
     // -------------------------
-    // Cognito 権限付与（管理 Lambda用）
+    // Cognito 権限付与
     // -------------------------
-    // TODO: 登録・ログイン・ログアウト機能は 003-2, 003-3, 003-4 で実装予定
-    // const cognitoPolicy = new iam.PolicyStatement({
-    //   effect: iam.Effect.ALLOW,
-    //   actions: [
-    //     "cognito-idp:AdminGetUser",
-    //     "cognito-idp:AdminUpdateUserAttributes",
-    //     "cognito-idp:AdminCreateUser",
-    //     "cognito-idp:AdminDeleteUser",
-    //     "cognito-idp:ListUsers",
-    //     "cognito-idp:AdminInitiateAuth",
-    //     "cognito-idp:AdminUserGlobalSignOut",
-    //   ],
-    //   resources: [userPool.userPoolArn],
-    // });
+    // auth/register: SignUp を実行
+    const cognitoRegisterPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["cognito-idp:SignUp"],
+      resources: [userPool.userPoolArn],
+    });
+    authRegister.addToPrincipalPolicy(cognitoRegisterPolicy);
+
+    // TODO: ログイン・ログアウト機能は 003-3, 003-4 で実装予定
 
     // -------------------------
     // DynamoDB 権限付与
@@ -277,6 +274,13 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     pieceResource.addMethod("PUT", integ(updatePiece));
     pieceResource.addMethod("DELETE", integ(deletePiece));
 
+    // /auth
+    const authResource = api.root.addResource("auth");
+
+    // /auth/register (登録フロー: 認証不要)
+    const authRegisterResource = authResource.addResource("register");
+    authRegisterResource.addMethod("POST", integ(authRegister));
+
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)
     // -------------------------
@@ -362,6 +366,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       getPiece,
       updatePiece,
       deletePiece,
+      authRegister,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigin);
     });
@@ -371,6 +376,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     this.addCors(listeningLogResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
     this.addCors(piecesResource, ["GET", "POST", "OPTIONS"]);
     this.addCors(pieceResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
+    this.addCors(authRegisterResource, ["POST", "OPTIONS"]);
 
     // API Gateway 自身が返す 4XX/5XX にも CORS ヘッダを付与
     api.addGatewayResponse("Default4xxCors", {
@@ -412,6 +418,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       getPiece,
       updatePiece,
       deletePiece,
+      authRegister,
     ];
 
     // Lambda エラー監視：全関数のエラー合計が 1 以上でアラーム
