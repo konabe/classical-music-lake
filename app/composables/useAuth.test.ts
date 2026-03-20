@@ -3,8 +3,10 @@ import { useAuth } from "./useAuth";
 
 const mockFetch = vi.fn();
 
+// Mock useApiBase with production-like URL (with trailing slash)
+// to verify trailing slash handling in useAuth
 vi.mock("./useApiBase", () => ({
-  useApiBase: () => "",
+  useApiBase: () => "https://api.example.com/",
 }));
 
 beforeEach(() => {
@@ -130,7 +132,7 @@ describe("useAuth", () => {
 
       expect(result.success).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
-        "/auth/register",
+        "https://api.example.com/auth/register",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com", password: "ValidPassword123" }),
