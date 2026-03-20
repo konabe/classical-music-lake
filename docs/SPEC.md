@@ -31,12 +31,12 @@
 [CloudFront] ← S3 (静的ホスティング)
     ↓
 [Nuxt.js SPA]
-    ↓ (API呼び出し)
-[API Gateway]
+    ↓ (API呼び出し + JWT トークン)
+[API Gateway + Cognito Authorizer]
     ↓
 [Lambda Functions]
-    ↓
-[DynamoDB]
+    ↓↓
+[DynamoDB] [AWS Cognito User Pool]
 ```
 
 ### 2.2 技術スタック
@@ -69,6 +69,7 @@
 - **API**: REST API (API Gateway + Lambda)
 - **言語**: TypeScript
 - **データベース**: DynamoDB
+- **認証**: AWS Cognito User Pool (メールアドレスベースのサインアップ/サインイン)
 
 #### インフラ
 
@@ -152,7 +153,9 @@ interface Piece {
 ### 4.1 エンドポイント構成
 
 - **ベースURL**: `https://{api-gateway-url}/prod`
-- **認証**: なし（現在は認証なし）
+- **認証**: AWS Cognito User Pool (Bearer Token)
+  - 認証が必要なエンドポイント: `/listening-logs/*`（読み取り・書き込み）
+  - 公開エンドポイント: `/pieces/*`（読み取りのみ）
 - **CORS**: CloudFront URL のみ許可（プリフライト・GatewayResponse の両方で設定）
 
 ### 4.2 視聴ログAPI
@@ -525,14 +528,16 @@ cdk deploy
 
 ### 9.1 現在の制限
 
-- **認証なし**: 誰でもアクセス・編集可能
+- **認証**: メールアドレス・パスワード認証のみ（SNS・OAuth は未実装）
+- **MFA なし**: 多要素認証は将来フェーズで実装予定
 - **検索機能なし**: DynamoDB Scanのみ
 - **ページネーションなし（フロント向け）**: API はページネーション済みで全件取得するが、フロントエンドへのページング機能は未実装
 - **画像アップロードなし**: テキストベースのみ
 
 ### 9.2 将来的な拡張案
 
-- ユーザー認証・認可（Cognito等）
+- ソーシャルログイン（Google/Apple Sign-In等）
+- 多要素認証（MFA）
 - 全文検索（OpenSearch等）
 - ページネーション
 - アルバムカバー画像の管理
