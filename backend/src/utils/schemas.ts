@@ -52,3 +52,20 @@ export const updatePieceSchema = z.object({
     .max(100, "composer must be 100 characters or less")
     .optional(),
 });
+
+const emailSchema = z
+  .string({ error: () => "email is required" })
+  .trim()
+  .email("email must be a valid email address");
+
+const passwordSchema = z
+  .string({ error: () => "password is required" })
+  .min(8, "password must be at least 8 characters long")
+  .regex(/[A-Z]/, "password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "password must contain at least one lowercase letter")
+  .regex(/\d/, "password must contain at least one digit");
+
+export const registerSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
