@@ -3,11 +3,12 @@ import { useAuth } from "./useAuth";
 
 const mockFetch = vi.fn();
 
+vi.mock("./useApiBase", () => ({
+  useApiBase: () => "",
+}));
+
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
-  vi.stubGlobal("useRuntimeConfig", () => ({
-    public: { apiBaseUrl: "" },
-  }));
   mockFetch.mockClear();
 });
 
@@ -129,7 +130,7 @@ describe("useAuth", () => {
 
       expect(result.success).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
-        "auth/register",
+        "/auth/register",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com", password: "ValidPassword123" }),
