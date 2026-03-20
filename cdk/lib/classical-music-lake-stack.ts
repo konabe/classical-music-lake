@@ -181,7 +181,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       actions: ["cognito-idp:SignUp"],
       resources: [userPool.userPoolArn],
     });
-    authRegister.addToPrincipalPolicy(cognitoRegisterPolicy);
+    authRegister.addToRolePolicy(cognitoRegisterPolicy);
 
     // TODO: ログイン・ログアウト機能は 003-3, 003-4 で実装予定
 
