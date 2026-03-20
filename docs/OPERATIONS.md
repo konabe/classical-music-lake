@@ -156,3 +156,53 @@ aws dynamodb scan \
   --table-name classical-music-listening-logs \
   --output json > backup-$(date +%Y%m%d).json
 ```
+
+---
+
+## Cognito ユーザー管理
+
+### User Pool 情報の確認
+
+デプロイ後、CDK の Output で Cognito User Pool ID と App Client ID が表示される：
+
+```
+CognitoUserPoolId = <pool-id>
+CognitoClientId = <client-id>
+CognitoUserPoolArn = arn:aws:cognito-idp:ap-northeast-1:xxxxx:userpool/<pool-id>
+```
+
+### ユーザー登録
+
+フロントエンドの登録フォームを通じて、ユーザーが自己登録可能（`selfSignUpEnabled: true`）。
+
+メール確認フローは自動実行される（Cognito が SES でメール送信）。
+
+### ユーザーの手動管理（管理者向け）
+
+特定ユーザーの削除や属性更新は AWS Cognito コンソール または AWS CLI から：
+
+```bash
+# ユーザー削除
+aws cognito-idp admin-delete-user \
+  --user-pool-id <pool-id> \
+  --username <email>
+
+# ユーザー属性更新
+aws cognito-idp admin-update-user-attributes \
+  --user-pool-id <pool-id> \
+  --username <email> \
+  --user-attributes Name=email_verified,Value=true
+```
+
+### トークン設定
+
+- Access Token TTL: 60 分
+- ID Token TTL: 60 分
+- Refresh Token TTL: 30 日
+
+### セキュリティ設定
+
+- パスワード最小文字数: 8 文字
+- 大文字・小文字・数字を必須
+- アカウントロックアウト: 5 回失敗で 15 分ロック
+- メール確認: 必須

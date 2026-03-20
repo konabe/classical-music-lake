@@ -8,11 +8,11 @@
 [CloudFront]
   ├── S3 (静的ファイル: Nuxt SPA)
   └── ↓ /prod/* へのリクエスト
-[API Gateway (REST)]
+[API Gateway (REST + Cognito Authorizer)]
         ↓
 [Lambda Functions (Node.js 24.x)]
-        ↓
-[DynamoDB]
+        ↓↓
+    [DynamoDB] [AWS Cognito User Pool]
 ```
 
 ### デプロイパイプライン
@@ -50,14 +50,24 @@ classical-music-lake/
 ├── types/                        # フロントエンド共通型定義
 ├── backend/
 │   └── src/
+│       ├── auth/                 # 認証 Lambda 関数
+│       │   ├── register.ts       # ユーザー登録
+│       │   ├── login.ts          # ログイン
+│       │   └── logout.ts         # ログアウト
 │       ├── listening-logs/       # 視聴ログ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts
 │       │   ├── get.ts
 │       │   ├── update.ts
 │       │   └── delete.ts
+│       ├── pieces/               # 楽曲マスタ Lambda 関数
+│       │   ├── create.ts
+│       │   ├── list.ts
+│       │   ├── get.ts
+│       │   ├── update.ts
+│       │   └── delete.ts
 │       ├── types/                # バックエンド共通型定義
-│       └── utils/                # DynamoDB クライアントなど
+│       └── utils/                # DynamoDB クライアント、レスポンスヘルパーなど
 ├── cdk/
 │   └── lib/
 │       └── classical-music-lake-stack.ts  # AWSインフラ定義

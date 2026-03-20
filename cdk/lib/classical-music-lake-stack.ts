@@ -11,6 +11,7 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
+import * as cognito from "aws-cdk-lib/aws-cognito";
 import type { Construct } from "constructs";
 import * as path from "path";
 
@@ -65,9 +66,61 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
+    // -------------------------
+    // AWS Cognito User Pool
+    // -------------------------
+    const userPoolName = isProd ? "classical-music-lake" : `classical-music-lake-${stageName}`;
+
+    const userPool = new cognito.UserPool(this, "CognitoUserPool", {
+      userPoolName,
+      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      selfSignUpEnabled: true,
+      signInAliases: { email: true },
+      passwordPolicy: {
+        minLength: 8,
+        requireLowercase: true,
+        requireDigits: true,
+        requireSymbols: false,
+        requireUppercase: true,
+      },
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      userVerification: {
+        emailStyle: cognito.VerificationEmailStyle.CODE,
+      },
+      standardAttributes: {
+        email: {
+          required: true,
+          mutable: true,
+        },
+      },
+      signInCaseSensitive: false,
+    });
+
+    // App Client: フロントエンド用
+    const appClient = userPool.addClient("FrontendClient", {
+      authFlows: {
+        userPassword: true,
+        custom: true,
+      },
+      oAuth: {
+        flows: {
+          authorizationCodeGrant: true,
+        },
+        scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE],
+        callbackUrls: ["https://classical-music-lake.example.com/auth/callback"],
+        logoutUrls: ["https://classical-music-lake.example.com/login"],
+      },
+      accessTokenValidity: cdk.Duration.minutes(60),
+      idTokenValidity: cdk.Duration.minutes(60),
+      refreshTokenValidity: cdk.Duration.days(30),
+      preventUserExistenceErrors: true,
+    });
+
     const commonEnv: Record<string, string> = {
       DYNAMO_TABLE_LISTENING_LOGS: listeningLogsTable.tableName,
       DYNAMO_TABLE_PIECES: piecesTable.tableName,
+      COGNITO_USER_POOL_ID: userPool.userPoolId,
+      COGNITO_CLIENT_ID: appClient.userPoolClientId,
     };
 
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry" | "logGroup"> = {
@@ -116,6 +169,21 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const getPiece = fn("GetPiece", "pieces/get.ts");
     const updatePiece = fn("UpdatePiece", "pieces/update.ts");
     const deletePiece = fn("DeletePiece", "pieces/delete.ts");
+
+    const authRegister = fn("AuthRegister", "auth/register.ts");
+
+    // -------------------------
+    // Cognito 権限付与
+    // -------------------------
+    // auth/register: SignUp を実行
+    const cognitoRegisterPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["cognito-idp:SignUp"],
+      resources: [userPool.userPoolArn],
+    });
+    authRegister.addToRolePolicy(cognitoRegisterPolicy);
+
+    // TODO: ログイン・ログアウト機能は 003-3, 003-4 で実装予定
 
     // -------------------------
     // DynamoDB 権限付与
@@ -180,6 +248,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // CfnAccount の設定完了後に API Gateway ステージが作成されるよう順序を保証
     api.node.addDependency(apiGatewayAccount);
 
+    // Note: API Gateway Cognito Authorizer は 003-5 で /listening-logs の保護時に追加する
+
     const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
 
     // /listening-logs
@@ -203,6 +273,13 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     pieceResource.addMethod("GET", integ(getPiece));
     pieceResource.addMethod("PUT", integ(updatePiece));
     pieceResource.addMethod("DELETE", integ(deletePiece));
+
+    // /auth
+    const authResource = api.root.addResource("auth");
+
+    // /auth/register (登録フロー: 認証不要)
+    const authRegisterResource = authResource.addResource("register");
+    authRegisterResource.addMethod("POST", integ(authRegister));
 
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)
@@ -289,6 +366,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       getPiece,
       updatePiece,
       deletePiece,
+      authRegister,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigin);
     });
@@ -298,6 +376,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     this.addCors(listeningLogResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
     this.addCors(piecesResource, ["GET", "POST", "OPTIONS"]);
     this.addCors(pieceResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
+    this.addCors(authRegisterResource, ["POST", "OPTIONS"]);
 
     // API Gateway 自身が返す 4XX/5XX にも CORS ヘッダを付与
     api.addGatewayResponse("Default4xxCors", {
@@ -339,6 +418,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       getPiece,
       updatePiece,
       deletePiece,
+      authRegister,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成
@@ -390,6 +470,21 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     new cdk.CfnOutput(this, "SpaUrl", {
       value: this.corsAllowOrigin,
       description: "CloudFront URL (フロントエンド)",
+    });
+
+    new cdk.CfnOutput(this, "CognitoUserPoolId", {
+      value: userPool.userPoolId,
+      description: "Cognito User Pool ID",
+    });
+
+    new cdk.CfnOutput(this, "CognitoClientId", {
+      value: appClient.userPoolClientId,
+      description: "Cognito App Client ID",
+    });
+
+    new cdk.CfnOutput(this, "CognitoUserPoolArn", {
+      value: userPool.userPoolArn,
+      description: "Cognito User Pool ARN",
     });
   }
 
