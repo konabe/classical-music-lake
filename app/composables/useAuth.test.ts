@@ -3,10 +3,10 @@ import { useAuth } from "./useAuth";
 
 const mockFetch = vi.fn();
 
-// Mock useApiBase with production-like URL (with trailing slash)
-// to verify trailing slash handling in useAuth
+// Mock useApiBase to return URL without trailing slash
+// (useApiBase removes trailing slashes from the config)
 vi.mock("./useApiBase", () => ({
-  useApiBase: () => "https://api.example.com/",
+  useApiBase: () => "https://api.example.com",
 }));
 
 beforeEach(() => {
