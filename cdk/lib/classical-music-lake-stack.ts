@@ -317,7 +317,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       versioned: isProd,
     });
 
-    // セキュリティヘッダポリシー
+    // セキュリティヘッダポリシー（SPA 用: X-Frame-Options: DENY）
     const securityHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
       this,
       "SecurityHeadersPolicy",
@@ -333,6 +333,27 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
             frameOption: cloudfront.HeadersFrameOption.DENY,
             override: true,
           },
+          xssProtection: { protection: true, modeBlock: true, override: true },
+          referrerPolicy: {
+            referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+            override: true,
+          },
+        },
+      }
+    );
+
+    // Storybook 用セキュリティヘッダポリシー（X-Frame-Options を除外: iframe プレビューに必要）
+    const storybookHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
+      this,
+      "StorybookHeadersPolicy",
+      {
+        securityHeadersBehavior: {
+          strictTransportSecurity: {
+            accessControlMaxAge: cdk.Duration.days(365),
+            includeSubdomains: true,
+            override: true,
+          },
+          contentTypeOptions: { override: true },
           xssProtection: { protection: true, modeBlock: true, override: true },
           referrerPolicy: {
             referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
@@ -465,7 +486,7 @@ function handler(event) {
       {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-        responseHeadersPolicy: securityHeadersPolicy,
+        responseHeadersPolicy: storybookHeadersPolicy,
         functionAssociations: [
           {
             function: storybookRootRewrite,
