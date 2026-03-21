@@ -32,12 +32,12 @@ function handleSubmit() {
 <template>
   <form class="piece-form" @submit.prevent="handleSubmit">
     <div class="form-group">
-      <label for="title">曲名 <span class="required">*</span></label>
+      <label for="title">曲名 <RequiredMark /></label>
       <input id="title" v-model="form.title" type="text" required placeholder="例：交響曲第9番" />
     </div>
 
     <div class="form-group">
-      <label for="composer">作曲家 <span class="required">*</span></label>
+      <label for="composer">作曲家 <RequiredMark /></label>
       <input
         id="composer"
         v-model="form.composer"
@@ -69,10 +69,6 @@ function handleSubmit() {
   margin-bottom: 0.4rem;
   color: #333;
   font-size: 0.9rem;
-}
-
-.required {
-  color: #c0392b;
 }
 
 .form-group input {

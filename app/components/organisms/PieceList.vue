@@ -13,12 +13,14 @@ const emit = defineEmits<{
 
 <template>
   <div>
-    <div v-if="error" class="empty-state">
-      <p>楽曲一覧の取得に失敗しました。時間をおいて再度お試しください。</p>
-    </div>
-    <div v-else-if="!pieces.length" class="empty-state">
-      <p>楽曲が登録されていません。最初の楽曲を追加しましょう。</p>
-    </div>
+    <ErrorMessage
+      v-if="error"
+      message="楽曲一覧の取得に失敗しました。時間をおいて再度お試しください。"
+      variant="block"
+    />
+    <EmptyState v-else-if="!pieces.length"
+      >楽曲が登録されていません。最初の楽曲を追加しましょう。</EmptyState
+    >
 
     <ul v-else class="piece-list">
       <li v-for="piece in pieces" :key="piece.id" class="piece-item">
@@ -36,12 +38,6 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-.empty-state {
-  text-align: center;
-  padding: 4rem;
-  color: #888;
-}
-
 .piece-list {
   list-style: none;
   display: flex;
