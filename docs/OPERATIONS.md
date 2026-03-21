@@ -32,13 +32,12 @@ cdk bootstrap aws://<AWS_ACCOUNT_ID>/ap-northeast-1
 
 ### 必要な GitHub Secrets
 
-| シークレット名          | 説明                        |
-| ----------------------- | --------------------------- |
-| `AWS_ACCESS_KEY_ID`     | AWSアクセスキーID           |
-| `AWS_SECRET_ACCESS_KEY` | AWSシークレットアクセスキー |
+| シークレット名       | 説明                                          |
+| -------------------- | --------------------------------------------- |
+| `AWS_ROLE_TO_ASSUME` | GitHub OIDC で AssumeRole する IAM ロール ARN |
 
 > `AWS_REGION` と `API_BASE_URL` はワークフロー内で自動取得するため不要。
-> **⚠️ セキュリティ注意事項**: 長期 AWS アクセスキー（`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`）は常設シークレットとして管理しており、漏洩リスクが存在します。将来的には **GitHub OIDC + IAM AssumeRole** を使ったキーレス認証への移行を推奨します。
+> 認証方式は **GitHub OIDC + IAM AssumeRole** によるキーレス認証。長期 AWS アクセスキーは使用しない。
 
 ---
 
