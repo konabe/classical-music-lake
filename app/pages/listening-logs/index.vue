@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { formatDate } from "~/utils/date";
 
+definePageMeta({ middleware: "auth" });
+
 const { data: logs, refresh, deleteLog } = await useListeningLogs();
 const { ratingStars } = useRatingDisplay();
 

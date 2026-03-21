@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { UpdateListeningLogInput } from "~/types";
 
+definePageMeta({ middleware: "auth" });
+
 const route = useRoute();
 const { data: log } = await useListeningLog(() => route.params.id as string);
 const { update } = useListeningLogs();

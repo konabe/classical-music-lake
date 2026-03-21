@@ -6,6 +6,7 @@
         <ul class="nav-links">
           <li><NuxtLink to="/listening-logs">鑑賞記録</NuxtLink></li>
         </ul>
+        <button v-if="isLoggedIn" class="logout-button" @click="logout">ログアウト</button>
       </nav>
     </header>
     <main class="app-main">
@@ -13,6 +14,18 @@
     </main>
   </div>
 </template>
+
+<script setup lang="ts">
+const { isAuthenticated, logout } = useAuth();
+const route = useRoute();
+const isLoggedIn = ref(isAuthenticated());
+watch(
+  () => route.path,
+  () => {
+    isLoggedIn.value = isAuthenticated();
+  }
+);
+</script>
 
 <style>
 * {
@@ -64,6 +77,25 @@ body {
 .nav-links a:hover,
 .nav-links a.router-link-active {
   color: #fff;
+}
+
+.logout-button {
+  margin-left: auto;
+  background: none;
+  border: 1px solid #d4c9a8;
+  color: #d4c9a8;
+  padding: 0.35rem 0.9rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.logout-button:hover {
+  background-color: #d4c9a8;
+  color: #1a1a2e;
 }
 
 .app-main {

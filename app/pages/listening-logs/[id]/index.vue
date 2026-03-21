@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { formatDatetime } from "~/utils/date";
 
+definePageMeta({ middleware: "auth" });
+
 const route = useRoute();
 const { data: log } = await useListeningLog(() => route.params.id as string);
 const { ratingStars } = useRatingDisplay();

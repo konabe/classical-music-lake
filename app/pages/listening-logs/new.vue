@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { CreateListeningLogInput } from "~/types";
 
+definePageMeta({ middleware: "auth" });
+
 const { create } = useListeningLogs();
 const error = ref<string | null>(null);
 
