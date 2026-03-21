@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useAuth } from "./useAuth";
 
 const mockFetch = vi.fn();
+const mockRouterPush = vi.fn();
 
 // Mock useApiBase to return URL without trailing slash
 // (useApiBase removes trailing slashes from the config)
@@ -9,9 +10,15 @@ vi.mock("./useApiBase", () => ({
   useApiBase: () => "https://api.example.com",
 }));
 
+vi.mock("#app", () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+}));
+
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
   mockFetch.mockClear();
+  mockRouterPush.mockClear();
+  localStorage.clear();
 });
 
 describe("useAuth", () => {
@@ -227,6 +234,34 @@ describe("useAuth", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Network error");
+    });
+  });
+
+  describe("isAuthenticated", () => {
+    it("localStorage に accessToken があるとき true を返す", () => {
+      localStorage.setItem("accessToken", "token123");
+      const { isAuthenticated } = useAuth();
+      expect(isAuthenticated()).toBe(true);
+    });
+
+    it("localStorage に accessToken がないとき false を返す", () => {
+      const { isAuthenticated } = useAuth();
+      expect(isAuthenticated()).toBe(false);
+    });
+  });
+
+  describe("logout", () => {
+    it("localStorage の accessToken が削除される", () => {
+      localStorage.setItem("accessToken", "token123");
+      const { logout } = useAuth();
+      logout();
+      expect(localStorage.getItem("accessToken")).toBeNull();
+    });
+
+    it("ログイン画面へナビゲートされる", () => {
+      const { logout } = useAuth();
+      logout();
+      expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
     });
   });
 });

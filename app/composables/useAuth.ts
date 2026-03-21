@@ -1,3 +1,4 @@
+import { useRouter } from "#app";
 import { useApiBase } from "./useApiBase";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,6 +23,7 @@ export interface LoginResult {
 
 export const useAuth = () => {
   const apiBase = useApiBase();
+  const router = useRouter();
 
   const validateEmail = (email: string): boolean => {
     if (!email || !email.trim()) return false;
@@ -166,11 +168,22 @@ export const useAuth = () => {
     }
   };
 
+  const isAuthenticated = (): boolean => {
+    return !!localStorage.getItem("accessToken");
+  };
+
+  const logout = (): void => {
+    localStorage.removeItem("accessToken");
+    router.push("/auth/login");
+  };
+
   return {
     validateEmail,
     validatePassword,
     getPasswordValidationError,
     register,
     login,
+    isAuthenticated,
+    logout,
   };
 };
