@@ -14,6 +14,13 @@ const handleAuthError = (status: number, router: ReturnType<typeof useRouter>): 
   }
 };
 
+const throwResponseError = async (response: Response): Promise<never> => {
+  const errorBody = await response.json().catch(() => ({}));
+  const message =
+    (errorBody as { message?: string }).message ?? `Request failed with status ${response.status}`;
+  throw new Error(message);
+};
+
 export const useListeningLogs = () => {
   const apiBase = useApiBase();
   const router = useRouter();
@@ -21,38 +28,35 @@ export const useListeningLogs = () => {
     headers: computed(() => getAuthHeaders()),
   });
 
-  const create = async (input: CreateListeningLogInput): Promise<ListeningLog | null> => {
+  const create = async (input: CreateListeningLogInput): Promise<ListeningLog> => {
     const response = await fetch(`${apiBase}/listening-logs`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify(input),
     });
     handleAuthError(response.status, router);
-    if (!response.ok) return null;
+    if (!response.ok) return throwResponseError(response);
     return response.json();
   };
 
-  const update = async (
-    id: string,
-    input: UpdateListeningLogInput
-  ): Promise<ListeningLog | null> => {
+  const update = async (id: string, input: UpdateListeningLogInput): Promise<ListeningLog> => {
     const response = await fetch(`${apiBase}/listening-logs/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify(input),
     });
     handleAuthError(response.status, router);
-    if (!response.ok) return null;
+    if (!response.ok) return throwResponseError(response);
     return response.json();
   };
 
-  const deleteLog = async (id: string): Promise<boolean> => {
+  const deleteLog = async (id: string): Promise<void> => {
     const response = await fetch(`${apiBase}/listening-logs/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
     handleAuthError(response.status, router);
-    return response.ok;
+    if (!response.ok) return throwResponseError(response);
   };
 
   return { ...list, create, update, deleteLog };

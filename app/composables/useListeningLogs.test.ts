@@ -28,6 +28,7 @@ describe("useListeningLogs", () => {
 
       mockFetch.mockResolvedValue({
         ok: true,
+        status: 201,
         json: async () => ({ id: "new-id", composer: "バッハ" }),
       });
 
@@ -50,7 +51,7 @@ describe("useListeningLogs", () => {
       );
     });
 
-    it("401 エラー時にログイン画面へリダイレクトする", async () => {
+    it("401 エラー時にトークンを削除してログイン画面へリダイレクトし、エラーをスローする", async () => {
       localStorage.setItem(ACCESS_TOKEN_KEY, "expired-token");
 
       mockFetch.mockResolvedValue({
@@ -60,16 +61,39 @@ describe("useListeningLogs", () => {
       });
 
       const { create } = useListeningLogs();
-      await create({
-        listenedAt: "2024-01-15T20:00:00.000Z",
-        composer: "バッハ",
-        piece: "ゴルトベルク変奏曲",
-        rating: 5,
-        isFavorite: false,
-      });
+      await expect(
+        create({
+          listenedAt: "2024-01-15T20:00:00.000Z",
+          composer: "バッハ",
+          piece: "ゴルトベルク変奏曲",
+          rating: 5,
+          isFavorite: false,
+        })
+      ).rejects.toThrow("Unauthorized");
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
       expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
+    });
+
+    it("4xx/5xx エラー時にエラーメッセージをスローする", async () => {
+      localStorage.setItem(ACCESS_TOKEN_KEY, "test-token");
+
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ message: "Bad Request" }),
+      });
+
+      const { create } = useListeningLogs();
+      await expect(
+        create({
+          listenedAt: "2024-01-15T20:00:00.000Z",
+          composer: "バッハ",
+          piece: "ゴルトベルク変奏曲",
+          rating: 5,
+          isFavorite: false,
+        })
+      ).rejects.toThrow("Bad Request");
     });
   });
 
@@ -80,6 +104,7 @@ describe("useListeningLogs", () => {
 
       mockFetch.mockResolvedValue({
         ok: true,
+        status: 200,
         json: async () => ({ id: "abc-123", rating: 4 }),
       });
 
@@ -96,7 +121,7 @@ describe("useListeningLogs", () => {
       );
     });
 
-    it("401 エラー時にログイン画面へリダイレクトする", async () => {
+    it("401 エラー時にトークンを削除してログイン画面へリダイレクトし、エラーをスローする", async () => {
       localStorage.setItem(ACCESS_TOKEN_KEY, "expired-token");
 
       mockFetch.mockResolvedValue({
@@ -106,10 +131,23 @@ describe("useListeningLogs", () => {
       });
 
       const { update } = useListeningLogs();
-      await update("abc-123", { rating: 4 });
+      await expect(update("abc-123", { rating: 4 })).rejects.toThrow("Unauthorized");
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
       expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
+    });
+
+    it("404 エラー時にエラーメッセージをスローする", async () => {
+      localStorage.setItem(ACCESS_TOKEN_KEY, "test-token");
+
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ message: "Not Found" }),
+      });
+
+      const { update } = useListeningLogs();
+      await expect(update("abc-123", { rating: 4 })).rejects.toThrow("Not Found");
     });
   });
 
@@ -121,7 +159,6 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 204,
-        json: async () => ({}),
       });
 
       const { deleteLog } = useListeningLogs();
@@ -137,7 +174,19 @@ describe("useListeningLogs", () => {
       );
     });
 
-    it("401 エラー時にログイン画面へリダイレクトする", async () => {
+    it("204 レスポンスで正常完了する（レスポンスボディなし）", async () => {
+      localStorage.setItem(ACCESS_TOKEN_KEY, "test-token");
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const { deleteLog } = useListeningLogs();
+      await expect(deleteLog("abc-123")).resolves.toBeUndefined();
+    });
+
+    it("401 エラー時にトークンを削除してログイン画面へリダイレクトし、エラーをスローする", async () => {
       localStorage.setItem(ACCESS_TOKEN_KEY, "expired-token");
 
       mockFetch.mockResolvedValue({
@@ -147,10 +196,23 @@ describe("useListeningLogs", () => {
       });
 
       const { deleteLog } = useListeningLogs();
-      await deleteLog("abc-123");
+      await expect(deleteLog("abc-123")).rejects.toThrow("Unauthorized");
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
       expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
+    });
+
+    it("404 エラー時にエラーメッセージをスローする", async () => {
+      localStorage.setItem(ACCESS_TOKEN_KEY, "test-token");
+
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ message: "Not Found" }),
+      });
+
+      const { deleteLog } = useListeningLogs();
+      await expect(deleteLog("abc-123")).rejects.toThrow("Not Found");
     });
   });
 });
