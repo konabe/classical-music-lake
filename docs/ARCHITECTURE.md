@@ -32,11 +32,14 @@
 ```
 classical-music-lake/
 ├── app/                          # Nuxt アプリケーションディレクトリ
+│   ├── middleware/               # Nuxt ルートミドルウェア
+│   │   └── auth.ts               # 認証チェック（未ログイン時に /auth/login へリダイレクト）
 │   ├── pages/                    # Nuxt ページ（ルーティング）
 │   │   ├── index.vue             # トップページ（管理者向けリンクセクション含む）
 │   │   ├── auth/
-│   │   │   └── user-register.vue # ユーザー登録ページ
-│   │   ├── listening-logs/       # 視聴ログ関連ページ
+│   │   │   ├── user-register.vue # ユーザー登録ページ
+│   │   │   └── login.vue         # ログインページ
+│   │   ├── listening-logs/       # 視聴ログ関連ページ（要認証）
 │   │   │   ├── index.vue         # 一覧
 │   │   │   ├── new.vue           # 新規作成
 │   │   │   └── [id]/
@@ -54,8 +57,7 @@ classical-music-lake/
 │   └── src/
 │       ├── auth/                 # 認証 Lambda 関数
 │       │   ├── register.ts       # ユーザー登録
-│       │   ├── login.ts          # ログイン
-│       │   └── logout.ts         # ログアウト
+│       │   └── login.ts          # ログイン（JWT トークン発行）
 │       ├── listening-logs/       # 視聴ログ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts
@@ -111,6 +113,28 @@ classical-music-lake/
   → ブラウザに返却
 ```
 
+### ログイン
+
+```
+ブラウザ (/auth/login)
+  → POST /prod/auth/login (email, password)
+  → API Gateway
+  → Lambda (login.ts)
+  → Cognito InitiateAuth
+  → AccessToken をレスポンス
+  → localStorage に保存
+  → / へナビゲート
+```
+
+### ログアウト
+
+```
+ブラウザ (ナビバーの「ログアウト」ボタン)
+  → localStorage から accessToken を削除
+  → /auth/login へナビゲート
+  ※ バックエンド呼び出しなし（JWT ステートレス）
+```
+
 ---
 
 ## 技術選定の理由
@@ -130,9 +154,13 @@ classical-music-lake/
 
 ### 認証（実装済み）
 
-- **状態**: AWS Cognito によるユーザー登録を実装済み（メールアドレス + パスワード）
-- **実装内容**: `POST /auth/register` エンドポイント、Cognito User Pool、メール確認フロー
-- **残タスク**: ログイン・ログアウト・JWT 検証による API 保護は将来フェーズで実装予定
+- **状態**: AWS Cognito によるユーザー登録・ログイン・ログアウトを実装済み
+- **実装内容**:
+  - `POST /auth/register`: Cognito ユーザー登録、メール確認フロー
+  - `POST /auth/login`: Cognito 認証、JWT (AccessToken) を localStorage に保存
+  - ログアウト: クライアント側のみ（localStorage からトークン削除 + `/auth/login` へリダイレクト）
+  - `middleware/auth.ts`: `/listening-logs/**` への未認証アクセスを制限
+- **残タスク**: JWT 検証による API 保護（Cognito Authorizer）は将来フェーズで実装予定
 
 ### DynamoDB Scan による全件取得
 

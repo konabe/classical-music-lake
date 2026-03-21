@@ -35,10 +35,17 @@ const testLog2: ListeningLog = {
   updatedAt: "2024-01-10T16:00:00.000Z",
 };
 
+/** 認証済み状態でページを開くヘルパー */
+async function createAuthenticatedPage() {
+  const page = await createPage();
+  await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
+  return page;
+}
+
 describe("鑑賞記録 E2E テスト", () => {
   describe("一覧ページ", () => {
     it("記録がない場合に空状態メッセージが表示される", async () => {
-      const page = await createPage();
+      const page = await createAuthenticatedPage();
 
       await page.route("http://api.test/listening-logs", (route) =>
         route.fulfill({
@@ -57,7 +64,7 @@ describe("鑑賞記録 E2E テスト", () => {
     });
 
     it("記録一覧が表示される", async () => {
-      const page = await createPage();
+      const page = await createAuthenticatedPage();
 
       await page.route("http://api.test/listening-logs", (route) =>
         route.fulfill({
@@ -78,7 +85,7 @@ describe("鑑賞記録 E2E テスト", () => {
     });
 
     it("お気に入りバッジが表示される", async () => {
-      const page = await createPage();
+      const page = await createAuthenticatedPage();
 
       await page.route("http://api.test/listening-logs", (route) =>
         route.fulfill({
@@ -97,7 +104,7 @@ describe("鑑賞記録 E2E テスト", () => {
     });
 
     it("「新しい記録」ボタンが表示される", async () => {
-      const page = await createPage();
+      const page = await createAuthenticatedPage();
 
       await page.route("http://api.test/listening-logs", (route) =>
         route.fulfill({
@@ -117,7 +124,8 @@ describe("鑑賞記録 E2E テスト", () => {
 
   describe("新規作成ページ", () => {
     it("フォームが表示される", async () => {
-      const page = await createPage(url("/listening-logs/new"));
+      const page = await createAuthenticatedPage();
+      await page.goto(url("/listening-logs/new"));
       await page.waitForLoadState("networkidle");
 
       const bodyText = await page.textContent("body");
@@ -126,7 +134,8 @@ describe("鑑賞記録 E2E テスト", () => {
     });
 
     it("送信ボタンのラベルが「記録する」", async () => {
-      const page = await createPage(url("/listening-logs/new"));
+      const page = await createAuthenticatedPage();
+      await page.goto(url("/listening-logs/new"));
       await page.waitForLoadState("networkidle");
 
       await page.waitForSelector("button[type='submit']", { state: "visible" });
@@ -137,7 +146,7 @@ describe("鑑賞記録 E2E テスト", () => {
 
   describe("詳細ページ", () => {
     it("鑑賞ログの詳細が表示される", async () => {
-      const page = await createPage();
+      const page = await createAuthenticatedPage();
 
       await page.route("http://api.test/listening-logs/e2e-test-id-001", (route) =>
         route.fulfill({
@@ -156,7 +165,7 @@ describe("鑑賞記録 E2E テスト", () => {
     });
 
     it("メモが表示される", async () => {
-      const page = await createPage();
+      const page = await createAuthenticatedPage();
 
       await page.route("http://api.test/listening-logs/e2e-test-id-001", (route) =>
         route.fulfill({
