@@ -33,7 +33,7 @@ function handleSubmit() {
           placeholder="your@example.com"
           required
         />
-        <p v-if="props.errors.email" class="error-message">{{ props.errors.email }}</p>
+        <ErrorMessage v-if="props.errors.email" :message="props.errors.email" />
       </div>
 
       <div class="form-group">
@@ -45,9 +45,7 @@ function handleSubmit() {
           placeholder="At least 8 characters"
           required
         />
-        <p v-if="props.errors.password" class="error-message">
-          {{ props.errors.password }}
-        </p>
+        <ErrorMessage v-if="props.errors.password" :message="props.errors.password" />
         <p class="password-requirements">
           パスワードは8文字以上で、大文字・小文字・数字を含む必要があります
         </p>
@@ -120,12 +118,6 @@ input[type="email"]:focus,
 input[type="password"]:focus {
   outline: none;
   border-color: #1a1a2e;
-}
-
-.error-message {
-  color: #a83218;
-  font-size: 0.875rem;
-  margin: 0;
 }
 
 .password-requirements {

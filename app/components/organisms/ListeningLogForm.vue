@@ -37,7 +37,7 @@ function handleSubmit() {
 <template>
   <form class="log-form" @submit.prevent="handleSubmit">
     <div class="form-group">
-      <label>鑑賞日時 <span class="required">*</span></label>
+      <label>鑑賞日時 <RequiredMark /></label>
       <input v-model="form.listenedAt" type="datetime-local" required />
     </div>
 
@@ -53,11 +53,11 @@ function handleSubmit() {
 
     <div class="form-row">
       <div class="form-group">
-        <label>作曲家 <span class="required">*</span></label>
+        <label>作曲家 <RequiredMark /></label>
         <input v-model="form.composer" type="text" placeholder="例: ベートーヴェン" required />
       </div>
       <div class="form-group">
-        <label>曲名 <span class="required">*</span></label>
+        <label>曲名 <RequiredMark /></label>
         <input v-model="form.piece" type="text" placeholder="例: 交響曲第9番" required />
       </div>
     </div>
@@ -112,10 +112,6 @@ label {
   font-size: 0.9rem;
   font-weight: bold;
   color: #444;
-}
-
-.required {
-  color: #e05a5a;
 }
 
 input[type="text"],

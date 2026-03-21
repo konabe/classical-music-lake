@@ -32,7 +32,7 @@ function handleSubmit() {
           placeholder="your@example.com"
           required
         />
-        <p v-if="props.errors.email" class="error-message">{{ props.errors.email }}</p>
+        <ErrorMessage v-if="props.errors.email" :message="props.errors.email" />
       </div>
 
       <div class="form-group">
@@ -44,12 +44,10 @@ function handleSubmit() {
           placeholder="パスワードを入力"
           required
         />
-        <p v-if="props.errors.password" class="error-message">{{ props.errors.password }}</p>
+        <ErrorMessage v-if="props.errors.password" :message="props.errors.password" />
       </div>
 
-      <p v-if="props.errors.general" class="error-message general-error">
-        {{ props.errors.general }}
-      </p>
+      <ErrorMessage v-if="props.errors.general" :message="props.errors.general" :center="true" />
 
       <button type="submit" :disabled="props.isLoading">
         {{ props.isLoading ? "ログイン中..." : "ログイン" }}
@@ -113,16 +111,6 @@ input[type="email"]:focus,
 input[type="password"]:focus {
   outline: none;
   border-color: #1a1a2e;
-}
-
-.error-message {
-  color: #a83218;
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-.general-error {
-  text-align: center;
 }
 
 button {

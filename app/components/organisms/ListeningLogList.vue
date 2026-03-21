@@ -13,9 +13,9 @@ const emit = defineEmits<{
 
 <template>
   <div>
-    <div v-if="!logs.length" class="empty-state">
-      <p>まだ記録がありません。最初の鑑賞記録を追加しましょう。</p>
-    </div>
+    <EmptyState v-if="!logs.length"
+      >まだ記録がありません。最初の鑑賞記録を追加しましょう。</EmptyState
+    >
 
     <ul v-else class="log-list">
       <li v-for="log in logs" :key="log.id" class="log-item">
@@ -45,12 +45,6 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-.empty-state {
-  text-align: center;
-  padding: 4rem;
-  color: #888;
-}
-
 .log-list {
   list-style: none;
   display: flex;
