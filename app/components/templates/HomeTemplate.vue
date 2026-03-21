@@ -14,6 +14,7 @@
     <section class="admin-links">
       <ul>
         <li><NuxtLink to="/pieces">楽曲マスタ</NuxtLink></li>
+        <li><a href="/storybook/" target="_blank" rel="noopener">Storybook</a></li>
       </ul>
     </section>
   </div>
