@@ -440,6 +440,50 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
 
     // -------------------------
+    // Storybook ホスティング（/storybook/ パス）
+    // -------------------------
+    // /storybook/ へのアクセスを /storybook/index.html にリライトする CloudFront Function
+    const storybookRootRewrite = new cloudfront.Function(this, "StorybookRootRewrite", {
+      code: cloudfront.FunctionCode.fromInline(
+        `
+function handler(event) {
+  var request = event.request;
+  if (request.uri === '/storybook/' || request.uri === '/storybook') {
+    request.uri = '/storybook/index.html';
+  }
+  return request;
+}
+      `.trim()
+      ),
+      runtime: cloudfront.FunctionRuntime.JS_2_0,
+    });
+
+    // /storybook/* 用の CloudFront behavior を追加
+    distribution.addBehavior(
+      "/storybook/*",
+      origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
+      {
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        responseHeadersPolicy: securityHeadersPolicy,
+        functionAssociations: [
+          {
+            function: storybookRootRewrite,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          },
+        ],
+      }
+    );
+
+    new s3deploy.BucketDeployment(this, "StorybookDeployment", {
+      sources: [s3deploy.Source.asset(path.join(__dirname, "../../storybook-static"))],
+      destinationBucket: spaBucket,
+      destinationKeyPrefix: "storybook",
+      distribution,
+      distributionPaths: ["/storybook/*"],
+    });
+
+    // -------------------------
     // CloudWatch アラーム
     // -------------------------
     const allFunctions = [
@@ -506,6 +550,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     new cdk.CfnOutput(this, "SpaUrl", {
       value: this.corsAllowOrigin,
       description: "CloudFront URL (フロントエンド)",
+    });
+
+    new cdk.CfnOutput(this, "StorybookUrl", {
+      value: `${this.corsAllowOrigin}/storybook/`,
+      description: "Storybook URL",
     });
 
     new cdk.CfnOutput(this, "CognitoUserPoolId", {
