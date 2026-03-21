@@ -354,6 +354,10 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
             override: true,
           },
           contentTypeOptions: { override: true },
+          contentSecurityPolicy: {
+            contentSecurityPolicy: "frame-ancestors 'self';",
+            override: true,
+          },
           xssProtection: { protection: true, modeBlock: true, override: true },
           referrerPolicy: {
             referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
