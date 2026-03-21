@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
   modules: ["@nuxt/eslint", "@nuxtjs/storybook"],
+  components: [{ path: "~/components", pathPrefix: false }],
   css: ["~/assets/css/global.css"],
   typescript: {
     strict: true,
