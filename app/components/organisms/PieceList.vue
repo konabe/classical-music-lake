@@ -13,9 +13,11 @@ const emit = defineEmits<{
 
 <template>
   <div>
-    <EmptyState v-if="error"
-      >楽曲一覧の取得に失敗しました。時間をおいて再度お試しください。</EmptyState
-    >
+    <ErrorMessage
+      v-if="error"
+      message="楽曲一覧の取得に失敗しました。時間をおいて再度お試しください。"
+      variant="block"
+    />
     <EmptyState v-else-if="!pieces.length"
       >楽曲が登録されていません。最初の楽曲を追加しましょう。</EmptyState
     >
