@@ -31,23 +31,25 @@
 
 ```
 classical-music-lake/
-├── pages/                        # Nuxt ページ（ルーティング）
-│   ├── index.vue                 # トップページ（管理者向けリンクセクション含む）
-│   ├── index.test.ts             # トップページのコンポーネントテスト
-│   ├── listening-logs/           # 視聴ログ関連ページ
-│   │   ├── index.vue             # 一覧
-│   │   ├── new.vue               # 新規作成
-│   │   └── [id]/
-│   │       ├── index.vue         # 詳細
-│   │       └── edit.vue          # 編集
-│   └── pieces/                   # 楽曲マスタ関連ページ
-│       ├── index.vue             # 一覧
-│       ├── new.vue               # 新規作成
-│       └── [id]/
-│           └── edit.vue          # 編集
-├── components/                   # 共通UIコンポーネント
-├── composables/                  # Vue Composables（共通ロジック）
-├── types/                        # フロントエンド共通型定義
+├── app/                          # Nuxt アプリケーションディレクトリ
+│   ├── pages/                    # Nuxt ページ（ルーティング）
+│   │   ├── index.vue             # トップページ（管理者向けリンクセクション含む）
+│   │   ├── auth/
+│   │   │   └── user-register.vue # ユーザー登録ページ
+│   │   ├── listening-logs/       # 視聴ログ関連ページ
+│   │   │   ├── index.vue         # 一覧
+│   │   │   ├── new.vue           # 新規作成
+│   │   │   └── [id]/
+│   │   │       ├── index.vue     # 詳細
+│   │   │       └── edit.vue      # 編集
+│   │   └── pieces/               # 楽曲マスタ関連ページ
+│   │       ├── index.vue         # 一覧
+│   │       ├── new.vue           # 新規作成
+│   │       └── [id]/
+│   │           └── edit.vue      # 編集
+│   ├── components/               # 共通UIコンポーネント
+│   ├── composables/              # Vue Composables（共通ロジック）
+│   └── types/                    # フロントエンド共通型定義
 ├── backend/
 │   └── src/
 │       ├── auth/                 # 認証 Lambda 関数
@@ -126,11 +128,11 @@ classical-music-lake/
 
 ## 設計上の制約・トレードオフ
 
-### 認証なし（現在）
+### 認証（実装済み）
 
-- **理由**: MVP として機能優先
-- **リスク**: 誰でもデータ操作可能
-- **対応予定**: Cognito によるユーザー認証（フェーズ3）
+- **状態**: AWS Cognito によるユーザー登録を実装済み（メールアドレス + パスワード）
+- **実装内容**: `POST /auth/register` エンドポイント、Cognito User Pool、メール確認フロー
+- **残タスク**: ログイン・ログアウト・JWT 検証による API 保護は将来フェーズで実装予定
 
 ### DynamoDB Scan による全件取得
 

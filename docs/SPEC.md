@@ -9,6 +9,7 @@
 ### 1.2 主要機能
 
 - **視聴ログ管理**: CD・配信サービス等で聴いた録音の記録
+- **ユーザー登録**: メールアドレスとパスワードによるアカウント作成（メール確認付き）
 
 ### 1.3 スコープ
 
@@ -50,11 +51,12 @@
 
 #### フロントエンド Composables
 
-| Composable         | 役割                                               |
-| ------------------ | -------------------------------------------------- |
-| `useApiBase`       | API Gateway のベース URL を返す                    |
-| `usePieces`        | 曲一覧を取得する                                   |
-| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`) |
+| Composable         | 役割                                                      |
+| ------------------ | --------------------------------------------------------- |
+| `useApiBase`       | API Gateway のベース URL を返す                           |
+| `useAuth`          | ユーザー登録・認証関連の API 呼び出しと入力バリデーション |
+| `usePieces`        | 曲一覧を取得する                                          |
+| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)        |
 
 #### フロントエンド コンポーネント
 
@@ -155,10 +157,46 @@ interface Piece {
 - **ベースURL**: `https://{api-gateway-url}/prod`
 - **認証**: AWS Cognito User Pool (Bearer Token)
   - 認証が必要なエンドポイント: `/listening-logs/*`（読み取り・書き込み）
-  - 公開エンドポイント: `/pieces/*`（読み取りのみ）
+  - 公開エンドポイント: `/auth/*`、`/pieces/*`
 - **CORS**: CloudFront URL のみ許可（プリフライト・GatewayResponse の両方で設定）
 
-### 4.2 視聴ログAPI
+### 4.2 認証API
+
+#### `POST /auth/register`
+
+新規ユーザーを登録する
+
+**リクエスト**
+
+```json
+POST /auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "SecurePass1"
+}
+```
+
+**レスポンス**
+
+- 成功: `200 OK`（空レスポンス）— Cognito がメール確認メールを送信する
+- バリデーションエラー: `400 Bad Request`
+- 既存ユーザー: `409 Conflict`
+
+**パスワードルール**（Cognito User Pool 設定）
+
+- 8文字以上
+- 大文字・小文字・数字をそれぞれ1文字以上含む
+
+**フロー**
+
+1. フロントエンドがメールアドレス・パスワードを送信
+2. Lambda が Cognito `signUp` を呼び出す
+3. Cognito がメール確認リンクを送信
+4. ユーザーがメールリンクをクリックして確認完了
+
+### 4.3 視聴ログAPI
 
 #### `GET /listening-logs`
 
@@ -277,7 +315,7 @@ DELETE /listening-logs/{id}
 
 - 成功: `204 No Content`
 
-### 4.3 エラーレスポンス一覧
+### 4.4 エラーレスポンス一覧
 
 全エラーレスポンスは以下の形式で返される：
 
@@ -293,7 +331,7 @@ DELETE /listening-logs/{id}
 | `404 Not Found`             | リソース未存在     | 指定IDの視聴ログが存在しない                   |
 | `500 Internal Server Error` | サーバー内部エラー | DynamoDB接続エラーなど予期しないエラー         |
 
-### 4.4 データバリデーションルール
+### 4.5 データバリデーションルール
 
 #### 視聴ログ（ListeningLog）
 
@@ -328,9 +366,20 @@ DELETE /listening-logs/{id}
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 5個（視聴ログ用CRUD操作）
+- **関数数**: 6個（視聴ログ用CRUD操作 × 5 + ユーザー登録 × 1）
 - **環境変数**:
   - `DYNAMO_TABLE_LISTENING_LOGS`
+  - `COGNITO_USER_POOL_ID`（認証系 Lambda で使用）
+  - `COGNITO_CLIENT_ID`（認証系 Lambda で使用）
+
+#### Cognito
+
+- **User Pool**: メールアドレスベースのサインアップ/サインイン
+- **自己登録**: 有効（`selfSignUpEnabled: true`）
+- **メール確認**: 必須（確認コードをメール送信）
+- **パスワードポリシー**: 8文字以上、大文字・小文字・数字を必須
+- **App Client**: SRP 認証フロー（シークレットなし）
+- **CDK Output**: `CognitoUserPoolId`, `CognitoClientId`, `CognitoUserPoolArn`
 
 #### API Gateway
 
@@ -551,6 +600,7 @@ cdk deploy
 
 | 日付       | バージョン | 変更内容                                                                             |
 | ---------- | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-03-21 | 1.3.0      | AWS Cognito ユーザー登録機能を追加（`POST /auth/register`、`useAuth` composable）    |
 | 2026-03-17 | 1.2.5      | CDK CORS 設定を DRY 化（`addCors` ヘルパー）、型定義ファイルの管理方針コメントを整備 |
 | 2026-03-17 | 1.2.4      | Create入力の実体バリデーション強化（空白のみ禁止・最大文字数制限）                   |
 | 2026-03-16 | 1.2.3      | Zod を導入しリクエストボディのパース処理にバリデーションを統合                       |
