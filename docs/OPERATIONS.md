@@ -96,17 +96,17 @@ aws logs tail /aws/lambda/ClassicalMusicLake-ListeningLogsCreate --follow
 
 ### 現在の監視設定
 
-現時点では CloudWatch アラートは未設定（フェーズ2で整備予定）。
+CloudWatch アラームは CDK で設定済み（`classical-music-lake-stack.ts` の CloudWatch Alarm セクション）。
 
-エラーは Lambda の `console.error` 出力で CloudWatch Logs に記録される。
+| アラーム名                                     | メトリクス                 | 閾値        |
+| ---------------------------------------------- | -------------------------- | ----------- |
+| `classical-music-lake-{stage}-lambda-*-errors` | Lambda Errors (各関数)     | 1件以上/5分 |
+| `classical-music-lake-{stage}-api-5xx`         | API Gateway 5XX            | 1件以上/5分 |
+| `classical-music-lake-{stage}-dynamo-throttle` | DynamoDB ThrottledRequests | 1件以上/5分 |
 
-### 推奨アラート（今後設定予定）
+> 現時点ではアラームアクション（SNS 通知等）は未設定。アラーム状態は CloudWatch コンソールで確認する。
 
-| メトリクス            | 閾値        | アクション |
-| --------------------- | ----------- | ---------- |
-| Lambda Errors         | 1件以上/5分 | メール通知 |
-| API Gateway 5XX       | 1件以上/5分 | メール通知 |
-| DynamoDB SystemErrors | 1件以上/5分 | メール通知 |
+エラーの詳細は Lambda の `console.error` 出力で CloudWatch Logs に記録される。
 
 ---
 
@@ -141,19 +141,69 @@ aws dynamodb restore-table-from-backup \
 
 ### ポイントインタイムリカバリ（PITR）
 
-現時点では PITR は未設定。必要に応じて CDK スタックで有効化できる：
+`ListeningLogs` テーブルは PITR が有効化済み（CDK の `pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }`）。
 
-```typescript
-// cdk/lib/classical-music-lake-stack.ts
-pointInTimeRecovery: true;
+過去 35 日以内の任意の時点にリストアできる：
+
+```bash
+aws dynamodb restore-table-to-point-in-time \
+  --source-table-name classical-music-listening-logs \
+  --target-table-name classical-music-listening-logs-restored \
+  --restore-date-time "2024-01-15T12:00:00Z"
 ```
 
 ### データのエクスポート（手動）
+
+全件エクスポート（管理者用）：
 
 ```bash
 aws dynamodb scan \
   --table-name classical-music-listening-logs \
   --output json > backup-$(date +%Y%m%d).json
+```
+
+特定ユーザーのデータをエクスポートする場合は GSI1 を使用：
+
+```bash
+aws dynamodb query \
+  --table-name classical-music-listening-logs \
+  --index-name GSI1 \
+  --key-condition-expression "userId = :uid" \
+  --expression-attribute-values '{":uid": {"S": "<cognito-sub>"}}' \
+  --output json > user-backup-$(date +%Y%m%d).json
+```
+
+---
+
+## データマイグレーション
+
+### 既存視聴ログの userId 帰属（003-5 以前のデータ）
+
+003-5 の認証保護実装以前に作成されたデータは `userId` が `null` のため、通常ユーザーの一覧・取得・更新・削除では表示されない。
+
+**確認方法（未帰属データの件数確認）**：
+
+```bash
+aws dynamodb scan \
+  --table-name classical-music-listening-logs \
+  --filter-expression "attribute_not_exists(userId) OR userId = :null" \
+  --expression-attribute-values '{":null": {"NULL": true}}' \
+  --select COUNT \
+  --output json
+```
+
+**帰属移管手順**（管理者が特定ユーザーへ割り当てる場合）：
+
+1. 対象レコードの `id` と移管先ユーザーの Cognito `sub`（UserId）を確認する
+2. 移管前にオンデマンドバックアップを作成する
+3. 個別に UpdateItem で `userId` を設定する：
+
+```bash
+aws dynamodb update-item \
+  --table-name classical-music-listening-logs \
+  --key '{"id": {"S": "<record-id>"}}' \
+  --update-expression "SET userId = :uid" \
+  --expression-attribute-values '{":uid": {"S": "<cognito-sub>"}}'
 ```
 
 ---

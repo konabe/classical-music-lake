@@ -51,12 +51,14 @@
 
 #### フロントエンド Composables
 
-| Composable         | 役割                                                 |
-| ------------------ | ---------------------------------------------------- |
-| `useApiBase`       | API Gateway のベース URL を返す                      |
-| `useAuth`          | 認証処理（register・login・logout・isAuthenticated） |
-| `usePieces`        | 曲一覧を取得する                                     |
-| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)   |
+| Composable         | 役割                                                                  |
+| ------------------ | --------------------------------------------------------------------- |
+| `useApiBase`       | API Gateway のベース URL を返す                                       |
+| `useAuth`          | 認証処理（register・login・logout・isAuthenticated）                  |
+| `useListeningLogs` | 視聴ログ CRUD（Authorization ヘッダー付与・401 エラー時リダイレクト） |
+| `useListeningLog`  | 単一視聴ログ取得（Authorization ヘッダー付与）                        |
+| `usePieces`        | 曲一覧を取得する                                                      |
+| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                    |
 
 #### フロントエンド コンポーネント
 
@@ -72,6 +74,7 @@
 - **言語**: TypeScript
 - **データベース**: DynamoDB
 - **認証**: AWS Cognito User Pool (メールアドレスベースのサインアップ/サインイン)
+- **認可**: API Gateway Cognito Authorizer による JWT 検証 + userId ベースのアクセス制御
 
 #### インフラ
 

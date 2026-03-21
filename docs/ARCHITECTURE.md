@@ -71,7 +71,8 @@ classical-music-lake/
 │       │   ├── update.ts
 │       │   └── delete.ts
 │       ├── types/                # バックエンド共通型定義
-│       └── utils/                # DynamoDB クライアント、レスポンスヘルパーなど
+│       └── utils/                # DynamoDB クライアント、レスポンスヘルパー、認証ヘルパーなど
+│           ├── auth.ts           # getUserId: Cognito Authorizer claims から userId を取得
 ├── cdk/
 │   └── lib/
 │       └── classical-music-lake-stack.ts  # AWSインフラ定義
@@ -92,10 +93,12 @@ classical-music-lake/
 
 ```
 ブラウザ
-  → GET /prod/listening-logs
+  → GET /prod/listening-logs (Authorization: Bearer <token>)
   → API Gateway
+  → Cognito Authorizer (JWT 検証 + sub 抽出)
   → Lambda (list.ts)
-  → DynamoDB Scan (classical-music-listening-logs)
+  → userId = event.requestContext.authorizer.claims.sub
+  → DynamoDB Query (GSI1: userId = :userId, sortKey: createdAt)
   → レスポンス (listenedAt 降順ソート)
   → ブラウザに返却
 ```
@@ -104,10 +107,12 @@ classical-music-lake/
 
 ```
 ブラウザ
-  → POST /prod/listening-logs (JSON body)
+  → POST /prod/listening-logs (Authorization: Bearer <token>, JSON body)
   → API Gateway
+  → Cognito Authorizer (JWT 検証 + sub 抽出)
   → Lambda (create.ts)
-  → UUID 生成 + createdAt/updatedAt 付与
+  → userId = event.requestContext.authorizer.claims.sub
+  → UUID 生成 + userId/createdAt/updatedAt 付与
   → DynamoDB PutItem
   → 201 Created + 作成済みオブジェクト
   → ブラウザに返却
@@ -152,27 +157,28 @@ classical-music-lake/
 
 ## 設計上の制約・トレードオフ
 
-### 認証（実装済み）
+### 認証・認可（実装済み）
 
-- **状態**: AWS Cognito によるユーザー登録・ログイン・ログアウトを実装済み
+- **状態**: AWS Cognito によるユーザー登録・ログイン・ログアウト・API 保護を実装済み
 - **実装内容**:
   - `POST /auth/register`: Cognito ユーザー登録、メール確認フロー
   - `POST /auth/login`: Cognito 認証、JWT (AccessToken) を localStorage に保存
   - ログアウト: クライアント側のみ（localStorage からトークン削除 + `/auth/login` へリダイレクト）
-  - `middleware/auth.ts`: `/listening-logs/**` への未認証アクセスを制限
-- **残タスク**: JWT 検証による API 保護（Cognito Authorizer）は将来フェーズで実装予定
+  - `middleware/auth.ts`: `/listening-logs/**` への未認証アクセスをフロントエンド側で制限
+  - **API Gateway Cognito Authorizer**: `/listening-logs/**` の全エンドポイントで JWT 検証を実施。未認証リクエストは 401 を返す
+  - **userId によるアクセス制御**: Lambda が `claims.sub` をキーに自分のデータのみ返却。他ユーザーのリソースへのアクセスは 404 で返却（存在隠蔽）
+- **残タスク**: Refresh Token の無効化・Token Blacklist は将来フェーズで対応
 
-### DynamoDB Scan による全件取得
+### DynamoDB アクセスパターン
 
-- **理由**: シンプルな実装優先、データ量が少ない個人利用想定
-- **リスク**: データ量増加時のパフォーマンス・コスト悪化
-- **対応予定**: ページネーション・インデックス追加（フェーズ3）
+- **視聴ログ一覧 (List)**: GSI1（PK: `userId`, SK: `createdAt`）を使った Query — ユーザー別に O(n) でスキャン不要
+- **視聴ログ取得・更新・削除 (Get/Update/Delete)**: PK の `id`（UUID）で GetItem し、取得後に `userId` を照合してアクセス制御
+- **トレードオフ**: PK を `id` のまま維持し GSI を追加することで、Get/Update/Delete の一意解決と List のユーザー別クエリを両立
 
-### CORS 全オリジン許可
+### CORS 設定
 
-- **理由**: 開発・デプロイの手軽さ
-- **リスク**: 本番環境でのセキュリティリスク
-- **対応予定**: 認証実装時に合わせてオリジン制限
+- **状態**: CloudFront URL のみ許可（`/listening-logs/**` には `Authorization` ヘッダーも追加）
+- **実装**: `addCors()` ヘルパーに `allowHeaders` パラメーターを追加し、エンドポイントごとに制御
 
 ### フロントエンド・バックエンドの型定義が分離
 
