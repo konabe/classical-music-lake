@@ -163,4 +163,70 @@ describe("useAuth", () => {
       expect(result.error).toBe("Network error");
     });
   });
+
+  describe("login", () => {
+    it("メールアドレスが無効なとき success: false を返す", async () => {
+      const { login } = useAuth();
+      const result = await login("invalid-email", "ValidPassword123");
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("email");
+    });
+
+    it("パスワードが空のとき success: false を返す", async () => {
+      const { login } = useAuth();
+      const result = await login("user@example.com", "");
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+    });
+
+    it("API 呼び出しが成功したとき success: true と accessToken を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          tokenType: "Bearer",
+          expiresIn: 3600,
+        }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(true);
+      expect(result.accessToken).toBe("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/auth/login",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ email: "user@example.com", password: "ValidPassword123" }),
+        })
+      );
+    });
+
+    it("認証情報が間違いの場合 success: false とエラーメッセージを返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          error: "InvalidCredentials",
+          message: "Email or password is incorrect.",
+        }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Email or password is incorrect.");
+    });
+
+    it("ネットワークエラー時に success: false を返す", async () => {
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Network error");
+    });
+  });
 });

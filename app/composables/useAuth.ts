@@ -11,6 +11,12 @@ export interface RegisterResult {
   error?: string;
 }
 
+export interface LoginResult {
+  success: boolean;
+  accessToken?: string;
+  error?: string;
+}
+
 export const useAuth = () => {
   const validateEmail = (email: string): boolean => {
     if (!email || !email.trim()) return false;
@@ -96,10 +102,61 @@ export const useAuth = () => {
     }
   };
 
+  const login = async (email: string, password: string): Promise<LoginResult> => {
+    if (!validateEmail(email)) {
+      return {
+        success: false,
+        error: "Please enter a valid email address",
+      };
+    }
+
+    if (!password) {
+      return {
+        success: false,
+        error: "Password is required",
+      };
+    }
+
+    try {
+      const apiBase = useApiBase();
+
+      const response = await fetch(`${apiBase}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errorData.message || "Login failed. Please try again.",
+        };
+      }
+
+      const data = await response.json();
+      localStorage.setItem("accessToken", data.accessToken);
+
+      return {
+        success: true,
+        accessToken: data.accessToken,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+      };
+    }
+  };
+
   return {
     validateEmail,
     validatePassword,
     getPasswordValidationError,
     register,
+    login,
   };
 };
