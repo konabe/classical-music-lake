@@ -5,15 +5,18 @@ import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { createListeningLogSchema } from "../utils/schemas";
+import { getUserId } from "../utils/auth";
 import type { ListeningLog } from "../types";
 
 export const handler = createHandler(async (event) => {
   const input = parseRequestBody(event.body as unknown, createListeningLogSchema);
+  const userId = getUserId(event);
 
   const now = new Date().toISOString();
   const item: ListeningLog = {
     ...input,
     id: randomUUID(),
+    userId,
     createdAt: now,
     updatedAt: now,
   };

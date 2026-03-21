@@ -38,6 +38,7 @@ export interface CognitoError extends Error {
 // ※ app/types/index.ts と同期を保つこと
 export interface ListeningLog {
   id: string;
+  userId: string | null; // Cognito sub（未帰属データは null）
   listenedAt: string; // ISO 8601 日時
   composer: string; // 作曲家
   piece: string; // 曲名

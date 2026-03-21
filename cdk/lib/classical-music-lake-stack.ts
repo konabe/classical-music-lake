@@ -47,6 +47,14 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
+    // GSI1: userId + createdAt でユーザー別一覧取得
+    listeningLogsTable.addGlobalSecondaryIndex({
+      indexName: "GSI1",
+      partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
     // -------------------------
     // Lambda 共通設定
     // -------------------------
@@ -255,20 +263,25 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // CfnAccount の設定完了後に API Gateway ステージが作成されるよう順序を保証
     api.node.addDependency(apiGatewayAccount);
 
-    // Note: API Gateway Cognito Authorizer は 003-5 で /listening-logs の保護時に追加する
+    // Cognito Authorizer（/listening-logs エンドポイント保護用）
+    const cognitoAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(this, "CognitoAuthorizer", {
+      cognitoUserPools: [userPool],
+      authorizerName: "CognitoAuthorizer",
+    });
+    const withAuth = { authorizer: cognitoAuthorizer };
 
     const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
 
     // /listening-logs
     const listeningLogsResource = api.root.addResource("listening-logs");
-    listeningLogsResource.addMethod("GET", integ(listeningLogsList));
-    listeningLogsResource.addMethod("POST", integ(listeningLogsCreate));
+    listeningLogsResource.addMethod("GET", integ(listeningLogsList), withAuth);
+    listeningLogsResource.addMethod("POST", integ(listeningLogsCreate), withAuth);
 
     // /listening-logs/{id}
     const listeningLogResource = listeningLogsResource.addResource("{id}");
-    listeningLogResource.addMethod("GET", integ(listeningLogsGet));
-    listeningLogResource.addMethod("PUT", integ(listeningLogsUpdate));
-    listeningLogResource.addMethod("DELETE", integ(listeningLogsDelete));
+    listeningLogResource.addMethod("GET", integ(listeningLogsGet), withAuth);
+    listeningLogResource.addMethod("PUT", integ(listeningLogsUpdate), withAuth);
+    listeningLogResource.addMethod("DELETE", integ(listeningLogsDelete), withAuth);
 
     // /pieces
     const piecesResource = api.root.addResource("pieces");
@@ -384,8 +397,17 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
 
     // API Gateway の CORS オリジンも CloudFront URL に限定
-    this.addCors(listeningLogsResource, ["GET", "POST", "OPTIONS"]);
-    this.addCors(listeningLogResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
+    // listening-logs は Authorization ヘッダーが必要なため allowHeaders に追加
+    this.addCors(
+      listeningLogsResource,
+      ["GET", "POST", "OPTIONS"],
+      ["Content-Type", "Authorization"]
+    );
+    this.addCors(
+      listeningLogResource,
+      ["GET", "PUT", "DELETE", "OPTIONS"],
+      ["Content-Type", "Authorization"]
+    );
     this.addCors(piecesResource, ["GET", "POST", "OPTIONS"]);
     this.addCors(pieceResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
     this.addCors(authRegisterResource, ["POST", "OPTIONS"]);
@@ -502,11 +524,15 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
   }
 
-  private addCors(resource: IResource, methods: string[]): void {
+  private addCors(
+    resource: IResource,
+    methods: string[],
+    allowHeaders: string[] = ["Content-Type"]
+  ): void {
     resource.addCorsPreflight({
       allowOrigins: [this.corsAllowOrigin],
       allowMethods: methods,
-      allowHeaders: ["Content-Type"],
+      allowHeaders,
     });
   }
 }

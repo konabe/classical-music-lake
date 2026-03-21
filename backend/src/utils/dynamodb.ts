@@ -1,5 +1,11 @@
 import { ConditionalCheckFailedException, DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+  ScanCommand,
+} from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 
 const client = new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" });
@@ -12,6 +18,27 @@ export const TABLE_LISTENING_LOGS =
   process.env.DYNAMO_TABLE_LISTENING_LOGS ?? "classical-music-listening-logs";
 
 export const TABLE_PIECES = process.env.DYNAMO_TABLE_PIECES ?? "classical-music-pieces";
+
+export async function queryItemsByUserId<T>(tableName: string, userId: string): Promise<T[]> {
+  const items: T[] = [];
+  let lastEvaluatedKey: Record<string, unknown> | undefined;
+
+  do {
+    const result = await dynamo.send(
+      new QueryCommand({
+        TableName: tableName,
+        IndexName: "GSI1",
+        KeyConditionExpression: "userId = :userId",
+        ExpressionAttributeValues: { ":userId": userId },
+        ExclusiveStartKey: lastEvaluatedKey,
+      })
+    );
+    items.push(...((result.Items ?? []) as T[]));
+    lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+  } while (lastEvaluatedKey !== undefined);
+
+  return items;
+}
 
 export async function scanAllItems<T>(tableName: string): Promise<T[]> {
   const items: T[] = [];
