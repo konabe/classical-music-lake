@@ -1,5 +1,72 @@
 # Changelog
 
+## [0.1.19](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.18...classical-music-lake-v0.1.19) (2026-03-21)
+
+
+### Features
+
+* **003-2:** implement user registration with Cognito ([f517a3b](https://github.com/konabe/classical-music-lake/commit/f517a3b606c0ab7ec1fa40247b5c02442198e7b9))
+* atomic design の layouts 層を導入 ([2d3f9c0](https://github.com/konabe/classical-music-lake/commit/2d3f9c0d06c4ea44e82cfa2772834b33634b898a))
+* atomic design の layouts 層を導入し app.vue から抽出 ([2767016](https://github.com/konabe/classical-music-lake/commit/2767016ec3a3aa30928b6e01f859bf2334675131))
+* atomic design の organisms 層を導入 ([96410cb](https://github.com/konabe/classical-music-lake/commit/96410cb4632be90cdfefb5182c5fc605b9818535))
+* atomic design の organisms 層を導入し templates から抽出 ([949dbdb](https://github.com/konabe/classical-music-lake/commit/949dbdb8797f051fa7425385fa73c03dae4fb909))
+* atomic design の templates 層を導入 ([7a0aba3](https://github.com/konabe/classical-music-lake/commit/7a0aba30b6766f359cc1f390fae9a6cdefa74793))
+* atomic design の templates 層を導入し全ページから抽出 ([eb8770e](https://github.com/konabe/classical-music-lake/commit/eb8770e5887fa986d801ef8ce3d46e2797bd0516))
+* atomic design の templates 層導入と Storybook 公開 ([be13fee](https://github.com/konabe/classical-music-lake/commit/be13fee0edf27dbb3cb3eeef4680f4fdc50ca0aa))
+* molecules 層を導入（RatingDisplay・FavoriteIndicator・RatingSelector） ([8f7039f](https://github.com/konabe/classical-music-lake/commit/8f7039f21a0be1633ede121d531af77a0572e5ee))
+* molecules 層を導入し ratingDisplay・favoriteIndicator・ratingSelector を抽出 ([cd041f5](https://github.com/konabe/classical-music-lake/commit/cd041f5f081009683318a497a50c328a709f4161))
+* setup AWS Cognito User Pool and App Client ([17a0ef0](https://github.com/konabe/classical-music-lake/commit/17a0ef0b54556ef13176f7912e4c1ebccb75abf7))
+* setup AWS Cognito User Pool and App Client ([fc43559](https://github.com/konabe/classical-music-lake/commit/fc43559731bf2d8c70606b09b03cbdcafaeeffa2))
+* setup AWS Cognito User Pool and App Client for user authentication ([50ad995](https://github.com/konabe/classical-music-lake/commit/50ad995e1acaf91e1723d43b47df319ebf417e56))
+* storybook 静的ファイルを S3+CloudFront の /storybook/ で公開 ([54f197e](https://github.com/konabe/classical-music-lake/commit/54f197e8a88322c9e8647d8b1b7bd7e404775ecf))
+* templates 層の Storybook stories を追加 ([e6179a8](https://github.com/konabe/classical-music-lake/commit/e6179a8c29b365dc48cd2cf3a7132d15a2686287))
+* トップページの admin-links に Storybook リンクを追加 ([8585141](https://github.com/konabe/classical-music-lake/commit/85851413e6f36492aba4a53e6b8733aef56aced3))
+* ユーザーログアウト機能を実装 (003-4) ([2876667](https://github.com/konabe/classical-music-lake/commit/2876667e7eaba4680a155b7b8902bb3fbdaa4c06))
+* ユーザーログアウト機能を実装 (003-4) ([5488026](https://github.com/konabe/classical-music-lake/commit/5488026ae690d3c366c09842d5127d9a386d106a))
+* ユーザーログイン機能を実装 (003-3) ([e69fb3f](https://github.com/konabe/classical-music-lake/commit/e69fb3f5e60e755ad698e53cf47dbb22b2048a75))
+* ユーザーログイン機能を実装 (003-3) ([dea1e71](https://github.com/konabe/classical-music-lake/commit/dea1e7126a48bcd846fc26a231d8d2a6fafc0a0c))
+* 視聴ログ API に認証保護を追加 (003-5) ([21568f2](https://github.com/konabe/classical-music-lake/commit/21568f216e7b541c42c6a07df696089465265e04))
+* 視聴ログ API に認証保護を追加 (003-5) ([5ba099f](https://github.com/konabe/classical-music-lake/commit/5ba099f8e5b1412013b3132b576823b935d48fa4))
+
+
+### Bug Fixes
+
+* accessToken の存在チェックを追加してフォルス認証状態を防止 ([f5f9dd9](https://github.com/konabe/classical-music-lake/commit/f5f9dd9c481114eb4c288dd5ac8cac5e95206f16))
+* add auth/login Lambda and API Gateway route to CDK stack ([61a868f](https://github.com/konabe/classical-music-lake/commit/61a868fb715eff33abfbd2d2aad248a97076c340))
+* add auth/login Lambda and API Gateway route to CDK stack ([05e21aa](https://github.com/konabe/classical-music-lake/commit/05e21aac1c0461f7e419af263eaae2b6b3abedf3))
+* add role validation and CORS_ALLOW_ORIGIN for auth lambdas, remove unused authorizer ([d8be4a7](https://github.com/konabe/classical-music-lake/commit/d8be4a790049fcdbba6e15c558e19b7e7d1318f0))
+* auth register API URL construction ([16ebc13](https://github.com/konabe/classical-music-lake/commit/16ebc1354bb49c8d8683e815bdd7632fcd82f201))
+* cloudwatch alarm metrics exceed aws limit ([47b7973](https://github.com/konabe/classical-music-lake/commit/47b79736d0baacdedd6eda61417f4071dbc2eba6))
+* correct Cognito SDK v3 client name and add missing dependency ([f632903](https://github.com/konabe/classical-music-lake/commit/f63290383638c7f89501434483833a69b9f93d4f))
+* correct Cognito SDK v3 client name and add missing dependency ([d3f1bb0](https://github.com/konabe/classical-music-lake/commit/d3f1bb0b930bd4b7e1d02cb604543a1a0caa0dc0))
+* deploy ワークフローに Storybook ビルドステップを追加 ([5307123](https://github.com/konabe/classical-music-lake/commit/530712311ede7a70a8fd057fb2e6bcc272547068))
+* Deploy ワークフローの TypeScript エラーを修正 ([3774d4e](https://github.com/konabe/classical-music-lake/commit/3774d4e7892f5b03539dca83e064d1a8fadff290))
+* eslint-plugin-storybook を flat config に正しく追加 ([88710a7](https://github.com/konabe/classical-music-lake/commit/88710a715be6c6bdc753c64c17384b8dbb72f5eb))
+* fix AWS SDK v3 import and useApiBase missing import ([d12428d](https://github.com/konabe/classical-music-lake/commit/d12428df751652f6d0e4f122e1ae7b68e8004f64))
+* fix AWS SDK v3 import and useApiBase missing import ([1318800](https://github.com/konabe/classical-music-lake/commit/1318800264e0b1a524309b00c8ea6ba12600ff3d))
+* legacy-peer-deps を .npmrc に追加して CI のインストールエラーを解消 ([95edc12](https://github.com/konabe/classical-music-lake/commit/95edc128f657e16bf8d62777900e0e071e0393ba))
+* move auth pages and composables to app directory ([462013a](https://github.com/konabe/classical-music-lake/commit/462013a61da86ea3cb556358162e6938c7c827e9))
+* move auth pages and composables to app directory ([486aa6f](https://github.com/konabe/classical-music-lake/commit/486aa6f96659a4ce4fbca8c6e58fa55e88c9cc9c))
+* NodejsFunction の addToPrincipalPolicy を addToRolePolicy に修正 ([ff51836](https://github.com/konabe/classical-music-lake/commit/ff5183625e60d76433880021752ac0f585e3aa13))
+* ratingSelector の星ボタンに aria-label と aria-pressed を追加 ([b8290de](https://github.com/konabe/classical-music-lake/commit/b8290deb563a97845e362616f0473f7784314396))
+* remove auth Lambda references from CDK until implementation ([4fcda5a](https://github.com/konabe/classical-music-lake/commit/4fcda5a3168c633df202a9cfced366213dda6e7c))
+* remove read-only email_verified attribute from cognito signup ([3b4fc4c](https://github.com/konabe/classical-music-lake/commit/3b4fc4ceca373b59956eff5a4f5d8c702152fb4c))
+* remove read-only email_verified attribute from cognito signup ([c702a7c](https://github.com/konabe/classical-music-lake/commit/c702a7c17fb827815506a89b81eb6923a8c1d342))
+* remove trailing slash in useApiBase to prevent double slashes ([05fa2c9](https://github.com/konabe/classical-music-lake/commit/05fa2c976438be6d753b86c2d8d1df6b48ad772a))
+* **security:** fix npm audit vulnerability in flatted ([32d58e9](https://github.com/konabe/classical-music-lake/commit/32d58e92c89a7165447af13d4eea05ef315b3cff))
+* simplify auth register API URL construction ([15b0b07](https://github.com/konabe/classical-music-lake/commit/15b0b07f647e9a03ce35ffb7d399596e890b0062))
+* storybook デプロイ後に SPA デプロイでファイルが削除される問題を修正 ([5dd7741](https://github.com/konabe/classical-music-lake/commit/5dd77410023779843eb98bd1c4c882df55f2e48e))
+* storybook の CloudFront behavior をキャッシュ無効に変更 ([57b7995](https://github.com/konabe/classical-music-lake/commit/57b7995baeb6e5f9e4ecd1aebcdbcddf069fa75e))
+* storybook の iframe プレビューが X-Frame-Options: DENY でブロックされる問題を修正 ([420f76f](https://github.com/konabe/classical-music-lake/commit/420f76f029c8d87d6f85fb5c4459f6f66f324571))
+* storybook の iframe プレビューをブロックする x-frame-options: deny を除外 ([f3a61e2](https://github.com/konabe/classical-music-lake/commit/f3a61e2f2a91551417531e37f70dc1a523c28d77))
+* storybook ヘッダーポリシーに frame-ancestors 'self' の CSP を追加 ([09f4e12](https://github.com/konabe/classical-music-lake/commit/09f4e120885830b9e69b88dd1984001c39dcfb8f))
+* storybookDeployment が spaDeployment の後に実行されるよう依存関係を追加 ([b27f058](https://github.com/konabe/classical-music-lake/commit/b27f05805eb4b8f57e4055ea5cad0a509bbb356c))
+* temporarily remove auth Lambda functions from CDK until implementation ([1f5d097](https://github.com/konabe/classical-music-lake/commit/1f5d0971f04ea6b1d479f84f56db0a8e4939d90d))
+* update Cognito error handling to use AWS SDK v3 error shape ([f21a75b](https://github.com/konabe/classical-music-lake/commit/f21a75b2c4d8a6c622eed1062a5f88c3be1ed22d))
+* update useAuth import path in test file ([1a7ed68](https://github.com/konabe/classical-music-lake/commit/1a7ed68686fa6f5cb4d473306cf7348e5014b315))
+* use useApiBase and consistent URL pattern in useAuth ([c4a7892](https://github.com/konabe/classical-music-lake/commit/c4a7892a64d4c0161dd803e5169935513c5a9018))
+* useListeningLogs のエラーハンドリングを改善 ([8be0324](https://github.com/konabe/classical-music-lake/commit/8be03245bf37871d4bcd47cf297edeb303834208))
+
 ## [0.1.18](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.17...classical-music-lake-v0.1.18) (2026-03-19)
 
 
