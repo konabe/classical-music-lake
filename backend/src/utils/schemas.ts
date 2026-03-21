@@ -72,5 +72,8 @@ export const registerSchema = z.object({
 
 export const loginSchema = z.object({
   email: emailSchema,
+  // ログイン時はパスワードの複雑さを検証しない。
+  // 複雑さポリシー（文字種・長さ）を適用すると、ポリシー変更前に登録したユーザーが
+  // ログインできなくなる後方互換性の問題が生じるため。実際の認証は Cognito が行う。
   password: z.string({ error: () => "password is required" }).min(1, "password is required"),
 });
