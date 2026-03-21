@@ -45,8 +45,8 @@
 
 .card {
   display: block;
-  background: #fff;
-  border: 1px solid #e0d8cc;
+  background: #f2e6c9;
+  border: 1px solid #b8995e;
   border-radius: 12px;
   padding: 2rem;
   text-decoration: none;

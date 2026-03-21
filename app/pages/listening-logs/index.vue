@@ -78,8 +78,8 @@ async function handleDelete(id: string) {
 }
 
 .log-item {
-  background: #fff;
-  border: 1px solid #e0d8cc;
+  background: #f2e6c9;
+  border: 1px solid #b8995e;
   border-radius: 10px;
   padding: 1.2rem 1.5rem;
   display: flex;

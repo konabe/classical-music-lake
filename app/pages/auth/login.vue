@@ -100,22 +100,23 @@ const handleLogin = async () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #e8d9b8;
 }
 
 .login-container {
-  background: white;
+  background: #f2e6c9;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(61, 36, 9, 0.15);
   width: 100%;
   max-width: 400px;
+  border: 1px solid #b8995e;
 }
 
 h1 {
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: #1a1a2e;
 }
 
 form {
@@ -132,26 +133,27 @@ form {
 
 label {
   font-weight: 500;
-  color: #333;
+  color: #1a1a2e;
 }
 
 input[type="email"],
 input[type="password"] {
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid #b8995e;
   border-radius: 4px;
   font-size: 1rem;
+  background: #faf3e0;
   transition: border-color 0.2s;
 }
 
 input[type="email"]:focus,
 input[type="password"]:focus {
   outline: none;
-  border-color: #4a90e2;
+  border-color: #1a1a2e;
 }
 
 .error-message {
-  color: #e74c3c;
+  color: #a83218;
   font-size: 0.875rem;
   margin: 0;
 }
@@ -162,8 +164,8 @@ input[type="password"]:focus {
 
 button {
   padding: 0.75rem;
-  background-color: #4a90e2;
-  color: white;
+  background-color: #1a1a2e;
+  color: #fff;
   border: none;
   border-radius: 4px;
   font-size: 1rem;
@@ -173,22 +175,22 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background-color: #357abd;
+  background-color: #2d2d50;
 }
 
 button:disabled {
-  background-color: #ccc;
+  background-color: #a89070;
   cursor: not-allowed;
 }
 
 .register-link {
   text-align: center;
   margin-top: 1rem;
-  color: #666;
+  color: #7a5c38;
 }
 
 .register-link a {
-  color: #4a90e2;
+  color: #2d2d50;
   text-decoration: none;
 }
 
