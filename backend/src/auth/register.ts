@@ -12,7 +12,7 @@ const cognito = new CognitoIdentityServiceProviderClient({});
 const clientId = process.env.COGNITO_CLIENT_ID || "";
 
 interface CognitoError extends Error {
-  Code?: string;
+  name: string;
 }
 
 export const handler = createHandler(async (event) => {
@@ -42,7 +42,7 @@ export const handler = createHandler(async (event) => {
   } catch (error) {
     const cognitoError = error as CognitoError;
 
-    if (cognitoError.Code === "UsernameExistsException") {
+    if (cognitoError.name === "UsernameExistsException") {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         body: {
@@ -52,7 +52,7 @@ export const handler = createHandler(async (event) => {
       };
     }
 
-    if (cognitoError.Code === "InvalidPasswordException") {
+    if (cognitoError.name === "InvalidPasswordException") {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         body: {
@@ -63,7 +63,7 @@ export const handler = createHandler(async (event) => {
       };
     }
 
-    if (cognitoError.Code === "TooManyRequestsException") {
+    if (cognitoError.name === "TooManyRequestsException") {
       return {
         statusCode: StatusCodes.TOO_MANY_REQUESTS,
         body: {

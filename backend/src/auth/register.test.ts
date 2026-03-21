@@ -193,8 +193,8 @@ describe("POST /auth/register", () => {
 
   describe("Cognito エラー系", () => {
     it("メール重複時に 400 を返す", async () => {
-      const error: { Code: string; message: string } = {
-        Code: "UsernameExistsException",
+      const error: { name: string; message: string } = {
+        name: "UsernameExistsException",
         message: "UsernameExistsException",
       };
       mockSend.mockRejectedValue(error);
@@ -214,8 +214,8 @@ describe("POST /auth/register", () => {
     });
 
     it("無効なパスワード時に 400 を返す", async () => {
-      const error: { Code: string; message: string } = {
-        Code: "InvalidPasswordException",
+      const error: { name: string; message: string } = {
+        name: "InvalidPasswordException",
         message: "InvalidPasswordException",
       };
       mockSend.mockRejectedValue(error);
@@ -236,8 +236,8 @@ describe("POST /auth/register", () => {
     });
 
     it("その他の Cognito エラー時に 500 を返す", async () => {
-      const error: { Code: string; message: string } = {
-        Code: "ServiceUnavailableException",
+      const error: { name: string; message: string } = {
+        name: "ServiceUnavailableException",
         message: "ServiceUnavailableException",
       };
       mockSend.mockRejectedValue(error);
@@ -256,8 +256,8 @@ describe("POST /auth/register", () => {
     });
 
     it("リクエスト過多時に 429 を返す", async () => {
-      const error: { Code: string; message: string } = {
-        Code: "TooManyRequestsException",
+      const error: { name: string; message: string } = {
+        name: "TooManyRequestsException",
         message: "TooManyRequestsException",
       };
       mockSend.mockRejectedValue(error);
