@@ -16,8 +16,6 @@
   - 採番ルールは `001`, `002` のように単純なインクリメントで、3桁でゼロ埋め
   - PR 提出直前に `/docs/features/` 内で同一の `{index}` が存在しないか再スキャンし、競合があれば再採番する
 - `/docs/features/{index}-{feature-title}/requirement.md` を作成し、要件を記載する。
-- `/docs/features/{index}-{feature-title}/checklist.md` を作成し、各workの進捗が記録できるようにする。
-  - 設計、設計レビュー、実装、受け入れ　で進捗を記録
 
 ## ルール
 

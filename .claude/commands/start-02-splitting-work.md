@@ -16,6 +16,8 @@
 ## 4. タスク分割
 
 - `/docs/features/{index}-{feature-title}/requirement.md`の内容をもとに、`/docs/features/{index}-{feature-title}/{index}-{index-of-work}-{work}/work.md` にそれぞれファイルを配置する
+- `/docs/features/{index}-{feature-title}/checklist.md` を作成し、各workの進捗が記録できるようにする。
+  - 設計、設計レビュー、実装、受け入れ　で進捗を記録
 
 ## 5. `work.md`に記載する内容
 

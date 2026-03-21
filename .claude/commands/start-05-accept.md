@@ -11,3 +11,5 @@
 - `docs/ARCHITECTURE.md` アーキテクチャ設計書
 - `docs/SPEC.md` システム仕様書
 - `docs/OPERATIONS.md` 運用ドキュメント
+
+`/docs/features/{index}-{feature-title}/checklist.md` に現状を記録する。
