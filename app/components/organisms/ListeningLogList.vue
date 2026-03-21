@@ -9,8 +9,6 @@ defineProps<{
 const emit = defineEmits<{
   delete: [id: string];
 }>();
-
-const { ratingStars } = useRatingDisplay();
 </script>
 
 <template>
@@ -23,7 +21,7 @@ const { ratingStars } = useRatingDisplay();
       <li v-for="log in logs" :key="log.id" class="log-item">
         <div class="log-main">
           <div class="log-title">
-            <span v-if="log.isFavorite" class="favorite-badge">♥</span>
+            <FavoriteIndicator :is-favorite="log.isFavorite" />
             <NuxtLink :to="`/listening-logs/${log.id}`">
               {{ log.piece }}
             </NuxtLink>
@@ -32,7 +30,7 @@ const { ratingStars } = useRatingDisplay();
             <span>{{ log.composer }}</span>
           </div>
           <div class="log-sub">
-            <span class="rating">{{ ratingStars(log.rating) }}</span>
+            <RatingDisplay :rating="log.rating" />
             <span class="date">{{ formatDate(log.listenedAt) }}</span>
           </div>
           <p v-if="log.memo" class="log-memo">{{ log.memo }}</p>
@@ -86,11 +84,6 @@ const { ratingStars } = useRatingDisplay();
   text-decoration: underline;
 }
 
-.favorite-badge {
-  color: #e05a5a;
-  margin-right: 0.3rem;
-}
-
 .log-meta {
   color: #666;
   font-size: 0.9rem;
@@ -104,11 +97,6 @@ const { ratingStars } = useRatingDisplay();
   gap: 1rem;
   font-size: 0.9rem;
   margin-bottom: 0.3rem;
-}
-
-.rating {
-  color: #c9a227;
-  letter-spacing: 1px;
 }
 
 .date {
