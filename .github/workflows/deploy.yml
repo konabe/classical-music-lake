@@ -113,6 +113,9 @@ jobs:
           # CloudFormation Outputs から取得した API Gateway URL をセット
           NUXT_PUBLIC_API_BASE_URL: ${{ steps.get-api-url.outputs.api_url }}
 
+      - name: Build Storybook
+        run: npm run build-storybook
+
       # ----------------------------------------
       # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
       # CDKToolkit が参照する ECR リポジトリが削除されていると bootstrap が
