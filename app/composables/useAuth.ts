@@ -146,6 +146,13 @@ export const useAuth = () => {
       }
 
       const data = await response.json();
+      if (typeof data.accessToken !== "string" || data.accessToken.trim() === "") {
+        return {
+          success: false,
+          error: "Invalid session data received. Please try again.",
+          errorType: "general",
+        };
+      }
       try {
         localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
       } catch {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useAuth } from "./useAuth";
+import { useAuth, ACCESS_TOKEN_KEY } from "./useAuth";
 
 const mockFetch = vi.fn();
 const mockRouterPush = vi.fn();
@@ -208,6 +208,34 @@ describe("useAuth", () => {
           body: JSON.stringify({ email: "user@example.com", password: "ValidPassword123" }),
         })
       );
+    });
+
+    it("レスポンスに accessToken がない場合 success: false を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ tokenType: "Bearer" }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+      expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
+    });
+
+    it("レスポンスの accessToken が空文字の場合 success: false を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ accessToken: "   " }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+      expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
     });
 
     it("認証情報が間違いの場合 success: false とエラーメッセージを返す", async () => {
