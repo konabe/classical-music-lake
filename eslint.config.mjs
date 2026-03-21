@@ -7,6 +7,7 @@ import withNuxt from "./.nuxt/eslint.config.mjs";
 
 export default withNuxt(
   prettierConfig,
+  ...storybook.configs["flat/recommended"],
   {
     files: ["backend/src/test/vitest.d.ts"],
     rules: {
