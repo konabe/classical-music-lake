@@ -11,7 +11,18 @@ export interface RegisterResult {
   error?: string;
 }
 
+export type LoginErrorType = "email" | "password" | "credentials" | "not_confirmed" | "general";
+
+export interface LoginResult {
+  success: boolean;
+  accessToken?: string;
+  error?: string;
+  errorType?: LoginErrorType;
+}
+
 export const useAuth = () => {
+  const apiBase = useApiBase();
+
   const validateEmail = (email: string): boolean => {
     if (!email || !email.trim()) return false;
     return EMAIL_REGEX.test(email.trim());
@@ -46,7 +57,6 @@ export const useAuth = () => {
   };
 
   const register = async (email: string, password: string): Promise<RegisterResult> => {
-    // Client-side validation
     if (!validateEmail(email)) {
       return {
         success: false,
@@ -63,8 +73,6 @@ export const useAuth = () => {
     }
 
     try {
-      const apiBase = useApiBase();
-
       const response = await fetch(`${apiBase}/auth/register`, {
         method: "POST",
         headers: {
@@ -96,10 +104,73 @@ export const useAuth = () => {
     }
   };
 
+  const login = async (email: string, password: string): Promise<LoginResult> => {
+    if (!validateEmail(email)) {
+      return {
+        success: false,
+        error: "Please enter a valid email address",
+        errorType: "email",
+      };
+    }
+
+    if (!password) {
+      return {
+        success: false,
+        error: "Password is required",
+        errorType: "password",
+      };
+    }
+
+    try {
+      const response = await fetch(`${apiBase}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorType: LoginErrorType =
+          errorData.error === "UserNotConfirmed" ? "not_confirmed" : "credentials";
+        return {
+          success: false,
+          error: errorData.message || "Login failed. Please try again.",
+          errorType,
+        };
+      }
+
+      const data = await response.json();
+      try {
+        localStorage.setItem("accessToken", data.accessToken);
+      } catch {
+        return {
+          success: false,
+          error: "Failed to save session. Please try again.",
+          errorType: "general",
+        };
+      }
+
+      return {
+        success: true,
+        accessToken: data.accessToken,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+        errorType: "general",
+      };
+    }
+  };
+
   return {
     validateEmail,
     validatePassword,
     getPasswordValidationError,
     register,
+    login,
   };
 };
