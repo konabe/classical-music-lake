@@ -1,5 +1,5 @@
 import {
-  CognitoIdentityServiceProviderClient,
+  CognitoIdentityProviderClient,
   SignUpCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { StatusCodes } from "http-status-codes";
@@ -8,7 +8,7 @@ import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { registerSchema } from "../utils/schemas";
 
-const cognito = new CognitoIdentityServiceProviderClient({});
+const cognito = new CognitoIdentityProviderClient({});
 const clientId = process.env.COGNITO_CLIENT_ID || "";
 
 interface CognitoError extends Error {
