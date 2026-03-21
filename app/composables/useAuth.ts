@@ -61,8 +61,7 @@ export const useAuth = () => {
     }
 
     try {
-      const config = useRuntimeConfig();
-      const apiBase = config.public.apiBaseUrl;
+      const apiBase = useApiBase();
 
       const response = await fetch(`${apiBase}/auth/register`, {
         method: "POST",

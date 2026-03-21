@@ -3,6 +3,12 @@ import { useAuth } from "./useAuth";
 
 const mockFetch = vi.fn();
 
+// Mock useApiBase to return URL without trailing slash
+// (useApiBase removes trailing slashes from the config)
+vi.mock("./useApiBase", () => ({
+  useApiBase: () => "https://api.example.com",
+}));
+
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
   mockFetch.mockClear();
@@ -126,7 +132,7 @@ describe("useAuth", () => {
 
       expect(result.success).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining("/auth/register"),
+        "https://api.example.com/auth/register",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com", password: "ValidPassword123" }),
