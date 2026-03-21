@@ -18,6 +18,8 @@ const emit = defineEmits<{
       type="button"
       class="star-btn"
       :class="{ active: n <= modelValue }"
+      :aria-label="`${n}星`"
+      :aria-pressed="n <= modelValue"
       @click="emit('update:modelValue', n as Rating)"
     >
       ★
