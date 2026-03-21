@@ -23,7 +23,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('husky', {stdio: 'inherit'}) }\""
+    "prepare": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('husky', {stdio: 'inherit'}) }\"",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "nuxt": "^4.4.2",
@@ -59,6 +61,11 @@
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "typescript": "^5.0.0",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "storybook": "^10.3.1",
+    "@storybook/addon-a11y": "^10.3.1",
+    "@storybook/addon-docs": "^10.3.1",
+    "@nuxtjs/storybook": "^9.0.1",
+    "eslint-plugin-storybook": "^10.3.1"
   }
 }
