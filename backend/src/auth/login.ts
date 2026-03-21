@@ -7,13 +7,10 @@ import { StatusCodes } from "http-status-codes";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { loginSchema } from "../utils/schemas";
+import type { CognitoError } from "../types";
 
 const cognito = new CognitoIdentityProviderClient({});
 const clientId = process.env.COGNITO_CLIENT_ID || "";
-
-interface CognitoError extends Error {
-  name: string;
-}
 
 export const handler = createHandler(async (event) => {
   const input = parseRequestBody(event.body as unknown, loginSchema);

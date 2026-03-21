@@ -165,18 +165,18 @@ describe("useAuth", () => {
   });
 
   describe("login", () => {
-    it("メールアドレスが無効なとき success: false を返す", async () => {
+    it("メールアドレスが無効なとき success: false と errorType: email を返す", async () => {
       const { login } = useAuth();
       const result = await login("invalid-email", "ValidPassword123");
       expect(result.success).toBe(false);
-      expect(result.error).toContain("email");
+      expect(result.errorType).toBe("email");
     });
 
-    it("パスワードが空のとき success: false を返す", async () => {
+    it("パスワードが空のとき success: false と errorType: password を返す", async () => {
       const { login } = useAuth();
       const result = await login("user@example.com", "");
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.errorType).toBe("password");
     });
 
     it("API 呼び出しが成功したとき success: true と accessToken を返す", async () => {

@@ -29,6 +29,11 @@ export type ApiErrorResponse = {
   message: string;
 };
 
+// Cognito SDK のエラー型（auth/ 内で共通利用）
+export interface CognitoError extends Error {
+  name: string;
+}
+
 // 鑑賞ログ（曲・演奏家の記録）
 // ※ app/types/index.ts と同期を保つこと
 export interface ListeningLog {

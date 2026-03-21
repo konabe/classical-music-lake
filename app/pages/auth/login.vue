@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 
-const { validateEmail, login } = useAuth();
+const { login } = useAuth();
 const router = useRouter();
 
 const form = reactive({
@@ -69,30 +69,23 @@ const handleLogin = async () => {
   errors.password = "";
   errors.general = "";
 
-  if (!validateEmail(form.email)) {
-    errors.email = "有効なメールアドレスを入力してください";
-    return;
-  }
-
-  if (!form.password) {
-    errors.password = "パスワードを入力してください";
-    return;
-  }
-
   isLoading.value = true;
 
   try {
     const result = await login(form.email, form.password);
 
     if (result.success) {
+      form.password = "";
       await router.push("/");
     } else {
-      if (result.error?.includes("email")) {
-        errors.email = result.error;
-      } else if (result.error?.includes("confirm") || result.error?.includes("verified")) {
+      if (result.errorType === "email") {
+        errors.email = "有効なメールアドレスを入力してください";
+      } else if (result.errorType === "password") {
+        errors.password = "パスワードを入力してください";
+      } else if (result.errorType === "not_confirmed") {
         errors.general = "メールアドレスの確認が完了していません。確認メールをご確認ください。";
       } else {
-        errors.general = result.error || "ログインに失敗しました。時間をおいてお試しください。";
+        errors.general = "メールアドレスまたはパスワードが正しくありません。";
       }
     }
   } finally {
