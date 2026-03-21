@@ -193,6 +193,16 @@ aws cognito-idp admin-update-user-attributes \
   --user-attributes Name=email_verified,Value=true
 ```
 
+### ログアウト動作
+
+ログアウトはクライアント側のみで処理される（JWT はステートレスのため、サーバー側セッション無効化は行わない）。
+
+- ナビゲーションバーの「ログアウト」ボタン押下で `localStorage` から `accessToken` を削除
+- 削除後、`/auth/login` へ自動リダイレクト
+- Access Token の残り有効期間中（最大 60 分）は、直接 API を叩けば認証が通る状態になるが、MVP フェーズではこの制約を許容する
+
+> 将来フェーズで Token Blacklist または Refresh Token の無効化が必要な場合は、バックエンドの logout エンドポイントを追加する。
+
 ### トークン設定
 
 - Access Token TTL: 60 分
