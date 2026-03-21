@@ -464,7 +464,7 @@ function handler(event) {
       origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
       {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         responseHeadersPolicy: securityHeadersPolicy,
         functionAssociations: [
           {
