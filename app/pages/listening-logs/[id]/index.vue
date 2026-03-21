@@ -61,8 +61,8 @@ const { ratingStars } = useRatingDisplay();
 }
 
 .log-detail {
-  background: #fff;
-  border: 1px solid #e0d8cc;
+  background: #f2e6c9;
+  border: 1px solid #b8995e;
   border-radius: 12px;
   padding: 2rem;
   max-width: 720px;
@@ -71,7 +71,7 @@ const { ratingStars } = useRatingDisplay();
 .log-detail header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e0d8cc;
+  border-bottom: 1px solid #b8995e;
 }
 
 .log-detail h1 {

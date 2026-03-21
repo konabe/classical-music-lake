@@ -36,8 +36,8 @@ watch(
 
 body {
   font-family: "Georgia", serif;
-  background-color: #faf8f5;
-  color: #2c2c2c;
+  background-color: #e8d9b8;
+  color: #2d1f0e;
 }
 
 .app-header {
@@ -68,7 +68,7 @@ body {
 }
 
 .nav-links a {
-  color: #d4c9a8;
+  color: #d4b896;
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.2s;
@@ -82,8 +82,8 @@ body {
 .logout-button {
   margin-left: auto;
   background: none;
-  border: 1px solid #d4c9a8;
-  color: #d4c9a8;
+  border: 1px solid #d4b896;
+  color: #d4b896;
   padding: 0.35rem 0.9rem;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -94,7 +94,7 @@ body {
 }
 
 .logout-button:hover {
-  background-color: #d4c9a8;
+  background-color: #d4b896;
   color: #1a1a2e;
 }
 

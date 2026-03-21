@@ -99,8 +99,8 @@ function handleSubmit() {
 
 <style scoped>
 .log-form {
-  background: #fff;
-  border: 1px solid #e0d8cc;
+  background: #f2e6c9;
+  border: 1px solid #b8995e;
   border-radius: 12px;
   padding: 2rem;
   max-width: 720px;
@@ -133,12 +133,12 @@ input[type="text"],
 input[type="datetime-local"],
 textarea,
 select {
-  border: 1px solid #d0c8bc;
+  border: 1px solid #b8995e;
   border-radius: 6px;
   padding: 0.6rem 0.8rem;
   font-size: 0.95rem;
   font-family: inherit;
-  background: #faf8f5;
+  background: #faf3e0;
   transition: border-color 0.2s;
 }
 
@@ -158,7 +158,7 @@ textarea:focus {
   border: none;
   font-size: 1.6rem;
   cursor: pointer;
-  color: #d0c8bc;
+  color: #c2a878;
   transition: color 0.15s;
 }
 

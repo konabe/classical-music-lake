@@ -15,8 +15,8 @@
 }
 
 .btn-secondary {
-  background: #f0ece4;
-  color: #333;
+  background: #dfd0b2;
+  color: #1a1a2e;
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 6px;
@@ -27,7 +27,7 @@
 }
 
 .btn-secondary:hover {
-  background: #e0d8cc;
+  background: #cfc0a0;
 }
 
 .btn-danger {
