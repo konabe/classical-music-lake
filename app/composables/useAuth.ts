@@ -1,6 +1,8 @@
 import { useRouter } from "#app";
 import { useApiBase } from "./useApiBase";
 
+export const ACCESS_TOKEN_KEY = "accessToken";
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_UPPERCASE_REGEX = /[A-Z]/;
@@ -145,7 +147,7 @@ export const useAuth = () => {
 
       const data = await response.json();
       try {
-        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
       } catch {
         return {
           success: false,
@@ -169,11 +171,11 @@ export const useAuth = () => {
   };
 
   const isAuthenticated = (): boolean => {
-    return !!localStorage.getItem("accessToken");
+    return !!localStorage.getItem(ACCESS_TOKEN_KEY);
   };
 
   const logout = (): void => {
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
     router.push("/auth/login");
   };
 

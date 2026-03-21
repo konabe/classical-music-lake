@@ -6,7 +6,7 @@
         <ul class="nav-links">
           <li><NuxtLink to="/listening-logs">鑑賞記録</NuxtLink></li>
         </ul>
-        <button v-if="isAuthenticated()" class="logout-button" @click="logout">ログアウト</button>
+        <button v-if="isLoggedIn" class="logout-button" @click="logout">ログアウト</button>
       </nav>
     </header>
     <main class="app-main">
@@ -17,6 +17,14 @@
 
 <script setup lang="ts">
 const { isAuthenticated, logout } = useAuth();
+const route = useRoute();
+const isLoggedIn = ref(isAuthenticated());
+watch(
+  () => route.path,
+  () => {
+    isLoggedIn.value = isAuthenticated();
+  }
+);
 </script>
 
 <style>
