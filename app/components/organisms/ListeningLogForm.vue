@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nowAsDatetimeLocal } from "~/utils/date";
-import type { CreateListeningLogInput, Rating } from "~/types";
+import type { CreateListeningLogInput } from "~/types";
 
 const props = defineProps<{
   initialValues?: Partial<CreateListeningLogInput>;
@@ -64,18 +64,7 @@ function handleSubmit() {
 
     <div class="form-group">
       <label>評価</label>
-      <div class="rating-selector">
-        <button
-          v-for="n in 5"
-          :key="n"
-          type="button"
-          class="star-btn"
-          :class="{ active: n <= form.rating }"
-          @click="form.rating = n as Rating"
-        >
-          ★
-        </button>
-      </div>
+      <RatingSelector v-model="form.rating" />
     </div>
 
     <div class="form-group">
@@ -146,24 +135,6 @@ input:focus,
 textarea:focus {
   outline: none;
   border-color: #1a1a2e;
-}
-
-.rating-selector {
-  display: flex;
-  gap: 0.3rem;
-}
-
-.star-btn {
-  background: none;
-  border: none;
-  font-size: 1.6rem;
-  cursor: pointer;
-  color: #c2a878;
-  transition: color 0.15s;
-}
-
-.star-btn.active {
-  color: #c9a227;
 }
 
 .checkbox-label {

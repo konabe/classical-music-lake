@@ -5,15 +5,13 @@ import type { ListeningLog } from "~/types";
 defineProps<{
   log: ListeningLog;
 }>();
-
-const { ratingStars } = useRatingDisplay();
 </script>
 
 <template>
   <article class="log-detail">
     <header>
       <h1>
-        <span v-if="log.isFavorite" class="favorite">♥</span>
+        <FavoriteIndicator :is-favorite="log.isFavorite" />
         {{ log.piece }}
       </h1>
     </header>
@@ -26,7 +24,7 @@ const { ratingStars } = useRatingDisplay();
       <dd>{{ formatDatetime(log.listenedAt) }}</dd>
 
       <dt>評価</dt>
-      <dd class="rating">{{ ratingStars(log.rating) }}</dd>
+      <dd><RatingDisplay :rating="log.rating" /></dd>
     </dl>
 
     <section v-if="log.memo" class="memo">
@@ -56,10 +54,6 @@ const { ratingStars } = useRatingDisplay();
   color: #1a1a2e;
 }
 
-.favorite {
-  color: #e05a5a;
-}
-
 .detail-list {
   display: grid;
   grid-template-columns: 8rem 1fr;
@@ -71,12 +65,6 @@ dt {
   font-weight: bold;
   color: #888;
   font-size: 0.9rem;
-}
-
-.rating {
-  color: #c9a227;
-  font-size: 1.1rem;
-  letter-spacing: 2px;
 }
 
 .memo h2 {
