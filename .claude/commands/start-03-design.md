@@ -12,6 +12,7 @@
 ## 3. レビュー結果の反映
 
 - `design.md`に記載されたレビュー結果をもとに修正する。
+- `/docs/features/{index}-{feature-title}/checklist.md` に現状を記録する。
 
 ## 4. mainブランチへPRを発行
 

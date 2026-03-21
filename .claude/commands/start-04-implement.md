@@ -16,6 +16,7 @@
 - リファクタリングが完了した後には必ずテストを実行すること。
 - eslintやprettier等の静的解析ツールを実行すること。
 - 完了したらコミットをする
+- `/docs/features/{index}-{feature-title}/checklist.md` に現状を記録する。
 
 ## 4. レビュー依頼
 
