@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Conflict, NotFound } from "http-errors";
+import { Conflict } from "http-errors";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ListeningLog } from "../types";
 
@@ -8,13 +8,17 @@ import * as dynamodb from "../utils/dynamodb";
 
 vi.mock("../utils/dynamodb", () => ({
   updateItem: vi.fn(),
+  dynamo: { send: vi.fn() },
   TABLE_LISTENING_LOGS: "test-listening-logs",
 }));
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
 
-function makeEvent(id?: string, body?: string | null): APIGatewayProxyEvent {
+const TEST_USER_ID = "cognito-sub-user-123";
+const OTHER_USER_ID = "cognito-sub-other-user";
+
+function makeEvent(id?: string, body?: string | null, userId?: string): APIGatewayProxyEvent {
   return {
     body: body !== undefined ? body : null,
     headers: {},
@@ -26,13 +30,16 @@ function makeEvent(id?: string, body?: string | null): APIGatewayProxyEvent {
     queryStringParameters: null,
     multiValueQueryStringParameters: null,
     stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
+    requestContext: {
+      authorizer: userId ? { claims: { sub: userId } } : undefined,
+    } as APIGatewayProxyEvent["requestContext"],
     resource: "",
   };
 }
 
 const existingLog: ListeningLog = {
   id: "abc-123",
+  userId: TEST_USER_ID,
   listenedAt: "2024-01-15T20:00:00.000Z",
   composer: "ベートーヴェン",
   piece: "交響曲第9番",
@@ -50,7 +57,7 @@ describe("PUT /listening-logs/:id (update)", () => {
 
   it("id がない場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(undefined, JSON.stringify({ rating: 4 })),
+      makeEvent(undefined, JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
@@ -65,7 +72,11 @@ describe("PUT /listening-logs/:id (update)", () => {
       ["[]", 400, "Request body must be a JSON object"],
       ["invalid json", 422, "Invalid or malformed JSON was provided"],
     ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(makeEvent("abc-123", body), mockContext, mockCallback);
+      const result = await handler(
+        makeEvent("abc-123", body, TEST_USER_ID),
+        mockContext,
+        mockCallback
+      );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
     });
@@ -75,7 +86,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     "rating が不正な値（%s）の場合は 400 を返す",
     async (invalidRating) => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ rating: invalidRating })),
+        makeEvent("abc-123", JSON.stringify({ rating: invalidRating }), TEST_USER_ID),
         mockContext,
         mockCallback
       );
@@ -88,7 +99,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     "composer が空白のみ（%j）の場合は 400 を返す",
     async (whitespaceComposer) => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ composer: whitespaceComposer })),
+        makeEvent("abc-123", JSON.stringify({ composer: whitespaceComposer }), TEST_USER_ID),
         mockContext,
         mockCallback
       );
@@ -99,7 +110,7 @@ describe("PUT /listening-logs/:id (update)", () => {
 
   it("composer が 100 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ composer: "あ".repeat(101) })),
+      makeEvent("abc-123", JSON.stringify({ composer: "あ".repeat(101) }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
@@ -113,7 +124,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     "piece が空白のみ（%j）の場合は 400 を返す",
     async (whitespacePiece) => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ piece: whitespacePiece })),
+        makeEvent("abc-123", JSON.stringify({ piece: whitespacePiece }), TEST_USER_ID),
         mockContext,
         mockCallback
       );
@@ -124,7 +135,7 @@ describe("PUT /listening-logs/:id (update)", () => {
 
   it("piece が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ piece: "あ".repeat(201) })),
+      makeEvent("abc-123", JSON.stringify({ piece: "あ".repeat(201) }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
@@ -134,7 +145,7 @@ describe("PUT /listening-logs/:id (update)", () => {
 
   it("memo が 1000 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ memo: "あ".repeat(1001) })),
+      makeEvent("abc-123", JSON.stringify({ memo: "あ".repeat(1001) }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
@@ -144,14 +155,48 @@ describe("PUT /listening-logs/:id (update)", () => {
 
   it("listenedAt が不正なフォーマットの場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ listenedAt: "2024-01-15" })),
+      makeEvent("abc-123", JSON.stringify({ listenedAt: "2024-01-15" }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(400);
   });
 
+  it("他ユーザーのアイテムを更新しようとした場合は 404 を返す", async () => {
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ rating: 4 }), OTHER_USER_ID),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(404);
+    expect(dynamodb.updateItem).not.toHaveBeenCalled();
+  });
+
+  it("userId が null のアイテム（未帰属データ）を更新しようとした場合は 404 を返す", async () => {
+    const nullUserLog = { ...existingLog, userId: null };
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: nullUserLog } as never);
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(404);
+    expect(dynamodb.updateItem).not.toHaveBeenCalled();
+  });
+
+  it("アイテムが存在しない場合は 404 を返す", async () => {
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
+    const result = await handler(
+      makeEvent("not-found-id", JSON.stringify({ rating: 4 }), TEST_USER_ID),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(404);
+  });
+
   it("rating を含まない更新は rating のバリデーションをスキップする", async () => {
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
     vi.mocked(dynamodb.updateItem).mockResolvedValueOnce({
       ...existingLog,
       isFavorite: true,
@@ -159,21 +204,11 @@ describe("PUT /listening-logs/:id (update)", () => {
     });
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ isFavorite: true })),
+      makeEvent("abc-123", JSON.stringify({ isFavorite: true }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(200);
-  });
-
-  it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(dynamodb.updateItem).mockRejectedValueOnce(new NotFound("Item not found"));
-    const result = await handler(
-      makeEvent("not-found-id", JSON.stringify({ rating: 4 })),
-      mockContext,
-      mockCallback
-    );
-    expect(result?.statusCode).toBe(404);
   });
 
   it("正常更新して 200 を返す", async () => {
@@ -183,10 +218,11 @@ describe("PUT /listening-logs/:id (update)", () => {
       isFavorite: true,
       updatedAt: new Date().toISOString(),
     };
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
     vi.mocked(dynamodb.updateItem).mockResolvedValueOnce(updatedLog);
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ rating: 4, isFavorite: true })),
+      makeEvent("abc-123", JSON.stringify({ rating: 4, isFavorite: true }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
@@ -200,6 +236,7 @@ describe("PUT /listening-logs/:id (update)", () => {
 
   it("updatedAt が更新されること", async () => {
     const now = new Date().toISOString();
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
     vi.mocked(dynamodb.updateItem).mockResolvedValueOnce({
       ...existingLog,
       updatedAt: now,
@@ -207,7 +244,7 @@ describe("PUT /listening-logs/:id (update)", () => {
 
     const before = new Date(existingLog.updatedAt).getTime();
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ rating: 4 })),
+      makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
@@ -216,13 +253,14 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("id は上書きされない", async () => {
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
     vi.mocked(dynamodb.updateItem).mockResolvedValueOnce({
       ...existingLog,
       updatedAt: new Date().toISOString(),
     });
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ id: "tampered-id", rating: 4 })),
+      makeEvent("abc-123", JSON.stringify({ id: "tampered-id", rating: 4 }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
@@ -231,11 +269,12 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
     vi.mocked(dynamodb.updateItem).mockRejectedValueOnce(
       new Conflict("Item was updated by another request")
     );
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ rating: 4 })),
+      makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
@@ -244,9 +283,9 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamodb.updateItem).mockRejectedValueOnce(new Error("DynamoDB error"));
+    vi.mocked(dynamodb.dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ rating: 4 })),
+      makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
       mockCallback
     );

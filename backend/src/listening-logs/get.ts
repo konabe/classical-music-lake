@@ -4,14 +4,17 @@ import { StatusCodes } from "http-status-codes";
 import { dynamo, TABLE_LISTENING_LOGS } from "../utils/dynamodb";
 import { createHandler } from "../utils/middleware";
 import { getIdParam } from "../utils/path-params";
+import { getUserId } from "../utils/auth";
 import type { ListeningLog } from "../types";
 
 export const handler = createHandler(async (event) => {
   const id = getIdParam(event);
+  const userId = getUserId(event);
 
   const result = await dynamo.send(
     new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id } })
   );
-  if (!result.Item) throw new createError.NotFound("Listening log not found");
-  return { statusCode: StatusCodes.OK, body: result.Item as ListeningLog };
+  const item = result.Item as ListeningLog | undefined;
+  if (!item || item.userId !== userId) throw new createError.NotFound("Listening log not found");
+  return { statusCode: StatusCodes.OK, body: item };
 });

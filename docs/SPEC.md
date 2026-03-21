@@ -90,6 +90,7 @@
 - **テーブル名**: `classical-music-listening-logs`
 - **パーティションキー**: `id` (String)
 - **課金モード**: オンデマンド
+- **GSI1**: パーティションキー `userId` (String) + ソートキー `createdAt` (String) — ユーザー別一覧取得に使用
 
 #### データ構造
 
@@ -98,6 +99,7 @@ type Rating = 1 | 2 | 3 | 4 | 5;
 
 interface ListeningLog {
   id: string; // UUID (自動生成)
+  userId: string | null; // Cognito sub（未帰属データは null）
   listenedAt: string; // 視聴日時 (ISO 8601形式)
   composer: string; // 作曲家名
   piece: string; // 曲名
@@ -198,14 +200,18 @@ Content-Type: application/json
 
 ### 4.3 視聴ログAPI
 
+> **認証必須**: すべての視聴ログエンドポイントは `Authorization: Bearer {accessToken}` ヘッダーが必要。
+> API Gateway Cognito Authorizer がトークンを検証し、無効な場合は `401 Unauthorized` を返す。
+
 #### `GET /listening-logs`
 
-視聴ログの一覧を取得
+ログイン中ユーザーの視聴ログ一覧を取得
 
 **リクエスト**
 
 ```
 GET /listening-logs
+Authorization: Bearer {accessToken}
 ```
 
 **レスポンス**
@@ -214,6 +220,7 @@ GET /listening-logs
 [
   {
     "id": "uuid",
+    "userId": "cognito-sub",
     "listenedAt": "2024-01-15T19:30:00Z",
     "composer": "ベートーヴェン",
     "piece": "交響曲第9番",
@@ -228,6 +235,8 @@ GET /listening-logs
 
 **ソート順**: `listenedAt` 降順（新しい順）
 
+**アクセス制御**: DynamoDB GSI1（userId + createdAt）を使ったクエリにより、ログイン中ユーザーのログのみ返却
+
 #### `GET /listening-logs/{id}`
 
 特定の視聴ログを取得
@@ -236,12 +245,13 @@ GET /listening-logs
 
 ```
 GET /listening-logs/{id}
+Authorization: Bearer {accessToken}
 ```
 
 **レスポンス**
 
 - 成功: `200` + ListeningLogオブジェクト
-- 未存在: `404 Not Found`
+- 未存在または他ユーザーのアイテム: `404 Not Found`（存在を隠蔽）
 
 #### `POST /listening-logs`
 
@@ -251,6 +261,7 @@ GET /listening-logs/{id}
 
 ```json
 POST /listening-logs
+Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {
@@ -271,6 +282,7 @@ Content-Type: application/json
 **自動生成項目**
 
 - `id`: UUID v4
+- `userId`: トークンから取得した Cognito sub
 - `createdAt`: 現在時刻
 - `updatedAt`: 現在時刻
 
@@ -282,6 +294,7 @@ Content-Type: application/json
 
 ```json
 PUT /listening-logs/{id}
+Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {
@@ -293,13 +306,13 @@ Content-Type: application/json
 **レスポンス**
 
 - 成功: `200 OK` + 更新されたListeningLogオブジェクト
-- 未存在: `404 Not Found`
+- 未存在または他ユーザーのアイテム: `404 Not Found`（存在を隠蔽）
 
 **更新動作**
 
 - 部分更新（Partial Update）をサポート
 - `updatedAt`は自動更新
-- `id`, `createdAt`は更新不可
+- `id`, `createdAt`, `userId`は更新不可
 
 #### `DELETE /listening-logs/{id}`
 
@@ -309,11 +322,13 @@ Content-Type: application/json
 
 ```
 DELETE /listening-logs/{id}
+Authorization: Bearer {accessToken}
 ```
 
 **レスポンス**
 
 - 成功: `204 No Content`
+- 未存在または他ユーザーのアイテム: `404 Not Found`（存在を隠蔽）
 
 ### 4.4 エラーレスポンス一覧
 

@@ -1,9 +1,14 @@
 import type { ListeningLog, Piece } from "../types";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
-export const makeLog = (id: string, listenedAt: string): ListeningLog => ({
+export const makeLog = (
+  id: string,
+  listenedAt: string,
+  userId: string | null = "user-123"
+): ListeningLog => ({
   id,
   listenedAt,
+  userId,
   composer: "ベートーヴェン",
   piece: "交響曲第5番 ハ短調 Op.67",
   rating: 4,
@@ -35,4 +40,16 @@ export const makeEvent = (overrides?: Partial<APIGatewayProxyEvent>): APIGateway
   requestContext: {} as APIGatewayProxyEvent["requestContext"],
   resource: "",
   ...overrides,
+});
+
+export const makeAuthEvent = (
+  userId: string,
+  overrides?: Partial<APIGatewayProxyEvent>
+): APIGatewayProxyEvent => ({
+  ...makeEvent(overrides),
+  requestContext: {
+    authorizer: {
+      claims: { sub: userId },
+    },
+  } as APIGatewayProxyEvent["requestContext"],
 });
