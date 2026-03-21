@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-01-01",
   ssr: false,
   devtools: { enabled: true },
-  modules: ["@nuxt/eslint"],
+  modules: ["@nuxt/eslint", "@nuxtjs/storybook"],
   css: ["~/assets/css/global.css"],
   typescript: {
     strict: true,
