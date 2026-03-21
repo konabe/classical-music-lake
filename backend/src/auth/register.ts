@@ -1,32 +1,37 @@
-import { CognitoIdentityServiceProvider } from "@aws-sdk/client-cognito-identity-provider";
+import {
+  CognitoIdentityServiceProviderClient,
+  SignUpCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
 import { StatusCodes } from "http-status-codes";
 
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { registerSchema } from "../utils/schemas";
 
-const cognito = new CognitoIdentityServiceProvider();
+const cognito = new CognitoIdentityServiceProviderClient({});
 const clientId = process.env.COGNITO_CLIENT_ID || "";
 
 interface CognitoError extends Error {
-  Code?: string;
+  name: string;
 }
 
 export const handler = createHandler(async (event) => {
   const input = parseRequestBody(event.body as unknown, registerSchema);
 
   try {
-    await cognito.signUp({
-      ClientId: clientId,
-      Username: input.email,
-      Password: input.password,
-      UserAttributes: [
-        {
-          Name: "email",
-          Value: input.email,
-        },
-      ],
-    });
+    await cognito.send(
+      new SignUpCommand({
+        ClientId: clientId,
+        Username: input.email,
+        Password: input.password,
+        UserAttributes: [
+          {
+            Name: "email",
+            Value: input.email,
+          },
+        ],
+      })
+    );
 
     return {
       statusCode: StatusCodes.CREATED,
@@ -37,7 +42,7 @@ export const handler = createHandler(async (event) => {
   } catch (error) {
     const cognitoError = error as CognitoError;
 
-    if (cognitoError.Code === "UsernameExistsException") {
+    if (cognitoError.name === "UsernameExistsException") {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         body: {
@@ -47,7 +52,7 @@ export const handler = createHandler(async (event) => {
       };
     }
 
-    if (cognitoError.Code === "InvalidPasswordException") {
+    if (cognitoError.name === "InvalidPasswordException") {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         body: {
@@ -58,7 +63,7 @@ export const handler = createHandler(async (event) => {
       };
     }
 
-    if (cognitoError.Code === "TooManyRequestsException") {
+    if (cognitoError.name === "TooManyRequestsException") {
       return {
         statusCode: StatusCodes.TOO_MANY_REQUESTS,
         body: {

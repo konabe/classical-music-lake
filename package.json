@@ -3,13 +3,18 @@
   "version": "0.1.18",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=24.14.0"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "vitest run",
+    "test": "npm run test:backend",
+    "test:frontend": "vitest run --exclude 'backend/**'",
+    "test:backend": "cd backend && npm test",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run --config tests/e2e/vitest.config.ts",

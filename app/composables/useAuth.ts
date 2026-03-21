@@ -1,3 +1,5 @@
+import { useApiBase } from "./useApiBase";
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_UPPERCASE_REGEX = /[A-Z]/;

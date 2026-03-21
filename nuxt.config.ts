@@ -13,4 +13,8 @@ export default defineNuxtConfig({
       apiBaseUrl: "", // NUXT_PUBLIC_API_BASE_URL 環境変数で上書き可能
     },
   },
+  test: {
+    globals: true,
+    environment: "happy-dom",
+  },
 });
