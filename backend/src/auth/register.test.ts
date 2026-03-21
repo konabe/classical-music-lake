@@ -4,14 +4,17 @@ import type { Context } from "aws-lambda";
 import { handler } from "./register";
 import { makeEvent } from "../test/fixtures";
 
-// Mock CognitoIdentityServiceProvider
-const { mockSignUp } = vi.hoisted(() => ({
-  mockSignUp: vi.fn(),
+// Mock AWS SDK v3 Cognito
+const { mockSend } = vi.hoisted(() => ({
+  mockSend: vi.fn(),
 }));
 
 vi.mock("@aws-sdk/client-cognito-identity-provider", () => ({
-  CognitoIdentityServiceProvider: vi.fn(function () {
-    this.signUp = mockSignUp;
+  CognitoIdentityServiceProviderClient: vi.fn(function () {
+    this.send = mockSend;
+  }),
+  SignUpCommand: vi.fn(function (input) {
+    this.input = input;
   }),
 }));
 
@@ -163,7 +166,7 @@ describe("POST /auth/register", () => {
 
   describe("成功系", () => {
     it("有効なメール・パスワードで登録に成功し、201 を返す", async () => {
-      mockSignUp.mockResolvedValue({
+      mockSend.mockResolvedValue({
         UserSub: "user-sub-id",
         CodeDeliveryDetails: {
           Destination: "u***@example.com",
@@ -184,7 +187,7 @@ describe("POST /auth/register", () => {
       expect(result?.statusCode).toBe(201);
       const body = JSON.parse(result?.body ?? "{}");
       expect(body.message).toContain("successfully");
-      expect(mockSignUp).toHaveBeenCalled();
+      expect(mockSend).toHaveBeenCalled();
     });
   });
 
@@ -194,7 +197,7 @@ describe("POST /auth/register", () => {
         Code: "UsernameExistsException",
         message: "UsernameExistsException",
       };
-      mockSignUp.mockRejectedValue(error);
+      mockSend.mockRejectedValue(error);
 
       const result = await handler(
         makeEvent({
@@ -215,7 +218,7 @@ describe("POST /auth/register", () => {
         Code: "InvalidPasswordException",
         message: "InvalidPasswordException",
       };
-      mockSignUp.mockRejectedValue(error);
+      mockSend.mockRejectedValue(error);
 
       const result = await handler(
         makeEvent({
@@ -237,7 +240,7 @@ describe("POST /auth/register", () => {
         Code: "ServiceUnavailableException",
         message: "ServiceUnavailableException",
       };
-      mockSignUp.mockRejectedValue(error);
+      mockSend.mockRejectedValue(error);
 
       const result = await handler(
         makeEvent({
@@ -257,7 +260,7 @@ describe("POST /auth/register", () => {
         Code: "TooManyRequestsException",
         message: "TooManyRequestsException",
       };
-      mockSignUp.mockRejectedValue(error);
+      mockSend.mockRejectedValue(error);
 
       const result = await handler(
         makeEvent({
