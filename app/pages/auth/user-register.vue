@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: "auth" });
+
 const { validateEmail, register } = useAuth();
 
 const errors = reactive({
