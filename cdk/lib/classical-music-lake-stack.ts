@@ -180,6 +180,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     const authRegister = fn("AuthRegister", "auth/register.ts");
     const authLogin = fn("AuthLogin", "auth/login.ts");
+    const authVerifyEmail = fn("AuthVerifyEmail", "auth/verify-email.ts");
+    const authResendCode = fn("AuthResendCode", "auth/resend-verification-code.ts");
 
     // -------------------------
     // Cognito 権限付与
@@ -199,6 +201,22 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       resources: [userPool.userPoolArn],
     });
     authLogin.addToRolePolicy(cognitoLoginPolicy);
+
+    // auth/verify-email: ConfirmSignUp を実行
+    const cognitoVerifyEmailPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["cognito-idp:ConfirmSignUp"],
+      resources: [userPool.userPoolArn],
+    });
+    authVerifyEmail.addToRolePolicy(cognitoVerifyEmailPolicy);
+
+    // auth/resend-verification-code: ResendConfirmationCode を実行
+    const cognitoResendCodePolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["cognito-idp:ResendConfirmationCode"],
+      resources: [userPool.userPoolArn],
+    });
+    authResendCode.addToRolePolicy(cognitoResendCodePolicy);
 
     // -------------------------
     // DynamoDB 権限付与
@@ -304,6 +322,14 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // /auth/login (ログインフロー: 認証不要)
     const authLoginResource = authResource.addResource("login");
     authLoginResource.addMethod("POST", integ(authLogin));
+
+    // /auth/verify-email (メール確認: 認証不要)
+    const authVerifyEmailResource = authResource.addResource("verify-email");
+    authVerifyEmailResource.addMethod("POST", integ(authVerifyEmail));
+
+    // /auth/resend-verification-code (認証コード再送信: 認証不要)
+    const authResendCodeResource = authResource.addResource("resend-verification-code");
+    authResendCodeResource.addMethod("POST", integ(authResendCode));
 
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)
@@ -417,6 +443,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       deletePiece,
       authRegister,
       authLogin,
+      authVerifyEmail,
+      authResendCode,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigin);
     });
@@ -437,6 +465,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     this.addCors(pieceResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
     this.addCors(authRegisterResource, ["POST", "OPTIONS"]);
     this.addCors(authLoginResource, ["POST", "OPTIONS"]);
+    this.addCors(authVerifyEmailResource, ["POST", "OPTIONS"]);
+    this.addCors(authResendCodeResource, ["POST", "OPTIONS"]);
 
     // API Gateway 自身が返す 4XX/5XX にも CORS ヘッダを付与
     api.addGatewayResponse("Default4xxCors", {
@@ -528,6 +558,8 @@ function handler(event) {
       deletePiece,
       authRegister,
       authLogin,
+      authVerifyEmail,
+      authResendCode,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成

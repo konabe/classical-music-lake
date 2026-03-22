@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "auth" });
 
+const router = useRouter();
 const { validateEmail, register } = useAuth();
 
 const errors = reactive({
@@ -9,12 +10,10 @@ const errors = reactive({
 });
 
 const isLoading = ref(false);
-const successMessage = ref("");
 
 async function handleSubmit(email: string, password: string) {
   errors.email = "";
   errors.password = "";
-  successMessage.value = "";
 
   if (!validateEmail(email)) {
     errors.email = "有効なメールアドレスを入力してください";
@@ -27,7 +26,7 @@ async function handleSubmit(email: string, password: string) {
     const result = await register(email, password);
 
     if (result.success) {
-      successMessage.value = "確認メールを送信しました。メールをご確認ください。";
+      router.push("/auth/verify-email", { state: { email, password } });
     } else {
       if (result.error?.includes("email")) {
         errors.email = result.error;
@@ -49,7 +48,7 @@ async function handleSubmit(email: string, password: string) {
   <UserRegisterTemplate
     :is-loading="isLoading"
     :errors="errors"
-    :success-message="successMessage"
+    :success-message="''"
     @submit="handleSubmit"
   />
 </template>
