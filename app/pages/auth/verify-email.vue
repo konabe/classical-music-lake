@@ -12,13 +12,14 @@ const error = ref("");
 const infoMessage = ref("");
 
 onMounted(() => {
-  const state = history.state as { email?: string; password?: string };
-  if (!state?.email?.trim() || !state?.password?.trim()) {
+  const state = history.state as { email?: string };
+  const pendingPassword = sessionStorage.getItem("pendingPassword");
+  if (!state?.email?.trim() || !pendingPassword?.trim()) {
     router.push("/auth/user-register");
     return;
   }
   email.value = state.email;
-  password.value = state.password;
+  password.value = pendingPassword;
 });
 
 async function handleSubmit(code: string) {
@@ -34,6 +35,7 @@ async function handleSubmit(code: string) {
     }
 
     const loginResult = await login(email.value, password.value);
+    sessionStorage.removeItem("pendingPassword");
     if (!loginResult.success) {
       error.value =
         "確認は完了しましたが、ログインに失敗しました。ログイン画面からログインしてください。";
