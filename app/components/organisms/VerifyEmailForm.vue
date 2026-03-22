@@ -54,7 +54,9 @@ function handleResend() {
 
     <div class="resend-section">
       <p>コードが届きませんか？</p>
-      <button type="button" class="resend-button" :disabled="props.isLoading" @click="handleResend">再送信</button>
+      <button type="button" class="resend-button" :disabled="props.isLoading" @click="handleResend">
+        再送信
+      </button>
     </div>
   </div>
 </template>
