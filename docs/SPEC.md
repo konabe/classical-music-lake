@@ -485,9 +485,18 @@ Authorization: Bearer {accessToken}
 - **パブリックアクセス**: ブロック（CloudFront経由のみ）
 - **削除ポリシー**: DESTROY（自動削除）
 
+#### Route 53 / ACM
+
+- **ドメイン**: `nocturne.app`（prod）/ `staging.nocturne.app`（staging）
+- **証明書**: `nocturne.app` + `*.nocturne.app`（ワイルドカード）を ACM で管理
+- **証明書リージョン**: `us-east-1`（CloudFront の要件）
+- **スタック**: `CertificateStack`（us-east-1）として独立管理し、メインスタックへ `crossRegionReferences` で渡す
+- **前提**: Route 53 でドメイン登録済みであること（ホストゾーンが存在すること）
+
 #### CloudFront
 
 - **用途**: SPAの配信
+- **カスタムドメイン**: `nocturne.app`（prod）/ `staging.nocturne.app`（staging）
 - **エラーハンドリング**: 404/403 → index.html（SPA対応）
 - **プロトコル**: HTTPS強制
 
@@ -692,6 +701,7 @@ cdk deploy
 
 | 日付       | バージョン | 変更内容                                                                                 |
 | ---------- | ---------- | ---------------------------------------------------------------------------------------- |
+| 2026-03-22 | 1.4.0      | Route 53 カスタムドメイン対応（nocturne.app）、ACM 証明書・CertificateStack 追加         |
 | 2026-03-21 | 1.3.1      | ログアウト機能追加（useAuth: logout/isAuthenticated、auth ミドルウェア、ナビバーボタン） |
 | 2026-03-21 | 1.3.0      | AWS Cognito ユーザー登録機能を追加（`POST /auth/register`、`useAuth` composable）        |
 | 2026-03-17 | 1.2.5      | CDK CORS 設定を DRY 化（`addCors` ヘルパー）、型定義ファイルの管理方針コメントを整備     |

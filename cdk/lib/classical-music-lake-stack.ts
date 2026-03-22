@@ -1,4 +1,5 @@
 import * as cdk from "aws-cdk-lib";
+import type * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
@@ -7,6 +8,8 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import type { IResource } from "aws-cdk-lib/aws-apigateway";
+import * as route53 from "aws-cdk-lib/aws-route53";
+import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
@@ -14,11 +17,13 @@ import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import type { Construct } from "constructs";
 import * as path from "path";
+import { ROOT_DOMAIN } from "./certificate-stack";
 
 export type StageName = "staging" | "prod";
 
 export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
   stageName: StageName;
+  certificate?: acm.ICertificate;
 }
 
 export class ClassicalMusicLakeStack extends cdk.Stack {
@@ -27,8 +32,10 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
 
-    const { stageName } = props;
+    const { stageName, certificate } = props;
     const isProd = stageName === "prod";
+    const customDomain = isProd ? ROOT_DOMAIN : `staging.${ROOT_DOMAIN}`;
+    const frontendUrl = `https://${customDomain}`;
 
     // -------------------------
     // DynamoDB テーブル
@@ -115,8 +122,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
           authorizationCodeGrant: true,
         },
         scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE],
-        callbackUrls: ["https://classical-music-lake.example.com/auth/callback"],
-        logoutUrls: ["https://classical-music-lake.example.com/login"],
+        callbackUrls: [`${frontendUrl}/auth/callback`],
+        logoutUrls: [`${frontendUrl}/login`],
       },
       accessTokenValidity: cdk.Duration.minutes(60),
       idTokenValidity: cdk.Duration.minutes(60),
@@ -394,6 +401,10 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     );
 
     const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
+      ...(certificate && {
+        domainNames: [customDomain],
+        certificate,
+      }),
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -428,8 +439,27 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       ],
     });
 
-    // CloudFront URL を CORS オリジンとして Lambda 環境変数に設定
-    this.corsAllowOrigin = `https://${distribution.distributionDomainName}`;
+    // カスタムドメインが設定されている場合はそれを使用し、未設定時は CloudFront URL にフォールバック
+    this.corsAllowOrigin = certificate
+      ? frontendUrl
+      : `https://${distribution.distributionDomainName}`;
+
+    // Route 53 レコード作成（カスタムドメインが設定されている場合）
+    if (certificate) {
+      const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
+        domainName: ROOT_DOMAIN,
+      });
+      new route53.ARecord(this, "AliasRecord", {
+        zone: hostedZone,
+        recordName: customDomain,
+        target: route53.RecordTarget.fromAlias(new route53Targets.CloudFrontTarget(distribution)),
+      });
+      new route53.AaaaRecord(this, "AliasRecordAAAA", {
+        zone: hostedZone,
+        recordName: customDomain,
+        target: route53.RecordTarget.fromAlias(new route53Targets.CloudFrontTarget(distribution)),
+      });
+    }
     [
       listeningLogsList,
       listeningLogsGet,
@@ -610,13 +640,20 @@ function handler(event) {
 
     new cdk.CfnOutput(this, "SpaUrl", {
       value: this.corsAllowOrigin,
-      description: "CloudFront URL (フロントエンド)",
+      description: "フロントエンド URL (カスタムドメインまたは CloudFront URL)",
     });
 
     new cdk.CfnOutput(this, "StorybookUrl", {
       value: `${this.corsAllowOrigin}/storybook/`,
       description: "Storybook URL",
     });
+
+    if (certificate) {
+      new cdk.CfnOutput(this, "CustomDomain", {
+        value: frontendUrl,
+        description: "カスタムドメイン (nocturne.app)",
+      });
+    }
 
     new cdk.CfnOutput(this, "CognitoUserPoolId", {
       value: userPool.userPoolId,
