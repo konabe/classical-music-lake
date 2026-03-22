@@ -7,22 +7,18 @@ import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { verifyEmailSchema } from "../utils/schemas";
 import { ok, badRequest, tooManyRequests, internalError } from "../utils/response";
+import { env } from "../utils/env";
 import type { CognitoError } from "../types";
 
 const cognito = new CognitoIdentityProviderClient({});
 
 export const handler = createHandler(async (event) => {
-  const clientId = process.env.COGNITO_CLIENT_ID;
-  if (!clientId) {
-    return internalError();
-  }
-
   const input = parseRequestBody(event.body as unknown, verifyEmailSchema);
 
   try {
     await cognito.send(
       new ConfirmSignUpCommand({
-        ClientId: clientId,
+        ClientId: env.cognitoClientId,
         Username: input.email,
         ConfirmationCode: input.code,
       })

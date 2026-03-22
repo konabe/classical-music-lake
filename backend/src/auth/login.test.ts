@@ -31,27 +31,6 @@ describe("POST /auth/login", () => {
     vi.clearAllMocks();
   });
 
-  describe("環境変数異常系", () => {
-    it("COGNITO_CLIENT_ID が未設定の場合は 500 を返す", async () => {
-      const original = process.env.COGNITO_CLIENT_ID;
-      delete process.env.COGNITO_CLIENT_ID;
-
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify(validInput),
-          httpMethod: "POST",
-          path: "/auth/login",
-        }),
-        mockContext,
-        mockCallback
-      );
-
-      process.env.COGNITO_CLIENT_ID = original;
-
-      expect(result?.statusCode).toBe(500);
-    });
-  });
-
   describe("リクエストボディ異常系", () => {
     it.each<[string | null, number, string]>([
       [null, 400, "Request body is required"],

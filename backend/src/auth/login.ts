@@ -7,24 +7,19 @@ import { StatusCodes } from "http-status-codes";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { loginSchema } from "../utils/schemas";
-import { internalError } from "../utils/response";
+import { env } from "../utils/env";
 import type { CognitoError } from "../types";
 
 const cognito = new CognitoIdentityProviderClient({});
 
 export const handler = createHandler(async (event) => {
-  const clientId = process.env.COGNITO_CLIENT_ID;
-  if (!clientId) {
-    return internalError();
-  }
-
   const input = parseRequestBody(event.body as unknown, loginSchema);
 
   try {
     const response = await cognito.send(
       new InitiateAuthCommand({
         AuthFlow: "USER_PASSWORD_AUTH",
-        ClientId: clientId,
+        ClientId: env.cognitoClientId,
         AuthParameters: {
           USERNAME: input.email,
           PASSWORD: input.password,
