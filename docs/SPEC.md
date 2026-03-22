@@ -120,7 +120,7 @@ interface ListeningLog {
 #### バリデーション
 
 - `rating`: 1〜5の範囲
-- `listenedAt`: ISO 8601形式の日時文字列
+- `listenedAt`: ISO 8601形式の日時文字列（UTC、Zサフィックス必須。例: `2024-01-15T19:30:00.000Z`）。フロントエンドは `datetime-local` 入力値をローカル時刻として `toISOString()` で変換して送信する
 - `composer`: 空文字・空白のみ不可、最大100文字
 - `piece`: 空文字・空白のみ不可、最大200文字
 - `memo`: 最大1000文字
