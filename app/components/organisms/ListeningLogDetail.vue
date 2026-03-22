@@ -36,8 +36,8 @@ defineProps<{
 
 <style scoped>
 .log-detail {
-  background: #f2e6c9;
-  border: 1px solid #b8995e;
+  background: #eaeef4;
+  border: 1px solid #9aa5b4;
   border-radius: 12px;
   padding: 2rem;
   max-width: 720px;
@@ -46,12 +46,12 @@ defineProps<{
 .log-detail header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #b8995e;
+  border-bottom: 1px solid #9aa5b4;
 }
 
 .log-detail h1 {
   font-size: 1.8rem;
-  color: #1a1a2e;
+  color: #1e2d5a;
 }
 
 .detail-list {

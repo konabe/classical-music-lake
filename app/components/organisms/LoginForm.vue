@@ -65,19 +65,19 @@ function handleSubmit() {
 
 <style scoped>
 .login-container {
-  background: #f2e6c9;
+  background: #eaeef4;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(61, 36, 9, 0.15);
   width: 100%;
   max-width: 400px;
-  border: 1px solid #b8995e;
+  border: 1px solid #9aa5b4;
 }
 
 h1 {
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #1a1a2e;
+  color: #1e2d5a;
 }
 
 form {
@@ -94,13 +94,13 @@ form {
 
 label {
   font-weight: 500;
-  color: #1a1a2e;
+  color: #1e2d5a;
 }
 
 input[type="email"],
 input[type="password"] {
   padding: 0.75rem;
-  border: 1px solid #b8995e;
+  border: 1px solid #9aa5b4;
   border-radius: 4px;
   font-size: 1rem;
   background: #faf3e0;
@@ -110,12 +110,12 @@ input[type="password"] {
 input[type="email"]:focus,
 input[type="password"]:focus {
   outline: none;
-  border-color: #1a1a2e;
+  border-color: #1e2d5a;
 }
 
 button {
   padding: 0.75rem;
-  background-color: #1a1a2e;
+  background-color: #1e2d5a;
   color: #fff;
   border: none;
   border-radius: 4px;

@@ -14,7 +14,10 @@ watch(
   <div class="app">
     <header class="app-header">
       <nav>
-        <NuxtLink to="/" class="logo">🎵 Classical Music Lake</NuxtLink>
+        <NuxtLink to="/" class="logo">
+          <img src="/logo.svg" alt="Nocturne" class="logo-img" />
+          <span class="logo-text">Nocturne</span>
+        </NuxtLink>
         <ul class="nav-links">
           <li><NuxtLink to="/listening-logs">鑑賞記録</NuxtLink></li>
         </ul>
@@ -29,7 +32,7 @@ watch(
 
 <style scoped>
 .app-header {
-  background-color: #1a1a2e;
+  background-color: #1e2d5a;
   color: #fff;
   padding: 1rem 2rem;
 }
@@ -43,10 +46,24 @@ watch(
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+
+.logo-img {
+  height: 32px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.logo-text {
   font-size: 1.3rem;
   font-weight: bold;
   color: #fff;
-  text-decoration: none;
+  letter-spacing: 0.08em;
+  font-style: italic;
 }
 
 .nav-links {
@@ -56,7 +73,7 @@ watch(
 }
 
 .nav-links a {
-  color: #d4b896;
+  color: #9aa5b4;
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.2s;
@@ -70,8 +87,8 @@ watch(
 .logout-button {
   margin-left: auto;
   background: none;
-  border: 1px solid #d4b896;
-  color: #d4b896;
+  border: 1px solid #9aa5b4;
+  color: #9aa5b4;
   padding: 0.35rem 0.9rem;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -82,8 +99,8 @@ watch(
 }
 
 .logout-button:hover {
-  background-color: #d4b896;
-  color: #1a1a2e;
+  background-color: #9aa5b4;
+  color: #1e2d5a;
 }
 
 .app-main {

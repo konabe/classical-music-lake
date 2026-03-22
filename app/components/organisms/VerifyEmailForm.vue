@@ -63,19 +63,19 @@ function handleResend() {
 
 <style scoped>
 .verify-email-container {
-  background: #f2e6c9;
+  background: #eaeef4;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(61, 36, 9, 0.15);
   width: 100%;
   max-width: 400px;
-  border: 1px solid #b8995e;
+  border: 1px solid #9aa5b4;
 }
 
 h1 {
   text-align: center;
   margin-bottom: 1rem;
-  color: #1a1a2e;
+  color: #1e2d5a;
 }
 
 .description {
@@ -99,12 +99,12 @@ form {
 
 label {
   font-weight: 500;
-  color: #1a1a2e;
+  color: #1e2d5a;
 }
 
 input[type="text"] {
   padding: 0.75rem;
-  border: 1px solid #b8995e;
+  border: 1px solid #9aa5b4;
   border-radius: 4px;
   font-size: 1rem;
   background: #faf3e0;
@@ -113,7 +113,7 @@ input[type="text"] {
 
 input[type="text"]:focus {
   outline: none;
-  border-color: #1a1a2e;
+  border-color: #1e2d5a;
 }
 
 .info-message {
@@ -127,7 +127,7 @@ input[type="text"]:focus {
 
 button[type="submit"] {
   padding: 0.75rem;
-  background-color: #1a1a2e;
+  background-color: #1e2d5a;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -168,7 +168,7 @@ button[type="submit"]:disabled {
 }
 
 .resend-button:hover:not(:disabled) {
-  color: #1a1a2e;
+  color: #1e2d5a;
 }
 
 .resend-button:disabled {

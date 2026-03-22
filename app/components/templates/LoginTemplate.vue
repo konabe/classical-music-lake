@@ -25,6 +25,6 @@ const emit = defineEmits<{
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #e8d9b8;
+  background-color: #f8f4ed;
 }
 </style>

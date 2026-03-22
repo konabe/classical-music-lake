@@ -32,6 +32,6 @@ const emit = defineEmits<{
 
 .page-header h1 {
   font-size: 1.8rem;
-  color: #1a1a2e;
+  color: #1e2d5a;
 }
 </style>
