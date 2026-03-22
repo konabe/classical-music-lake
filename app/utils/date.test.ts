@@ -22,12 +22,19 @@ describe("formatDatetime", () => {
 });
 
 describe("toDatetimeLocal", () => {
-  it("datetime-local input 用に YYYY-MM-DDTHH:mm 形式を返す", () => {
-    expect(toDatetimeLocal("2024-03-15T10:30:00.000Z")).toBe("2024-03-15T10:30");
+  it("YYYY-MM-DDTHH:mm 形式（datetime-local input 用）を返す", () => {
+    const result = toDatetimeLocal("2024-03-15T10:30:00.000Z");
+    expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
   });
 
-  it("秒以降を切り捨てる", () => {
-    expect(toDatetimeLocal("2024-12-31T23:59:59.999Z")).toBe("2024-12-31T23:59");
+  it("ローカル時刻に変換する", () => {
+    const isoString = "2024-03-15T10:30:00.000Z";
+    const expected = (() => {
+      const date = new Date(isoString);
+      date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+      return date.toISOString().slice(0, 16);
+    })();
+    expect(toDatetimeLocal(isoString)).toBe(expected);
   });
 });
 

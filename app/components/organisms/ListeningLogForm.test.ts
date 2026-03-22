@@ -127,7 +127,7 @@ describe("ListeningLogForm", () => {
       const wrapper = await mountSuspended(ListeningLogForm, {
         props: {
           initialValues: {
-            listenedAt: "2024-01-15T20:00",
+            listenedAt: "2024-01-15T20:00:00.000Z",
             composer: "ベートーヴェン",
             piece: "交響曲第9番",
             rating: 5,
@@ -143,6 +143,25 @@ describe("ListeningLogForm", () => {
       expect(emittedData.composer).toBe("ベートーヴェン");
       expect(emittedData.piece).toBe("交響曲第9番");
       expect(emittedData.isFavorite).toBe(true);
+    });
+
+    it("listenedAt は ISO 8601 UTC 形式（Zサフィックス）で emit される", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm, {
+        props: {
+          initialValues: {
+            listenedAt: "2024-01-15T20:00:00.000Z",
+            composer: "ベートーヴェン",
+            piece: "交響曲第9番",
+            rating: 5,
+            isFavorite: false,
+          },
+        },
+      });
+
+      await wrapper.find("form").trigger("submit.prevent");
+      const emitted = wrapper.emitted("submit");
+      const emittedData = emitted![0][0] as Record<string, unknown>;
+      expect(emittedData.listenedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
   });
 
