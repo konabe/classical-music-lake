@@ -33,6 +33,7 @@ export const handler = createHandler(async (event) => {
       statusCode: StatusCodes.OK,
       body: {
         accessToken: authResult?.AccessToken,
+        idToken: authResult?.IdToken,
         tokenType: authResult?.TokenType ?? "Bearer",
         expiresIn: authResult?.ExpiresIn,
       },

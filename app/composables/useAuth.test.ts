@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useAuth, ACCESS_TOKEN_KEY } from "./useAuth";
+import { useAuth, ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";
 
 const mockFetch = vi.fn();
 const mockRouterPush = vi.fn();
@@ -186,11 +186,12 @@ describe("useAuth", () => {
       expect(result.errorType).toBe("password");
     });
 
-    it("API 呼び出しが成功したとき success: true と accessToken を返す", async () => {
+    it("API 呼び出しが成功したとき success: true と accessToken を返し、idToken を保存する", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
           tokenType: "Bearer",
           expiresIn: 3600,
         }),
@@ -201,6 +202,7 @@ describe("useAuth", () => {
 
       expect(result.success).toBe(true);
       expect(result.accessToken).toBe("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBe("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...");
       expect(mockFetch).toHaveBeenCalledWith(
         "https://api.example.com/auth/login",
         expect.objectContaining({
@@ -213,7 +215,10 @@ describe("useAuth", () => {
     it("レスポンスに accessToken がない場合 success: false を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ tokenType: "Bearer" }),
+        json: async () => ({
+          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+          tokenType: "Bearer",
+        }),
       });
 
       const { login } = useAuth();
@@ -227,7 +232,10 @@ describe("useAuth", () => {
     it("レスポンスの accessToken が空文字の場合 success: false を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ accessToken: "   " }),
+        json: async () => ({
+          accessToken: "   ",
+          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+        }),
       });
 
       const { login } = useAuth();
@@ -236,6 +244,40 @@ describe("useAuth", () => {
       expect(result.success).toBe(false);
       expect(result.errorType).toBe("general");
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
+    });
+
+    it("レスポンスに idToken がない場合 success: false を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          tokenType: "Bearer",
+        }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
+    });
+
+    it("レスポンスの idToken が空文字の場合 success: false を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          idToken: "   ",
+        }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
     });
 
     it("認証情報が間違いの場合 success: false とエラーメッセージを返す", async () => {
@@ -284,6 +326,13 @@ describe("useAuth", () => {
       const { logout } = useAuth();
       logout();
       expect(localStorage.getItem("accessToken")).toBeNull();
+    });
+
+    it("localStorage の idToken が削除される", () => {
+      localStorage.setItem(ID_TOKEN_KEY, "id-token-123");
+      const { logout } = useAuth();
+      logout();
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
     });
 
     it("ログイン画面へナビゲートされる", () => {

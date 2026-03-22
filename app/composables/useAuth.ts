@@ -2,6 +2,7 @@ import { useRouter } from "#app";
 import { useApiBase } from "./useApiBase";
 
 export const ACCESS_TOKEN_KEY = "accessToken";
+export const ID_TOKEN_KEY = "idToken";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
@@ -178,8 +179,16 @@ export const useAuth = () => {
           errorType: "general",
         };
       }
+      if (typeof data.idToken !== "string" || data.idToken.trim() === "") {
+        return {
+          success: false,
+          error: "Invalid session data received. Please try again.",
+          errorType: "general",
+        };
+      }
       try {
         localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+        localStorage.setItem(ID_TOKEN_KEY, data.idToken);
       } catch {
         return {
           success: false,
@@ -268,6 +277,7 @@ export const useAuth = () => {
 
   const logout = (): void => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(ID_TOKEN_KEY);
     router.push("/auth/login");
   };
 

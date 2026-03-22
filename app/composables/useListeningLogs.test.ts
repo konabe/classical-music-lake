@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useListeningLogs } from "./useListeningLogs";
-import { ACCESS_TOKEN_KEY } from "./useAuth";
+import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";
 
 const mockFetch = vi.fn();
 const mockRouterPush = vi.fn();
@@ -23,8 +23,8 @@ beforeEach(() => {
 describe("useListeningLogs", () => {
   describe("create", () => {
     it("Authorization ヘッダーに Bearer トークンが付加される", async () => {
-      const token = "test-access-token";
-      localStorage.setItem(ACCESS_TOKEN_KEY, token);
+      const token = "test-id-token";
+      localStorage.setItem(ID_TOKEN_KEY, token);
 
       mockFetch.mockResolvedValue({
         ok: true,
@@ -99,8 +99,8 @@ describe("useListeningLogs", () => {
 
   describe("update", () => {
     it("Authorization ヘッダーに Bearer トークンが付加される", async () => {
-      const token = "test-access-token";
-      localStorage.setItem(ACCESS_TOKEN_KEY, token);
+      const token = "test-id-token";
+      localStorage.setItem(ID_TOKEN_KEY, token);
 
       mockFetch.mockResolvedValue({
         ok: true,
@@ -153,8 +153,8 @@ describe("useListeningLogs", () => {
 
   describe("deleteLog", () => {
     it("Authorization ヘッダーに Bearer トークンが付加される", async () => {
-      const token = "test-access-token";
-      localStorage.setItem(ACCESS_TOKEN_KEY, token);
+      const token = "test-id-token";
+      localStorage.setItem(ID_TOKEN_KEY, token);
 
       mockFetch.mockResolvedValue({
         ok: true,
