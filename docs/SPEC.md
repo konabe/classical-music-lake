@@ -164,6 +164,36 @@ interface Piece {
 
 ### 4.2 認証API
 
+#### `POST /auth/login`
+
+登録済みユーザーを認証し、アクセストークンを返す
+
+**リクエスト**
+
+```json
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "SecurePass1"
+}
+```
+
+**レスポンス**
+
+- 成功: `200 OK` `{ "accessToken": "...", "tokenType": "Bearer", "expiresIn": 3600 }`
+- 認証失敗: `401 Unauthorized` `{ "error": "InvalidCredentials", "message": "..." }`
+- メール未確認: `403 Forbidden` `{ "error": "UserNotConfirmed", "message": "..." }`
+- リクエスト過多: `429 Too Many Requests`
+
+**フロー（メール未確認時）**
+
+1. バックエンドが `403 / UserNotConfirmed` を返す
+2. フロントエンドが入力パスワードを `sessionStorage.pendingPassword` に保存
+3. フロントエンドが `/auth/verify-email` へリダイレクト（`history.state.email` にメールアドレスを渡す）
+4. ユーザーが確認コードを入力して確認完了、自動ログイン後トップへ遷移
+
 #### `POST /auth/register`
 
 新規ユーザーを登録する

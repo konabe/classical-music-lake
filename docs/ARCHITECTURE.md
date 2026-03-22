@@ -116,7 +116,7 @@ classical-music-lake/
   → ブラウザに返却
 ```
 
-### ログイン
+### ログイン（確認済みユーザー）
 
 ```
 ブラウザ (/auth/login)
@@ -126,6 +126,24 @@ classical-music-lake/
   → Cognito InitiateAuth
   → AccessToken をレスポンス
   → localStorage に保存
+  → / へナビゲート
+```
+
+### ログイン（未確認ユーザー）
+
+```
+ブラウザ (/auth/login)
+  → POST /prod/auth/login (email, password)
+  → Lambda (login.ts)
+  → Cognito InitiateAuth → UserNotConfirmedException
+  → 403 / UserNotConfirmed をレスポンス
+  → sessionStorage に pendingPassword を保存
+  → /auth/verify-email へ遷移（history.state.email にメールアドレスを渡す）
+ブラウザ (/auth/verify-email)
+  → POST /prod/auth/verify-email (email, code)
+  → Cognito ConfirmSignUp
+  → POST /prod/auth/login (email, password) で自動ログイン（sessionStorage.pendingPassword 使用）
+  → sessionStorage から pendingPassword を削除
   → / へナビゲート
 ```
 
@@ -179,6 +197,7 @@ classical-music-lake/
   - `POST /auth/resend-verification-code`: Cognito ResendConfirmationCode、確認コード再送信
   - `POST /auth/login`: Cognito 認証、JWT (AccessToken) を localStorage に保存
   - 登録完了後は `/auth/verify-email` へ自動遷移し、確認後に自動ログイン
+  - ログイン時にメール未確認エラー（`UserNotConfirmed`）が返された場合、パスワードを `sessionStorage.pendingPassword` に保存して `/auth/verify-email` へリダイレクト
   - ログアウト: クライアント側のみ（localStorage からトークン削除 + `/auth/login` へリダイレクト）
   - `middleware/auth.ts`: `/listening-logs/**` への未認証アクセスを制限
 - **残タスク**: JWT 検証による API 保護（Cognito Authorizer）は将来フェーズで実装予定
