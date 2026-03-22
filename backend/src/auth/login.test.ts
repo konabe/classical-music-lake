@@ -122,10 +122,11 @@ describe("POST /auth/login", () => {
   });
 
   describe("成功系", () => {
-    it("有効な認証情報でログインに成功し、200 と accessToken を返す", async () => {
+    it("有効な認証情報でログインに成功し、200 と accessToken・idToken を返す", async () => {
       mockSend.mockResolvedValue({
         AuthenticationResult: {
           AccessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          IdToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
           TokenType: "Bearer",
           ExpiresIn: 3600,
         },
@@ -144,6 +145,7 @@ describe("POST /auth/login", () => {
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}");
       expect(body.accessToken).toBe("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
+      expect(body.idToken).toBe("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...");
       expect(body.tokenType).toBe("Bearer");
       expect(body.expiresIn).toBe(3600);
       expect(mockSend).toHaveBeenCalled();

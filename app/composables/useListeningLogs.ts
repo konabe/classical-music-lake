@@ -1,15 +1,16 @@
 import { useRouter } from "#app";
-import { ACCESS_TOKEN_KEY } from "./useAuth";
+import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";
 import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "~/types";
 
 const getAuthHeaders = (): Record<string, string> => {
-  const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+  const token = localStorage.getItem(ID_TOKEN_KEY);
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 const handleAuthError = (status: number, router: ReturnType<typeof useRouter>): void => {
   if (status === 401) {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(ID_TOKEN_KEY);
     router.push("/auth/login");
   }
 };
