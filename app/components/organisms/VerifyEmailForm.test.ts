@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import VerifyEmailForm from "./VerifyEmailForm.vue";
+import ErrorMessage from "../atoms/ErrorMessage.vue";
 
 describe("VerifyEmailForm", () => {
   const defaultProps = {
@@ -41,6 +42,7 @@ describe("VerifyEmailForm", () => {
     it("error があるときエラーメッセージが表示される", async () => {
       const wrapper = await mountSuspended(VerifyEmailForm, {
         props: { ...defaultProps, error: "認証コードが正しくありません" },
+        global: { components: { ErrorMessage } },
       });
       expect(wrapper.text()).toContain("認証コードが正しくありません");
     });

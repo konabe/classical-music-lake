@@ -195,8 +195,55 @@ Content-Type: application/json
 
 1. フロントエンドがメールアドレス・パスワードを送信
 2. Lambda が Cognito `signUp` を呼び出す
-3. Cognito がメール確認リンクを送信
-4. ユーザーがメールリンクをクリックして確認完了
+3. Cognito が確認コードをメール送信
+4. フロントエンドが `/auth/verify-email` ページへ自動遷移
+5. ユーザーが確認コードを入力して確認完了、自動ログイン後トップへ遷移
+
+#### `POST /auth/verify-email`
+
+メールで受け取った確認コードを検証し、アカウントを有効化する
+
+**リクエスト**
+
+```json
+POST /auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+```
+
+**レスポンス**
+
+- 成功: `200 OK` `{ "message": "Email confirmed successfully." }`
+- コード不一致: `400 Bad Request` `{ "error": "CodeMismatch", "message": "..." }`
+- 期限切れ: `400 Bad Request` `{ "error": "ExpiredCode", "message": "..." }`
+- 確認済み等: `400 Bad Request` `{ "error": "NotAuthorized", "message": "..." }`
+- リクエスト過多: `429 Too Many Requests`
+
+#### `POST /auth/resend-verification-code`
+
+確認コードを再送信する
+
+**リクエスト**
+
+```json
+POST /auth/resend-verification-code
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+```
+
+**レスポンス**
+
+- 成功: `200 OK` `{ "message": "Verification code resent. Please check your email." }`
+- 既に確認済み: `400 Bad Request` `{ "error": "UserAlreadyConfirmed", "message": "..." }`
+- ユーザー不存在: `400 Bad Request` `{ "error": "UserNotFound", "message": "..." }`
+- リクエスト過多: `429 Too Many Requests`
 
 ### 4.3 視聴ログAPI
 

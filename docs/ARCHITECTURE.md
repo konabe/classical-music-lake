@@ -38,6 +38,7 @@ classical-music-lake/
 │   │   ├── index.vue             # トップページ（管理者向けリンクセクション含む）
 │   │   ├── auth/
 │   │   │   ├── user-register.vue # ユーザー登録ページ
+│   │   │   ├── verify-email.vue  # メール確認コード入力ページ
 │   │   │   └── login.vue         # ログインページ
 │   │   ├── listening-logs/       # 視聴ログ関連ページ（要認証）
 │   │   │   ├── index.vue         # 一覧
@@ -57,7 +58,9 @@ classical-music-lake/
 │   └── src/
 │       ├── auth/                 # 認証 Lambda 関数
 │       │   ├── register.ts       # ユーザー登録
-│       │   └── login.ts          # ログイン（JWT トークン発行）
+│       │   ├── login.ts          # ログイン（JWT トークン発行）
+│       │   ├── verify-email.ts   # メール確認コード検証
+│       │   └── resend-verification-code.ts  # 確認コード再送信
 │       ├── listening-logs/       # 視聴ログ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts
@@ -126,6 +129,21 @@ classical-music-lake/
   → / へナビゲート
 ```
 
+### ユーザー登録〜メール確認〜自動ログイン
+
+```
+ブラウザ (/auth/user-register)
+  → POST /prod/auth/register (email, password)
+  → Cognito SignUp → 確認コードをメール送信
+  → /auth/verify-email へ自動遷移（ナビゲーションステートで email 渡し、sessionStorage に password 一時保存）
+ブラウザ (/auth/verify-email)
+  → POST /prod/auth/verify-email (email, code)
+  → Cognito ConfirmSignUp
+  → POST /prod/auth/login (email, password) で自動ログイン
+  → sessionStorage から password を削除
+  → / へナビゲート
+```
+
 ### ログアウト
 
 ```
@@ -156,8 +174,11 @@ classical-music-lake/
 
 - **状態**: AWS Cognito によるユーザー登録・ログイン・ログアウトを実装済み
 - **実装内容**:
-  - `POST /auth/register`: Cognito ユーザー登録、メール確認フロー
+  - `POST /auth/register`: Cognito ユーザー登録、確認コードをメール送信
+  - `POST /auth/verify-email`: Cognito ConfirmSignUp、メール確認コード検証
+  - `POST /auth/resend-verification-code`: Cognito ResendConfirmationCode、確認コード再送信
   - `POST /auth/login`: Cognito 認証、JWT (AccessToken) を localStorage に保存
+  - 登録完了後は `/auth/verify-email` へ自動遷移し、確認後に自動ログイン
   - ログアウト: クライアント側のみ（localStorage からトークン削除 + `/auth/login` へリダイレクト）
   - `middleware/auth.ts`: `/listening-logs/**` への未認証アクセスを制限
 - **残タスク**: JWT 検証による API 保護（Cognito Authorizer）は将来フェーズで実装予定
