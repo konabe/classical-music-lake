@@ -53,8 +53,8 @@ const emit = defineEmits<{
 }
 
 .log-item {
-  background: #f2e6c9;
-  border: 1px solid #b8995e;
+  background: #eaeef4;
+  border: 1px solid #9aa5b4;
   border-radius: 10px;
   padding: 1.2rem 1.5rem;
   display: flex;
@@ -70,7 +70,7 @@ const emit = defineEmits<{
 }
 
 .log-title a {
-  color: #1a1a2e;
+  color: #1e2d5a;
   text-decoration: none;
 }
 

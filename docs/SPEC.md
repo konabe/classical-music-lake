@@ -1,4 +1,4 @@
-# Classical Music Lake - システム仕様書
+# Nocturne - システム仕様書
 
 ## 1. システム概要
 

@@ -88,8 +88,8 @@ function handleSubmit() {
 
 <style scoped>
 .log-form {
-  background: #f2e6c9;
-  border: 1px solid #b8995e;
+  background: #eaeef4;
+  border: 1px solid #9aa5b4;
   border-radius: 12px;
   padding: 2rem;
   max-width: 720px;
@@ -118,7 +118,7 @@ input[type="text"],
 input[type="datetime-local"],
 textarea,
 select {
-  border: 1px solid #b8995e;
+  border: 1px solid #9aa5b4;
   border-radius: 6px;
   padding: 0.6rem 0.8rem;
   font-size: 0.95rem;
@@ -130,7 +130,7 @@ select {
 input:focus,
 textarea:focus {
   outline: none;
-  border-color: #1a1a2e;
+  border-color: #1e2d5a;
 }
 
 .checkbox-label {

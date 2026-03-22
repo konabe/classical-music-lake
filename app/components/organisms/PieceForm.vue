@@ -82,7 +82,7 @@ function handleSubmit() {
 
 .form-group input:focus {
   outline: none;
-  border-color: #1a1a2e;
+  border-color: #1e2d5a;
 }
 
 .form-actions {

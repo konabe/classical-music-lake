@@ -1,8 +1,8 @@
 <template>
   <div class="home">
     <section class="hero">
-      <h1>Classical Music Lake</h1>
-      <p>クラシック音楽の鑑賞体験を記録・振り返るためのアプリです。</p>
+      <h1>Nocturne</h1>
+      <p>鑑賞した音楽を、静かに記録する。</p>
     </section>
     <section class="menu-cards">
       <NuxtLink to="/listening-logs" class="card">
@@ -27,14 +27,17 @@
 }
 
 .hero h1 {
-  font-size: 2.5rem;
-  color: #1a1a2e;
+  font-size: 3rem;
+  color: #1e2d5a;
   margin-bottom: 1rem;
+  letter-spacing: 0.12em;
+  font-style: italic;
 }
 
 .hero p {
-  font-size: 1.1rem;
-  color: #666;
+  font-size: 1rem;
+  color: #6b7a99;
+  letter-spacing: 0.05em;
 }
 
 .menu-cards {
@@ -46,8 +49,8 @@
 
 .card {
   display: block;
-  background: #f2e6c9;
-  border: 1px solid #b8995e;
+  background: #eaeef4;
+  border: 1px solid #9aa5b4;
   border-radius: 12px;
   padding: 2rem;
   text-decoration: none;
@@ -71,7 +74,7 @@
 
 .card h2 {
   font-size: 1.4rem;
-  color: #1a1a2e;
+  color: #1e2d5a;
   margin-bottom: 0.5rem;
 }
 

@@ -13,7 +13,7 @@
 
 body {
   font-family: "Georgia", serif;
-  background-color: #e8d9b8;
-  color: #2d1f0e;
+  background-color: #f8f4ed;
+  color: #1e2d5a;
 }
 </style>

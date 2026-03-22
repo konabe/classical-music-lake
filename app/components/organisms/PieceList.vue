@@ -60,7 +60,7 @@ const emit = defineEmits<{
   font-size: 1.1rem;
   font-weight: bold;
   margin-bottom: 0.3rem;
-  color: #1a1a2e;
+  color: #1e2d5a;
 }
 
 .piece-composer {

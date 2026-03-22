@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Silver base line — music staff -->
+  <path d="M 48 388 Q 255 368 462 360"
+        fill="none" stroke="#9aa5b4" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Left flowing stroke (J-curve curling left) -->
+  <path d="M 138 385
+           C 128 335, 104 272, 122 212
+           C 136 162, 172 142, 186 164
+           C 200 186, 172 214, 150 206"
+        fill="none" stroke="#1e2d5a" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Middle flowing stroke — tallest, treble-clef-inspired spiral -->
+  <path d="M 242 375
+           C 230 314, 212 248, 230 186
+           C 246 124, 292 98, 310 128
+           C 328 158, 296 196, 264 186"
+        fill="none" stroke="#1e2d5a" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Right flowing stroke with inward curl -->
+  <path d="M 344 364
+           C 348 310, 362 255, 374 205
+           C 386 156, 410 140, 422 160
+           C 436 182, 408 210, 386 200"
+        fill="none" stroke="#1e2d5a" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
