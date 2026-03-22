@@ -21,6 +21,10 @@ watch(
         <ul class="nav-links">
           <li><NuxtLink to="/listening-logs">鑑賞記録</NuxtLink></li>
         </ul>
+        <ul v-if="!isLoggedIn" class="auth-links">
+          <li><NuxtLink to="/auth/user-register">新規登録</NuxtLink></li>
+          <li><NuxtLink to="/auth/login">ログイン</NuxtLink></li>
+        </ul>
         <button v-if="isLoggedIn" class="logout-button" @click="logout">ログアウト</button>
       </nav>
     </header>
