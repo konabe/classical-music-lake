@@ -80,7 +80,7 @@ export const loginSchema = z.object({
 
 export const verifyEmailSchema = z.object({
   email: emailSchema,
-  code: z.string({ error: () => "code is required" }).min(1, "code is required"),
+  code: z.string({ error: () => "code is required" }).trim().min(1, "code is required"),
 });
 
 export const resendVerificationCodeSchema = z.object({
