@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.1.20](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.19...classical-music-lake-v0.1.20) (2026-03-22)
+
+
+### Features
+
+* 004-001 認証コード入力画面・登録後の自動遷移を実装 ([67f0f66](https://github.com/konabe/classical-music-lake/commit/67f0f6627d40ca0116c80b2999962ba23731fb72))
+* rebrand to Nocturne ([9eb446b](https://github.com/konabe/classical-music-lake/commit/9eb446b95269d1f11482bffd096c7cd43fb4d2ef))
+* ヘッダーに未ログイン/ログイン済み時の導線を追加（005-001/005-002） ([dc3fcf3](https://github.com/konabe/classical-music-lake/commit/dc3fcf3b3d70c8b5229f58a4ca97a11b0bcdafc8))
+* ヘッダーに未ログイン時の新規登録・ログインリンクを追加（005-001/005-002） ([f8e2f83](https://github.com/konabe/classical-music-lake/commit/f8e2f8316fcbbebfbc9988a0b1e8e58ff48581fb))
+* メール未確認ユーザーのログイン時に verify-email へリダイレクト ([71b5911](https://github.com/konabe/classical-music-lake/commit/71b5911ae7690f693420c1ef44405919e7db4ee8))
+
+
+### Bug Fixes
+
+* coderabbitレビューコメントへの対応（PR [#162](https://github.com/konabe/classical-music-lake/issues/162)） ([df3f042](https://github.com/konabe/classical-music-lake/commit/df3f0425065808ed49a6cfff1b175fbaf52521ad))
+* isLoading時の重複リクエストを防止（VerifyEmailForm） ([9d99e34](https://github.com/konabe/classical-music-lake/commit/9d99e34a1a60ce5c5b333464f57993bfce806bac))
+* npm install --prefix による不要ディレクトリ生成を防ぐためサブシェルに変更 ([825a06c](https://github.com/konabe/classical-music-lake/commit/825a06ca584c0d982810f86b4eb93446da19b42d))
+
+
+### Reverts
+
+* login.vue の実装変更を取り消し（設計書のみ変更すべきだった） ([8da9863](https://github.com/konabe/classical-music-lake/commit/8da9863d30ffe5227b115f51a86934763cca121d))
+
 ## [0.1.19](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v0.1.18...classical-music-lake-v0.1.19) (2026-03-21)
 
 
