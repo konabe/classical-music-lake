@@ -26,7 +26,8 @@ async function handleSubmit(email: string, password: string) {
     const result = await register(email, password);
 
     if (result.success) {
-      router.push("/auth/verify-email", { state: { email, password } });
+      sessionStorage.setItem("pendingPassword", password);
+      router.push({ path: "/auth/verify-email", state: { email } });
     } else {
       if (result.error?.includes("email")) {
         errors.email = result.error;

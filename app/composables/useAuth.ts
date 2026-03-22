@@ -20,23 +20,25 @@ export type VerifyEmailErrorType =
   | "code_mismatch"
   | "expired_code"
   | "already_confirmed"
+  | "too_many_requests"
   | "general";
 
-export interface VerifyEmailResult {
+export type VerifyEmailResult = {
   success: boolean;
   error?: string;
   errorType?: VerifyEmailErrorType;
-}
+};
 
-export interface ResendCodeResult {
+export type ResendCodeResult = {
   success: boolean;
   error?: string;
-}
+};
 
 const VERIFY_EMAIL_ERROR_TYPE_MAP: Record<string, VerifyEmailErrorType> = {
   CodeMismatch: "code_mismatch",
   ExpiredCode: "expired_code",
   NotAuthorized: "already_confirmed",
+  TooManyRequests: "too_many_requests",
 };
 
 export interface LoginResult {

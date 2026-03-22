@@ -1,5 +1,7 @@
 import { expect } from "vitest";
 
+process.env.COGNITO_CLIENT_ID = "test-client-id";
+
 expect.extend({
   toBeUUID(received: string) {
     const pass = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(received);
