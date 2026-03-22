@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.0...classical-music-lake-v1.1.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* id token を使用して cognito authorizer の 401 エラーを解消 ([9d58667](https://github.com/konabe/classical-music-lake/commit/9d586677401e61c4251c0c8509a61b1360d40d6c))
+* id token を使用して cognito authorizer の 401 エラーを解消 ([#146](https://github.com/konabe/classical-music-lake/issues/146)) ([f643190](https://github.com/konabe/classical-music-lake/commit/f6431906791d3726b292d21709a3a5bbca1408a2))
+* listenedAt を ISO 8601 UTC 形式に変換してから送信する ([0d11938](https://github.com/konabe/classical-music-lake/commit/0d119380ba580970324b0ad35d144c648a42bc27))
+
 ## [1.1.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.0.0...classical-music-lake-v1.1.0) (2026-03-22)
 
 
