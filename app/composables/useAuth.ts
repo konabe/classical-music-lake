@@ -16,6 +16,23 @@ export interface RegisterResult {
 
 export type LoginErrorType = "email" | "password" | "credentials" | "not_confirmed" | "general";
 
+export type VerifyEmailErrorType =
+  | "code_mismatch"
+  | "expired_code"
+  | "already_confirmed"
+  | "general";
+
+export interface VerifyEmailResult {
+  success: boolean;
+  error?: string;
+  errorType?: VerifyEmailErrorType;
+}
+
+export interface ResendCodeResult {
+  success: boolean;
+  error?: string;
+}
+
 export interface LoginResult {
   success: boolean;
   accessToken?: string;
@@ -177,6 +194,70 @@ export const useAuth = () => {
     }
   };
 
+  const verifyEmail = async (email: string, code: string): Promise<VerifyEmailResult> => {
+    try {
+      const response = await fetch(`${apiBase}/auth/verify-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, code }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorTypeMap: Record<string, VerifyEmailErrorType> = {
+          CodeMismatch: "code_mismatch",
+          ExpiredCode: "expired_code",
+          NotAuthorized: "already_confirmed",
+        };
+        const errorType: VerifyEmailErrorType = errorTypeMap[errorData.error] ?? "general";
+        return {
+          success: false,
+          error: errorData.message || "Verification failed. Please try again.",
+          errorType,
+        };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+        errorType: "general",
+      };
+    }
+  };
+
+  const resendVerificationCode = async (email: string): Promise<ResendCodeResult> => {
+    try {
+      const response = await fetch(`${apiBase}/auth/resend-verification-code`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errorData.message || "Failed to resend verification code. Please try again.",
+        };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+      };
+    }
+  };
+
   const isAuthenticated = (): boolean => {
     return !!localStorage.getItem(ACCESS_TOKEN_KEY);
   };
@@ -192,6 +273,8 @@ export const useAuth = () => {
     getPasswordValidationError,
     register,
     login,
+    verifyEmail,
+    resendVerificationCode,
     isAuthenticated,
     logout,
   };

@@ -77,3 +77,12 @@ export const loginSchema = z.object({
   // ログインできなくなる後方互換性の問題が生じるため。実際の認証は Cognito が行う。
   password: z.string({ error: () => "password is required" }).min(1, "password is required"),
 });
+
+export const verifyEmailSchema = z.object({
+  email: emailSchema,
+  code: z.string({ error: () => "code is required" }).min(1, "code is required"),
+});
+
+export const resendVerificationCodeSchema = z.object({
+  email: emailSchema,
+});
