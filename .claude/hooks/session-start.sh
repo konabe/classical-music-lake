@@ -6,10 +6,19 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
 fi
 
 # Install root dependencies (includes husky)
-npm_config_engine_strict=false npm install --prefix "$CLAUDE_PROJECT_DIR"
+(
+  cd "$CLAUDE_PROJECT_DIR"
+  npm_config_engine_strict=false npm install
+)
 
 # Install backend dependencies
-npm_config_engine_strict=false npm install --prefix "$CLAUDE_PROJECT_DIR/backend"
+(
+  cd "$CLAUDE_PROJECT_DIR/backend"
+  npm_config_engine_strict=false npm install
+)
 
 # Activate husky hooks
-npm_config_engine_strict=false npm run prepare --prefix "$CLAUDE_PROJECT_DIR"
+(
+  cd "$CLAUDE_PROJECT_DIR"
+  npm run prepare
+)
