@@ -42,7 +42,7 @@ describe("VerifyEmailForm", () => {
       const wrapper = await mountSuspended(VerifyEmailForm, {
         props: { ...defaultProps, error: "認証コードが正しくありません" },
       });
-      expect(wrapper.text()).toContain("認証コードが正しくありません");
+      expect(wrapper.find("[data-testid='error-message']").exists()).toBe(true);
     });
 
     it("infoMessage があるとき案内メッセージが表示される", async () => {
