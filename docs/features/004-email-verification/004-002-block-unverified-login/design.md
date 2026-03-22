@@ -21,7 +21,7 @@
 
 現状：`errorType === "not_confirmed"` のとき、画面にエラーメッセージを表示するのみ。
 
-変更方針：エラーメッセージ表示ではなく、`/auth/verify-email` へリダイレクトする。
+変更方針：エラーメッセージ表示ではなく、入力中のパスワードを `sessionStorage` の `pendingPassword` に保存したうえで `/auth/verify-email` へリダイレクトする。
 
 #### verify-email.vue（変更対象）
 
@@ -30,7 +30,7 @@
 - `history.state.email` がない、または `sessionStorage` に `pendingPassword` がない場合は `/auth/user-register` へ強制リダイレクト
 - メール確認後に `pendingPassword` を使った自動ログインを行う
 
-変更方針：「ログインフロー経由」のケースを追加で扱えるようにする。
+変更方針：ログインフロー経由でも同様に `pendingPassword` を利用するため、ガード条件・確認成功後処理を変更不要とする。
 
 ---
 
@@ -41,52 +41,37 @@
 ```
 [ログイン画面]
   ↓ メール未確認エラー (errorType === "not_confirmed")
-  ↓ router.push("/auth/verify-email", { state: { email, fromLogin: true } })
+  ↓ sessionStorage に pendingPassword を保存
+  ↓ router.push("/auth/verify-email", { state: { email } })
 [メール確認画面]
   ↓ 確認成功
-  ↓ router.push("/auth/login", { state: { verified: true } })
-[ログイン画面]
-  ↓ 確認完了メッセージを表示
+  ↓ pendingPassword を使って自動ログイン → トップページへ（新規登録フローと同一）
 ```
 
 ### 遷移元の判定方法
 
-`verify-email.vue` では `history.state` の内容により遷移元フローを判定する。
+両フローとも `sessionStorage` に `pendingPassword` を保存するため、`verify-email.vue` での遷移元判定は不要。
 
-| 遷移元         | history.state の内容         | sessionStorage         |
-| -------------- | ---------------------------- | ---------------------- |
-| 新規登録フロー | `{ email }`                  | `pendingPassword` あり |
-| ログインフロー | `{ email, fromLogin: true }` | `pendingPassword` なし |
+| 遷移元         | history.state の内容 | sessionStorage         |
+| -------------- | -------------------- | ---------------------- |
+| 新規登録フロー | `{ email }`          | `pendingPassword` あり |
+| ログインフロー | `{ email }`          | `pendingPassword` あり |
 
-### verify-email.vue のガード条件変更
+### verify-email.vue のガード条件
 
-現状：`email` も `pendingPassword` もない場合のみ `/auth/user-register` へリダイレクト。
+変更なし。`email` も `pendingPassword` もない場合のみ `/auth/user-register` へリダイレクト。
 
-変更後：
+### 確認成功後の動作
 
-- `email` がない → `/auth/user-register` へリダイレクト（変更なし）
-- `pendingPassword` がない かつ `fromLogin` が `true` でない → `/auth/user-register` へリダイレクト
-- `pendingPassword` がない かつ `fromLogin` が `true` → ログインフロー経由として正常処理
-
-### 確認成功後の動作変更
-
-| 遷移元         | 確認成功後の動作                                               |
-| -------------- | -------------------------------------------------------------- |
-| 新規登録フロー | 自動ログイン → トップページへ（現状維持）                      |
-| ログインフロー | ログイン画面へリダイレクト（`verified: true` を state で渡す） |
-
-### login.vue での確認完了メッセージ表示
-
-`onMounted` で `history.state.verified` が `true` の場合、メール確認完了の案内メッセージを表示する。
+両フロー共通：自動ログイン → トップページへ。
 
 ---
 
 ## 変更対象ファイル
 
-| ファイル                          | 変更内容                                                                   |
-| --------------------------------- | -------------------------------------------------------------------------- |
-| `app/pages/auth/login.vue`        | `not_confirmed` エラー時のリダイレクト処理追加、確認完了メッセージ表示追加 |
-| `app/pages/auth/verify-email.vue` | ガード条件の緩和、ログインフロー経由の確認成功後処理追加                   |
+| ファイル                   | 変更内容                                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| `app/pages/auth/login.vue` | `not_confirmed` エラー時に `pendingPassword` を sessionStorage に保存してからリダイレクト処理追加 |
 
 ---
 

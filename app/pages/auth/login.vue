@@ -29,7 +29,8 @@ async function handleSubmit(email: string, password: string) {
       } else if (result.errorType === "password") {
         errors.password = "パスワードを入力してください";
       } else if (result.errorType === "not_confirmed") {
-        errors.general = "メールアドレスの確認が完了していません。確認メールをご確認ください。";
+        sessionStorage.setItem("pendingPassword", password);
+        await router.push({ path: "/auth/verify-email", state: { email } });
       } else {
         errors.general = "メールアドレスまたはパスワードが正しくありません。";
       }
