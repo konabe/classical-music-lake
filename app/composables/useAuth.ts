@@ -33,6 +33,12 @@ export interface ResendCodeResult {
   error?: string;
 }
 
+const VERIFY_EMAIL_ERROR_TYPE_MAP: Record<string, VerifyEmailErrorType> = {
+  CodeMismatch: "code_mismatch",
+  ExpiredCode: "expired_code",
+  NotAuthorized: "already_confirmed",
+};
+
 export interface LoginResult {
   success: boolean;
   accessToken?: string;
@@ -206,12 +212,8 @@ export const useAuth = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const errorTypeMap: Record<string, VerifyEmailErrorType> = {
-          CodeMismatch: "code_mismatch",
-          ExpiredCode: "expired_code",
-          NotAuthorized: "already_confirmed",
-        };
-        const errorType: VerifyEmailErrorType = errorTypeMap[errorData.error] ?? "general";
+        const errorType: VerifyEmailErrorType =
+          VERIFY_EMAIL_ERROR_TYPE_MAP[errorData.error] ?? "general";
         return {
           success: false,
           error: errorData.message || "Verification failed. Please try again.",

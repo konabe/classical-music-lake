@@ -13,7 +13,7 @@ const infoMessage = ref("");
 
 onMounted(() => {
   const state = history.state as { email?: string; password?: string };
-  if (!state?.email || !state?.password) {
+  if (!state?.email?.trim() || !state?.password?.trim()) {
     router.push("/auth/user-register");
     return;
   }
@@ -49,12 +49,17 @@ async function handleSubmit(code: string) {
 async function handleResend() {
   error.value = "";
   infoMessage.value = "";
+  isLoading.value = true;
 
-  const result = await resendVerificationCode(email.value);
-  if (result.success) {
-    infoMessage.value = "認証コードを再送しました。メールをご確認ください。";
-  } else {
-    error.value = result.error || "再送信に失敗しました";
+  try {
+    const result = await resendVerificationCode(email.value);
+    if (result.success) {
+      infoMessage.value = "認証コードを再送しました。メールをご確認ください。";
+    } else {
+      error.value = result.error || "再送信に失敗しました";
+    }
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>
