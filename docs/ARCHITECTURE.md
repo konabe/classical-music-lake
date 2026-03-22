@@ -32,6 +32,8 @@
 ```
 classical-music-lake/
 ├── app/                          # Nuxt アプリケーションディレクトリ
+│   ├── layouts/                  # Nuxt レイアウト
+│   │   └── default.vue           # グローバルヘッダー（認証状態に応じたナビゲーション）
 │   ├── middleware/               # Nuxt ルートミドルウェア
 │   │   └── auth.ts               # 認証チェック（未ログイン時に /auth/login へリダイレクト）
 │   ├── pages/                    # Nuxt ページ（ルーティング）
