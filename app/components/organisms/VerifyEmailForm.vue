@@ -14,10 +14,12 @@ const emit = defineEmits<{
 const code = ref("");
 
 function handleSubmit() {
+  if (props.isLoading) return;
   emit("submit", code.value);
 }
 
 function handleResend() {
+  if (props.isLoading) return;
   emit("resend");
 }
 </script>
@@ -52,7 +54,7 @@ function handleResend() {
 
     <div class="resend-section">
       <p>コードが届きませんか？</p>
-      <button type="button" class="resend-button" @click="handleResend">再送信</button>
+      <button type="button" class="resend-button" :disabled="props.isLoading" @click="handleResend">再送信</button>
     </div>
   </div>
 </template>
@@ -163,7 +165,13 @@ button[type="submit"]:disabled {
   padding: 0;
 }
 
-.resend-button:hover {
+.resend-button:hover:not(:disabled) {
   color: #1a1a2e;
+}
+
+.resend-button:disabled {
+  color: #a89070;
+  cursor: not-allowed;
+  text-decoration: none;
 }
 </style>
