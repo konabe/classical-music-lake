@@ -292,4 +292,110 @@ describe("useAuth", () => {
       expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
     });
   });
+
+  describe("verifyEmail", () => {
+    it("API 呼び出しが成功したとき success: true を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ message: "Email confirmed successfully." }),
+      });
+
+      const { verifyEmail } = useAuth();
+      const result = await verifyEmail("user@example.com", "123456");
+
+      expect(result.success).toBe(true);
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/auth/verify-email",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ email: "user@example.com", code: "123456" }),
+        })
+      );
+    });
+
+    it("CodeMismatch エラー時に success: false と errorType: code_mismatch を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "CodeMismatch", message: "認証コードが正しくありません" }),
+      });
+
+      const { verifyEmail } = useAuth();
+      const result = await verifyEmail("user@example.com", "000000");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("code_mismatch");
+    });
+
+    it("ExpiredCode エラー時に success: false と errorType: expired_code を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          error: "ExpiredCode",
+          message: "認証コードの有効期限が切れています",
+        }),
+      });
+
+      const { verifyEmail } = useAuth();
+      const result = await verifyEmail("user@example.com", "123456");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("expired_code");
+    });
+
+    it("ネットワークエラー時に success: false を返す", async () => {
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      const { verifyEmail } = useAuth();
+      const result = await verifyEmail("user@example.com", "123456");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+    });
+  });
+
+  describe("resendVerificationCode", () => {
+    it("API 呼び出しが成功したとき success: true を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ message: "Verification code resent." }),
+      });
+
+      const { resendVerificationCode } = useAuth();
+      const result = await resendVerificationCode("user@example.com");
+
+      expect(result.success).toBe(true);
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/auth/resend-verification-code",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ email: "user@example.com" }),
+        })
+      );
+    });
+
+    it("API がエラーを返したとき success: false とエラーメッセージを返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          error: "UserAlreadyConfirmed",
+          message: "このアカウントは既に確認済みです",
+        }),
+      });
+
+      const { resendVerificationCode } = useAuth();
+      const result = await resendVerificationCode("user@example.com");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("このアカウントは既に確認済みです");
+    });
+
+    it("ネットワークエラー時に success: false を返す", async () => {
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      const { resendVerificationCode } = useAuth();
+      const result = await resendVerificationCode("user@example.com");
+
+      expect(result.success).toBe(false);
+    });
+  });
 });
