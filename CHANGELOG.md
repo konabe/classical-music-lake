@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.3](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.2...classical-music-lake-v1.1.3) (2026-03-23)
+
+
+### Bug Fixes
+
+* useFetch の 401 エラー時にログイン画面へリダイレクトされない問題を修正 ([#147](https://github.com/konabe/classical-music-lake/issues/147)) ([2bb6960](https://github.com/konabe/classical-music-lake/commit/2bb6960c73d4b96ad66616bfceb3ed9d809da58f))
+* useFetch の onResponseError で 401 時にログイン画面へリダイレクト ([#147](https://github.com/konabe/classical-music-lake/issues/147)) ([89aa57b](https://github.com/konabe/classical-music-lake/commit/89aa57b27d541b8ad7b507794709e3d61efda5f2))
+
 ## [1.1.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.1...classical-music-lake-v1.1.2) (2026-03-23)
 
 
