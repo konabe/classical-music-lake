@@ -14,7 +14,7 @@ permissions:
 jobs:
   audit-frontend:
     name: Security (Frontend)
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'release-please--')
     runs-on: ubuntu-latest
 
     steps:
@@ -33,7 +33,7 @@ jobs:
 
   audit-backend:
     name: Security (Backend)
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'release-please--')
     runs-on: ubuntu-latest
 
     steps:
@@ -55,7 +55,7 @@ jobs:
 
   audit-cdk:
     name: Security (CDK)
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'release-please--')
     runs-on: ubuntu-latest
 
     steps:

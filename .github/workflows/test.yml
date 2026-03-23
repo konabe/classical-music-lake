@@ -10,6 +10,7 @@ jobs:
   test-frontend:
     name: Frontend (Vitest)
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     permissions:
       contents: read
 
@@ -33,6 +34,7 @@ jobs:
   test-backend:
     name: Backend (Vitest)
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     permissions:
       contents: read
 
@@ -60,6 +62,7 @@ jobs:
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     permissions:
       contents: read
 
