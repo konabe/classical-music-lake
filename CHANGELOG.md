@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.1...classical-music-lake-v1.1.2) (2026-03-23)
+
+
+### Bug Fixes
+
+* register/login の COGNITO_CLIENT_ID をハンドラー内で読み込みオプション対応 ([238b86d](https://github.com/konabe/classical-music-lake/commit/238b86d9962ddf3d1a6952f3c1e3b9f1182ea5fe)), closes [#163](https://github.com/konabe/classical-music-lake/issues/163)
+
 ## [1.1.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.0...classical-music-lake-v1.1.1) (2026-03-22)
 
 
