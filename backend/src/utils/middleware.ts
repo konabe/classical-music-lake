@@ -5,7 +5,7 @@ import httpResponseSerializer from "@middy/http-response-serializer";
 import type { HttpError } from "http-errors";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 
-import { env } from "./env";
+import { getEnv } from "./env";
 
 export type LambdaHandler = (
   event: APIGatewayProxyEvent,
@@ -55,7 +55,7 @@ export const createHandler = (handler: LambdaHandler) =>
     .handler(handler as middy.Handler<APIGatewayProxyEvent, APIGatewayProxyResult>)
     .use(
       httpCors({
-        origin: env.corsAllowOrigin,
+        origin: getEnv().corsAllowOrigin,
         headers: "Content-Type",
         methods: "GET,POST,PUT,DELETE,OPTIONS",
       })

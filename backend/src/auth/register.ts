@@ -7,7 +7,7 @@ import { StatusCodes } from "http-status-codes";
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { registerSchema } from "../utils/schemas";
-import { env } from "../utils/env";
+import { getEnv } from "../utils/env";
 import type { CognitoError } from "../types";
 
 const cognito = new CognitoIdentityProviderClient({});
@@ -16,6 +16,7 @@ export const handler = createHandler(async (event) => {
   const input = parseRequestBody(event.body as unknown, registerSchema);
 
   try {
+    const env = getEnv();
     await cognito.send(
       new SignUpCommand({
         ClientId: env.cognitoClientId,

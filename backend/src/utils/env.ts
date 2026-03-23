@@ -19,4 +19,6 @@ export class AppEnv {
   }
 }
 
-export const env = new AppEnv();
+export function getEnv(): AppEnv {
+  return new AppEnv();
+}
