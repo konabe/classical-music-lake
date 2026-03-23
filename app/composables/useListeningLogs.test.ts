@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { useListeningLogs } from "./useListeningLogs";
 import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";
 
@@ -13,14 +14,65 @@ vi.mock("#app", () => ({
   useRouter: () => ({ push: mockRouterPush }),
 }));
 
+const { mockUseFetch } = vi.hoisted(() => ({ mockUseFetch: vi.fn() }));
+
+mockNuxtImport("useFetch", () => mockUseFetch);
+
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
   mockFetch.mockClear();
   mockRouterPush.mockClear();
+  mockUseFetch.mockClear();
+  mockUseFetch.mockReturnValue({ data: null, error: null, pending: false, refresh: vi.fn() });
   localStorage.clear();
 });
 
 describe("useListeningLogs", () => {
+  describe("list", () => {
+    it("401 エラー時にトークンを削除してログイン画面へリダイレクトする", () => {
+      localStorage.setItem(ACCESS_TOKEN_KEY, "expired-access-token");
+      localStorage.setItem(ID_TOKEN_KEY, "expired-id-token");
+
+      let capturedOnResponseError: ((ctx: { response: { status: number } }) => void) | undefined;
+
+      mockUseFetch.mockImplementation(
+        (
+          _url: unknown,
+          options: { onResponseError?: (ctx: { response: { status: number } }) => void }
+        ) => {
+          capturedOnResponseError = options?.onResponseError;
+          return { data: null, error: null, pending: false, refresh: vi.fn() };
+        }
+      );
+
+      useListeningLogs();
+      capturedOnResponseError?.({ response: { status: 401 } });
+
+      expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
+      expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
+    });
+
+    it("401 以外のエラー時はリダイレクトしない", () => {
+      let capturedOnResponseError: ((ctx: { response: { status: number } }) => void) | undefined;
+
+      mockUseFetch.mockImplementation(
+        (
+          _url: unknown,
+          options: { onResponseError?: (ctx: { response: { status: number } }) => void }
+        ) => {
+          capturedOnResponseError = options?.onResponseError;
+          return { data: null, error: null, pending: false, refresh: vi.fn() };
+        }
+      );
+
+      useListeningLogs();
+      capturedOnResponseError?.({ response: { status: 500 } });
+
+      expect(mockRouterPush).not.toHaveBeenCalled();
+    });
+  });
+
   describe("create", () => {
     it("Authorization ヘッダーに Bearer トークンが付加される", async () => {
       const token = "test-id-token";

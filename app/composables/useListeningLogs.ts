@@ -27,6 +27,9 @@ export const useListeningLogs = () => {
   const router = useRouter();
   const list = useFetch<ListeningLog[]>(`${apiBase}/listening-logs`, {
     headers: computed(() => getAuthHeaders()),
+    onResponseError({ response }) {
+      handleAuthError(response.status, router);
+    },
   });
 
   const create = async (input: CreateListeningLogInput): Promise<ListeningLog> => {
@@ -65,7 +68,11 @@ export const useListeningLogs = () => {
 
 export const useListeningLog = (id: () => string) => {
   const apiBase = useApiBase();
+  const router = useRouter();
   return useFetch<ListeningLog>(() => `${apiBase}/listening-logs/${id()}`, {
     headers: computed(() => getAuthHeaders()),
+    onResponseError({ response }) {
+      handleAuthError(response.status, router);
+    },
   });
 };
