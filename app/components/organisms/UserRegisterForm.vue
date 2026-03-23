@@ -51,9 +51,9 @@ function handleSubmit() {
         </p>
       </div>
 
-      <button type="submit" :disabled="props.isLoading">
+      <ButtonPrimary type="submit" :disabled="props.isLoading">
         {{ props.isLoading ? "登録中..." : "登録" }}
-      </button>
+      </ButtonPrimary>
     </form>
 
     <div v-if="props.successMessage" class="success-message">
@@ -124,27 +124,6 @@ input[type="password"]:focus {
   color: #7a5c38;
   font-size: 0.875rem;
   margin: 0;
-}
-
-button {
-  padding: 0.75rem;
-  background-color: #1e2d5a;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-button:hover:not(:disabled) {
-  background-color: #2d2d50;
-}
-
-button:disabled {
-  background-color: #a89070;
-  cursor: not-allowed;
 }
 
 .success-message {

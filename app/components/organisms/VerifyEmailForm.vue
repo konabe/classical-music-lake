@@ -47,9 +47,9 @@ function handleResend() {
 
       <p v-if="props.infoMessage" class="info-message">{{ props.infoMessage }}</p>
 
-      <button type="submit" :disabled="props.isLoading">
+      <ButtonPrimary type="submit" :disabled="props.isLoading">
         {{ props.isLoading ? "確認中..." : "確認する" }}
-      </button>
+      </ButtonPrimary>
     </form>
 
     <div class="resend-section">
@@ -123,27 +123,6 @@ input[type="text"]:focus {
   border-radius: 4px;
   font-size: 0.9rem;
   margin: 0;
-}
-
-button[type="submit"] {
-  padding: 0.75rem;
-  background-color: #1e2d5a;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-button[type="submit"]:hover:not(:disabled) {
-  background-color: #2d2d50;
-}
-
-button[type="submit"]:disabled {
-  background-color: #a89070;
-  cursor: not-allowed;
 }
 
 .resend-section {

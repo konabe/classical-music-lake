@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import VerifyEmailForm from "./VerifyEmailForm.vue";
 import ErrorMessage from "../atoms/ErrorMessage.vue";
+import ButtonPrimary from "../atoms/ButtonPrimary.vue";
 
 describe("VerifyEmailForm", () => {
   const defaultProps = {
@@ -23,7 +24,10 @@ describe("VerifyEmailForm", () => {
     });
 
     it("「確認する」ボタンが表示される", async () => {
-      const wrapper = await mountSuspended(VerifyEmailForm, { props: defaultProps });
+      const wrapper = await mountSuspended(VerifyEmailForm, {
+        props: defaultProps,
+        global: { components: { ButtonPrimary } },
+      });
       expect(wrapper.find("button[type='submit']").text()).toBe("確認する");
     });
 
@@ -57,6 +61,7 @@ describe("VerifyEmailForm", () => {
     it("isLoading が true のとき確認ボタンが無効化される", async () => {
       const wrapper = await mountSuspended(VerifyEmailForm, {
         props: { ...defaultProps, isLoading: true },
+        global: { components: { ButtonPrimary } },
       });
       expect(wrapper.find("button[type='submit']").attributes("disabled")).toBeDefined();
     });
