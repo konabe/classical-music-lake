@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "hooks": {
     "SessionStart": [
       {
@@ -13,31 +14,54 @@
   },
   "permissions": {
     "allow": [
+      "Bash(npm install)",
       "Bash(npm run lint)",
       "Bash(npm run lint:fix)",
       "Bash(npm run format:check)",
       "Bash(npm run format)",
       "Bash(npm run prepare)",
-      "Bash(npm test)",
+      "Bash(npm run generate:*)",
       "Bash(npm run test:e2e)",
+      "Bash(npm test:*)",
       "Bash(npx lint-staged --version)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx vitest:*)",
       "Bash(git add:*)",
       "Bash(git checkout:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git pull:*)",
       "Bash(git commit:*)",
-      "Bash(npm run generate:*)",
-      "Bash(npm test:*)",
-      "Bash(npx tsc:*)",
-      "Bash(npx prettier:*)",
-      "Bash(gh pr view:*)",
-      "WebFetch(domain:docs.coderabbit.ai)",
       "Bash(gh api repos/konabe/classical-music-lake/pulls/*)",
       "Bash(gh api repos/konabe/classical-music-lake/issues/*)",
       "Bash(gh issue comment:*)",
-      "Bash(gh pr list:*)"
+      "Bash(gh issue:*)",
+      "Bash(gh label:*)",
+      "Bash(gh pr:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_network_requests",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_tabs",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_install"
     ],
-    "ask": ["Bash(npm install)", "Bash(git push:*)"]
+    "ask": ["Bash(git push:*)"]
+  },
+  "availableModels": ["sonnet"],
+  "enableAllProjectMcpServers": true,
+  "language": "japanese",
+  "model": "sonnet",
+  "spinnerVerbs": {
+    "mode": "replace",
+    "verbs": ["考え中"]
   }
 }
