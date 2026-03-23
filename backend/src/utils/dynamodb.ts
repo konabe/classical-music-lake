@@ -8,16 +8,17 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 
-const client = new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" });
+import { getEnv } from "./env";
+
+const client = new DynamoDBClient({ region: getEnv().awsRegion });
 
 export const dynamo = DynamoDBDocumentClient.from(client, {
   marshallOptions: { removeUndefinedValues: true },
 });
 
-export const TABLE_LISTENING_LOGS =
-  process.env.DYNAMO_TABLE_LISTENING_LOGS ?? "classical-music-listening-logs";
+export const TABLE_LISTENING_LOGS = getEnv().dynamoTableListeningLogs;
 
-export const TABLE_PIECES = process.env.DYNAMO_TABLE_PIECES ?? "classical-music-pieces";
+export const TABLE_PIECES = getEnv().dynamoTablePieces;
 
 export async function queryItemsByUserId<T>(tableName: string, userId: string): Promise<T[]> {
   const items: T[] = [];
