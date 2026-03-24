@@ -6,19 +6,14 @@
 
 1. **PR 番号の特定**
 
-   ```bash
-   gh pr list --head $(git branch --show-current)
-   ```
-
-   で現在ブランチの PR 番号を取得する。
+   `git branch --show-current` で現在のブランチ名を取得し、`mcp__github__list_pull_requests` ツールで該当する PR 番号を特定する。
 
 2. **レビューコメントの取得**
 
-   ```bash
-   gh api --paginate repos/konabe/classical-music-lake/pulls/{pr_number}/comments
-   ```
-
-   で全レビューコメントを取得する。
+   `mcp__github__pull_request_read` ツールで PR の詳細とレビューコメントを取得する。
+   - owner: `konabe`
+   - repo: `classical-music-lake`
+   - pullNumber: 上記で特定した PR 番号
 
 3. **コメントの分析と修正**
    各コメントの `path`（ファイルパス）・`line`（行番号）・`body`（内容）を確認し、以下の優先順位で対応する：
@@ -33,13 +28,13 @@
    バックエンドのファイルを変更した場合:
 
    ```bash
-   cd backend && npm test
+   npm run test:backend
    ```
 
    フロントエンドのファイルを変更した場合:
 
    ```bash
-   npm test
+   npm run test:frontend
    ```
 
    テストが失敗した場合は修正してから次へ進むこと。
@@ -55,4 +50,4 @@
    ...
    ```
 
-   その後 `git push origin <branch>` でプッシュする。
+   その後 `git push -u origin <branch>` でプッシュする。
