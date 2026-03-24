@@ -9,13 +9,15 @@ defineProps<{
 const emit = defineEmits<{
   delete: [piece: Piece];
 }>();
+
+const router = useRouter();
 </script>
 
 <template>
   <div>
     <div class="page-header">
       <h1>楽曲マスタ</h1>
-      <ButtonLinkPrimary to="/pieces/new">+ 新しい楽曲</ButtonLinkPrimary>
+      <ButtonPrimary @click="router.push('/pieces/new')">+ 新しい楽曲</ButtonPrimary>
     </div>
 
     <PieceList :pieces="pieces" :error="error" @delete="emit('delete', $event)" />

@@ -8,13 +8,15 @@ defineProps<{
 const emit = defineEmits<{
   delete: [id: string];
 }>();
+
+const router = useRouter();
 </script>
 
 <template>
   <div>
     <div class="page-header">
       <h1>鑑賞記録</h1>
-      <ButtonLinkPrimary to="/listening-logs/new">+ 新しい記録</ButtonLinkPrimary>
+      <ButtonPrimary @click="router.push('/listening-logs/new')">+ 新しい記録</ButtonPrimary>
     </div>
 
     <ListeningLogList :logs="logs" @delete="emit('delete', $event)" />
