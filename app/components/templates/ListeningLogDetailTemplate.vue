@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import type { ListeningLog } from "~/types";
 
-defineProps<{
+const props = defineProps<{
   log: ListeningLog;
 }>();
+
+const router = useRouter();
 </script>
 
 <template>
   <div>
     <div class="page-header">
       <NuxtLink to="/listening-logs" class="back-link">← 鑑賞記録一覧</NuxtLink>
-      <NuxtLink :to="`/listening-logs/${log.id}/edit`" class="btn-secondary">編集</NuxtLink>
+      <ButtonSecondary label="編集" @click="router.push(`/listening-logs/${props.log.id}/edit`)" />
     </div>
 
     <ListeningLogDetail :log="log" />
