@@ -39,7 +39,7 @@ const router = useRouter();
         </div>
         <div class="log-actions">
           <ButtonSecondary label="編集" @click="router.push(`/listening-logs/${log.id}/edit`)" />
-          <button class="btn-danger" @click="emit('delete', log.id)">削除</button>
+          <ButtonDanger label="削除" @click="emit('delete', log.id)" />
         </div>
       </li>
     </ul>
