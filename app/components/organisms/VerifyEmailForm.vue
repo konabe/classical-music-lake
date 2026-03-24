@@ -25,8 +25,7 @@ function handleResend() {
 </script>
 
 <template>
-  <div class="verify-email-container">
-    <h1>メールアドレス確認</h1>
+  <AuthFormContainer title="メールアドレス確認">
     <p class="description">
       <strong>{{ props.email }}</strong> に送信された認証コードを入力してください。
     </p>
@@ -58,26 +57,10 @@ function handleResend() {
         再送信
       </button>
     </div>
-  </div>
+  </AuthFormContainer>
 </template>
 
 <style scoped>
-.verify-email-container {
-  background: #eaeef4;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(61, 36, 9, 0.15);
-  width: 100%;
-  max-width: 400px;
-  border: 1px solid #9aa5b4;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 1rem;
-  color: #1e2d5a;
-}
-
 .description {
   text-align: center;
   color: #7a5c38;

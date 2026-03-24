@@ -20,9 +20,7 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div class="register-container">
-    <h1>新規登録</h1>
-
+  <AuthFormContainer title="新規登録">
     <form @submit.prevent="handleSubmit">
       <FormGroup label="メールアドレス" input-id="email" :error-message="props.errors.email">
         <TextInput
@@ -63,26 +61,10 @@ function handleSubmit() {
         <NuxtLink to="/auth/login">ログイン</NuxtLink>
       </p>
     </div>
-  </div>
+  </AuthFormContainer>
 </template>
 
 <style scoped>
-.register-container {
-  background: #eaeef4;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(61, 36, 9, 0.15);
-  width: 100%;
-  max-width: 400px;
-  border: 1px solid #9aa5b4;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #1e2d5a;
-}
-
 form {
   display: flex;
   flex-direction: column;

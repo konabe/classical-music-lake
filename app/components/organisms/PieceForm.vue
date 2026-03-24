@@ -39,10 +39,7 @@ function handleSubmit() {
       <TextInput id="composer" v-model="form.composer" required placeholder="例：ベートーヴェン" />
     </FormGroup>
 
-    <div class="form-actions">
-      <ButtonSecondary label="キャンセル" @click="$router.push('/pieces')" />
-      <ButtonPrimary type="submit">{{ submitLabel ?? "保存する" }}</ButtonPrimary>
-    </div>
+    <FormActions :submit-label="submitLabel" @cancel="$router.push('/pieces')" />
   </form>
 </template>
 
@@ -52,11 +49,5 @@ function handleSubmit() {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-}
-
-.form-actions {
-  display: flex;
-  gap: 0.8rem;
-  margin-top: 1.5rem;
 }
 </style>
