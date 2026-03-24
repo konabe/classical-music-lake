@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { useListeningLogs } from "./useListeningLogs";
 import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";

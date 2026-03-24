@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useAuth, ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";
 
 const mockFetch = vi.fn();
