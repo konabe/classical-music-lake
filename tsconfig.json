@@ -3,7 +3,8 @@
   "compilerOptions": {
     "strict": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "types": ["vitest/globals"]
   },
   "exclude": ["backend/**", "cdk/**", "node_modules", ".nuxt", "dist", ".output"]
 }
