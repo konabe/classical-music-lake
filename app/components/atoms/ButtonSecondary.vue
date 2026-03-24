@@ -9,5 +9,5 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <button class="btn-secondary" @click="emit('click')">{{ label }}</button>
+  <button type="button" class="btn-secondary" @click="emit('click')">{{ label }}</button>
 </template>
