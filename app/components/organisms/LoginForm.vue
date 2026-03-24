@@ -49,9 +49,9 @@ function handleSubmit() {
 
       <ErrorMessage v-if="props.errors.general" :message="props.errors.general" :center="true" />
 
-      <button type="submit" :disabled="props.isLoading">
+      <ButtonPrimary type="submit" :disabled="props.isLoading">
         {{ props.isLoading ? "ログイン中..." : "ログイン" }}
-      </button>
+      </ButtonPrimary>
     </form>
 
     <div class="register-link">
@@ -111,27 +111,6 @@ input[type="email"]:focus,
 input[type="password"]:focus {
   outline: none;
   border-color: #1e2d5a;
-}
-
-button {
-  padding: 0.75rem;
-  background-color: #1e2d5a;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-button:hover:not(:disabled) {
-  background-color: #2d2d50;
-}
-
-button:disabled {
-  background-color: #a89070;
-  cursor: not-allowed;
 }
 
 .register-link {

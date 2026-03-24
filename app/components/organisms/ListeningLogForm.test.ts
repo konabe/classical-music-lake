@@ -2,6 +2,7 @@ import { ref } from "vue";
 import { describe, it, expect, vi } from "vitest";
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import ListeningLogForm from "./ListeningLogForm.vue";
+import ButtonPrimary from "../atoms/ButtonPrimary.vue";
 import type { Piece } from "~/types";
 
 const { mockPieces } = vi.hoisted(() => {
@@ -48,7 +49,9 @@ describe("ListeningLogForm", () => {
     });
 
     it("送信ラベルのデフォルトは「保存する」", async () => {
-      const wrapper = await mountSuspended(ListeningLogForm);
+      const wrapper = await mountSuspended(ListeningLogForm, {
+        global: { components: { ButtonPrimary } },
+      });
       expect(wrapper.find("button[type='submit']").text()).toBe("保存する");
     });
   });
@@ -100,6 +103,7 @@ describe("ListeningLogForm", () => {
     it("カスタムラベルが反映される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm, {
         props: { submitLabel: "記録する" },
+        global: { components: { ButtonPrimary } },
       });
       expect(wrapper.find("button[type='submit']").text()).toBe("記録する");
     });

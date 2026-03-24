@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceForm from "./PieceForm.vue";
+import ButtonPrimary from "../atoms/ButtonPrimary.vue";
 
 describe("PieceForm", () => {
   describe("デフォルト値でのレンダリング", () => {
@@ -10,7 +11,9 @@ describe("PieceForm", () => {
     });
 
     it("送信ラベルのデフォルトは「保存する」", async () => {
-      const wrapper = await mountSuspended(PieceForm);
+      const wrapper = await mountSuspended(PieceForm, {
+        global: { components: { ButtonPrimary } },
+      });
       expect(wrapper.find("button[type='submit']").text()).toBe("保存する");
     });
 
@@ -53,6 +56,7 @@ describe("PieceForm", () => {
     it("カスタムラベルが反映される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: { submitLabel: "登録する" },
+        global: { components: { ButtonPrimary } },
       });
       expect(wrapper.find("button[type='submit']").text()).toBe("登録する");
     });
