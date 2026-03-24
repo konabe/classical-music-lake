@@ -32,7 +32,7 @@ const router = useRouter();
         </div>
         <div class="piece-actions">
           <ButtonSecondary label="編集" @click="router.push(`/pieces/${piece.id}/edit`)" />
-          <button class="btn-danger" @click="emit('delete', piece)">削除</button>
+          <ButtonDanger label="削除" @click="emit('delete', piece)" />
         </div>
       </li>
     </ul>
