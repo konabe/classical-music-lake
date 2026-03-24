@@ -75,10 +75,7 @@ function handleSubmit() {
       <textarea v-model="form.memo" rows="4" placeholder="自由に感想を書いてください..." />
     </FormGroup>
 
-    <div class="form-actions">
-      <ButtonSecondary label="キャンセル" @click="$router.push('/listening-logs')" />
-      <ButtonPrimary type="submit">{{ submitLabel ?? "保存する" }}</ButtonPrimary>
-    </div>
+    <FormActions :submit-label="submitLabel" @cancel="$router.push('/listening-logs')" />
   </form>
 </template>
 
@@ -130,12 +127,5 @@ textarea:focus {
   gap: 0.5rem;
   font-weight: normal;
   cursor: pointer;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
 }
 </style>
