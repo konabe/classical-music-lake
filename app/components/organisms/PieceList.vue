@@ -9,6 +9,8 @@ defineProps<{
 const emit = defineEmits<{
   delete: [piece: Piece];
 }>();
+
+const router = useRouter();
 </script>
 
 <template>
@@ -29,7 +31,7 @@ const emit = defineEmits<{
           <div class="piece-composer">{{ piece.composer }}</div>
         </div>
         <div class="piece-actions">
-          <NuxtLink :to="`/pieces/${piece.id}/edit`" class="btn-secondary">編集</NuxtLink>
+          <ButtonSecondary label="編集" @click="router.push(`/pieces/${piece.id}/edit`)" />
           <button class="btn-danger" @click="emit('delete', piece)">削除</button>
         </div>
       </li>

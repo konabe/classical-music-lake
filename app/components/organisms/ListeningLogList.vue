@@ -9,6 +9,8 @@ defineProps<{
 const emit = defineEmits<{
   delete: [id: string];
 }>();
+
+const router = useRouter();
 </script>
 
 <template>
@@ -36,7 +38,7 @@ const emit = defineEmits<{
           <p v-if="log.memo" class="log-memo">{{ log.memo }}</p>
         </div>
         <div class="log-actions">
-          <NuxtLink :to="`/listening-logs/${log.id}/edit`" class="btn-secondary">編集</NuxtLink>
+          <ButtonSecondary label="編集" @click="router.push(`/listening-logs/${log.id}/edit`)" />
           <button class="btn-danger" @click="emit('delete', log.id)">削除</button>
         </div>
       </li>

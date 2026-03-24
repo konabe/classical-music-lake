@@ -48,7 +48,7 @@ function handleSubmit() {
     </div>
 
     <div class="form-actions">
-      <NuxtLink to="/pieces" class="btn-secondary">キャンセル</NuxtLink>
+      <ButtonSecondary label="キャンセル" @click="$router.push('/pieces')" />
       <ButtonPrimary type="submit">{{ submitLabel ?? "保存する" }}</ButtonPrimary>
     </div>
   </form>
