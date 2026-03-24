@@ -26,7 +26,7 @@ function handleSubmit() {
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
         <label for="email">メールアドレス</label>
-        <input
+        <TextInput
           id="email"
           v-model="form.email"
           type="email"
@@ -38,7 +38,7 @@ function handleSubmit() {
 
       <div class="form-group">
         <label for="password">パスワード</label>
-        <input
+        <TextInput
           id="password"
           v-model="form.password"
           type="password"
@@ -102,22 +102,6 @@ form {
 label {
   font-weight: 500;
   color: #1e2d5a;
-}
-
-input[type="email"],
-input[type="password"] {
-  padding: 0.75rem;
-  border: 1px solid #9aa5b4;
-  border-radius: 4px;
-  font-size: 1rem;
-  background: #faf3e0;
-  transition: border-color 0.2s;
-}
-
-input[type="email"]:focus,
-input[type="password"]:focus {
-  outline: none;
-  border-color: #1e2d5a;
 }
 
 .password-requirements {

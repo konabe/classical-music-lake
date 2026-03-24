@@ -56,11 +56,11 @@ function handleSubmit() {
     <div class="form-row">
       <div class="form-group">
         <label>作曲家 <RequiredMark /></label>
-        <input v-model="form.composer" type="text" placeholder="例: ベートーヴェン" required />
+        <TextInput v-model="form.composer" placeholder="例: ベートーヴェン" required />
       </div>
       <div class="form-group">
         <label>曲名 <RequiredMark /></label>
-        <input v-model="form.piece" type="text" placeholder="例: 交響曲第9番" required />
+        <TextInput v-model="form.piece" placeholder="例: 交響曲第9番" required />
       </div>
     </div>
 
@@ -116,7 +116,6 @@ label {
   color: #444;
 }
 
-input[type="text"],
 input[type="datetime-local"],
 textarea,
 select {
