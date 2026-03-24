@@ -31,15 +31,13 @@ function handleSubmit() {
 
 <template>
   <form class="piece-form" @submit.prevent="handleSubmit">
-    <div class="form-group">
-      <label for="title">曲名 <RequiredMark /></label>
+    <FormGroup label="曲名" input-id="title" required>
       <TextInput id="title" v-model="form.title" required placeholder="例：交響曲第9番" />
-    </div>
+    </FormGroup>
 
-    <div class="form-group">
-      <label for="composer">作曲家 <RequiredMark /></label>
+    <FormGroup label="作曲家" input-id="composer" required>
       <TextInput id="composer" v-model="form.composer" required placeholder="例：ベートーヴェン" />
-    </div>
+    </FormGroup>
 
     <div class="form-actions">
       <ButtonSecondary label="キャンセル" @click="$router.push('/pieces')" />
@@ -51,18 +49,9 @@ function handleSubmit() {
 <style scoped>
 .piece-form {
   max-width: 480px;
-}
-
-.form-group {
-  margin-bottom: 1.2rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 0.4rem;
-  color: #333;
-  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
 }
 
 .form-actions {

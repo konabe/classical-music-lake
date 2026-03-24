@@ -38,36 +38,31 @@ function handleSubmit() {
 
 <template>
   <form class="log-form" @submit.prevent="handleSubmit">
-    <div class="form-group">
-      <label>鑑賞日時 <RequiredMark /></label>
+    <FormGroup label="鑑賞日時" required>
       <input v-model="form.listenedAt" type="datetime-local" required />
-    </div>
+    </FormGroup>
 
-    <div class="form-group">
-      <label>楽曲マスタから選択</label>
+    <FormGroup label="楽曲マスタから選択">
       <select class="piece-select" :disabled="piecesPending" @change="handlePieceSelect">
         <option value="">{{ piecesPending ? "読み込み中..." : "選択しない" }}</option>
         <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
           {{ piece.title }} / {{ piece.composer }}
         </option>
       </select>
-    </div>
+    </FormGroup>
 
     <div class="form-row">
-      <div class="form-group">
-        <label>作曲家 <RequiredMark /></label>
+      <FormGroup label="作曲家" required>
         <TextInput v-model="form.composer" placeholder="例: ベートーヴェン" required />
-      </div>
-      <div class="form-group">
-        <label>曲名 <RequiredMark /></label>
+      </FormGroup>
+      <FormGroup label="曲名" required>
         <TextInput v-model="form.piece" placeholder="例: 交響曲第9番" required />
-      </div>
+      </FormGroup>
     </div>
 
-    <div class="form-group">
-      <label>評価</label>
+    <FormGroup label="評価">
       <RatingSelector v-model="form.rating" />
-    </div>
+    </FormGroup>
 
     <div class="form-group">
       <label class="checkbox-label">
@@ -76,10 +71,9 @@ function handleSubmit() {
       </label>
     </div>
 
-    <div class="form-group">
-      <label>感想・メモ</label>
+    <FormGroup label="感想・メモ">
       <textarea v-model="form.memo" rows="4" placeholder="自由に感想を書いてください..." />
-    </div>
+    </FormGroup>
 
     <div class="form-actions">
       <ButtonSecondary label="キャンセル" @click="$router.push('/listening-logs')" />
@@ -95,6 +89,9 @@ function handleSubmit() {
   border-radius: 12px;
   padding: 2rem;
   max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
 }
 
 .form-row {
@@ -107,13 +104,6 @@ function handleSubmit() {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  margin-bottom: 1.2rem;
-}
-
-label {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #444;
 }
 
 input[type="datetime-local"],

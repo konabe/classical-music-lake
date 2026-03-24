@@ -23,8 +23,7 @@ function handleSubmit() {
     <h1>ログイン</h1>
 
     <form @submit.prevent="handleSubmit">
-      <div class="form-group">
-        <label for="email">メールアドレス</label>
+      <FormGroup label="メールアドレス" input-id="email" :error-message="props.errors.email">
         <TextInput
           id="email"
           v-model="form.email"
@@ -32,11 +31,9 @@ function handleSubmit() {
           placeholder="your@example.com"
           required
         />
-        <ErrorMessage v-if="props.errors.email" :message="props.errors.email" />
-      </div>
+      </FormGroup>
 
-      <div class="form-group">
-        <label for="password">パスワード</label>
+      <FormGroup label="パスワード" input-id="password" :error-message="props.errors.password">
         <TextInput
           id="password"
           v-model="form.password"
@@ -44,8 +41,7 @@ function handleSubmit() {
           placeholder="パスワードを入力"
           required
         />
-        <ErrorMessage v-if="props.errors.password" :message="props.errors.password" />
-      </div>
+      </FormGroup>
 
       <ErrorMessage v-if="props.errors.general" :message="props.errors.general" :center="true" />
 
@@ -84,17 +80,6 @@ form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-label {
-  font-weight: 500;
-  color: #1e2d5a;
 }
 
 .register-link {
