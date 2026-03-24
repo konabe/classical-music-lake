@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.3...classical-music-lake-v1.1.4) (2026-03-24)
+
+
+### Bug Fixes
+
+* add type="button" to ButtonSecondary to prevent unintended form submissions ([b956aef](https://github.com/konabe/classical-music-lake/commit/b956aefb18602e0d2b6455cc31509677c33e44f0))
+
 ## [1.1.3](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.2...classical-music-lake-v1.1.3) (2026-03-23)
 
 
