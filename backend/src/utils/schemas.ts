@@ -36,6 +36,7 @@ export const createPieceSchema = z.object({
     .trim()
     .min(1, "composer is required")
     .max(100, "composer must be 100 characters or less"),
+  videoUrl: z.url("videoUrl must be a valid URL").optional(),
 });
 
 export const updatePieceSchema = z.object({
@@ -51,6 +52,7 @@ export const updatePieceSchema = z.object({
     .min(1, "composer must be a non-empty string")
     .max(100, "composer must be 100 characters or less")
     .optional(),
+  videoUrl: z.union([z.url("videoUrl must be a valid URL"), z.literal("")]).optional(),
 });
 
 const emailSchema = z

@@ -43,6 +43,11 @@ const existingPiece: Piece = {
   updatedAt: "2024-01-15T21:00:00.000Z",
 };
 
+const existingPieceWithVideoUrl: Piece = {
+  ...existingPiece,
+  videoUrl: "https://www.youtube.com/watch?v=abc123",
+};
+
 describe("PUT /pieces/{id} (update)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -227,5 +232,45 @@ describe("PUT /pieces/{id} (update)", () => {
       mockCallback
     );
     expect(result?.statusCode).toBe(500);
+  });
+
+  it("videoUrl を追加して更新できる", async () => {
+    vi.mocked(dynamo.send)
+      .mockResolvedValueOnce({ Item: existingPiece } as never)
+      .mockResolvedValueOnce({} as never);
+
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ videoUrl: "https://www.youtube.com/watch?v=xyz" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}") as Piece;
+    expect(body.videoUrl).toBe("https://www.youtube.com/watch?v=xyz");
+  });
+
+  it("videoUrl を空文字で送信すると削除される", async () => {
+    vi.mocked(dynamo.send)
+      .mockResolvedValueOnce({ Item: existingPieceWithVideoUrl } as never)
+      .mockResolvedValueOnce({} as never);
+
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ videoUrl: "" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}") as Piece;
+    expect(body.videoUrl).toBeUndefined();
+  });
+
+  it("videoUrl が不正な URL の場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ videoUrl: "not-a-url" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrl must be a valid URL");
   });
 });

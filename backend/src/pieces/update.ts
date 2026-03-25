@@ -24,6 +24,9 @@ export const handler = createHandler(async (event) => {
     createdAt: current.createdAt,
     updatedAt: new Date().toISOString(),
   };
+  if (input.videoUrl === "") {
+    delete updated.videoUrl;
+  }
 
   try {
     await dynamo.send(

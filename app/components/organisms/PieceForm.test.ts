@@ -16,12 +16,19 @@ describe("PieceForm", () => {
       expect(wrapper.find("button[type='submit']").text()).toBe("保存する");
     });
 
-    it("曲名・作曲家の入力フィールドが空である", async () => {
+    it("曲名・作曲家・動画 URL の入力フィールドが空である", async () => {
       const wrapper = await mountSuspended(PieceForm);
       const titleInput = wrapper.find("#title");
       const composerInput = wrapper.find("#composer");
+      const videoUrlInput = wrapper.find("#videoUrl");
       expect((titleInput.element as HTMLInputElement).value).toBe("");
       expect((composerInput.element as HTMLInputElement).value).toBe("");
+      expect((videoUrlInput.element as HTMLInputElement).value).toBe("");
+    });
+
+    it("動画 URL 入力フィールドが表示される", async () => {
+      const wrapper = await mountSuspended(PieceForm);
+      expect(wrapper.find("#videoUrl").exists()).toBe(true);
     });
   });
 
@@ -29,14 +36,22 @@ describe("PieceForm", () => {
     it("初期値が入力フィールドに反映される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
-          initialValues: { title: "交響曲第9番", composer: "ベートーヴェン" },
+          initialValues: {
+            title: "交響曲第9番",
+            composer: "ベートーヴェン",
+            videoUrl: "https://www.youtube.com/watch?v=abc",
+          },
         },
       });
 
       const titleInput = wrapper.find("#title");
       const composerInput = wrapper.find("#composer");
+      const videoUrlInput = wrapper.find("#videoUrl");
       expect((titleInput.element as HTMLInputElement).value).toBe("交響曲第9番");
       expect((composerInput.element as HTMLInputElement).value).toBe("ベートーヴェン");
+      expect((videoUrlInput.element as HTMLInputElement).value).toBe(
+        "https://www.youtube.com/watch?v=abc"
+      );
     });
 
     it("一部の初期値のみ指定できる", async () => {
@@ -46,8 +61,10 @@ describe("PieceForm", () => {
 
       const titleInput = wrapper.find("#title");
       const composerInput = wrapper.find("#composer");
+      const videoUrlInput = wrapper.find("#videoUrl");
       expect((titleInput.element as HTMLInputElement).value).toBe("魔笛");
       expect((composerInput.element as HTMLInputElement).value).toBe("");
+      expect((videoUrlInput.element as HTMLInputElement).value).toBe("");
     });
   });
 
@@ -76,7 +93,11 @@ describe("PieceForm", () => {
     it("submit イベントにフォームデータが含まれる", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
-          initialValues: { title: "交響曲第9番", composer: "ベートーヴェン" },
+          initialValues: {
+            title: "交響曲第9番",
+            composer: "ベートーヴェン",
+            videoUrl: "https://www.youtube.com/watch?v=abc",
+          },
         },
       });
 
@@ -86,6 +107,7 @@ describe("PieceForm", () => {
       const emittedData = emitted![0][0] as Record<string, unknown>;
       expect(emittedData.title).toBe("交響曲第9番");
       expect(emittedData.composer).toBe("ベートーヴェン");
+      expect(emittedData.videoUrl).toBe("https://www.youtube.com/watch?v=abc");
     });
   });
 });
