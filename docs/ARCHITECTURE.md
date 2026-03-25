@@ -199,6 +199,19 @@ classical-music-lake/
   → 完了メッセージ表示（ページ遷移なし）
 ```
 
+### 視聴ログフォームでの動画プレビュー
+
+```
+ブラウザ (/listening-logs/new, /listening-logs/[id]/edit)
+  → ListeningLogForm が usePieces() で楽曲一覧を取得
+  → 楽曲マスタセレクトで曲を選択
+      → videoUrl あり: selectedVideoUrl に videoUrl をセット
+          → VideoPlayer (v-if="selectedVideoUrl") が表示
+          → 動画を確認しながらフォームの他の項目を入力可能
+      → videoUrl なし / 「選択しない」: selectedVideoUrl = undefined
+          → VideoPlayer は非表示
+```
+
 ### ログアウト
 
 ```
