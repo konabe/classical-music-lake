@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { nowAsDatetimeLocal, toDatetimeLocal } from "~/utils/date";
 import type { CreateListeningLogInput } from "~/types";
 

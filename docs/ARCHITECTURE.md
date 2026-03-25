@@ -201,7 +201,7 @@ classical-music-lake/
 
 ### 視聴ログフォームでの動画プレビュー
 
-```
+```text
 ブラウザ (/listening-logs/new, /listening-logs/[id]/edit)
   → ListeningLogForm が usePieces() で楽曲一覧を取得
   → 楽曲マスタセレクトで曲を選択
