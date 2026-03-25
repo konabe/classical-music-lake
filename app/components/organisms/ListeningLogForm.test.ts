@@ -1,4 +1,3 @@
-import { ref } from "vue";
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import ListeningLogForm from "./ListeningLogForm.vue";
 import ButtonPrimary from "../atoms/ButtonPrimary.vue";
