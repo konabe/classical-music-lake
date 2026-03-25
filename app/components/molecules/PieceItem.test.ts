@@ -70,5 +70,23 @@ describe("PieceItem", () => {
       await wrapper.find(".btn-danger").trigger("click");
       expect(wrapper.emitted("delete")).toBeTruthy();
     });
+
+    it("詳細ボタンクリックで detail イベントが emit される", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePiece },
+        ...globalComponents,
+      });
+      await wrapper.find(".btn-detail").trigger("click");
+      expect(wrapper.emitted("detail")).toBeTruthy();
+    });
+  });
+
+  describe("詳細ボタン表示", () => {
+    it("詳細ボタンが表示される", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePiece },
+      });
+      expect(wrapper.find(".btn-detail").exists()).toBe(true);
+    });
   });
 });

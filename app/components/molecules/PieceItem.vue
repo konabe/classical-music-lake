@@ -8,6 +8,7 @@ defineProps<{
 const emit = defineEmits<{
   edit: [];
   delete: [];
+  detail: [];
 }>();
 </script>
 
@@ -18,6 +19,7 @@ const emit = defineEmits<{
       <div class="piece-composer">{{ piece.composer }}</div>
     </div>
     <div class="piece-actions">
+      <button type="button" class="btn-detail" @click="emit('detail')">詳細</button>
       <ButtonSecondary label="編集" @click="emit('edit')" />
       <ButtonDanger label="削除" @click="emit('delete')" />
     </div>
@@ -52,5 +54,20 @@ const emit = defineEmits<{
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.btn-detail {
+  background: #f0ebe0;
+  color: #1e2d5a;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #c2a878;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-detail:hover {
+  background: #e0d8cc;
 }
 </style>

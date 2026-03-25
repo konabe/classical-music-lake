@@ -29,6 +29,7 @@ const router = useRouter();
         v-for="piece in pieces"
         :key="piece.id"
         :piece="piece"
+        @detail="router.push(`/pieces/${piece.id}`)"
         @edit="router.push(`/pieces/${piece.id}/edit`)"
         @delete="emit('delete', piece)"
       />
