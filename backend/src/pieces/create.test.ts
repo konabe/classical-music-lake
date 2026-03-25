@@ -136,7 +136,21 @@ describe("POST /pieces (create)", () => {
     );
   });
 
-  it("正常に作成して 201 を返す", async () => {
+  it("videoUrl が不正な URL の場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent({
+        body: JSON.stringify({ ...validInput, videoUrl: "not-a-url" }),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrl must be a valid URL");
+  });
+
+  it("videoUrl なしで正常に作成して 201 を返す", async () => {
     vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
     const result = await handler(
       makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
@@ -151,6 +165,23 @@ describe("POST /pieces (create)", () => {
     expect(body.composer).toBe("ベートーヴェン");
     expect(body.createdAt).toBeDefined();
     expect(body.updatedAt).toBeDefined();
+    expect(body.videoUrl).toBeUndefined();
+  });
+
+  it("有効な videoUrl を指定して作成できる", async () => {
+    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    const result = await handler(
+      makeEvent({
+        body: JSON.stringify({ ...validInput, videoUrl: "https://www.youtube.com/watch?v=abc123" }),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(201);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.videoUrl).toBe("https://www.youtube.com/watch?v=abc123");
   });
 
   it("作成アイテムに UUID が付与される", async () => {

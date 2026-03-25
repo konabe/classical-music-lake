@@ -21,7 +21,11 @@ const emit = defineEmits<{
     <template v-else>
       <ErrorMessage v-if="errorMessage" :message="errorMessage" variant="block" />
       <PieceForm
-        :initial-values="{ title: piece?.title, composer: piece?.composer }"
+        :initial-values="{
+          title: piece?.title,
+          composer: piece?.composer,
+          videoUrl: piece?.videoUrl,
+        }"
         submit-label="更新する"
         @submit="emit('submit', $event)"
       />

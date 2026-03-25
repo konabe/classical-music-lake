@@ -58,6 +58,7 @@ export interface Piece {
   id: string;
   title: string;
   composer: string;
+  videoUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

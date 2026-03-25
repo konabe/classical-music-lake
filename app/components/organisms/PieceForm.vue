@@ -13,6 +13,7 @@ const emit = defineEmits<{
 const form = reactive<CreatePieceInput>({
   title: "",
   composer: "",
+  videoUrl: "",
 });
 
 watch(
@@ -20,6 +21,7 @@ watch(
   (initialValues) => {
     form.title = initialValues?.title ?? "";
     form.composer = initialValues?.composer ?? "";
+    form.videoUrl = initialValues?.videoUrl ?? "";
   },
   { immediate: true }
 );
@@ -37,6 +39,14 @@ function handleSubmit() {
 
     <FormGroup label="作曲家" input-id="composer" required>
       <TextInput id="composer" v-model="form.composer" required placeholder="例：ベートーヴェン" />
+    </FormGroup>
+
+    <FormGroup label="動画 URL" input-id="videoUrl">
+      <TextInput
+        id="videoUrl"
+        v-model="form.videoUrl"
+        placeholder="例：https://www.youtube.com/watch?v=..."
+      />
     </FormGroup>
 
     <FormActions :submit-label="submitLabel" @cancel="$router.push('/pieces')" />
