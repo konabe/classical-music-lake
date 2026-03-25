@@ -10,7 +10,8 @@
     "noUnusedParameters": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"]
   },
   "include": ["bin/**/*", "lib/**/*"],
   "exclude": ["node_modules", "dist", "cdk.out"]
