@@ -20,6 +20,22 @@ const { mockPieces } = vi.hoisted(() => {
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
+    {
+      id: "piece-3",
+      title: "展覧会の絵",
+      composer: "ムソルグスキー",
+      videoUrl: "https://www.youtube.com/watch?v=video123",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+    {
+      id: "piece-4",
+      title: "春の祭典",
+      composer: "ストラヴィンスキー",
+      videoUrl: "https://www.youtube.com/watch?v=video456",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
   ];
   return { mockPieces };
 });
@@ -209,6 +225,56 @@ describe("ListeningLogForm", () => {
       const pieceInput = wrapper.find('input[placeholder="例: 交響曲第9番"]');
       expect((composerInput.element as HTMLInputElement).value).toBe("");
       expect((pieceInput.element as HTMLInputElement).value).toBe("");
+    });
+  });
+
+  describe("動画プレビュー", () => {
+    it("初期状態では動画プレイヤーが表示されない", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      expect(wrapper.find(".video-player").exists()).toBe(false);
+    });
+
+    it("videoUrl ありの曲を選択すると動画プレイヤーが表示される", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const select = wrapper.find("select.piece-select");
+      await select.setValue("piece-3");
+      expect(wrapper.find(".video-player").exists()).toBe(true);
+    });
+
+    it("表示された動画は選択した曲の URL を使用する", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const select = wrapper.find("select.piece-select");
+      await select.setValue("piece-3");
+      expect(wrapper.find("iframe").attributes("src")).toContain("video123");
+    });
+
+    it("videoUrl なしの曲を選択しても動画プレイヤーは表示されない", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const select = wrapper.find("select.piece-select");
+      await select.setValue("piece-1");
+      expect(wrapper.find(".video-player").exists()).toBe(false);
+    });
+
+    it("別の曲（videoUrl あり）に選択を変えると動画が切り替わる", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const select = wrapper.find("select.piece-select");
+
+      await select.setValue("piece-3");
+      expect(wrapper.find("iframe").attributes("src")).toContain("video123");
+
+      await select.setValue("piece-4");
+      expect(wrapper.find("iframe").attributes("src")).toContain("video456");
+    });
+
+    it("「選択しない」にすると動画が非表示になる", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const select = wrapper.find("select.piece-select");
+
+      await select.setValue("piece-3");
+      expect(wrapper.find(".video-player").exists()).toBe(true);
+
+      await select.setValue("");
+      expect(wrapper.find(".video-player").exists()).toBe(false);
     });
   });
 
