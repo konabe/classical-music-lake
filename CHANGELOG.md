@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.4...classical-music-lake-v1.2.0) (2026-03-25)
+
+
+### Features
+
+* **006-001:** piece に videoUrl フィールドを追加し楽曲フォームに動画 URL 入力欄を追加 ([eabc4cd](https://github.com/konabe/classical-music-lake/commit/eabc4cd9031a022002f9d6353eb163640658cc98))
+* **006-001:** piece に videoUrl フィールドを追加し楽曲フォームに動画 URL 入力欄を追加 ([d24faad](https://github.com/konabe/classical-music-lake/commit/d24faadb7a5b99be5c0331c8f23da5db92e7e290))
+* **006-002:** 楽曲詳細ページでのクイックログ記録機能を実装 ([a08da6c](https://github.com/konabe/classical-music-lake/commit/a08da6c1599b9c95671903286f9e2a19dc54846d))
+* **006-002:** 楽曲詳細ページで動画を視聴しながらログを記録できる ([fb0549c](https://github.com/konabe/classical-music-lake/commit/fb0549cf2d4f59f1e11ce3556540cf22dfdd8954))
+* **006-003:** 視聴ログフォームで楽曲選択時に動画プレビューを表示 ([db94b34](https://github.com/konabe/classical-music-lake/commit/db94b34493e0fb98d518d6bfa15ab3395f28d0f0))
+* **006-003:** 視聴ログフォームで楽曲選択時に動画プレビューを表示 ([516d2f1](https://github.com/konabe/classical-music-lake/commit/516d2f191419e0500d5ba9c9756beb2b60e7bd85))
+* **eslint:** vue auto-imports・vitest globals・MD040 の検出ルールを追加 ([45ab8c4](https://github.com/konabe/classical-music-lake/commit/45ab8c4e7a4f69e3f9a4c57c6f37c0fe9d34e90a))
+
+
+### Bug Fixes
+
+* **cdk:** add @types/node for TypeScript 6.0 compatibility ([#230](https://github.com/konabe/classical-music-lake/issues/230)) ([9b9177b](https://github.com/konabe/classical-music-lake/commit/9b9177b417ac3c58873962c44e837f13874ac3ae))
+* picomatch・h3 の security 脆弱性を修正 (npm audit fix) ([2c88d5c](https://github.com/konabe/classical-music-lake/commit/2c88d5c5c16fc0498ca711cdd26bc525f3f2534c))
+* ref の不要インポート削除・ARCHITECTURE.md コードブロックに言語タグ追加 ([cb19dc9](https://github.com/konabe/classical-music-lake/commit/cb19dc994a58ea3fd694689af6a587a015a239c8))
+
 ## [1.1.4](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.3...classical-music-lake-v1.1.4) (2026-03-24)
 
 
