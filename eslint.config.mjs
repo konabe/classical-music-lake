@@ -5,6 +5,59 @@ import storybook from "eslint-plugin-storybook";
 import prettierConfig from "eslint-config-prettier";
 import withNuxt from "./.nuxt/eslint.config.mjs";
 
+/** Markdown ファイルを ESLint で扱うための最小パーサー */
+const markdownParser = {
+  parseForESLint(code) {
+    const lines = code.split(/\r\n?|\n/g);
+    return {
+      ast: {
+        type: "Program",
+        start: 0,
+        end: code.length,
+        loc: {
+          start: { line: 1, column: 0 },
+          end: { line: lines.length, column: lines[lines.length - 1].length },
+        },
+        range: [0, code.length],
+        body: [],
+        comments: [],
+        tokens: [],
+      },
+      scopeManager: null,
+      visitorKeys: { Program: [] },
+    };
+  },
+};
+
+/**
+ * MD040: コードブロックに言語タグがない場合に警告する ESLint ルール
+ * eslint-plugin-markdownlint は ESLint 10 非互換のためインラインで実装
+ */
+const md040Rule = {
+  meta: {
+    type: "suggestion",
+    messages: {
+      noLang: "コードブロックに言語タグを指定してください (MD040)",
+    },
+  },
+  create(context) {
+    return {
+      Program() {
+        const src = context.sourceCode.getText();
+        const lines = src.split(/\r\n?|\n/g);
+        lines.forEach((line, i) => {
+          if (/^```\s*$/.test(line)) {
+            context.report({
+              loc: { line: i + 1, column: 0 },
+              messageId: "noLang",
+            });
+          }
+        });
+      },
+    };
+  },
+};
+
 export default withNuxt(
   prettierConfig,
   ...storybook.configs["flat/recommended"],
@@ -34,6 +87,73 @@ export default withNuxt(
     files: ["app/pages/**/*.vue"],
     rules: {
       "vue/multi-word-component-names": "off",
+    },
+  },
+  // Nuxt 3 / vitest globals が自動インポートするものの明示的インポートを禁止
+  {
+    files: ["app/**/*.{ts,tsx,vue}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "vue",
+              importNames: [
+                "ref",
+                "shallowRef",
+                "isRef",
+                "toRef",
+                "toRefs",
+                "unref",
+                "reactive",
+                "shallowReactive",
+                "computed",
+                "watch",
+                "watchEffect",
+                "onMounted",
+                "onUnmounted",
+                "onBeforeMount",
+                "onBeforeUnmount",
+                "onUpdated",
+                "onBeforeUpdate",
+                "nextTick",
+              ],
+              message: "Nuxt 3 が自動インポートします。明示的なインポートは不要です。",
+            },
+            {
+              name: "vitest",
+              importNames: [
+                "vi",
+                "describe",
+                "it",
+                "test",
+                "expect",
+                "beforeAll",
+                "afterAll",
+                "beforeEach",
+                "afterEach",
+              ],
+              message: "vitest globals が有効です（globals: true）。明示的なインポートは不要です。",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // Markdown: コードブロックに言語タグがない場合に警告 (MD040)
+  {
+    files: ["**/*.md"],
+    plugins: {
+      local: { rules: { md040: md040Rule } },
+    },
+    languageOptions: {
+      parser: markdownParser,
+    },
+    rules: {
+      // Markdown ファイルには JS 向けルールを適用しない
+      "no-irregular-whitespace": "off",
+      "local/md040": "warn",
     },
   }
 );

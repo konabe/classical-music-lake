@@ -1,4 +1,3 @@
-import { ref } from "vue";
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { usePieces, usePiece } from "./usePieces";
 

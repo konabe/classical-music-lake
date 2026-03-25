@@ -24,11 +24,14 @@ const form = reactive<CreateListeningLogInput>({
   memo: props.initialValues?.memo ?? "",
 });
 
+const selectedVideoUrl = ref<string | undefined>(undefined);
+
 function handlePieceSelect(e: Event) {
   const id = (e.target as HTMLSelectElement).value;
   const found = pieces.value?.find((p) => p.id === id);
   form.piece = found?.title ?? "";
   form.composer = found?.composer ?? "";
+  selectedVideoUrl.value = found?.videoUrl;
 }
 
 function handleSubmit() {
@@ -50,6 +53,8 @@ function handleSubmit() {
         </option>
       </select>
     </FormGroup>
+
+    <VideoPlayer v-if="selectedVideoUrl" :video-url="selectedVideoUrl" />
 
     <div class="form-row">
       <FormGroup label="作曲家" required>

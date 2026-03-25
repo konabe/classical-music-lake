@@ -23,6 +23,7 @@
       "Bash(npm run generate:*)",
       "Bash(npm run test:e2e)",
       "Bash(npm test:*)",
+      "Bash(npm audit:*)",
       "Bash(npx lint-staged --version)",
       "Bash(npx eslint:*)",
       "Bash(npx tsc:*)",
@@ -40,6 +41,7 @@
       "Bash(gh issue:*)",
       "Bash(gh label:*)",
       "Bash(gh pr:*)",
+      "Bash(git run view:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__query-docs",
       "mcp__playwright__browser_navigate",
@@ -52,7 +54,9 @@
       "mcp__playwright__browser_snapshot",
       "mcp__playwright__browser_tabs",
       "mcp__playwright__browser_console_messages",
-      "mcp__playwright__browser_install"
+      "mcp__playwright__browser_install",
+      "WebSearch",
+      "WebFetch(domain:www.npmjs.com)"
     ],
     "ask": ["Bash(git push:*)"]
   },
