@@ -52,9 +52,21 @@ classical-music-lake/
 │   │       ├── index.vue         # 一覧
 │   │       ├── new.vue           # 新規作成
 │   │       └── [id]/
+│   │           ├── index.vue     # 詳細（動画再生 + クイックログ記録）
 │   │           └── edit.vue      # 編集
-│   ├── components/               # 共通UIコンポーネント
+│   ├── components/               # 共通UIコンポーネント（Atomic Design）
+│   │   ├── molecules/
+│   │   │   ├── VideoPlayer.vue   # YouTube 埋め込み / 外部リンク切り替えプレイヤー
+│   │   │   └── ...
+│   │   ├── organisms/
+│   │   │   ├── QuickLogForm.vue  # 動画再生後に表示するクイックログ入力フォーム
+│   │   │   └── ...
+│   │   └── templates/
+│   │       ├── PieceDetailTemplate.vue  # 楽曲詳細ページレイアウト
+│   │       └── ...
 │   ├── composables/              # Vue Composables（共通ロジック）
+│   ├── utils/
+│   │   └── video.ts              # YouTube URL 判定・動画 ID 抽出・埋め込み URL 変換
 │   └── types/                    # フロントエンド共通型定義
 ├── backend/
 │   └── src/
@@ -162,6 +174,29 @@ classical-music-lake/
   → POST /prod/auth/login (email, password) で自動ログイン
   → sessionStorage から password を削除
   → / へナビゲート
+```
+
+### 楽曲詳細ページでのクイックログ記録
+
+```
+ブラウザ (/pieces/[id])
+  → usePiece(id) で Piece を取得
+  → PieceDetailTemplate (piece, error)
+      → VideoPlayer (videoUrl)
+          → YouTube IFrame Player API で再生状態を監視
+          → 再生開始時に @play emit
+      → @play 受信: hasStartedPlaying = true
+      → QuickLogForm (v-if="hasStartedPlaying", composer, piece)
+          → 「記録する」で @submit emit { rating, isFavorite, memo }
+      → @save emit (pages/pieces/[id]/index.vue へ)
+  → useListeningLogs().create({
+      listenedAt: new Date().toISOString(),
+      composer: piece.composer,
+      piece: piece.title,
+      ...values,
+    })
+  → POST /prod/listening-logs → DynamoDB PutItem
+  → 完了メッセージ表示（ページ遷移なし）
 ```
 
 ### ログアウト
