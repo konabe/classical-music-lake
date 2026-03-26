@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.2.0...classical-music-lake-v1.2.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* **#233:** 一覧ページの削除ボタンが機能しない問題を修正 ([9ac5c1a](https://github.com/konabe/classical-music-lake/commit/9ac5c1aff0e6d5f7f0d81fbf525cdd8a2452b46b))
+* **#233:** 鑑賞記録詳細ページに削除ボタンを追加 ([78f3ea9](https://github.com/konabe/classical-music-lake/commit/78f3ea9eb9cd12bbdcb5c2a8cd83714d589ec856))
+* **#233:** 鑑賞記録詳細ページに削除ボタンを追加 ([485cfb7](https://github.com/konabe/classical-music-lake/commit/485cfb72769c3a33a557f598a0708f1c7e51e480)), closes [#233](https://github.com/konabe/classical-music-lake/issues/233)
+* vitest worker 終了時の useAuth fetch pending エラーを修正 ([db3af56](https://github.com/konabe/classical-music-lake/commit/db3af567c7f369db6e84cad3aae3ec4031d91391))
+* vitest worker 終了時の useAuth fetch pending エラーを修正 ([050573a](https://github.com/konabe/classical-music-lake/commit/050573a14eab5f23fc91d9f2aceb3f2fb386dfb5))
+
 ## [1.2.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.1.4...classical-music-lake-v1.2.0) (2026-03-25)
 
 
