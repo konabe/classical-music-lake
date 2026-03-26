@@ -266,4 +266,22 @@ describe("useListeningLogs", () => {
       await expect(deleteLog("abc-123")).rejects.toThrow("Not Found");
     });
   });
+
+  describe("await との互換性", () => {
+    it("useListeningLogs() を await した結果でも deleteLog が関数として参照できる", async () => {
+      // useFetch の then が spread されると thenable になり、
+      // `await useListeningLogs()` が asyncReturn (AsyncData 本体) に解決される。
+      // その場合 deleteLog が undefined になり削除できなくなる（Issue #233）。
+      // このテストは composable の返り値を await したとき deleteLog が保持されることを保証する。
+      const result = useListeningLogs();
+      const awaited = await result;
+      expect(typeof awaited.deleteLog).toBe("function");
+    });
+
+    it("useListeningLogs() を await した結果でも refresh が関数として参照できる", async () => {
+      const result = useListeningLogs();
+      const awaited = await result;
+      expect(typeof awaited.refresh).toBe("function");
+    });
+  });
 });
