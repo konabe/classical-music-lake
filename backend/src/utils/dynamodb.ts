@@ -56,6 +56,19 @@ export async function scanAllItems<T>(tableName: string): Promise<T[]> {
   return items;
 }
 
+export async function getItemByOwner<T extends { userId: string }>(
+  tableName: string,
+  id: string,
+  userId: string
+): Promise<T> {
+  const result = await dynamo.send(new GetCommand({ TableName: tableName, Key: { id } }));
+  const item = result.Item as T | undefined;
+  if (!item || item.userId !== userId) {
+    throw new createError.NotFound("Item not found");
+  }
+  return item;
+}
+
 export async function updateItem<T extends { id: string; createdAt: string; updatedAt: string }>(
   tableName: string,
   id: string,
