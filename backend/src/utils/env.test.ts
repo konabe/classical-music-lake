@@ -27,7 +27,7 @@ describe("AppEnv", () => {
   describe("オプション変数のデフォルト値", () => {
     it("CORS_ALLOW_ORIGIN が未設定の場合は * をデフォルトとして使用する", () => {
       const appEnv = new AppEnv();
-      expect(appEnv.corsAllowOrigin).toBe("*");
+      expect(appEnv.corsAllowOrigins).toEqual(["*"]);
     });
 
     it("AWS_REGION が未設定の場合は ap-northeast-1 をデフォルトとして使用する", () => {
@@ -54,7 +54,7 @@ describe("AppEnv", () => {
       process.env.DYNAMO_TABLE_PIECES = "my-pieces";
 
       const appEnv = new AppEnv();
-      expect(appEnv.corsAllowOrigin).toBe("https://example.com");
+      expect(appEnv.corsAllowOrigins).toEqual(["https://example.com"]);
       expect(appEnv.awsRegion).toBe("us-east-1");
       expect(appEnv.dynamoTableListeningLogs).toBe("my-listening-logs");
       expect(appEnv.dynamoTablePieces).toBe("my-pieces");

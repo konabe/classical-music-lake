@@ -55,7 +55,7 @@ export const createHandler = (handler: LambdaHandler) =>
     .handler(handler as middy.Handler<APIGatewayProxyEvent, APIGatewayProxyResult>)
     .use(
       httpCors({
-        origin: getEnv().corsAllowOrigin,
+        origins: getEnv().corsAllowOrigins,
         headers: "Content-Type",
         methods: "GET,POST,PUT,DELETE,OPTIONS",
       })

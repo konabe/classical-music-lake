@@ -23,6 +23,7 @@ export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
 
 export class ClassicalMusicLakeStack extends cdk.Stack {
   private corsAllowOrigin: string = "";
+  private corsAllowOrigins: string[] = [];
 
   constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
@@ -430,6 +431,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     // CloudFront URL を CORS オリジンとして Lambda 環境変数に設定
     this.corsAllowOrigin = `https://${distribution.distributionDomainName}`;
+    this.corsAllowOrigins = [this.corsAllowOrigin, "http://localhost:3000"];
     [
       listeningLogsList,
       listeningLogsGet,
@@ -446,7 +448,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       authVerifyEmail,
       authResendCode,
     ].forEach((fn) => {
-      fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigin);
+      fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigins.join(","));
     });
 
     // API Gateway の CORS オリジンも CloudFront URL に限定
@@ -640,7 +642,7 @@ function handler(event) {
     allowHeaders: string[] = ["Content-Type"]
   ): void {
     resource.addCorsPreflight({
-      allowOrigins: [this.corsAllowOrigin],
+      allowOrigins: this.corsAllowOrigins,
       allowMethods: methods,
       allowHeaders,
     });
