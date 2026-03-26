@@ -1,6 +1,6 @@
 export class AppEnv {
   readonly cognitoClientId: string;
-  readonly corsAllowOrigin: string;
+  readonly corsAllowOrigins: string[];
   readonly awsRegion: string;
   readonly dynamoTableListeningLogs: string;
   readonly dynamoTablePieces: string;
@@ -11,7 +11,7 @@ export class AppEnv {
       throw new Error("COGNITO_CLIENT_ID environment variable is required");
     }
     this.cognitoClientId = cognitoClientId;
-    this.corsAllowOrigin = process.env.CORS_ALLOW_ORIGIN ?? "*";
+    this.corsAllowOrigins = (process.env.CORS_ALLOW_ORIGIN ?? "*").split(",").map((o) => o.trim());
     this.awsRegion = process.env.AWS_REGION ?? "ap-northeast-1";
     this.dynamoTableListeningLogs =
       process.env.DYNAMO_TABLE_LISTENING_LOGS ?? "classical-music-listening-logs";
