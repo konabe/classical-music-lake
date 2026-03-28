@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-01-01",
   ssr: false,
   devtools: { enabled: true },
+  // NOTE: 3000だとなぜか起動できない
+  devServer: {
+    port: 3010,
+  },
   modules: ["@nuxt/eslint", "@nuxtjs/storybook"],
   components: [{ path: "~/components", pathPrefix: false }],
   typescript: {

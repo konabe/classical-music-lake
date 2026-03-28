@@ -431,7 +431,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     // CloudFront URL を CORS オリジンとして Lambda 環境変数に設定
     this.corsAllowOrigin = `https://${distribution.distributionDomainName}`;
-    this.corsAllowOrigins = [this.corsAllowOrigin, "http://localhost:3000"];
+    // NOTE: 3000だとなぜか起動できない
+    this.corsAllowOrigins = [this.corsAllowOrigin, "http://localhost:3010"];
     [
       listeningLogsList,
       listeningLogsGet,
