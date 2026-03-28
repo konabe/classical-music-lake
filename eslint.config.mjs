@@ -1,5 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from "eslint-plugin-storybook";
+import vitest from "@vitest/eslint-plugin";
 
 // @ts-check
 import prettierConfig from "eslint-config-prettier";
@@ -167,18 +168,13 @@ export default withNuxt(
   // テストで toBeTruthy / toBeFalsy の使用を禁止（明示的なマッチャーを使うこと）
   {
     files: ["**/*.test.ts", "**/*.spec.ts"],
+    plugins: { vitest },
     rules: {
-      "no-restricted-syntax": [
+      "vitest/no-restricted-matchers": [
         "error",
         {
-          selector: "CallExpression[callee.property.name='toBeTruthy']",
-          message:
-            "toBeTruthy() の使用を禁止します。toBeDefined() など明示的なマッチャーを使用してください。",
-        },
-        {
-          selector: "CallExpression[callee.property.name='toBeFalsy']",
-          message:
-            "toBeFalsy() の使用を禁止します。toBeUndefined() など明示的なマッチャーを使用してください。",
+          toBeTruthy: "toBeDefined() など明示的なマッチャーを使用してください。",
+          toBeFalsy: "toBeUndefined() など明示的なマッチャーを使用してください。",
         },
       ],
     },
