@@ -20,7 +20,7 @@ describe("RatingSelector", () => {
   it("5番目の星をクリックすると update:modelValue に 5 が emit される", async () => {
     const wrapper = await mountSuspended(RatingSelector, { props: { modelValue: 3 } });
     await wrapper.findAll(".star-btn")[4].trigger("click");
-    expect(wrapper.emitted("update:modelValue")).toBeTruthy();
+    expect(wrapper.emitted("update:modelValue")).toBeDefined();
     expect(wrapper.emitted("update:modelValue")![0]).toEqual([5]);
   });
 

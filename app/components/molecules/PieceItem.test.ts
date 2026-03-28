@@ -59,7 +59,7 @@ describe("PieceItem", () => {
         ...globalComponents,
       });
       await wrapper.find(".btn-secondary").trigger("click");
-      expect(wrapper.emitted("edit")).toBeTruthy();
+      expect(wrapper.emitted("edit")).toBeDefined();
     });
 
     it("削除ボタンクリックで delete イベントが emit される", async () => {
@@ -68,7 +68,7 @@ describe("PieceItem", () => {
         ...globalComponents,
       });
       await wrapper.find(".btn-danger").trigger("click");
-      expect(wrapper.emitted("delete")).toBeTruthy();
+      expect(wrapper.emitted("delete")).toBeDefined();
     });
 
     it("詳細ボタンクリックで detail イベントが emit される", async () => {
@@ -77,7 +77,7 @@ describe("PieceItem", () => {
         ...globalComponents,
       });
       await wrapper.find(".btn-detail").trigger("click");
-      expect(wrapper.emitted("detail")).toBeTruthy();
+      expect(wrapper.emitted("detail")).toBeDefined();
     });
   });
 

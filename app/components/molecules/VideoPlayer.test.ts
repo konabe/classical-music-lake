@@ -50,7 +50,7 @@ describe("VideoPlayer", () => {
         props: { videoUrl: nonYoutubeUrl },
       });
       await wrapper.find("a.external-link").trigger("click");
-      expect(wrapper.emitted("play")).toBeTruthy();
+      expect(wrapper.emitted("play")).toBeDefined();
     });
   });
 });

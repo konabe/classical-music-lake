@@ -57,7 +57,7 @@ describe("FormActions", () => {
       const buttons = wrapper.findAll("button");
       const cancelButton = buttons.find((b) => b.text() === "キャンセル");
       await cancelButton?.trigger("click");
-      expect(wrapper.emitted("cancel")).toBeTruthy();
+      expect(wrapper.emitted("cancel")).toBeDefined();
     });
   });
 });
