@@ -3,6 +3,9 @@
 .output/
 dist/
 
+# Test coverage
+coverage/
+
 # Node
 node_modules/
 .node_modules/

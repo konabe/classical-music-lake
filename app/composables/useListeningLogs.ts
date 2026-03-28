@@ -25,6 +25,19 @@ const throwResponseError = async (response: Response): Promise<never> => {
 export const useListeningLogs = () => {
   const apiBase = useApiBase();
   const router = useRouter();
+
+  const authenticatedFetch = async (
+    url: string,
+    options: { method?: string; headers?: Record<string, string>; body?: string } = {}
+  ): Promise<Response> => {
+    const response = await fetch(url, {
+      ...options,
+      headers: { ...getAuthHeaders(), ...options.headers },
+    });
+    handleAuthError(response.status, router);
+    return response;
+  };
+
   const list = useFetch<ListeningLog[]>(`${apiBase}/listening-logs`, {
     headers: computed(() => getAuthHeaders()),
     onResponseError({ response }) {
@@ -33,33 +46,29 @@ export const useListeningLogs = () => {
   });
 
   const create = async (input: CreateListeningLogInput): Promise<ListeningLog> => {
-    const response = await fetch(`${apiBase}/listening-logs`, {
+    const response = await authenticatedFetch(`${apiBase}/listening-logs`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     });
-    handleAuthError(response.status, router);
     if (!response.ok) return throwResponseError(response);
     return response.json();
   };
 
   const update = async (id: string, input: UpdateListeningLogInput): Promise<ListeningLog> => {
-    const response = await fetch(`${apiBase}/listening-logs/${id}`, {
+    const response = await authenticatedFetch(`${apiBase}/listening-logs/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     });
-    handleAuthError(response.status, router);
     if (!response.ok) return throwResponseError(response);
     return response.json();
   };
 
   const deleteLog = async (id: string): Promise<void> => {
-    const response = await fetch(`${apiBase}/listening-logs/${id}`, {
+    const response = await authenticatedFetch(`${apiBase}/listening-logs/${id}`, {
       method: "DELETE",
-      headers: getAuthHeaders(),
     });
-    handleAuthError(response.status, router);
     if (!response.ok) return throwResponseError(response);
   };
 
