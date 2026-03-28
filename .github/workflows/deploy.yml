@@ -12,11 +12,11 @@ on:
       environment:
         description: "デプロイ先の環境"
         required: true
-        default: "staging"
+        default: "stg"
         type: choice
         options:
           - dev
-          - staging
+          - stg
           - prod
 
 concurrency:
@@ -39,14 +39,14 @@ jobs:
 
       # ----------------------------------------
       # デプロイ先環境の決定
-      # push: mainブランチ → prod、stg*タグ → staging、dev*タグ → dev
+      # push: mainブランチ → prod、stg*タグ → stg、dev*タグ → dev
       # workflow_dispatch: 入力値をそのまま使用
       # ----------------------------------------
       - name: Determine stage name
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             if [[ "${{ github.ref }}" == refs/tags/stg* ]]; then
-              echo "STAGE_NAME=staging" >> "$GITHUB_ENV"
+              echo "STAGE_NAME=stg" >> "$GITHUB_ENV"
             elif [[ "${{ github.ref }}" == refs/tags/dev* ]]; then
               echo "STAGE_NAME=dev" >> "$GITHUB_ENV"
             else
