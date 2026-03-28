@@ -57,13 +57,7 @@ onMounted(() => {
 
 <template>
   <div class="video-player">
-    <iframe
-      v-if="isYouTube"
-      :id="iframeId"
-      :src="embedUrl"
-      class="youtube-iframe"
-      allowfullscreen
-    />
+    <iframe v-if="isYouTube" :id="iframeId" :src="embedUrl" class="youtube-iframe" />
     <a
       v-else
       :href="videoUrl"
