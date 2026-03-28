@@ -164,6 +164,25 @@ export default withNuxt(
       ],
     },
   },
+  // テストで toBeTruthy / toBeFalsy の使用を禁止（明示的なマッチャーを使うこと）
+  {
+    files: ["**/*.test.ts", "**/*.spec.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.property.name='toBeTruthy']",
+          message:
+            "toBeTruthy() の使用を禁止します。toBeDefined() など明示的なマッチャーを使用してください。",
+        },
+        {
+          selector: "CallExpression[callee.property.name='toBeFalsy']",
+          message:
+            "toBeFalsy() の使用を禁止します。toBeUndefined() など明示的なマッチャーを使用してください。",
+        },
+      ],
+    },
+  },
   // Markdown: コードブロックに言語タグがない場合に警告 (MD040)
   {
     files: ["**/*.md"],
