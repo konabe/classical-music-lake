@@ -37,7 +37,7 @@ function handleSubmit() {
           id="password"
           v-model="form.password"
           type="password"
-          placeholder="At least 8 characters"
+          placeholder="8文字以上で入力"
           required
         />
         <p class="password-requirements">

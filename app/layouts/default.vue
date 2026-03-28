@@ -81,10 +81,30 @@ watch(
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
 .nav-links a:hover,
 .nav-links a.router-link-active {
+  color: #fff;
+}
+
+.auth-links {
+  list-style: none;
+  display: flex;
+  gap: 1.2rem;
+  margin-left: auto;
+}
+
+.auth-links a {
+  color: #9aa5b4;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.auth-links a:hover {
   color: #fff;
 }
 
@@ -111,5 +131,32 @@ watch(
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+}
+
+@media (max-width: 600px) {
+  .app-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .app-header nav {
+    gap: 1rem;
+    flex-wrap: nowrap;
+  }
+
+  .logo-text {
+    font-size: 1.1rem;
+  }
+
+  .nav-links {
+    gap: 0.75rem;
+  }
+
+  .auth-links {
+    gap: 0.75rem;
+  }
+
+  .app-main {
+    padding: 1rem;
+  }
 }
 </style>
