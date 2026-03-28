@@ -74,6 +74,29 @@ export default withNuxt(
     },
   },
   {
+    files: ["app/**/*.ts", "backend/src/**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      "@typescript-eslint/strict-boolean-expressions": [
+        "error",
+        {
+          allowString: false,
+          allowNumber: false,
+          allowNullableObject: false,
+          allowNullableBoolean: false,
+          allowNullableString: false,
+          allowNullableNumber: false,
+          allowNullableEnum: false,
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.{ts,tsx,vue}"],
     rules: {
       "no-unused-vars": "off",

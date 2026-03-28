@@ -6,7 +6,7 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const piecesWithVideo = computed(() => props.pieces.filter((p) => p.videoUrl));
+const piecesWithVideo = computed(() => props.pieces.filter((p) => p.videoUrl !== undefined));
 
 const currentIndex = ref(0);
 
@@ -27,7 +27,7 @@ const featured = computed(() => piecesWithVideo.value[currentIndex.value] ?? nul
 const canShuffle = computed(() => piecesWithVideo.value.length > 1);
 
 const shuffle = () => {
-  if (!canShuffle.value) return;
+  if (canShuffle.value === false) return;
   let next = currentIndex.value;
   while (next === currentIndex.value) {
     next = Math.floor(Math.random() * piecesWithVideo.value.length);

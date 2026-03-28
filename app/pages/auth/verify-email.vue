@@ -14,7 +14,7 @@ const infoMessage = ref("");
 onMounted(() => {
   const state = history.state as { email?: string };
   const pendingPassword = sessionStorage.getItem("pendingPassword");
-  if (!state?.email?.trim() || !pendingPassword?.trim()) {
+  if ((state?.email?.trim() ?? "") === "" || (pendingPassword?.trim() ?? "") === "") {
     router.push("/auth/user-register");
     return;
   }

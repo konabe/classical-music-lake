@@ -23,12 +23,12 @@ function makeEvent(id?: string, userId?: string): APIGatewayProxyEvent {
     httpMethod: "DELETE",
     isBase64Encoded: false,
     path: `/listening-logs/${id ?? ""}`,
-    pathParameters: id ? { id } : null,
+    pathParameters: id !== undefined ? { id } : null,
     queryStringParameters: null,
     multiValueQueryStringParameters: null,
     stageVariables: null,
     requestContext: {
-      authorizer: userId ? { claims: { sub: userId } } : undefined,
+      authorizer: userId !== undefined ? { claims: { sub: userId } } : undefined,
     } as APIGatewayProxyEvent["requestContext"],
     resource: "",
   };

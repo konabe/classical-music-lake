@@ -4,7 +4,7 @@ import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } f
 
 const getAuthHeaders = (): Record<string, string> => {
   const token = localStorage.getItem(ID_TOKEN_KEY);
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token !== null ? { Authorization: `Bearer ${token}` } : {};
 };
 
 const handleAuthError = (status: number, router: ReturnType<typeof useRouter>): void => {
