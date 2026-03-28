@@ -15,7 +15,7 @@ import * as cognito from "aws-cdk-lib/aws-cognito";
 import type { Construct } from "constructs";
 import * as path from "path";
 
-export type StageName = "staging" | "prod";
+export type StageName = "dev" | "stg" | "prod";
 
 export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
   stageName: StageName;
@@ -42,7 +42,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       tableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      // prod は RETAIN、staging は DESTROY（スタック削除時にテーブルも削除）
+      // prod は RETAIN、stg/dev は DESTROY（スタック削除時にテーブルも削除）
       removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
       // ポイントインタイムリカバリ（PITR）有効化（35日間のバックアップ自動保持）
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
@@ -337,7 +337,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     const spaBucket = new s3.Bucket(this, "SpaBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      // prod は RETAIN（本番アセットの誤削除防止）、staging は DESTROY
+      // prod は RETAIN（本番アセットの誤削除防止）、stg/dev は DESTROY
       removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: !isProd,
       // prod は S3 バージョニング有効（静的ファイルのロールバック用）

@@ -4,15 +4,19 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "stg*"
+      - "dev*"
   workflow_dispatch:
     inputs:
       environment:
         description: "デプロイ先の環境"
         required: true
-        default: "staging"
+        default: "stg"
         type: choice
         options:
-          - staging
+          - dev
+          - stg
           - prod
 
 concurrency:
@@ -26,15 +30,31 @@ jobs:
       contents: read
       id-token: write
 
-    env:
-      STAGE_NAME: ${{ github.event_name == 'push' && 'prod' || github.event.inputs.environment }}
-
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
+
+      # ----------------------------------------
+      # デプロイ先環境の決定
+      # push: mainブランチ → prod、stg*タグ → stg、dev*タグ → dev
+      # workflow_dispatch: 入力値をそのまま使用
+      # ----------------------------------------
+      - name: Determine stage name
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            if [[ "${{ github.ref }}" == refs/tags/stg* ]]; then
+              echo "STAGE_NAME=stg" >> "$GITHUB_ENV"
+            elif [[ "${{ github.ref }}" == refs/tags/dev* ]]; then
+              echo "STAGE_NAME=dev" >> "$GITHUB_ENV"
+            else
+              echo "STAGE_NAME=prod" >> "$GITHUB_ENV"
+            fi
+          else
+            echo "STAGE_NAME=${{ github.event.inputs.environment }}" >> "$GITHUB_ENV"
+          fi
 
       # ----------------------------------------
       # バックエンド依存関係インストール

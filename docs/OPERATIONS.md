@@ -67,7 +67,7 @@ cdk deploy
 ### 緊急時：CDK スタックの確認
 
 ```bash
-# <stage> には staging または prod を指定
+# <stage> には dev, stg または prod を指定
 STAGE=<stage>
 STACK_NAME=$([ "$STAGE" = "prod" ] && echo "ClassicalMusicLakeStack" || echo "ClassicalMusicLakeStack-${STAGE}")
 
