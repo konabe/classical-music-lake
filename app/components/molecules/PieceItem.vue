@@ -38,6 +38,11 @@ const emit = defineEmits<{
   gap: 1rem;
 }
 
+.piece-main {
+  flex: 1;
+  min-width: 0;
+}
+
 .piece-title {
   font-size: 1.1rem;
   font-weight: bold;
@@ -69,5 +74,17 @@ const emit = defineEmits<{
 
 .btn-detail:hover {
   background: #e0d8cc;
+}
+
+@media (max-width: 600px) {
+  .piece-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .piece-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 </style>
