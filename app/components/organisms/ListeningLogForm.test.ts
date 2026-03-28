@@ -138,7 +138,7 @@ describe("ListeningLogForm", () => {
       });
 
       await wrapper.find("form").trigger("submit.prevent");
-      expect(wrapper.emitted("submit")).toBeTruthy();
+      expect(wrapper.emitted("submit")).toBeDefined();
     });
 
     it("submit イベントにフォームデータが含まれる", async () => {
@@ -156,7 +156,7 @@ describe("ListeningLogForm", () => {
 
       await wrapper.find("form").trigger("submit.prevent");
       const emitted = wrapper.emitted("submit");
-      expect(emitted).toBeTruthy();
+      expect(emitted).toBeDefined();
       const emittedData = emitted![0][0] as Record<string, unknown>;
       expect(emittedData.composer).toBe("ベートーヴェン");
       expect(emittedData.piece).toBe("交響曲第9番");

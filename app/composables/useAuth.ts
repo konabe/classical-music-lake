@@ -54,12 +54,12 @@ export const useAuth = () => {
   const router = useRouter();
 
   const validateEmail = (email: string): boolean => {
-    if (!email || !email.trim()) return false;
+    if (email === "" || email.trim() === "") return false;
     return EMAIL_REGEX.test(email.trim());
   };
 
   const validatePassword = (password: string): boolean => {
-    if (!password) return false;
+    if (password === "") return false;
     if (password.length < PASSWORD_MIN_LENGTH) return false;
     if (!PASSWORD_UPPERCASE_REGEX.test(password)) return false;
     if (!PASSWORD_LOWERCASE_REGEX.test(password)) return false;
@@ -68,7 +68,7 @@ export const useAuth = () => {
   };
 
   const getPasswordValidationError = (password: string): string | null => {
-    if (!password) {
+    if (password === "") {
       return "Password is required";
     }
     if (password.length < PASSWORD_MIN_LENGTH) {
@@ -95,7 +95,7 @@ export const useAuth = () => {
     }
 
     const passwordError = getPasswordValidationError(password);
-    if (passwordError) {
+    if (passwordError !== null) {
       return {
         success: false,
         error: passwordError,
@@ -118,7 +118,7 @@ export const useAuth = () => {
         const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          error: errorData.message || "Registration failed. Please try again.",
+          error: errorData.message ?? "Registration failed. Please try again.",
         };
       }
 
@@ -143,7 +143,7 @@ export const useAuth = () => {
       };
     }
 
-    if (!password) {
+    if (password === "") {
       return {
         success: false,
         error: "Password is required",
@@ -166,7 +166,7 @@ export const useAuth = () => {
           errorData.error === "UserNotConfirmed" ? "not_confirmed" : "credentials";
         return {
           success: false,
-          error: errorData.message || "Login failed. Please try again.",
+          error: errorData.message ?? "Login failed. Please try again.",
           errorType,
         };
       }
@@ -227,7 +227,7 @@ export const useAuth = () => {
           VERIFY_EMAIL_ERROR_TYPE_MAP[errorData.error] ?? "general";
         return {
           success: false,
-          error: errorData.message || "Verification failed. Please try again.",
+          error: errorData.message ?? "Verification failed. Please try again.",
           errorType,
         };
       }
@@ -257,7 +257,7 @@ export const useAuth = () => {
         const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          error: errorData.message || "Failed to resend verification code. Please try again.",
+          error: errorData.message ?? "Failed to resend verification code. Please try again.",
         };
       }
 
@@ -272,7 +272,7 @@ export const useAuth = () => {
   };
 
   const isAuthenticated = (): boolean => {
-    return !!localStorage.getItem(ACCESS_TOKEN_KEY);
+    return localStorage.getItem(ACCESS_TOKEN_KEY) !== null;
   };
 
   const logout = (): void => {

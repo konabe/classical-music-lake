@@ -7,7 +7,7 @@ export class AppEnv {
 
   constructor() {
     const cognitoClientId = process.env.COGNITO_CLIENT_ID;
-    if (!cognitoClientId) {
+    if (cognitoClientId === undefined || cognitoClientId === "") {
       throw new Error("COGNITO_CLIENT_ID environment variable is required");
     }
     this.cognitoClientId = cognitoClientId;

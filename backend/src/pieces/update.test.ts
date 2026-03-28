@@ -26,7 +26,7 @@ function makeEvent(id?: string, body?: string | null): APIGatewayProxyEvent {
     httpMethod: "PUT",
     isBase64Encoded: false,
     path: `/pieces/${id ?? ""}`,
-    pathParameters: id ? { id } : null,
+    pathParameters: id !== undefined ? { id } : null,
     queryStringParameters: null,
     multiValueQueryStringParameters: null,
     stageVariables: null,

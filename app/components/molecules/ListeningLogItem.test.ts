@@ -64,7 +64,7 @@ describe("ListeningLogItem", () => {
         ...globalComponents,
       });
       await wrapper.find(".btn-secondary").trigger("click");
-      expect(wrapper.emitted("edit")).toBeTruthy();
+      expect(wrapper.emitted("edit")).toBeDefined();
     });
 
     it("削除ボタンクリックで delete イベントが emit される", async () => {
@@ -73,7 +73,7 @@ describe("ListeningLogItem", () => {
         ...globalComponents,
       });
       await wrapper.find(".btn-danger").trigger("click");
-      expect(wrapper.emitted("delete")).toBeTruthy();
+      expect(wrapper.emitted("delete")).toBeDefined();
     });
   });
 });

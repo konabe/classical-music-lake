@@ -44,14 +44,14 @@ describe("QuickLogForm", () => {
     it("フォーム送信時に submit イベントが emit される", async () => {
       const wrapper = await mountSuspended(QuickLogForm, { props: defaultProps });
       await wrapper.find("form").trigger("submit.prevent");
-      expect(wrapper.emitted("submit")).toBeTruthy();
+      expect(wrapper.emitted("submit")).toBeDefined();
     });
 
     it("submit イベントに rating, isFavorite, memo が含まれる", async () => {
       const wrapper = await mountSuspended(QuickLogForm, { props: defaultProps });
       await wrapper.find("form").trigger("submit.prevent");
       const emitted = wrapper.emitted("submit");
-      expect(emitted).toBeTruthy();
+      expect(emitted).toBeDefined();
       const payload = emitted![0][0] as Record<string, unknown>;
       expect(payload).toHaveProperty("rating");
       expect(payload).toHaveProperty("isFavorite");

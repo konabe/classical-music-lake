@@ -71,7 +71,7 @@ describe("VerifyEmailForm", () => {
       const wrapper = await mountSuspended(VerifyEmailForm, { props: defaultProps });
       await wrapper.find("input[type='text']").setValue("123456");
       await wrapper.find("form").trigger("submit");
-      expect(wrapper.emitted("submit")).toBeTruthy();
+      expect(wrapper.emitted("submit")).toBeDefined();
       expect(wrapper.emitted("submit")?.[0]).toEqual(["123456"]);
     });
 
@@ -80,7 +80,7 @@ describe("VerifyEmailForm", () => {
       const buttons = wrapper.findAll("button");
       const resendButton = buttons.find((b) => b.text() === "再送信");
       await resendButton?.trigger("click");
-      expect(wrapper.emitted("resend")).toBeTruthy();
+      expect(wrapper.emitted("resend")).toBeDefined();
     });
   });
 });

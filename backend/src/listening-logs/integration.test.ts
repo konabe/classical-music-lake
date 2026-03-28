@@ -49,12 +49,12 @@ function makeEvent(options: {
     httpMethod: options.method,
     isBase64Encoded: false,
     path: options.path,
-    pathParameters: options.id ? { id: options.id } : null,
+    pathParameters: options.id !== undefined ? { id: options.id } : null,
     queryStringParameters: null,
     multiValueQueryStringParameters: null,
     stageVariables: null,
     requestContext: {
-      authorizer: options.userId ? { claims: { sub: options.userId } } : undefined,
+      authorizer: options.userId !== undefined ? { claims: { sub: options.userId } } : undefined,
     } as APIGatewayProxyEvent["requestContext"],
     resource: "",
   };

@@ -28,7 +28,7 @@ declare global {
 const iframeId = `yt-player-${Math.random().toString(36).slice(2)}`;
 
 onMounted(() => {
-  if (!isYouTube.value) return;
+  if (isYouTube.value === false) return;
 
   const initPlayer = () => {
     new window.YT!.Player(iframeId, {
@@ -42,11 +42,11 @@ onMounted(() => {
     });
   };
 
-  if (window.YT?.Player) {
+  if (window.YT?.Player !== undefined) {
     initPlayer();
   } else {
     window.onYouTubeIframeAPIReady = initPlayer;
-    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+    if (document.querySelector('script[src="https://www.youtube.com/iframe_api"]') === null) {
       const tag = document.createElement("script");
       tag.src = "https://www.youtube.com/iframe_api";
       document.head.appendChild(tag);

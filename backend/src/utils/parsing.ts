@@ -8,9 +8,9 @@ export function parseRequestBody<T>(body: unknown, schema?: ZodType<T>): T {
   if (typeof body !== "object" || Array.isArray(body)) {
     throw new createError.BadRequest("Request body must be a JSON object");
   }
-  if (schema) {
+  if (schema !== undefined) {
     const result = schema.safeParse(body);
-    if (!result.success) {
+    if (result.success === false) {
       throw new createError.BadRequest(result.error.issues[0].message);
     }
     return result.data;

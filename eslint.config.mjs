@@ -1,5 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from "eslint-plugin-storybook";
+import vitest from "@vitest/eslint-plugin";
 
 // @ts-check
 import prettierConfig from "eslint-config-prettier";
@@ -74,6 +75,29 @@ export default withNuxt(
     },
   },
   {
+    files: ["app/**/*.ts", "backend/src/**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      "@typescript-eslint/strict-boolean-expressions": [
+        "error",
+        {
+          allowString: false,
+          allowNumber: false,
+          allowNullableObject: false,
+          allowNullableBoolean: false,
+          allowNullableString: false,
+          allowNullableNumber: false,
+          allowNullableEnum: false,
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.{ts,tsx,vue}"],
     rules: {
       "no-unused-vars": "off",
@@ -137,6 +161,20 @@ export default withNuxt(
               message: "vitest globals が有効です（globals: true）。明示的なインポートは不要です。",
             },
           ],
+        },
+      ],
+    },
+  },
+  // テストで toBeTruthy / toBeFalsy の使用を禁止（明示的なマッチャーを使うこと）
+  {
+    files: ["**/*.test.ts", "**/*.spec.ts"],
+    plugins: { vitest },
+    rules: {
+      "vitest/no-restricted-matchers": [
+        "error",
+        {
+          toBeTruthy: "toBeDefined() など明示的なマッチャーを使用してください。",
+          toBeFalsy: "toBeUndefined() など明示的なマッチャーを使用してください。",
         },
       ],
     },
