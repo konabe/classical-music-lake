@@ -1,6 +1,7 @@
 .nuxt/
 .output/
 dist/
+coverage/
 node_modules/
 backend/node_modules/
 cdk/node_modules/
