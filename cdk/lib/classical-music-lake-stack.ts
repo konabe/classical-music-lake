@@ -15,7 +15,7 @@ import * as cognito from "aws-cdk-lib/aws-cognito";
 import type { Construct } from "constructs";
 import * as path from "path";
 
-export type StageName = "staging" | "prod";
+export type StageName = "dev" | "staging" | "prod";
 
 export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
   stageName: StageName;

@@ -540,16 +540,19 @@ Authorization: Bearer {accessToken}
 
 ### 6.1 環境構成
 
-| 環境      | スタック名                        | DynamoDB テーブル名                      | 削除ポリシー |
-| --------- | --------------------------------- | ---------------------------------------- | ------------ |
-| `prod`    | `ClassicalMusicLakeStack`         | `classical-music-listening-logs`         | RETAIN       |
-| `staging` | `ClassicalMusicLakeStack-staging` | `classical-music-listening-logs-staging` | DESTROY      |
+| 環境      | スタック名                        | DynamoDB テーブル名                      | 削除ポリシー | 用途                                     |
+| --------- | --------------------------------- | ---------------------------------------- | ------------ | ---------------------------------------- |
+| `prod`    | `ClassicalMusicLakeStack`         | `classical-music-listening-logs`         | RETAIN       | 本番環境                                 |
+| `staging` | `ClassicalMusicLakeStack-staging` | `classical-music-listening-logs-staging` | DESTROY      | リリース前の検証環境                     |
+| `dev`     | `ClassicalMusicLakeStack-dev`     | `classical-music-listening-logs-dev`     | DESTROY      | 開発環境（ローカル環境からの接続も想定） |
 
 ### 6.2 デプロイフロー
 
 ```
-GitHub (main branch) → prod 自動デプロイ
-GitHub (workflow_dispatch) → staging または prod を手動選択
+GitHub (main branch)         → prod 自動デプロイ
+GitHub (stg* タグ push)      → staging 自動デプロイ
+GitHub (dev* タグ push)      → dev 自動デプロイ
+GitHub (workflow_dispatch)   → dev / staging / prod を手動選択
   → GitHub Actions
     → Nuxt ビルド (npm run generate)
     → CDK デプロイ (STAGE_NAME 環境変数で対象環境を指定)
@@ -562,7 +565,9 @@ GitHub (workflow_dispatch) → staging または prod を手動選択
 
 - **トリガー**:
   - `push to main` → prod 環境へ自動デプロイ
-  - `workflow_dispatch` → staging または prod を選択してデプロイ
+  - `push stg* tag` → staging 環境へ自動デプロイ
+  - `push dev* tag` → dev 環境へ自動デプロイ
+  - `workflow_dispatch` → dev / staging / prod を選択してデプロイ
 - **Secrets**:
   - `AWS_ROLE_TO_ASSUME`
 
