@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.3.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.2.1...classical-music-lake-v1.3.0) (2026-03-28)
+
+
+### Features
+
+* ホームページをクラシック探索型に刷新 ([48bae5e](https://github.com/konabe/classical-music-lake/commit/48bae5e8cd94846be8982331076b52dd1723fc7a))
+* ローカル開発環境から本番 API に接続できるよう CORS を拡張 ([4af0782](https://github.com/konabe/classical-music-lake/commit/4af078296f03553ce11e708cf3b346d5ff2e52ce))
+* ローカル開発環境から本番 API に接続できるよう CORS を拡張 ([1041b97](https://github.com/konabe/classical-music-lake/commit/1041b9750bec0a885d1825450c505c9bddfed98e))
+
+
+### Bug Fixes
+
+* dev サーバーのポートを 3000 から 3010 に変更 ([e52cd17](https://github.com/konabe/classical-music-lake/commit/e52cd17ea0bb645d71e0c7237958031726e346d5))
+* dev サーバーのポートを 3000 から 3010 に変更 ([d7fba83](https://github.com/konabe/classical-music-lake/commit/d7fba83c9e8c6897092c1abf313b9c49e8bdc2f2))
+* npm audit で検出された high 脆弱性を修正 ([02f90dd](https://github.com/konabe/classical-music-lake/commit/02f90dd294bc1e5b250107b6e89f1634eb57af28))
+* npm audit の high 脆弱性を修正 ([6f327e7](https://github.com/konabe/classical-music-lake/commit/6f327e7eeb5a96c3a63f899feda7a88734804110))
+* レスポンシブデザインとトンマナの違和感を修正 ([c1dab89](https://github.com/konabe/classical-music-lake/commit/c1dab89ceaf89c3f86d609b8b5ee2ab420531ca4))
+* レスポンシブデザインとトンマナの違和感を修正 ([fc1d012](https://github.com/konabe/classical-music-lake/commit/fc1d01288c12fc17a9adce1d6f32f39473fee1eb))
+
 ## [1.2.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.2.0...classical-music-lake-v1.2.1) (2026-03-26)
 
 
