@@ -165,7 +165,28 @@ jobs:
           aws logs delete-log-group --log-group-name "/aws/apigateway/classical-music-lake-${STAGE_NAME}" 2>/dev/null || true
 
       - name: CDK Bootstrap
-        run: npx cdk bootstrap
+        run: |
+          # CDK テンプレートが要求するバージョンを動的に取得
+          REQUIRED=$(node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const tpl = fs.readFileSync(
+              path.resolve('./node_modules/aws-cdk/lib/api/bootstrap/bootstrap-template.yaml'),
+              'utf8'
+            );
+            const m = tpl.match(/# Also update this value below[^\n]*\r?\n\s+Value: '(\d+)'/);
+            console.log(m ? m[1] : '21');
+          ")
+          # デプロイ済みの bootstrap バージョンを SSM から取得（未 bootstrap なら 0）
+          CURRENT=$(aws ssm get-parameter \
+            --name "/cdk-bootstrap/hnb659fds/version" \
+            --query Parameter.Value --output text 2>/dev/null || echo "0")
+          echo "Bootstrap version: current=${CURRENT}, required=${REQUIRED}"
+          if [ "$CURRENT" -ge "$REQUIRED" ]; then
+            echo "CDK bootstrap is up to date, skipping"
+          else
+            npx cdk bootstrap
+          fi
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
