@@ -65,20 +65,16 @@ jobs:
           fi
 
       # ----------------------------------------
-      # バックエンド依存関係インストール
-      # (CDK が esbuild でバンドルする際に node_modules が必要)
+      # 全依存関係を並列インストール
+      # frontend / backend / CDK を同時に実行して待機することで
+      # 直列実行と比較して約 1〜2 分短縮
       # ----------------------------------------
-      - name: Install backend dependencies
-        run: npm ci
-        working-directory: backend
-
-      # ----------------------------------------
-      # CDK 依存関係インストール & AWS 認証
-      # (API URL 取得のためにフロントエンドビルドより前に実行)
-      # ----------------------------------------
-      - name: Install CDK dependencies
-        run: npm ci
-        working-directory: cdk
+      - name: Install all dependencies
+        run: |
+          npm ci &
+          npm ci --prefix backend &
+          npm ci --prefix cdk &
+          wait
 
       # ----------------------------------------
       # AWS_ROLE_TO_ASSUME シークレットの存在確認
@@ -133,9 +129,6 @@ jobs:
       # ----------------------------------------
       # フロントエンド: Nuxt SPA ビルド
       # ----------------------------------------
-      - name: Install frontend dependencies
-        run: npm ci
-
       - name: Build frontend
         run: npm run generate
         env:
@@ -176,9 +169,16 @@ jobs:
       # ----------------------------------------
       # CDK デプロイ
       # (インフラ更新 + ビルド済みフロントエンドを S3 へ反映)
+      # dev/stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
+      # prod: 安全のためフル CloudFormation デプロイ
       # ----------------------------------------
       - name: CDK Deploy
-        run: npm run deploy
+        run: |
+          if [ "$STAGE_NAME" = "prod" ]; then
+            npm run deploy
+          else
+            npm run deploy -- --hotswap-fallback
+          fi
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}

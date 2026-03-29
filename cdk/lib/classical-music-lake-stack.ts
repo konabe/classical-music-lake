@@ -490,11 +490,13 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       },
     });
 
-    const spaDeployment = new s3deploy.BucketDeployment(this, "SpaDeployment", {
+    new s3deploy.BucketDeployment(this, "SpaDeployment", {
       sources: [s3deploy.Source.asset(path.join(__dirname, "../../.output/public"))],
       destinationBucket: spaBucket,
       distribution,
       distributionPaths: ["/*"],
+      // storybook/* を prune 対象から除外することで StorybookDeployment との並列実行を可能にする
+      exclude: ["storybook/*"],
     });
 
     // -------------------------
@@ -533,17 +535,14 @@ function handler(event) {
       }
     );
 
-    // SpaDeployment は destinationKeyPrefix なし + prune: true のためバケット全体を管理する。
-    // 並列実行時に StorybookDeployment が先に完了すると storybook ファイルが削除されるため、
-    // StorybookDeployment が SpaDeployment の完了後に実行されるよう依存関係を設定する。
-    const storybookDeployment = new s3deploy.BucketDeployment(this, "StorybookDeployment", {
+    // SpaDeployment が storybook/* を exclude しているため、並列実行しても storybook ファイルは削除されない
+    new s3deploy.BucketDeployment(this, "StorybookDeployment", {
       sources: [s3deploy.Source.asset(path.join(__dirname, "../../storybook-static"))],
       destinationBucket: spaBucket,
       destinationKeyPrefix: "storybook",
       distribution,
       distributionPaths: ["/storybook/*"],
     });
-    storybookDeployment.node.addDependency(spaDeployment);
 
     // -------------------------
     // CloudWatch アラーム
