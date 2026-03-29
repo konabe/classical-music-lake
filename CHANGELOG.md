@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.4.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.3.0...classical-music-lake-v1.4.0) (2026-03-29)
+
+
+### Features
+
+* youtube embed に rel=0・fs=0 を追加して関連動画と全画面ボタンを制限する ([4ab266b](https://github.com/konabe/classical-music-lake/commit/4ab266b69ce72414f63b5ef2777b15d6add0d990)), closes [#235](https://github.com/konabe/classical-music-lake/issues/235)
+* ステージング環境と開発環境のデプロイを追加 (issue [#239](https://github.com/konabe/classical-music-lake/issues/239)) ([8d63625](https://github.com/konabe/classical-music-lake/commit/8d636257daebcb1de1be29e9f55f8c4443700051))
+* テストでのtoBeTruthy/toBeFalsy使用をESLintで禁止 ([b355d15](https://github.com/konabe/classical-music-lake/commit/b355d156456b47d5e2afb1dcb030ce9d3e7468b5))
+
+
+### Bug Fixes
+
+* cdk デプロイを api url 取得より前に実行するよう順序を修正 ([04c7a84](https://github.com/konabe/classical-music-lake/commit/04c7a84187d425cc6fec7fa05557c9d708e64699))
+* parsing.ts の strict-boolean-expressions エラーを修正 ([c7d2de6](https://github.com/konabe/classical-music-lake/commit/c7d2de6bd1151933524f6d78f1715cb501280b29))
+* truthy/falsy依存を明示的な比較に修正しESLintルールを追加 ([a255092](https://github.com/konabe/classical-music-lake/commit/a255092b047e6c89828b8c205761257d1e058040)), closes [#252](https://github.com/konabe/classical-music-lake/issues/252)
+* テストのtoBeTruthy()をtoBeDefined()に修正 ([339a402](https://github.com/konabe/classical-music-lake/commit/339a40285eceeb609ec7c1d8e6eeb94c290d0907))
+* 初回デプロイ時にスタック未存在でも継続できるよう api url 取得を非必須化 ([9f19d24](https://github.com/konabe/classical-music-lake/commit/9f19d24e8c768e1b24fbf57760166c58488c2f89))
+
+
+### Performance Improvements
+
+* デプロイワークフローの npm インストールを高速化 ([7034e8a](https://github.com/konabe/classical-music-lake/commit/7034e8a63c878ad3ed6e1d43b7797cd883207a06))
+* デプロイワークフローの npm インストールを高速化 ([c820b5b](https://github.com/konabe/classical-music-lake/commit/c820b5b325f13b7dff1eac96f444b688a50aae29))
+
+
+### Reverts
+
+* deploy.yml のステップ順序を元に戻す ([692eec0](https://github.com/konabe/classical-music-lake/commit/692eec0f0ddeca78542a8fff8f759b290c89f43e))
+
 ## [1.3.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.2.1...classical-music-lake-v1.3.0) (2026-03-28)
 
 
