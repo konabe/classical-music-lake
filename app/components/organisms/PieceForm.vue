@@ -1,40 +1,38 @@
 <script setup lang="ts">
-import type { CreatePieceInput, PieceGenre, PieceEra, PieceFormation, PieceRegion } from "~/types";
+import type { CreatePieceInput } from "~/types";
 
-const genreOptions: { value: PieceGenre; label: string }[] = [
-  { value: "交響曲", label: "交響曲" },
-  { value: "協奏曲", label: "協奏曲" },
-  { value: "室内楽", label: "室内楽" },
-  { value: "独奏曲", label: "独奏曲" },
-  { value: "歌曲", label: "歌曲" },
-  { value: "オペラ", label: "オペラ" },
-  { value: "宗教音楽", label: "宗教音楽" },
-  { value: "その他", label: "その他" },
-];
+function toOptions<T extends string>(values: readonly T[]): { value: T; label: string }[] {
+  return values.map((v) => ({ value: v, label: v }));
+}
 
-const eraOptions: { value: PieceEra; label: string }[] = [
-  { value: "バロック", label: "バロック" },
-  { value: "古典派", label: "古典派" },
-  { value: "ロマン派", label: "ロマン派" },
-  { value: "近現代", label: "近現代" },
-  { value: "その他", label: "その他" },
-];
+const genreOptions = toOptions([
+  "交響曲",
+  "協奏曲",
+  "室内楽",
+  "独奏曲",
+  "歌曲",
+  "オペラ",
+  "宗教音楽",
+  "その他",
+] as const);
 
-const formationOptions: { value: PieceFormation; label: string }[] = [
-  { value: "ピアノ独奏", label: "ピアノ独奏" },
-  { value: "弦楽四重奏", label: "弦楽四重奏" },
-  { value: "管弦楽", label: "管弦楽" },
-  { value: "声楽", label: "声楽" },
-  { value: "その他", label: "その他" },
-];
+const eraOptions = toOptions(["バロック", "古典派", "ロマン派", "近現代", "その他"] as const);
 
-const regionOptions: { value: PieceRegion; label: string }[] = [
-  { value: "ドイツ・オーストリア", label: "ドイツ・オーストリア" },
-  { value: "フランス", label: "フランス" },
-  { value: "ロシア", label: "ロシア" },
-  { value: "イタリア", label: "イタリア" },
-  { value: "その他", label: "その他" },
-];
+const formationOptions = toOptions([
+  "ピアノ独奏",
+  "弦楽四重奏",
+  "管弦楽",
+  "声楽",
+  "その他",
+] as const);
+
+const regionOptions = toOptions([
+  "ドイツ・オーストリア",
+  "フランス",
+  "ロシア",
+  "イタリア",
+  "その他",
+] as const);
 
 const props = defineProps<{
   initialValues?: Partial<CreatePieceInput>;
@@ -69,17 +67,20 @@ watch(
   { immediate: true }
 );
 
+function emptyToUndefined(value: string): string | undefined {
+  return value || undefined;
+}
+
 function handleSubmit() {
-  const values: CreatePieceInput = {
+  emit("submit", {
     title: form.title,
     composer: form.composer,
-    videoUrl: form.videoUrl || undefined,
-    genre: (form.genre || undefined) as CreatePieceInput["genre"],
-    era: (form.era || undefined) as CreatePieceInput["era"],
-    formation: (form.formation || undefined) as CreatePieceInput["formation"],
-    region: (form.region || undefined) as CreatePieceInput["region"],
-  };
-  emit("submit", values);
+    videoUrl: emptyToUndefined(form.videoUrl),
+    genre: emptyToUndefined(form.genre) as CreatePieceInput["genre"],
+    era: emptyToUndefined(form.era) as CreatePieceInput["era"],
+    formation: emptyToUndefined(form.formation) as CreatePieceInput["formation"],
+    region: emptyToUndefined(form.region) as CreatePieceInput["region"],
+  });
 }
 </script>
 
