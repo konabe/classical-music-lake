@@ -584,6 +584,8 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
 
 ### 6.3 GitHub Actions
 
+#### deploy.yml（デプロイ）
+
 - **トリガー**:
   - `push to main` → prod 環境へ自動デプロイ
   - `push stg* tag` → stg 環境へ自動デプロイ
@@ -591,6 +593,22 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
   - `workflow_dispatch` → dev / stg / prod を選択してデプロイ
 - **Secrets**:
   - `AWS_ROLE_TO_ASSUME`
+
+#### sync-db.yml（DB 同期）
+
+- **概要**: prod の DynamoDB データを stg へ全件コピーする
+- **対象テーブル**:
+  - `classical-music-listening-logs` → `classical-music-listening-logs-stg`
+  - `classical-music-pieces` → `classical-music-pieces-stg`
+- **トリガー**:
+  - スケジュール: 毎日 0:00 JST（UTC 15:00）に自動実行
+  - `workflow_dispatch`: 手動実行も可能
+- **動作**:
+  1. stg テーブルの既存データを全件削除
+  2. prod テーブルの全データを stg へ書き込み（BatchWriteItem、25 件単位）
+  3. UnprocessedItems は指数バックオフで最大 5 回リトライ
+- **Secrets**:
+  - `AWS_ROLE_TO_ASSUME`（prod/stg 両テーブルへの `dynamodb:Scan` / `dynamodb:BatchWriteItem` 権限が必要）
 
 ### 6.4 ロールバック戦略
 
