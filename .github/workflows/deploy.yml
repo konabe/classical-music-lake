@@ -141,8 +141,7 @@ jobs:
 
       # ----------------------------------------
       # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
-      # CDKToolkit スタックが存在し、必要バージョンを満たしている場合はスキップ。
-      # CDK が参照する ECR リポジトリが削除されていると bootstrap が
+      # CDKToolkit が参照する ECR リポジトリが削除されていると bootstrap が
       # 失敗するため、事前に存在確認・作成する
       # ----------------------------------------
       - name: Ensure ECR repository for CDK bootstrap
@@ -161,32 +160,8 @@ jobs:
         run: |
           aws logs delete-log-group --log-group-name "/aws/apigateway/classical-music-lake-${STAGE_NAME}" 2>/dev/null || true
 
-      # ----------------------------------------
-      # CDK Bootstrap（必要な場合のみ実行）
-      # CDKToolkit スタックのバージョンが aws-cdk-lib の要求を満たしていれば
-      # bootstrap をスキップして約 1〜3 分を短縮する
-      # ----------------------------------------
-      - name: CDK Bootstrap (if needed)
-        run: |
-          STACK_STATUS=$(aws cloudformation describe-stacks \
-            --stack-name CDKToolkit \
-            --query 'Stacks[0].StackStatus' \
-            --output text 2>/dev/null || echo "NOT_FOUND")
-          CURRENT_VERSION=$(aws cloudformation describe-stacks \
-            --stack-name CDKToolkit \
-            --query 'Stacks[0].Parameters[?ParameterKey==`BootstrapVersion`].ParameterValue' \
-            --output text 2>/dev/null || echo "0")
-          REQUIRED_VERSION=$(node -e "try{const p=require('./node_modules/aws-cdk-lib/package.json');console.log(p.config?.bootstrapTemplateVersionThreshold||21)}catch(e){console.log(21)}")
-
-          if [ "$STACK_STATUS" != "CREATE_COMPLETE" ] && [ "$STACK_STATUS" != "UPDATE_COMPLETE" ]; then
-            echo "CDKToolkit が存在しないか異常状態 ($STACK_STATUS) のため bootstrap を実行します"
-            npx cdk bootstrap
-          elif [ "${CURRENT_VERSION:-0}" -lt "$REQUIRED_VERSION" ] 2>/dev/null; then
-            echo "Bootstrap バージョン $CURRENT_VERSION < 必要バージョン $REQUIRED_VERSION のため bootstrap を実行します"
-            npx cdk bootstrap
-          else
-            echo "CDK Bootstrap はすでに最新 (v$CURRENT_VERSION >= v$REQUIRED_VERSION) のためスキップします"
-          fi
+      - name: CDK Bootstrap
+        run: npx cdk bootstrap
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
