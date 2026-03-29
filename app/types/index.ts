@@ -41,6 +41,21 @@ export interface ListeningLog {
 export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
 
+// 楽曲カテゴリ
+// ※ backend/src/types/index.ts と同期を保つこと
+export type PieceGenre =
+  | "交響曲"
+  | "協奏曲"
+  | "室内楽"
+  | "独奏曲"
+  | "歌曲"
+  | "オペラ"
+  | "宗教音楽"
+  | "その他";
+export type PieceEra = "バロック" | "古典派" | "ロマン派" | "近現代" | "その他";
+export type PieceFormation = "ピアノ独奏" | "弦楽四重奏" | "管弦楽" | "声楽" | "その他";
+export type PieceRegion = "ドイツ・オーストリア" | "フランス" | "ロシア" | "イタリア" | "その他";
+
 // 楽曲マスタ
 // ※ backend/src/types/index.ts と同期を保つこと
 export interface Piece {
@@ -48,6 +63,10 @@ export interface Piece {
   title: string;
   composer: string;
   videoUrl?: string;
+  genre?: PieceGenre;
+  era?: PieceEra;
+  formation?: PieceFormation;
+  region?: PieceRegion;
   createdAt: string;
   updatedAt: string;
 }

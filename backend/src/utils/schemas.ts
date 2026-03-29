@@ -25,6 +25,29 @@ export const createListeningLogSchema = z.object({
 
 export const updateListeningLogSchema = createListeningLogSchema.partial();
 
+const pieceGenreSchema = z.enum([
+  "交響曲",
+  "協奏曲",
+  "室内楽",
+  "独奏曲",
+  "歌曲",
+  "オペラ",
+  "宗教音楽",
+  "その他",
+]);
+
+const pieceEraSchema = z.enum(["バロック", "古典派", "ロマン派", "近現代", "その他"]);
+
+const pieceFormationSchema = z.enum(["ピアノ独奏", "弦楽四重奏", "管弦楽", "声楽", "その他"]);
+
+const pieceRegionSchema = z.enum([
+  "ドイツ・オーストリア",
+  "フランス",
+  "ロシア",
+  "イタリア",
+  "その他",
+]);
+
 export const createPieceSchema = z.object({
   title: z
     .string({ error: () => "title is required" })
@@ -37,6 +60,10 @@ export const createPieceSchema = z.object({
     .min(1, "composer is required")
     .max(100, "composer must be 100 characters or less"),
   videoUrl: z.url("videoUrl must be a valid URL").optional(),
+  genre: pieceGenreSchema.optional(),
+  era: pieceEraSchema.optional(),
+  formation: pieceFormationSchema.optional(),
+  region: pieceRegionSchema.optional(),
 });
 
 export const updatePieceSchema = z.object({
@@ -53,6 +80,10 @@ export const updatePieceSchema = z.object({
     .max(100, "composer must be 100 characters or less")
     .optional(),
   videoUrl: z.union([z.url("videoUrl must be a valid URL"), z.literal("")]).optional(),
+  genre: z.union([pieceGenreSchema, z.literal("")]).optional(),
+  era: z.union([pieceEraSchema, z.literal("")]).optional(),
+  formation: z.union([pieceFormationSchema, z.literal("")]).optional(),
+  region: z.union([pieceRegionSchema, z.literal("")]).optional(),
 });
 
 const emailSchema = z

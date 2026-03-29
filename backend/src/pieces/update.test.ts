@@ -264,6 +264,132 @@ describe("PUT /pieces/{id} (update)", () => {
     expect(body.videoUrl).toBeUndefined();
   });
 
+  describe("カテゴリフィールド", () => {
+    it("カテゴリを追加して更新できる", async () => {
+      vi.mocked(dynamo.send)
+        .mockResolvedValueOnce({ Item: existingPiece } as never)
+        .mockResolvedValueOnce({} as never);
+
+      const result = await handler(
+        makeEvent(
+          "abc-123",
+          JSON.stringify({
+            genre: "交響曲",
+            era: "古典派",
+            formation: "管弦楽",
+            region: "ドイツ・オーストリア",
+          })
+        ),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(200);
+      const body = JSON.parse(result?.body ?? "{}") as Piece;
+      expect(body.genre).toBe("交響曲");
+      expect(body.era).toBe("古典派");
+      expect(body.formation).toBe("管弦楽");
+      expect(body.region).toBe("ドイツ・オーストリア");
+    });
+
+    it("カテゴリを変更して更新できる", async () => {
+      const existingWithCategory: Piece = {
+        ...existingPiece,
+        genre: "交響曲",
+        era: "古典派",
+      };
+      vi.mocked(dynamo.send)
+        .mockResolvedValueOnce({ Item: existingWithCategory } as never)
+        .mockResolvedValueOnce({} as never);
+
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ genre: "協奏曲", era: "ロマン派" })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(200);
+      const body = JSON.parse(result?.body ?? "{}") as Piece;
+      expect(body.genre).toBe("協奏曲");
+      expect(body.era).toBe("ロマン派");
+    });
+
+    it("カテゴリを空文字で送信すると削除される", async () => {
+      const existingWithCategory: Piece = {
+        ...existingPiece,
+        genre: "交響曲",
+        era: "古典派",
+        formation: "管弦楽",
+        region: "ドイツ・オーストリア",
+      };
+      vi.mocked(dynamo.send)
+        .mockResolvedValueOnce({ Item: existingWithCategory } as never)
+        .mockResolvedValueOnce({} as never);
+
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ genre: "", era: "", formation: "", region: "" })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(200);
+      const body = JSON.parse(result?.body ?? "{}") as Piece;
+      expect(body.genre).toBeUndefined();
+      expect(body.era).toBeUndefined();
+      expect(body.formation).toBeUndefined();
+      expect(body.region).toBeUndefined();
+    });
+
+    it("一部のカテゴリのみ更新できる", async () => {
+      vi.mocked(dynamo.send)
+        .mockResolvedValueOnce({ Item: existingPiece } as never)
+        .mockResolvedValueOnce({} as never);
+
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ genre: "室内楽" })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(200);
+      const body = JSON.parse(result?.body ?? "{}") as Piece;
+      expect(body.genre).toBe("室内楽");
+      expect(body.era).toBeUndefined();
+    });
+
+    it("genre に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ genre: "不正な値" })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+
+    it("era に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ era: "不正な値" })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+
+    it("formation に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ formation: "不正な値" })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+
+    it("region に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ region: "不正な値" })),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+  });
+
   it("videoUrl が不正な URL の場合は 400 を返す", async () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ videoUrl: "not-a-url" })),
