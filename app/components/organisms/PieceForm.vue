@@ -67,19 +67,15 @@ watch(
   { immediate: true }
 );
 
-function emptyToUndefined(value: string): string | undefined {
-  return value || undefined;
-}
-
 function handleSubmit() {
   emit("submit", {
     title: form.title,
     composer: form.composer,
-    videoUrl: emptyToUndefined(form.videoUrl),
-    genre: emptyToUndefined(form.genre) as CreatePieceInput["genre"],
-    era: emptyToUndefined(form.era) as CreatePieceInput["era"],
-    formation: emptyToUndefined(form.formation) as CreatePieceInput["formation"],
-    region: emptyToUndefined(form.region) as CreatePieceInput["region"],
+    videoUrl: form.videoUrl || undefined,
+    genre: (form.genre || undefined) as CreatePieceInput["genre"],
+    era: (form.era || undefined) as CreatePieceInput["era"],
+    formation: (form.formation || undefined) as CreatePieceInput["formation"],
+    region: (form.region || undefined) as CreatePieceInput["region"],
   });
 }
 </script>
