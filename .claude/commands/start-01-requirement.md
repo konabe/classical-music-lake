@@ -12,7 +12,7 @@
   - この際に不明点があれば最大３回繰り返し深堀すること
 - 開発の内容からタイトル(`{feature-title}`)を確定する。
 - フィーチャーブランチ`feature/{feature-title}`を作成
-- `/docs/features/`のディレクトリの状態を確認し、最大値をインクリメントした{index}を採番する
+- `Explore` エージェントを使って `/docs/features/` のディレクトリ状態を調査し、最大値をインクリメントした{index}を採番する
   - 採番ルールは `001`, `002` のように単純なインクリメントで、3桁でゼロ埋め
   - PR 提出直前に `/docs/features/` 内で同一の `{index}` が存在しないか再スキャンし、競合があれば再採番する
 - `/docs/features/{index}-{feature-title}/requirement.md` を作成し、要件を記載する。

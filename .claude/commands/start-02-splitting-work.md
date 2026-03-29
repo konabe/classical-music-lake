@@ -3,6 +3,7 @@
 ## 1. 事前準備
 
 - ブランチ名から現在の`{feature-title}`の内容を確認する
+- `Explore` エージェントを使って `/docs/features/{index}-{feature-title}/requirement.md` の内容と既存 work ディレクトリの状態を調査する
 
 ## 3. タスク分割提案
 
