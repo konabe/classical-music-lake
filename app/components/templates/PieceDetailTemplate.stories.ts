@@ -47,3 +47,29 @@ export const Error: Story = {
     error: new globalThis.Error("取得失敗"),
   },
 };
+
+export const WithAllCategories: Story = {
+  args: {
+    piece: {
+      ...pieceWithoutVideo,
+      id: "3",
+      genre: "その他",
+      era: "近現代",
+      formation: "管弦楽",
+      region: "ロシア",
+    },
+    error: null,
+  },
+};
+
+export const WithPartialCategories: Story = {
+  args: {
+    piece: {
+      ...pieceWithoutVideo,
+      id: "4",
+      genre: "交響曲",
+      era: "バロック",
+    },
+    error: null,
+  },
+};

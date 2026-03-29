@@ -27,6 +27,12 @@ const hasStartedPlaying = ref(false);
       <div class="piece-header">
         <div class="piece-title">{{ piece.title }}</div>
         <div class="piece-composer">{{ piece.composer }}</div>
+        <div class="piece-categories">
+          <CategoryBadge v-if="piece.genre" label="ジャンル" :value="piece.genre" />
+          <CategoryBadge v-if="piece.era" label="時代" :value="piece.era" />
+          <CategoryBadge v-if="piece.formation" label="編成" :value="piece.formation" />
+          <CategoryBadge v-if="piece.region" label="地域" :value="piece.region" />
+        </div>
       </div>
 
       <template v-if="piece.videoUrl">
@@ -70,5 +76,12 @@ const hasStartedPlaying = ref(false);
 .piece-composer {
   font-size: 1rem;
   color: #666;
+}
+
+.piece-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
 }
 </style>

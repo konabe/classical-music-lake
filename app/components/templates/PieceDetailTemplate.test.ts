@@ -11,6 +11,18 @@ const pieceWithVideo: Piece = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
+const pieceWithCategories: Piece = {
+  id: "3",
+  title: "春の祭典",
+  composer: "ストラヴィンスキー",
+  genre: "その他",
+  era: "近現代",
+  formation: "管弦楽",
+  region: "ロシア",
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
+};
+
 const pieceWithoutVideo: Piece = {
   id: "2",
   title: "魔笛",
@@ -79,6 +91,32 @@ describe("PieceDetailTemplate", () => {
         props: { piece: null, error: new Error("取得失敗") },
       });
       expect(wrapper.find(".error-message").exists()).toBe(true);
+    });
+  });
+
+  describe("カテゴリ表示", () => {
+    it("genre が設定されている場合、ジャンルバッジが表示される", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: { piece: pieceWithCategories, error: null },
+      });
+      expect(wrapper.text()).toContain("ジャンル: その他");
+    });
+
+    it("genre が未設定の場合、ジャンルバッジが表示されない", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: { piece: pieceWithoutVideo, error: null },
+      });
+      expect(wrapper.text()).not.toContain("ジャンル:");
+    });
+
+    it("全カテゴリが未設定の場合、バッジが一切表示されない", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: { piece: pieceWithoutVideo, error: null },
+      });
+      expect(wrapper.text()).not.toContain("ジャンル:");
+      expect(wrapper.text()).not.toContain("時代:");
+      expect(wrapper.text()).not.toContain("編成:");
+      expect(wrapper.text()).not.toContain("地域:");
     });
   });
 });
