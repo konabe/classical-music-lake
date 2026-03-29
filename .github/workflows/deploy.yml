@@ -104,6 +104,43 @@ jobs:
           fi
 
       # ----------------------------------------
+      # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
+      # CDKToolkit が参照する ECR リポジトリが削除されていると bootstrap が
+      # 失敗するため、事前に存在確認・作成する
+      # ----------------------------------------
+      - name: Ensure ECR repository for CDK bootstrap
+        run: |
+          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+          REPO="cdk-hnb659fds-container-assets-${ACCOUNT}-ap-northeast-1"
+          aws ecr describe-repositories --repository-names "$REPO" 2>/dev/null \
+            || aws ecr create-repository --repository-name "$REPO" 2>/dev/null \
+            || true
+
+      # ----------------------------------------
+      # 孤立リソースのクリーンアップ
+      # ロールバック時に残ったロググループを削除（存在しない場合は無視）
+      # ----------------------------------------
+      - name: Cleanup orphaned log groups
+        run: |
+          aws logs delete-log-group --log-group-name "/aws/apigateway/classical-music-lake-${STAGE_NAME}" 2>/dev/null || true
+
+      - name: CDK Bootstrap
+        run: npx cdk bootstrap
+        working-directory: cdk
+        env:
+          STAGE_NAME: ${{ env.STAGE_NAME }}
+
+      # ----------------------------------------
+      # CDK デプロイ（バックエンドインフラを先に作成・更新）
+      # フロントエンドビルドに必要な API URL はここで確定する
+      # ----------------------------------------
+      - name: CDK Deploy
+        run: npm run deploy
+        working-directory: cdk
+        env:
+          STAGE_NAME: ${{ env.STAGE_NAME }}
+
+      # ----------------------------------------
       # デプロイ済みスタックから API Base URL を取得
       # CDK Outputs の ApiUrl を GITHUB_OUTPUT に書き出す
       # ----------------------------------------
@@ -135,40 +172,3 @@ jobs:
 
       - name: Build Storybook
         run: npm run build-storybook
-
-      # ----------------------------------------
-      # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
-      # CDKToolkit が参照する ECR リポジトリが削除されていると bootstrap が
-      # 失敗するため、事前に存在確認・作成する
-      # ----------------------------------------
-      - name: Ensure ECR repository for CDK bootstrap
-        run: |
-          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-          REPO="cdk-hnb659fds-container-assets-${ACCOUNT}-ap-northeast-1"
-          aws ecr describe-repositories --repository-names "$REPO" 2>/dev/null \
-            || aws ecr create-repository --repository-name "$REPO" 2>/dev/null \
-            || true
-
-      # ----------------------------------------
-      # 孤立リソースのクリーンアップ
-      # ロールバック時に残ったロググループを削除（存在しない場合は無視）
-      # ----------------------------------------
-      - name: Cleanup orphaned log groups
-        run: |
-          aws logs delete-log-group --log-group-name "/aws/apigateway/classical-music-lake-${STAGE_NAME}" 2>/dev/null || true
-
-      - name: CDK Bootstrap
-        run: npx cdk bootstrap
-        working-directory: cdk
-        env:
-          STAGE_NAME: ${{ env.STAGE_NAME }}
-
-      # ----------------------------------------
-      # CDK デプロイ
-      # (インフラ更新 + ビルド済みフロントエンドを S3 へ反映)
-      # ----------------------------------------
-      - name: CDK Deploy
-        run: npm run deploy
-        working-directory: cdk
-        env:
-          STAGE_NAME: ${{ env.STAGE_NAME }}
