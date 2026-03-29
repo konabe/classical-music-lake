@@ -149,11 +149,28 @@ interface ListeningLog {
 #### データ構造
 
 ```typescript
+type PieceGenre =
+  | "交響曲"
+  | "協奏曲"
+  | "室内楽"
+  | "独奏曲"
+  | "歌曲"
+  | "オペラ"
+  | "宗教音楽"
+  | "その他";
+type PieceEra = "バロック" | "古典派" | "ロマン派" | "近現代" | "その他";
+type PieceFormation = "ピアノ独奏" | "弦楽四重奏" | "管弦楽" | "声楽" | "その他";
+type PieceRegion = "ドイツ・オーストリア" | "フランス" | "ロシア" | "イタリア" | "その他";
+
 interface Piece {
   id: string; // UUID (自動生成)
   title: string; // 曲名
   composer: string; // 作曲家名
   videoUrl?: string; // 動画 URL（任意）
+  genre?: PieceGenre; // ジャンル（任意）
+  era?: PieceEra; // 時代（任意）
+  formation?: PieceFormation; // 編成（任意）
+  region?: PieceRegion; // 地域（任意）
   createdAt: string; // 作成日時 (ISO 8601形式)
   updatedAt: string; // 更新日時 (ISO 8601形式)
 }
@@ -164,6 +181,10 @@ interface Piece {
 - `title`: 空文字・空白のみ不可、最大200文字
 - `composer`: 空文字・空白のみ不可、最大100文字
 - `videoUrl`: 任意項目。指定する場合は有効な URL 形式であること（ドメイン制限なし）。更新時に空文字を送信するとフィールドが削除される
+- `genre`: 任意項目。指定する場合は固定の選択肢から選択。更新時に空文字を送信するとフィールドが削除される
+- `era`: 任意項目。指定する場合は固定の選択肢から選択。更新時に空文字を送信するとフィールドが削除される
+- `formation`: 任意項目。指定する場合は固定の選択肢から選択。更新時に空文字を送信するとフィールドが削除される
+- `region`: 任意項目。指定する場合は固定の選択肢から選択。更新時に空文字を送信するとフィールドが削除される
 
 > バリデーションは `utils/schemas.ts` に定義した Zod スキーマで実施する。
 

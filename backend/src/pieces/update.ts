@@ -27,6 +27,18 @@ export const handler = createHandler(async (event) => {
   if (input.videoUrl === "") {
     delete updated.videoUrl;
   }
+  if (input.genre === "") {
+    delete updated.genre;
+  }
+  if (input.era === "") {
+    delete updated.era;
+  }
+  if (input.formation === "") {
+    delete updated.formation;
+  }
+  if (input.region === "") {
+    delete updated.region;
+  }
 
   try {
     await dynamo.send(

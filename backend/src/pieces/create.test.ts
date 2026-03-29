@@ -212,6 +212,119 @@ describe("POST /pieces (create)", () => {
     expect(body.createdAt).toBe(body.updatedAt);
   });
 
+  describe("カテゴリフィールド", () => {
+    it("全カテゴリを指定して作成できる", async () => {
+      vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+      const result = await handler(
+        makeEvent({
+          body: JSON.stringify({
+            ...validInput,
+            genre: "交響曲",
+            era: "古典派",
+            formation: "管弦楽",
+            region: "ドイツ・オーストリア",
+          }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(201);
+      const body = JSON.parse(result?.body ?? "{}");
+      expect(body.genre).toBe("交響曲");
+      expect(body.era).toBe("古典派");
+      expect(body.formation).toBe("管弦楽");
+      expect(body.region).toBe("ドイツ・オーストリア");
+    });
+
+    it("カテゴリなしで作成できる（後方互換性）", async () => {
+      vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+      const result = await handler(
+        makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(201);
+      const body = JSON.parse(result?.body ?? "{}");
+      expect(body.genre).toBeUndefined();
+      expect(body.era).toBeUndefined();
+      expect(body.formation).toBeUndefined();
+      expect(body.region).toBeUndefined();
+    });
+
+    it("一部のカテゴリのみ指定して作成できる", async () => {
+      vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+      const result = await handler(
+        makeEvent({
+          body: JSON.stringify({ ...validInput, genre: "協奏曲", era: "ロマン派" }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(201);
+      const body = JSON.parse(result?.body ?? "{}");
+      expect(body.genre).toBe("協奏曲");
+      expect(body.era).toBe("ロマン派");
+      expect(body.formation).toBeUndefined();
+      expect(body.region).toBeUndefined();
+    });
+
+    it("genre に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeEvent({
+          body: JSON.stringify({ ...validInput, genre: "不正な値" }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+
+    it("era に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeEvent({
+          body: JSON.stringify({ ...validInput, era: "不正な値" }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+
+    it("formation に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeEvent({
+          body: JSON.stringify({ ...validInput, formation: "不正な値" }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+
+    it("region に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeEvent({
+          body: JSON.stringify({ ...validInput, region: "不正な値" }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+  });
+
   it("DynamoDB エラー時に 500 を返す", async () => {
     vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(

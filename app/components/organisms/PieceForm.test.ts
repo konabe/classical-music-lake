@@ -78,6 +78,49 @@ describe("PieceForm", () => {
     });
   });
 
+  describe("カテゴリ選択フィールド", () => {
+    it("4つのカテゴリ選択フィールドが表示される", async () => {
+      const wrapper = await mountSuspended(PieceForm);
+      expect(wrapper.find("#genre").exists()).toBe(true);
+      expect(wrapper.find("#era").exists()).toBe(true);
+      expect(wrapper.find("#formation").exists()).toBe(true);
+      expect(wrapper.find("#region").exists()).toBe(true);
+    });
+
+    it("カテゴリの初期値が反映される", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: {
+          initialValues: {
+            title: "交響曲第9番",
+            composer: "ベートーヴェン",
+            genre: "交響曲",
+            era: "古典派",
+            formation: "管弦楽",
+            region: "ドイツ・オーストリア",
+          },
+        },
+      });
+      expect((wrapper.find("#genre").element as HTMLSelectElement).value).toBe("交響曲");
+      expect((wrapper.find("#era").element as HTMLSelectElement).value).toBe("古典派");
+      expect((wrapper.find("#formation").element as HTMLSelectElement).value).toBe("管弦楽");
+      expect((wrapper.find("#region").element as HTMLSelectElement).value).toBe(
+        "ドイツ・オーストリア"
+      );
+    });
+
+    it("カテゴリ未指定時はデフォルト（空）のまま", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: {
+          initialValues: { title: "魔笛", composer: "モーツァルト" },
+        },
+      });
+      expect((wrapper.find("#genre").element as HTMLSelectElement).value).toBe("");
+      expect((wrapper.find("#era").element as HTMLSelectElement).value).toBe("");
+      expect((wrapper.find("#formation").element as HTMLSelectElement).value).toBe("");
+      expect((wrapper.find("#region").element as HTMLSelectElement).value).toBe("");
+    });
+  });
+
   describe("フォーム送信", () => {
     it("フォーム送信時に submit イベントが emit される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
@@ -108,6 +151,46 @@ describe("PieceForm", () => {
       expect(emittedData.title).toBe("交響曲第9番");
       expect(emittedData.composer).toBe("ベートーヴェン");
       expect(emittedData.videoUrl).toBe("https://www.youtube.com/watch?v=abc");
+    });
+
+    it("カテゴリ付きのフォームデータが submit イベントに含まれる", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: {
+          initialValues: {
+            title: "交響曲第9番",
+            composer: "ベートーヴェン",
+            genre: "交響曲",
+            era: "古典派",
+            formation: "管弦楽",
+            region: "ドイツ・オーストリア",
+          },
+        },
+      });
+
+      await wrapper.find("form").trigger("submit.prevent");
+      const emitted = wrapper.emitted("submit");
+      expect(emitted).toBeDefined();
+      const emittedData = emitted![0][0] as Record<string, unknown>;
+      expect(emittedData.genre).toBe("交響曲");
+      expect(emittedData.era).toBe("古典派");
+      expect(emittedData.formation).toBe("管弦楽");
+      expect(emittedData.region).toBe("ドイツ・オーストリア");
+    });
+
+    it("未選択のカテゴリは undefined として送信される", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: {
+          initialValues: { title: "魔笛", composer: "モーツァルト" },
+        },
+      });
+
+      await wrapper.find("form").trigger("submit.prevent");
+      const emitted = wrapper.emitted("submit");
+      const emittedData = emitted![0][0] as Record<string, unknown>;
+      expect(emittedData.genre).toBeUndefined();
+      expect(emittedData.era).toBeUndefined();
+      expect(emittedData.formation).toBeUndefined();
+      expect(emittedData.region).toBeUndefined();
     });
   });
 });
