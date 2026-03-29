@@ -5,8 +5,10 @@ on:
     branches:
       - main
     tags:
-      - "stg*"
       - "dev*"
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       environment:
@@ -44,18 +46,19 @@ jobs:
 
       # ----------------------------------------
       # デプロイ先環境の決定
-      # push: mainブランチ → prod、stg*タグ → stg、dev*タグ → dev
+      # push: mainブランチ → stg、dev*タグ → dev
+      # release: published → prod
       # workflow_dispatch: 入力値をそのまま使用
       # ----------------------------------------
       - name: Determine stage name
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            if [[ "${{ github.ref }}" == refs/tags/stg* ]]; then
-              echo "STAGE_NAME=stg" >> "$GITHUB_ENV"
-            elif [[ "${{ github.ref }}" == refs/tags/dev* ]]; then
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "STAGE_NAME=prod" >> "$GITHUB_ENV"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            if [[ "${{ github.ref }}" == refs/tags/dev* ]]; then
               echo "STAGE_NAME=dev" >> "$GITHUB_ENV"
             else
-              echo "STAGE_NAME=prod" >> "$GITHUB_ENV"
+              echo "STAGE_NAME=stg" >> "$GITHUB_ENV"
             fi
           else
             echo "STAGE_NAME=${{ github.event.inputs.environment }}" >> "$GITHUB_ENV"
