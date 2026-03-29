@@ -194,9 +194,16 @@ jobs:
       # ----------------------------------------
       # CDK デプロイ
       # (インフラ更新 + ビルド済みフロントエンドを S3 へ反映)
+      # dev/stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
+      # prod: 安全のためフル CloudFormation デプロイ
       # ----------------------------------------
       - name: CDK Deploy
-        run: npm run deploy
+        run: |
+          if [ "$STAGE_NAME" = "prod" ]; then
+            npm run deploy
+          else
+            npm run deploy -- --hotswap-fallback
+          fi
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
