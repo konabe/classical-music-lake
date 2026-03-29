@@ -105,7 +105,8 @@ jobs:
 
       # ----------------------------------------
       # デプロイ済みスタックから API Base URL を取得
-      # CDK Outputs の ApiUrl を GITHUB_OUTPUT に書き出す
+      # スタックが未作成（初回デプロイ）の場合は空文字のまま続行し、
+      # CDK デプロイでスタックを作成後、次回デプロイ時に URL が確定する
       # ----------------------------------------
       - name: Get API Base URL from CloudFormation
         id: get-api-url
@@ -113,11 +114,11 @@ jobs:
           API_URL=$(aws cloudformation describe-stacks \
             --stack-name "${{ steps.stack.outputs.name }}" \
             --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
-            --output text)
+            --output text 2>/dev/null || true)
 
           if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
-            echo "::error::ApiUrl output not found for stack ${{ steps.stack.outputs.name }}"
-            exit 1
+            echo "::warning::ApiUrl not found for stack ${{ steps.stack.outputs.name }} — building frontend without API URL (initial deploy)"
+            API_URL=""
           fi
           echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
@@ -131,6 +132,7 @@ jobs:
         run: npm run generate
         env:
           # CloudFormation Outputs から取得した API Gateway URL をセット
+          # 初回デプロイ時は空文字になる（CDK デプロイ後の再デプロイで確定）
           NUXT_PUBLIC_API_BASE_URL: ${{ steps.get-api-url.outputs.api_url }}
 
       - name: Build Storybook
