@@ -47,7 +47,7 @@
 
 ### 画面遷移フロー
 
-```
+```text
 ユーザー登録フォーム送信
         ↓ 成功
 verify-email ページへリダイレクト
@@ -108,7 +108,7 @@ POST /auth/login で自動ログイン
 
 #### `app/composables/useAuth.ts` 内に追加
 
-```
+```text
 VerifyEmailResult:
   success: boolean
   error?: string

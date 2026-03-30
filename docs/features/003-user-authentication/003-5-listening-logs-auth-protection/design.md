@@ -75,7 +75,7 @@ DynamoDB
 
 #### 既存スキーマ
 
-```
+```text
 テーブル: ListeningLogs
 パーティションキー: id（UUID）
 ソートキー: （なし）

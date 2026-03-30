@@ -45,7 +45,7 @@ describe("MyComponent", () => {
 
 ### テストの構成例（`describe` 分割）
 
-```
+```text
 describe("ComponentName", () => {
   describe("表示", () => { ... })
   describe("イベント", () => { ... })

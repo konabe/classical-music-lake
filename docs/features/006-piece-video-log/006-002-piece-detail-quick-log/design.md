@@ -115,7 +115,7 @@
 
 ## データフロー
 
-```
+```text
 [pages/pieces/[id]/index.vue]
   → usePiece(id) で Piece を取得
   → PieceDetailTemplate (piece, error)
