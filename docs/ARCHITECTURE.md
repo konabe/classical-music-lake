@@ -2,7 +2,7 @@
 
 ## システム構成図
 
-```
+```text
 [ユーザー（ブラウザ）]
         ↓ HTTPS
 [CloudFront]
@@ -17,7 +17,7 @@
 
 ### デプロイパイプライン
 
-```
+```text
 [GitHub (main ブランチ)]
         ↓ push
 [GitHub Actions]
@@ -29,7 +29,7 @@
 
 ## ディレクトリ構造
 
-```
+```text
 classical-music-lake/
 ├── app/                          # Nuxt アプリケーションディレクトリ
 │   ├── layouts/                  # Nuxt レイアウト
@@ -112,7 +112,7 @@ classical-music-lake/
 
 ### 視聴ログ一覧取得
 
-```
+```text
 ブラウザ
   → GET /prod/listening-logs
   → API Gateway
@@ -124,7 +124,7 @@ classical-music-lake/
 
 ### 視聴ログ作成
 
-```
+```text
 ブラウザ
   → POST /prod/listening-logs (JSON body)
   → API Gateway
@@ -137,7 +137,7 @@ classical-music-lake/
 
 ### ログイン（確認済みユーザー）
 
-```
+```text
 ブラウザ (/auth/login)
   → POST /prod/auth/login (email, password)
   → API Gateway
@@ -150,7 +150,7 @@ classical-music-lake/
 
 ### ログイン（未確認ユーザー）
 
-```
+```text
 ブラウザ (/auth/login)
   → POST /prod/auth/login (email, password)
   → Lambda (login.ts)
@@ -168,7 +168,7 @@ classical-music-lake/
 
 ### ユーザー登録〜メール確認〜自動ログイン
 
-```
+```text
 ブラウザ (/auth/user-register)
   → POST /prod/auth/register (email, password)
   → Cognito SignUp → 確認コードをメール送信
@@ -183,7 +183,7 @@ classical-music-lake/
 
 ### 楽曲詳細ページでのクイックログ記録
 
-```
+```text
 ブラウザ (/pieces/[id])
   → usePiece(id) で Piece を取得
   → PieceDetailTemplate (piece, error)
@@ -219,7 +219,7 @@ classical-music-lake/
 
 ### ログアウト
 
-```
+```text
 ブラウザ (ナビバーの「ログアウト」ボタン)
   → localStorage から accessToken を削除
   → /auth/login へナビゲート

@@ -26,7 +26,7 @@
 
 ### 2.1 システム構成図
 
-```
+```text
 [ユーザー]
     ↓
 [CloudFront] ← S3 (静的ホスティング)
@@ -327,7 +327,7 @@ Content-Type: application/json
 
 **リクエスト**
 
-```
+```http
 GET /listening-logs
 Authorization: Bearer {accessToken}
 ```
@@ -361,7 +361,7 @@ Authorization: Bearer {accessToken}
 
 **リクエスト**
 
-```
+```http
 GET /listening-logs/{id}
 Authorization: Bearer {accessToken}
 ```
@@ -438,7 +438,7 @@ Content-Type: application/json
 
 **リクエスト**
 
-```
+```http
 DELETE /listening-logs/{id}
 Authorization: Bearer {accessToken}
 ```
@@ -572,7 +572,7 @@ Authorization: Bearer {accessToken}
 
 ### 6.2 デプロイフロー
 
-```
+```text
 GitHub (main branch)         → prod 自動デプロイ
 GitHub (stg* タグ push)      → stg 自動デプロイ
 GitHub (dev* タグ push)      → dev 自動デプロイ
