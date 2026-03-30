@@ -32,3 +32,25 @@ export const ShortTitle: Story = {
     },
   },
 };
+
+export const WithAllCategories: Story = {
+  args: {
+    piece: {
+      ...samplePiece,
+      genre: "交響曲",
+      era: "ロマン派",
+      formation: "管弦楽",
+      region: "ドイツ・オーストリア",
+    },
+  },
+};
+
+export const WithPartialCategories: Story = {
+  args: {
+    piece: {
+      ...samplePiece,
+      genre: "交響曲",
+      era: "ロマン派",
+    },
+  },
+};
