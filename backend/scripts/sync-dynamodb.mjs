@@ -9,7 +9,8 @@
  *   node backend/scripts/sync-dynamodb.mjs
  *
  * 必要な AWS 権限:
- *   dynamodb:Scan, dynamodb:BatchWriteItem (prod/stg 両テーブル)
+ *   prod テーブル: dynamodb:Scan
+ *   stg テーブル:  dynamodb:Scan, dynamodb:BatchWriteItem
  */
 
 import { DynamoDBClient, ScanCommand, BatchWriteItemCommand } from "@aws-sdk/client-dynamodb";
@@ -17,11 +18,24 @@ import { DynamoDBClient, ScanCommand, BatchWriteItemCommand } from "@aws-sdk/cli
 const REGION = "ap-northeast-1";
 const client = new DynamoDBClient({ region: REGION });
 
+/**
+ * listening-logs の個人情報を匿名化する
+ * - userId: NULL に置換（個人識別子の除去）
+ * - memo: 削除（自由入力欄に含まれる個人情報の除去）
+ */
+function anonymizeListeningLog(item) {
+  const anonymized = { ...item };
+  anonymized.userId = { NULL: true };
+  delete anonymized.memo;
+  return anonymized;
+}
+
 const TABLES = [
   {
     source: "classical-music-listening-logs",
     dest: "classical-music-listening-logs-stg",
     keyAttributes: ["id"],
+    transform: anonymizeListeningLog,
   },
   {
     source: "classical-music-pieces",
@@ -33,19 +47,22 @@ const TABLES = [
 /**
  * テーブルの全アイテムをページネーションしながら取得する
  * @param {string} tableName
- * @returns {Promise<Record<string, import('@aws-sdk/client-dynamodb').AttributeValue>[]>}
+ * @param {string[] | undefined} projectionAttributes - 取得する属性名（省略時は全属性）
  */
-async function scanAll(tableName) {
+async function scanAll(tableName, projectionAttributes) {
   const items = [];
   let lastEvaluatedKey;
 
   do {
-    const result = await client.send(
-      new ScanCommand({
-        TableName: tableName,
-        ExclusiveStartKey: lastEvaluatedKey,
-      })
-    );
+    const params = {
+      TableName: tableName,
+      ExclusiveStartKey: lastEvaluatedKey,
+    };
+    if (projectionAttributes) {
+      params.ProjectionExpression = projectionAttributes.join(", ");
+    }
+
+    const result = await client.send(new ScanCommand(params));
     items.push(...(result.Items ?? []));
     lastEvaluatedKey = result.LastEvaluatedKey;
   } while (lastEvaluatedKey);
@@ -89,46 +106,79 @@ async function batchWrite(tableName, writeRequests) {
 }
 
 /**
+ * アイテムのキー文字列を生成する（差分削除の比較用）
+ * @param {Record<string, import('@aws-sdk/client-dynamodb').AttributeValue>} item
+ * @param {string[]} keyAttributes
+ */
+function itemKey(item, keyAttributes) {
+  return keyAttributes
+    .map((k) => {
+      const v = item[k];
+      return `${k}:${v?.S ?? v?.N ?? JSON.stringify(v)}`;
+    })
+    .join("#");
+}
+
+/**
  * ソーステーブルの全データをデスティネーションテーブルへ同期する
+ *
+ * 順序:
+ *   1. source の全アイテムを dest へ upsert（先に書き込むことで部分失敗時の空化を防ぐ）
+ *   2. dest にあって source にないキーのみ削除（差分削除）
+ *
  * @param {string} sourceTable
  * @param {string} destTable
  * @param {string[]} keyAttributes
+ * @param {((item: Record<string, import('@aws-sdk/client-dynamodb').AttributeValue>) => Record<string, import('@aws-sdk/client-dynamodb').AttributeValue>) | undefined} transform
  */
-async function syncTable(sourceTable, destTable, keyAttributes) {
+async function syncTable(sourceTable, destTable, keyAttributes, transform) {
   console.log(`\n=== ${sourceTable} → ${destTable} ===`);
 
   console.log("ソーステーブルをスキャン中...");
   const sourceItems = await scanAll(sourceTable);
   console.log(`  ${sourceItems.length} 件取得`);
 
-  console.log("デスティネーションテーブルをスキャン中...");
-  const destItems = await scanAll(destTable);
+  // dest はキーのみスキャンして差分計算に使う（転送データ量を削減）
+  console.log("デスティネーションテーブルのキーをスキャン中...");
+  const destItems = await scanAll(destTable, keyAttributes);
   console.log(`  ${destItems.length} 件取得`);
 
-  if (destItems.length > 0) {
-    console.log("デスティネーションの既存データを削除中...");
-    const deleteRequests = destItems.map((item) => ({
-      DeleteRequest: {
-        Key: Object.fromEntries(keyAttributes.map((k) => [k, item[k]])),
-      },
-    }));
-    await batchWrite(destTable, deleteRequests);
-    console.log(`  ${destItems.length} 件削除完了`);
-  }
-
+  // Step 1: source の全アイテムを dest に upsert
   if (sourceItems.length > 0) {
-    console.log("ソースデータをデスティネーションへ書き込み中...");
-    const putRequests = sourceItems.map((item) => ({
+    console.log("デスティネーションへ書き込み中（upsert）...");
+    const putItems = transform ? sourceItems.map(transform) : sourceItems;
+    const putRequests = putItems.map((item) => ({
       PutRequest: { Item: item },
     }));
     await batchWrite(destTable, putRequests);
     console.log(`  ${sourceItems.length} 件書き込み完了`);
   }
+
+  // Step 2: dest にあって source にないキーのみ削除
+  if (destItems.length > 0) {
+    const sourceKeySet = new Set(sourceItems.map((item) => itemKey(item, keyAttributes)));
+    const deleteTargets = destItems.filter(
+      (item) => !sourceKeySet.has(itemKey(item, keyAttributes))
+    );
+
+    if (deleteTargets.length > 0) {
+      console.log(`差分削除: ${deleteTargets.length} 件を削除中...`);
+      const deleteRequests = deleteTargets.map((item) => ({
+        DeleteRequest: {
+          Key: Object.fromEntries(keyAttributes.map((k) => [k, item[k]])),
+        },
+      }));
+      await batchWrite(destTable, deleteRequests);
+      console.log(`  ${deleteTargets.length} 件削除完了`);
+    } else {
+      console.log("  差分削除: 対象なし");
+    }
+  }
 }
 
 // メイン処理
-for (const { source, dest, keyAttributes } of TABLES) {
-  await syncTable(source, dest, keyAttributes);
+for (const { source, dest, keyAttributes, transform } of TABLES) {
+  await syncTable(source, dest, keyAttributes, transform);
 }
 
 console.log("\n=== 全テーブルの同期が完了しました ===");

@@ -608,7 +608,7 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
   2. prod テーブルの全データを stg へ書き込み（BatchWriteItem、25 件単位）
   3. UnprocessedItems は指数バックオフで最大 5 回リトライ
 - **Secrets**:
-  - `AWS_ROLE_TO_ASSUME`（prod/stg 両テーブルへの `dynamodb:Scan` / `dynamodb:BatchWriteItem` 権限が必要）
+  - `AWS_ROLE_TO_ASSUME`（prod テーブルへの `dynamodb:Scan`、stg テーブルへの `dynamodb:Scan` / `dynamodb:BatchWriteItem` 権限が必要）
 
 ### 6.4 ロールバック戦略
 
