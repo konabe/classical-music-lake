@@ -1,7 +1,8 @@
-import { ACCESS_TOKEN_KEY } from "~/composables/useAuth";
+import { ACCESS_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY, REFRESH_TOKEN_KEY } from "~/composables/useAuth";
 
-const { mockNavigateTo } = vi.hoisted(() => ({
+const { mockNavigateTo, mockRefreshTokens } = vi.hoisted(() => ({
   mockNavigateTo: vi.fn(),
+  mockRefreshTokens: vi.fn(),
 }));
 
 vi.mock("#app/composables/router", async (importOriginal) => {
@@ -9,6 +10,16 @@ vi.mock("#app/composables/router", async (importOriginal) => {
   return {
     ...actual,
     navigateTo: mockNavigateTo,
+  };
+});
+
+vi.mock("~/composables/useAuth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("~/composables/useAuth")>();
+  return {
+    ...actual,
+    useAuth: () => ({
+      refreshTokens: mockRefreshTokens,
+    }),
   };
 });
 
@@ -28,6 +39,7 @@ vi.stubGlobal("localStorage", {
 
 beforeEach(() => {
   mockNavigateTo.mockClear();
+  mockRefreshTokens.mockClear();
   localStorage.clear();
 });
 
@@ -45,11 +57,45 @@ describe("auth middleware", () => {
     expect(mockNavigateTo).toHaveBeenCalledWith("/auth/login", { replace: true });
   });
 
-  it("トークンがある場合はリダイレクトしない", async () => {
+  it("トークンがあり有効期限内の場合はリダイレクトしない", async () => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
+    localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() + 60000));
+
+    await runMiddleware("/listening-logs");
+
+    expect(mockNavigateTo).not.toHaveBeenCalled();
+    expect(mockRefreshTokens).not.toHaveBeenCalled();
+  });
+
+  it("トークンがあり有効期限が切れている場合、リフレッシュを試行する", async () => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
+    localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() - 1000));
+    localStorage.setItem(REFRESH_TOKEN_KEY, "refresh-token");
+    mockRefreshTokens.mockResolvedValue(true);
+
+    await runMiddleware("/listening-logs");
+
+    expect(mockRefreshTokens).toHaveBeenCalled();
+    expect(mockNavigateTo).not.toHaveBeenCalled();
+  });
+
+  it("トークンが期限切れでリフレッシュ失敗時はログインページにリダイレクトする", async () => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
+    localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() - 1000));
+    mockRefreshTokens.mockResolvedValue(false);
+
+    await runMiddleware("/listening-logs");
+
+    expect(mockRefreshTokens).toHaveBeenCalled();
+    expect(mockNavigateTo).toHaveBeenCalledWith("/auth/login", { replace: true });
+  });
+
+  it("tokenExpiresAt がない場合はリフレッシュせずそのまま通す", async () => {
     localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
 
     await runMiddleware("/listening-logs");
 
+    expect(mockRefreshTokens).not.toHaveBeenCalled();
     expect(mockNavigateTo).not.toHaveBeenCalled();
   });
 });

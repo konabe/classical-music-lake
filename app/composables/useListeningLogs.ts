@@ -1,5 +1,5 @@
 import { useRouter } from "#app";
-import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";
+import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY } from "./useAuth";
 import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "~/types";
 
 const getAuthHeaders = (): Record<string, string> => {
@@ -7,12 +7,26 @@ const getAuthHeaders = (): Record<string, string> => {
   return token !== null ? { Authorization: `Bearer ${token}` } : {};
 };
 
-const handleAuthError = (status: number, router: ReturnType<typeof useRouter>): void => {
-  if (status === 401) {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(ID_TOKEN_KEY);
-    router.push("/auth/login");
-  }
+const clearAuthTokens = (): void => {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(ID_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
+};
+
+const handleAuthError = async (
+  status: number,
+  router: ReturnType<typeof useRouter>
+): Promise<boolean> => {
+  if (status !== 401) return false;
+
+  const { refreshTokens } = useAuth();
+  const refreshed = await refreshTokens();
+  if (refreshed === true) return true;
+
+  clearAuthTokens();
+  router.push("/auth/login");
+  return false;
 };
 
 const throwResponseError = async (response: Response): Promise<never> => {
@@ -34,14 +48,24 @@ export const useListeningLogs = () => {
       ...options,
       headers: { ...getAuthHeaders(), ...options.headers },
     });
-    handleAuthError(response.status, router);
+
+    if (response.status === 401) {
+      const refreshed = await handleAuthError(response.status, router);
+      if (refreshed) {
+        return fetch(url, {
+          ...options,
+          headers: { ...getAuthHeaders(), ...options.headers },
+        });
+      }
+    }
+
     return response;
   };
 
   const list = useFetch<ListeningLog[]>(`${apiBase}/listening-logs`, {
     headers: computed(() => getAuthHeaders()),
-    onResponseError({ response }) {
-      handleAuthError(response.status, router);
+    async onResponseError({ response }) {
+      await handleAuthError(response.status, router);
     },
   });
 
@@ -80,8 +104,8 @@ export const useListeningLog = (id: () => string) => {
   const router = useRouter();
   return useFetch<ListeningLog>(() => `${apiBase}/listening-logs/${id()}`, {
     headers: computed(() => getAuthHeaders()),
-    onResponseError({ response }) {
-      handleAuthError(response.status, router);
+    async onResponseError({ response }) {
+      await handleAuthError(response.status, router);
     },
   });
 };

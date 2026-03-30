@@ -183,6 +183,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const authLogin = fn("AuthLogin", "auth/login.ts");
     const authVerifyEmail = fn("AuthVerifyEmail", "auth/verify-email.ts");
     const authResendCode = fn("AuthResendCode", "auth/resend-verification-code.ts");
+    const authRefresh = fn("AuthRefresh", "auth/refresh.ts");
 
     // -------------------------
     // Cognito 権限付与
@@ -218,6 +219,14 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       resources: [userPool.userPoolArn],
     });
     authResendCode.addToRolePolicy(cognitoResendCodePolicy);
+
+    // auth/refresh: InitiateAuth (REFRESH_TOKEN_AUTH) を実行
+    const cognitoRefreshPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["cognito-idp:InitiateAuth"],
+      resources: [userPool.userPoolArn],
+    });
+    authRefresh.addToRolePolicy(cognitoRefreshPolicy);
 
     // -------------------------
     // DynamoDB 権限付与
@@ -331,6 +340,10 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // /auth/resend-verification-code (認証コード再送信: 認証不要)
     const authResendCodeResource = authResource.addResource("resend-verification-code");
     authResendCodeResource.addMethod("POST", integ(authResendCode));
+
+    // /auth/refresh (トークンリフレッシュ: 認証不要)
+    const authRefreshResource = authResource.addResource("refresh");
+    authRefreshResource.addMethod("POST", integ(authRefresh));
 
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)
@@ -448,6 +461,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       authLogin,
       authVerifyEmail,
       authResendCode,
+      authRefresh,
     ].forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigins.join(","));
     });
@@ -470,6 +484,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     this.addCors(authLoginResource, ["POST", "OPTIONS"]);
     this.addCors(authVerifyEmailResource, ["POST", "OPTIONS"]);
     this.addCors(authResendCodeResource, ["POST", "OPTIONS"]);
+    this.addCors(authRefreshResource, ["POST", "OPTIONS"]);
 
     // API Gateway 自身が返す 4XX/5XX にも CORS ヘッダを付与
     api.addGatewayResponse("Default4xxCors", {
@@ -562,6 +577,7 @@ function handler(event) {
       authLogin,
       authVerifyEmail,
       authResendCode,
+      authRefresh,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成

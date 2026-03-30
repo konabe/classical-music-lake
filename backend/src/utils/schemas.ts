@@ -122,3 +122,9 @@ export const verifyEmailSchema = z.object({
 export const resendVerificationCodeSchema = z.object({
   email: emailSchema,
 });
+
+export const refreshTokenSchema = z.object({
+  refreshToken: z
+    .string({ error: () => "refreshToken is required" })
+    .min(1, "refreshToken is required"),
+});
