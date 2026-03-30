@@ -164,7 +164,7 @@ aws dynamodb scan \
 
 デプロイ後、CDK の Output で Cognito User Pool ID と App Client ID が表示される：
 
-```
+```text
 CognitoUserPoolId = <pool-id>
 CognitoClientId = <client-id>
 CognitoUserPoolArn = arn:aws:cognito-idp:ap-northeast-1:xxxxx:userpool/<pool-id>

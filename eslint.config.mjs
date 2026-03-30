@@ -46,12 +46,18 @@ const md040Rule = {
       Program() {
         const src = context.sourceCode.getText();
         const lines = src.split(/\r\n?|\n/g);
+        let inBlock = false;
         lines.forEach((line, i) => {
-          if (/^```\s*$/.test(line)) {
+          if (!inBlock && /^```\s*$/.test(line)) {
+            inBlock = true;
             context.report({
               loc: { line: i + 1, column: 0 },
               messageId: "noLang",
             });
+          } else if (!inBlock && /^```\S/.test(line)) {
+            inBlock = true;
+          } else if (inBlock && /^```\s*$/.test(line)) {
+            inBlock = false;
           }
         });
       },
@@ -191,7 +197,7 @@ export default withNuxt(
     rules: {
       // Markdown ファイルには JS 向けルールを適用しない
       "no-irregular-whitespace": "off",
-      "local/md040": "warn",
+      "local/md040": "error",
     },
   }
 );

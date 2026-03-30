@@ -26,7 +26,7 @@
 
 ### 2.1 システム構成図
 
-```
+```text
 [ユーザー]
     ↓
 [CloudFront] ← S3 (静的ホスティング)
@@ -73,6 +73,9 @@
 | `VideoPlayer`         | 動画 URL を受け取り YouTube 埋め込み / 外部リンクを切り替えて表示する。再生開始時に `play` を emit                                    |
 | `QuickLogForm`        | 作曲家・曲名を自動入力し、評価・お気に入り・メモを入力して `submit` を emit するフォーム                                              |
 | `PieceDetailTemplate` | 楽曲詳細ページのレイアウト。`VideoPlayer` の `play` イベント後に `QuickLogForm` を表示する                                            |
+| `CategoryBadge`       | カテゴリのラベルと値を `label: value` 形式のバッジとして表示する Atom コンポーネント                                                  |
+| `PieceCategoryList`   | 楽曲の4軸カテゴリ（ジャンル・時代・編成・地域）のうち設定済みのものを `CategoryBadge` で並列表示する Molecule コンポーネント          |
+| `PieceItem`           | 楽曲一覧の各行コンポーネント。曲名・作曲家に加えて `PieceCategoryList` でカテゴリバッジを表示する                                     |
 
 #### フロントエンド ユーティリティ
 
@@ -324,7 +327,7 @@ Content-Type: application/json
 
 **リクエスト**
 
-```
+```http
 GET /listening-logs
 Authorization: Bearer {accessToken}
 ```
@@ -358,7 +361,7 @@ Authorization: Bearer {accessToken}
 
 **リクエスト**
 
-```
+```http
 GET /listening-logs/{id}
 Authorization: Bearer {accessToken}
 ```
@@ -435,7 +438,7 @@ Content-Type: application/json
 
 **リクエスト**
 
-```
+```http
 DELETE /listening-logs/{id}
 Authorization: Bearer {accessToken}
 ```
@@ -569,7 +572,7 @@ Authorization: Bearer {accessToken}
 
 ### 6.2 デプロイフロー
 
-```
+```text
 GitHub (main branch)         → prod 自動デプロイ
 GitHub (stg* タグ push)      → stg 自動デプロイ
 GitHub (dev* タグ push)      → dev 自動デプロイ

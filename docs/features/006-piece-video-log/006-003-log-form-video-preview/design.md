@@ -43,7 +43,7 @@
 楽曲マスタ選択セレクトの直下に `VideoPlayer` を追加する。
 `selectedVideoUrl` が truthy な場合のみ `v-if` で表示する。
 
-```
+```text
 [ 楽曲マスタから選択 (select) ]
 [ VideoPlayer ] ← selectedVideoUrl が truthy なときのみ表示
 [ 作曲家 / 曲名 ]

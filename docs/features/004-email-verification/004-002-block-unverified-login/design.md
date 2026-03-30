@@ -38,7 +38,7 @@
 
 ### ページ遷移フロー
 
-```
+```text
 [ログイン画面]
   ↓ メール未確認エラー (errorType === "not_confirmed")
   ↓ sessionStorage に pendingPassword を保存
