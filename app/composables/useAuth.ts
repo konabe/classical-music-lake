@@ -42,6 +42,16 @@ const VERIFY_EMAIL_ERROR_TYPE_MAP: Record<string, VerifyEmailErrorType> = {
   TooManyRequests: "too_many_requests",
 };
 
+const parseErrorBody = async (
+  response: Response
+): Promise<{ message?: string; error?: string }> => {
+  return response.json().catch(() => ({}));
+};
+
+const getNetworkErrorMessage = (error: unknown): string => {
+  return error instanceof Error ? error.message : "A network error occurred. Please try again.";
+};
+
 export interface LoginResult {
   success: boolean;
   accessToken?: string;
@@ -115,7 +125,7 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await parseErrorBody(response);
         return {
           success: false,
           error: errorData.message || "Registration failed. Please try again.",
@@ -128,8 +138,7 @@ export const useAuth = () => {
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+        error: getNetworkErrorMessage(error),
       };
     }
   };
@@ -161,7 +170,7 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await parseErrorBody(response);
         const errorType: LoginErrorType =
           errorData.error === "UserNotConfirmed" ? "not_confirmed" : "credentials";
         return {
@@ -204,8 +213,7 @@ export const useAuth = () => {
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+        error: getNetworkErrorMessage(error),
         errorType: "general",
       };
     }
@@ -222,9 +230,9 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await parseErrorBody(response);
         const errorType: VerifyEmailErrorType =
-          VERIFY_EMAIL_ERROR_TYPE_MAP[errorData.error] ?? "general";
+          VERIFY_EMAIL_ERROR_TYPE_MAP[errorData.error ?? ""] ?? "general";
         return {
           success: false,
           error: errorData.message || "Verification failed. Please try again.",
@@ -236,8 +244,7 @@ export const useAuth = () => {
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+        error: getNetworkErrorMessage(error),
         errorType: "general",
       };
     }
@@ -254,7 +261,7 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await parseErrorBody(response);
         return {
           success: false,
           error: errorData.message || "Failed to resend verification code. Please try again.",
@@ -265,8 +272,7 @@ export const useAuth = () => {
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+        error: getNetworkErrorMessage(error),
       };
     }
   };
