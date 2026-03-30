@@ -2,8 +2,9 @@
  * prod → stg DynamoDB 同期スクリプト
  *
  * 対象テーブル:
- *   classical-music-listening-logs      → classical-music-listening-logs-stg
- *   classical-music-pieces              → classical-music-pieces-stg
+ *   classical-music-pieces → classical-music-pieces-stg
+ *
+ * 視聴ログ（classical-music-listening-logs）は個人情報を含むため同期対象外。
  *
  * 使用方法:
  *   node backend/scripts/sync-dynamodb.mjs
@@ -18,25 +19,7 @@ import { DynamoDBClient, ScanCommand, BatchWriteItemCommand } from "@aws-sdk/cli
 const REGION = "ap-northeast-1";
 const client = new DynamoDBClient({ region: REGION });
 
-/**
- * listening-logs の個人情報を匿名化する
- * - userId: NULL に置換（個人識別子の除去）
- * - memo: 削除（自由入力欄に含まれる個人情報の除去）
- */
-function anonymizeListeningLog(item) {
-  const anonymized = { ...item };
-  anonymized.userId = { NULL: true };
-  delete anonymized.memo;
-  return anonymized;
-}
-
 const TABLES = [
-  {
-    source: "classical-music-listening-logs",
-    dest: "classical-music-listening-logs-stg",
-    keyAttributes: ["id"],
-    transform: anonymizeListeningLog,
-  },
   {
     source: "classical-music-pieces",
     dest: "classical-music-pieces-stg",
