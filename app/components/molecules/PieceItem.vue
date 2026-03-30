@@ -17,12 +17,7 @@ const emit = defineEmits<{
     <div class="piece-main">
       <div class="piece-title">{{ piece.title }}</div>
       <div class="piece-composer">{{ piece.composer }}</div>
-      <div class="piece-categories">
-        <CategoryBadge v-if="piece.genre" label="ジャンル" :value="piece.genre" />
-        <CategoryBadge v-if="piece.era" label="時代" :value="piece.era" />
-        <CategoryBadge v-if="piece.formation" label="編成" :value="piece.formation" />
-        <CategoryBadge v-if="piece.region" label="地域" :value="piece.region" />
-      </div>
+      <PieceCategoryList :piece="piece" />
     </div>
     <div class="piece-actions">
       <button type="button" class="btn-detail" @click="emit('detail')">詳細</button>
@@ -61,10 +56,7 @@ const emit = defineEmits<{
   color: #666;
 }
 
-.piece-categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
+.piece-main :deep(.piece-category-list) {
   margin-top: 0.4rem;
 }
 
