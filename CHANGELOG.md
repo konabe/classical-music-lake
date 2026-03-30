@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.4.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.3.0...classical-music-lake-v1.4.0) (2026-03-30)
+
+
+### Features
+
+* prod→stg DynamoDB 同期ワークフローを追加 ([0c41568](https://github.com/konabe/classical-music-lake/commit/0c41568636c2c3b711cd774007a2f5c72f7e9708))
+* youtube embed に rel=0・fs=0 を追加して関連動画と全画面ボタンを制限する ([4ab266b](https://github.com/konabe/classical-music-lake/commit/4ab266b69ce72414f63b5ef2777b15d6add0d990)), closes [#235](https://github.com/konabe/classical-music-lake/issues/235)
+* ステージング環境と開発環境のデプロイを追加 (issue [#239](https://github.com/konabe/classical-music-lake/issues/239)) ([8d63625](https://github.com/konabe/classical-music-lake/commit/8d636257daebcb1de1be29e9f55f8c4443700051))
+* テストでのtoBeTruthy/toBeFalsy使用をESLintで禁止 ([b355d15](https://github.com/konabe/classical-music-lake/commit/b355d156456b47d5e2afb1dcb030ce9d3e7468b5))
+* 楽曲マスタにカテゴリ（ジャンル・時代・編成・地域）を追加 ([359d54a](https://github.com/konabe/classical-music-lake/commit/359d54a2a27ace3218488f5ea76a2f20e22a0fc2))
+* 楽曲マスタにカテゴリ（ジャンル・時代・編成・地域）を追加 ([a793029](https://github.com/konabe/classical-music-lake/commit/a793029062c153b87e3d6d2c783f9f3b202658f6))
+* 楽曲一覧・詳細画面にカテゴリバッジを表示する ([41bd0f5](https://github.com/konabe/classical-music-lake/commit/41bd0f518cb0ef970f15b39d9ae0abfff4eac964))
+
+
+### Bug Fixes
+
+* cdk デプロイを api url 取得より前に実行するよう順序を修正 ([04c7a84](https://github.com/konabe/classical-music-lake/commit/04c7a84187d425cc6fec7fa05557c9d708e64699))
+* coderabbit レビュー指摘の修正 ([4be3e6e](https://github.com/konabe/classical-music-lake/commit/4be3e6e674c2f5c8c963697dec7495829991ccc3))
+* happy-dom を 20.8.9 に更新して高深刻度脆弱性を修正 ([c561e2e](https://github.com/konabe/classical-music-lake/commit/c561e2e6eed2fde80f260f9d3cf61797233ad418))
+* parsing.ts の strict-boolean-expressions エラーを修正 ([c7d2de6](https://github.com/konabe/classical-music-lake/commit/c7d2de6bd1151933524f6d78f1715cb501280b29))
+* truthy/falsy依存を明示的な比較に修正しESLintルールを追加 ([a255092](https://github.com/konabe/classical-music-lake/commit/a255092b047e6c89828b8c205761257d1e058040)), closes [#252](https://github.com/konabe/classical-music-lake/issues/252)
+* テストのtoBeTruthy()をtoBeDefined()に修正 ([339a402](https://github.com/konabe/classical-music-lake/commit/339a40285eceeb609ec7c1d8e6eeb94c290d0907))
+* ログイン後に戻るボタンで無限ループが発生するバグを修正 ([db13d66](https://github.com/konabe/classical-music-lake/commit/db13d66e4aae60e3118f6b887270098a3323ada0))
+* ログイン後に戻るボタンで無限ループが発生するバグを修正 ([#253](https://github.com/konabe/classical-music-lake/issues/253)) ([01c09e9](https://github.com/konabe/classical-music-lake/commit/01c09e9de2e146750f43ea1cc85180dbcf4d031a))
+* 初回デプロイ時にスタック未存在でも継続できるよう api url 取得を非必須化 ([9f19d24](https://github.com/konabe/classical-music-lake/commit/9f19d24e8c768e1b24fbf57760166c58488c2f89))
+
+
+### Performance Improvements
+
+* cdk deploy を高速化（hotswap-fallback + BucketDeployment 並列化） ([61cd87f](https://github.com/konabe/classical-music-lake/commit/61cd87f43e756a373f934cfcfc404dc3c7dadc93))
+* デプロイワークフローの npm インストールを高速化 ([7034e8a](https://github.com/konabe/classical-music-lake/commit/7034e8a63c878ad3ed6e1d43b7797cd883207a06))
+* デプロイワークフローの npm インストールを高速化 ([c820b5b](https://github.com/konabe/classical-music-lake/commit/c820b5b325f13b7dff1eac96f444b688a50aae29))
+
+
+### Reverts
+
+* cdk bootstrap の条件付き実行を元に戻す ([663546a](https://github.com/konabe/classical-music-lake/commit/663546ab54ac8b792cb854edf4e816bb37dfcbde))
+* deploy.yml のステップ順序を元に戻す ([692eec0](https://github.com/konabe/classical-music-lake/commit/692eec0f0ddeca78542a8fff8f759b290c89f43e))
+
 ## [1.3.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.2.1...classical-music-lake-v1.3.0) (2026-03-28)
 
 
