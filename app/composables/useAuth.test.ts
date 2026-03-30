@@ -290,6 +290,40 @@ describe("useAuth", () => {
       expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
     });
 
+    it("レスポンスに refreshToken がない場合 success: false を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+          expiresIn: 3600,
+        }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+    });
+
+    it("レスポンスに expiresIn がない場合 success: false を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+          refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
+        }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+    });
+
     it("認証情報が間違いの場合 success: false とエラーメッセージを返す", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
@@ -378,6 +412,12 @@ describe("useAuth", () => {
       const { isTokenExpired } = useAuth();
       expect(isTokenExpired()).toBe(false);
     });
+
+    it("tokenExpiresAt が不正な文字列の場合 true を返す", () => {
+      localStorage.setItem(TOKEN_EXPIRES_AT_KEY, "invalid-number");
+      const { isTokenExpired } = useAuth();
+      expect(isTokenExpired()).toBe(true);
+    });
   });
 
   describe("refreshTokens", () => {
@@ -411,6 +451,20 @@ describe("useAuth", () => {
       mockFetch.mockResolvedValue({
         ok: false,
         json: async () => ({ error: "InvalidRefreshToken" }),
+      });
+
+      const { refreshTokens } = useAuth();
+      expect(await refreshTokens()).toBe(false);
+    });
+
+    it("レスポンスに expiresIn がない場合 false を返す", async () => {
+      localStorage.setItem(REFRESH_TOKEN_KEY, "valid-refresh-token");
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "new-access-token",
+          idToken: "new-id-token",
+        }),
       });
 
       const { refreshTokens } = useAuth();

@@ -188,16 +188,26 @@ export const useAuth = () => {
           errorType: "general",
         };
       }
+      if (typeof data.refreshToken !== "string" || data.refreshToken.trim() === "") {
+        return {
+          success: false,
+          error: "Invalid session data received. Please try again.",
+          errorType: "general",
+        };
+      }
+      if (typeof data.expiresIn !== "number") {
+        return {
+          success: false,
+          error: "Invalid session data received. Please try again.",
+          errorType: "general",
+        };
+      }
       try {
         localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
         localStorage.setItem(ID_TOKEN_KEY, data.idToken);
-        if (typeof data.refreshToken === "string" && data.refreshToken.trim() !== "") {
-          localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-        }
-        if (typeof data.expiresIn === "number") {
-          const expiresAt = Date.now() + data.expiresIn * 1000;
-          localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
-        }
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+        const expiresAt = Date.now() + data.expiresIn * 1000;
+        localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
       } catch {
         return {
           success: false,
@@ -283,7 +293,9 @@ export const useAuth = () => {
   const isTokenExpired = (): boolean => {
     const expiresAt = localStorage.getItem(TOKEN_EXPIRES_AT_KEY);
     if (expiresAt === null) return true;
-    return Date.now() >= Number(expiresAt);
+    const parsedExpiresAt = Number(expiresAt);
+    if (!Number.isFinite(parsedExpiresAt)) return true;
+    return Date.now() >= parsedExpiresAt;
   };
 
   const refreshTokens = async (): Promise<boolean> => {
@@ -302,13 +314,12 @@ export const useAuth = () => {
       const data = await response.json();
       if (typeof data.accessToken !== "string" || data.accessToken.trim() === "") return false;
       if (typeof data.idToken !== "string" || data.idToken.trim() === "") return false;
+      if (typeof data.expiresIn !== "number") return false;
 
       localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
       localStorage.setItem(ID_TOKEN_KEY, data.idToken);
-      if (typeof data.expiresIn === "number") {
-        const expiresAt = Date.now() + data.expiresIn * 1000;
-        localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
-      }
+      const expiresAt = Date.now() + data.expiresIn * 1000;
+      localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
       return true;
     } catch {
       return false;

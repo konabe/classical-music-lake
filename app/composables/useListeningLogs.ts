@@ -51,11 +51,16 @@ export const useListeningLogs = () => {
 
     if (response.status === 401) {
       const refreshed = await handleAuthError(response.status, router);
-      if (refreshed) {
-        return fetch(url, {
+      if (refreshed === true) {
+        const retried = await fetch(url, {
           ...options,
           headers: { ...getAuthHeaders(), ...options.headers },
         });
+        if (retried.status === 401) {
+          clearAuthTokens();
+          router.push("/auth/login");
+        }
+        return retried;
       }
     }
 
@@ -65,7 +70,10 @@ export const useListeningLogs = () => {
   const list = useFetch<ListeningLog[]>(`${apiBase}/listening-logs`, {
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
-      await handleAuthError(response.status, router);
+      const refreshed = await handleAuthError(response.status, router);
+      if (refreshed === true) {
+        await list.refresh();
+      }
     },
   });
 
@@ -102,10 +110,14 @@ export const useListeningLogs = () => {
 export const useListeningLog = (id: () => string) => {
   const apiBase = useApiBase();
   const router = useRouter();
-  return useFetch<ListeningLog>(() => `${apiBase}/listening-logs/${id()}`, {
+  const result = useFetch<ListeningLog>(() => `${apiBase}/listening-logs/${id()}`, {
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
-      await handleAuthError(response.status, router);
+      const refreshed = await handleAuthError(response.status, router);
+      if (refreshed === true) {
+        await result.refresh();
+      }
     },
   });
+  return result;
 };

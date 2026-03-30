@@ -1,4 +1,9 @@
-import { ACCESS_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY, REFRESH_TOKEN_KEY } from "~/composables/useAuth";
+import {
+  ACCESS_TOKEN_KEY,
+  ID_TOKEN_KEY,
+  TOKEN_EXPIRES_AT_KEY,
+  REFRESH_TOKEN_KEY,
+} from "~/composables/useAuth";
 
 const { mockNavigateTo, mockRefreshTokens } = vi.hoisted(() => ({
   mockNavigateTo: vi.fn(),
@@ -81,13 +86,19 @@ describe("auth middleware", () => {
 
   it("トークンが期限切れでリフレッシュ失敗時はログインページにリダイレクトする", async () => {
     localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
+    localStorage.setItem(ID_TOKEN_KEY, "id-token-value");
     localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() - 1000));
+    localStorage.setItem(REFRESH_TOKEN_KEY, "refresh-token");
     mockRefreshTokens.mockResolvedValue(false);
 
     await runMiddleware("/listening-logs");
 
     expect(mockRefreshTokens).toHaveBeenCalled();
     expect(mockNavigateTo).toHaveBeenCalledWith("/auth/login", { replace: true });
+    expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
+    expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
+    expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBeNull();
+    expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).toBeNull();
   });
 
   it("tokenExpiresAt がない場合はリフレッシュせずそのまま通す", async () => {
