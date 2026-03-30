@@ -6,6 +6,7 @@ export const ID_TOKEN_KEY = "idToken";
 export const REFRESH_TOKEN_KEY = "refreshToken";
 export const TOKEN_EXPIRES_AT_KEY = "tokenExpiresAt";
 
+const MILLISECONDS_PER_SECOND = 1000;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_UPPERCASE_REGEX = /[A-Z]/;
@@ -206,7 +207,7 @@ export const useAuth = () => {
         localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
         localStorage.setItem(ID_TOKEN_KEY, data.idToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-        const expiresAt = Date.now() + data.expiresIn * 1000;
+        const expiresAt = Date.now() + data.expiresIn * MILLISECONDS_PER_SECOND;
         localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
       } catch {
         return {
@@ -318,7 +319,7 @@ export const useAuth = () => {
 
       localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
       localStorage.setItem(ID_TOKEN_KEY, data.idToken);
-      const expiresAt = Date.now() + data.expiresIn * 1000;
+      const expiresAt = Date.now() + data.expiresIn * MILLISECONDS_PER_SECOND;
       localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
       return true;
     } catch {
