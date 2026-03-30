@@ -55,14 +55,19 @@ classical-music-lake/
 │   │           ├── index.vue     # 詳細（動画再生 + クイックログ記録）
 │   │           └── edit.vue      # 編集
 │   ├── components/               # 共通UIコンポーネント（Atomic Design）
+│   │   ├── atoms/
+│   │   │   ├── CategoryBadge.vue # カテゴリ情報をラベル形式のバッジとして表示する
+│   │   │   └── ...
 │   │   ├── molecules/
 │   │   │   ├── VideoPlayer.vue   # YouTube 埋め込み / 外部リンク切り替えプレイヤー
+│   │   │   ├── PieceCategoryList.vue  # 楽曲の4軸カテゴリを集約して CategoryBadge で表示する
+│   │   │   ├── PieceItem.vue     # 楽曲一覧の各行（曲名・作曲家・カテゴリバッジ表示）
 │   │   │   └── ...
 │   │   ├── organisms/
 │   │   │   ├── QuickLogForm.vue  # 動画再生後に表示するクイックログ入力フォーム
 │   │   │   └── ...
 │   │   └── templates/
-│   │       ├── PieceDetailTemplate.vue  # 楽曲詳細ページレイアウト
+│   │       ├── PieceDetailTemplate.vue  # 楽曲詳細ページレイアウト（カテゴリバッジ表示含む）
 │   │       └── ...
 │   ├── composables/              # Vue Composables（共通ロジック）
 │   ├── utils/
