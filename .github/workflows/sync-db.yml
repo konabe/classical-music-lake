@@ -1,0 +1,59 @@
+name: Sync DB (prod → stg)
+
+# 毎日 0:00 JST (= UTC 15:00) に prod → stg の DynamoDB データを同期する
+# workflow_dispatch で手動実行も可能
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: sync-db
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      # ----------------------------------------
+      # AWS_ROLE_TO_ASSUME シークレットの存在確認
+      # ----------------------------------------
+      - name: Validate required secrets
+        env:
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          if [ -z "$AWS_ROLE_TO_ASSUME" ]; then
+            echo "::error::AWS_ROLE_TO_ASSUME secret is not set."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ap-northeast-1
+
+      # ----------------------------------------
+      # バックエンド依存関係のインストール（AWS SDK 利用のため）
+      # ----------------------------------------
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      # ----------------------------------------
+      # prod → stg DynamoDB 同期
+      # ----------------------------------------
+      - name: Sync DynamoDB prod → stg
+        run: node backend/scripts/sync-dynamodb.mjs
