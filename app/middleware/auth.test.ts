@@ -5,9 +5,10 @@ import {
   REFRESH_TOKEN_KEY,
 } from "~/composables/useAuth";
 
-const { mockNavigateTo, mockRefreshTokens } = vi.hoisted(() => ({
+const { mockNavigateTo, mockRefreshTokens, mockIsTokenExpired } = vi.hoisted(() => ({
   mockNavigateTo: vi.fn(),
   mockRefreshTokens: vi.fn(),
+  mockIsTokenExpired: vi.fn(),
 }));
 
 vi.mock("#app/composables/router", async (importOriginal) => {
@@ -23,6 +24,7 @@ vi.mock("~/composables/useAuth", async (importOriginal) => {
   return {
     ...actual,
     useAuth: () => ({
+      isTokenExpired: mockIsTokenExpired,
       refreshTokens: mockRefreshTokens,
       clearTokens: () => {
         localStorage.removeItem(actual.ACCESS_TOKEN_KEY);
@@ -51,6 +53,8 @@ vi.stubGlobal("localStorage", {
 beforeEach(() => {
   mockNavigateTo.mockClear();
   mockRefreshTokens.mockClear();
+  mockIsTokenExpired.mockClear();
+  mockIsTokenExpired.mockReturnValue(false);
   localStorage.clear();
 });
 
@@ -70,7 +74,7 @@ describe("auth middleware", () => {
 
   it("トークンがあり有効期限内の場合はリダイレクトしない", async () => {
     localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
-    localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() + 60000));
+    mockIsTokenExpired.mockReturnValue(false);
 
     await runMiddleware("/listening-logs");
 
@@ -80,8 +84,7 @@ describe("auth middleware", () => {
 
   it("トークンがあり有効期限が切れている場合、リフレッシュを試行する", async () => {
     localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
-    localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() - 1000));
-    localStorage.setItem(REFRESH_TOKEN_KEY, "refresh-token");
+    mockIsTokenExpired.mockReturnValue(true);
     mockRefreshTokens.mockResolvedValue(true);
 
     await runMiddleware("/listening-logs");
@@ -93,8 +96,9 @@ describe("auth middleware", () => {
   it("トークンが期限切れでリフレッシュ失敗時はログインページにリダイレクトする", async () => {
     localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
     localStorage.setItem(ID_TOKEN_KEY, "id-token-value");
-    localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() - 1000));
     localStorage.setItem(REFRESH_TOKEN_KEY, "refresh-token");
+    localStorage.setItem(TOKEN_EXPIRES_AT_KEY, "1234567890");
+    mockIsTokenExpired.mockReturnValue(true);
     mockRefreshTokens.mockResolvedValue(false);
 
     await runMiddleware("/listening-logs");
@@ -105,14 +109,5 @@ describe("auth middleware", () => {
     expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
     expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBeNull();
     expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).toBeNull();
-  });
-
-  it("tokenExpiresAt がない場合はリフレッシュせずそのまま通す", async () => {
-    localStorage.setItem(ACCESS_TOKEN_KEY, "token-value");
-
-    await runMiddleware("/listening-logs");
-
-    expect(mockRefreshTokens).not.toHaveBeenCalled();
-    expect(mockNavigateTo).not.toHaveBeenCalled();
   });
 });

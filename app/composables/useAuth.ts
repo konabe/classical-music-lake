@@ -8,6 +8,7 @@ export const TOKEN_EXPIRES_AT_KEY = "tokenExpiresAt";
 
 const MILLISECONDS_PER_SECOND = 1000;
 let refreshInFlight: Promise<boolean> | null = null;
+let refreshGeneration = 0;
 
 const saveSessionTokens = (accessToken: string, idToken: string, expiresIn: number): void => {
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
@@ -308,6 +309,7 @@ export const useAuth = () => {
     if (refreshInFlight !== null) return refreshInFlight;
 
     const doRefresh = async (): Promise<boolean> => {
+      const generation = refreshGeneration;
       const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
       if (refreshToken === null) return false;
 
@@ -325,6 +327,7 @@ export const useAuth = () => {
         if (typeof data.idToken !== "string" || data.idToken.trim() === "") return false;
         if (typeof data.expiresIn !== "number") return false;
 
+        if (generation !== refreshGeneration) return false;
         saveSessionTokens(data.accessToken, data.idToken, data.expiresIn);
         return true;
       } catch {
@@ -343,6 +346,7 @@ export const useAuth = () => {
   };
 
   const clearTokens = (): void => {
+    refreshGeneration++;
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(ID_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);

@@ -1,4 +1,4 @@
-import { ACCESS_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY } from "~/composables/useAuth";
+import { ACCESS_TOKEN_KEY } from "~/composables/useAuth";
 
 export default defineNuxtRouteMiddleware(async () => {
   if (import.meta.server) return;
@@ -10,11 +10,8 @@ export default defineNuxtRouteMiddleware(async () => {
     return navigateTo("/auth/login", { replace: true });
   }
 
-  const expiresAt = localStorage.getItem(TOKEN_EXPIRES_AT_KEY);
-  const parsedExpiresAt = expiresAt !== null ? Number(expiresAt) : NaN;
-  const isExpired = Number.isFinite(parsedExpiresAt) && Date.now() >= parsedExpiresAt;
-  if (isExpired) {
-    const { refreshTokens, clearTokens } = useAuth();
+  const { isTokenExpired, refreshTokens, clearTokens } = useAuth();
+  if (isTokenExpired() === true) {
     const refreshed = await refreshTokens();
     if (refreshed !== true) {
       clearTokens();

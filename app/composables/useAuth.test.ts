@@ -478,6 +478,38 @@ describe("useAuth", () => {
       const { refreshTokens } = useAuth();
       expect(await refreshTokens()).toBe(false);
     });
+
+    it("リフレッシュ中に clearTokens が呼ばれた場合トークンを書き戻さない", async () => {
+      localStorage.setItem(REFRESH_TOKEN_KEY, "valid-refresh-token");
+
+      let resolveFetch: (value: unknown) => void;
+      mockFetch.mockReturnValue(
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        })
+      );
+
+      const { refreshTokens, clearTokens } = useAuth();
+      const refreshPromise = refreshTokens();
+
+      clearTokens();
+      expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBeNull();
+
+      resolveFetch!({
+        ok: true,
+        json: async () => ({
+          accessToken: "new-access-token",
+          idToken: "new-id-token",
+          expiresIn: 3600,
+        }),
+      });
+
+      const result = await refreshPromise;
+      expect(result).toBe(false);
+      expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).toBeNull();
+    });
   });
 
   describe("verifyEmail", () => {
