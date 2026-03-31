@@ -7,6 +7,7 @@ export const REFRESH_TOKEN_KEY = "refreshToken";
 export const TOKEN_EXPIRES_AT_KEY = "tokenExpiresAt";
 
 const MILLISECONDS_PER_SECOND = 1000;
+let refreshInFlight: Promise<boolean> | null = null;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_UPPERCASE_REGEX = /[A-Z]/;
@@ -299,32 +300,41 @@ export const useAuth = () => {
     return Date.now() >= parsedExpiresAt;
   };
 
-  const refreshTokens = async (): Promise<boolean> => {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (refreshToken === null) return false;
+  const refreshTokens = (): Promise<boolean> => {
+    if (refreshInFlight !== null) return refreshInFlight;
 
-    try {
-      const response = await fetch(`${apiBase}/auth/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken }),
-      });
+    const doRefresh = async (): Promise<boolean> => {
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (refreshToken === null) return false;
 
-      if (!response.ok) return false;
+      try {
+        const response = await fetch(`${apiBase}/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
 
-      const data = await response.json();
-      if (typeof data.accessToken !== "string" || data.accessToken.trim() === "") return false;
-      if (typeof data.idToken !== "string" || data.idToken.trim() === "") return false;
-      if (typeof data.expiresIn !== "number") return false;
+        if (!response.ok) return false;
 
-      localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-      localStorage.setItem(ID_TOKEN_KEY, data.idToken);
-      const expiresAt = Date.now() + data.expiresIn * MILLISECONDS_PER_SECOND;
-      localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
-      return true;
-    } catch {
-      return false;
-    }
+        const data = await response.json();
+        if (typeof data.accessToken !== "string" || data.accessToken.trim() === "") return false;
+        if (typeof data.idToken !== "string" || data.idToken.trim() === "") return false;
+        if (typeof data.expiresIn !== "number") return false;
+
+        localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+        localStorage.setItem(ID_TOKEN_KEY, data.idToken);
+        const expiresAt = Date.now() + data.expiresIn * MILLISECONDS_PER_SECOND;
+        localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    refreshInFlight = doRefresh().finally(() => {
+      refreshInFlight = null;
+    });
+    return refreshInFlight;
   };
 
   const isAuthenticated = (): boolean => {
