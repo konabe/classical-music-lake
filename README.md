@@ -1,5 +1,8 @@
 # Classical Music Lake
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=konabe_classical-music-lake&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=konabe_classical-music-lake)
+[![Known Vulnerabilities](https://snyk.io/test/github/konabe/classical-music-lake/badge.svg)](https://snyk.io/test/github/konabe/classical-music-lake)
+
 クラシック音楽の鑑賞体験を記録・管理するWebアプリケーション。
 
 ## 機能一覧
