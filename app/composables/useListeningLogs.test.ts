@@ -20,6 +20,12 @@ vi.mock("./useAuth", async (importOriginal) => {
     ...actual,
     useAuth: () => ({
       refreshTokens: mockRefreshTokens,
+      clearTokens: () => {
+        localStorage.removeItem(actual.ACCESS_TOKEN_KEY);
+        localStorage.removeItem(actual.ID_TOKEN_KEY);
+        localStorage.removeItem(actual.REFRESH_TOKEN_KEY);
+        localStorage.removeItem(actual.TOKEN_EXPIRES_AT_KEY);
+      },
     }),
   };
 });

@@ -8,6 +8,13 @@ export const TOKEN_EXPIRES_AT_KEY = "tokenExpiresAt";
 
 const MILLISECONDS_PER_SECOND = 1000;
 let refreshInFlight: Promise<boolean> | null = null;
+
+const saveSessionTokens = (accessToken: string, idToken: string, expiresIn: number): void => {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  localStorage.setItem(ID_TOKEN_KEY, idToken);
+  const expiresAt = Date.now() + expiresIn * MILLISECONDS_PER_SECOND;
+  localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
+};
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_UPPERCASE_REGEX = /[A-Z]/;
@@ -205,11 +212,8 @@ export const useAuth = () => {
         };
       }
       try {
-        localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-        localStorage.setItem(ID_TOKEN_KEY, data.idToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-        const expiresAt = Date.now() + data.expiresIn * MILLISECONDS_PER_SECOND;
-        localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
+        saveSessionTokens(data.accessToken, data.idToken, data.expiresIn);
       } catch {
         return {
           success: false,
@@ -321,10 +325,7 @@ export const useAuth = () => {
         if (typeof data.idToken !== "string" || data.idToken.trim() === "") return false;
         if (typeof data.expiresIn !== "number") return false;
 
-        localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-        localStorage.setItem(ID_TOKEN_KEY, data.idToken);
-        const expiresAt = Date.now() + data.expiresIn * MILLISECONDS_PER_SECOND;
-        localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
+        saveSessionTokens(data.accessToken, data.idToken, data.expiresIn);
         return true;
       } catch {
         return false;
@@ -341,11 +342,15 @@ export const useAuth = () => {
     return localStorage.getItem(ACCESS_TOKEN_KEY) !== null;
   };
 
-  const logout = (): void => {
+  const clearTokens = (): void => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(ID_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
+  };
+
+  const logout = (): void => {
+    clearTokens();
     router.push("/auth/login");
   };
 
@@ -360,6 +365,7 @@ export const useAuth = () => {
     isAuthenticated,
     isTokenExpired,
     refreshTokens,
+    clearTokens,
     logout,
   };
 };

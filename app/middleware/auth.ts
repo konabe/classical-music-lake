@@ -1,9 +1,4 @@
-import {
-  ACCESS_TOKEN_KEY,
-  ID_TOKEN_KEY,
-  REFRESH_TOKEN_KEY,
-  TOKEN_EXPIRES_AT_KEY,
-} from "~/composables/useAuth";
+import { ACCESS_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY } from "~/composables/useAuth";
 
 export default defineNuxtRouteMiddleware(async () => {
   if (import.meta.server) return;
@@ -15,18 +10,14 @@ export default defineNuxtRouteMiddleware(async () => {
     return navigateTo("/auth/login", { replace: true });
   }
 
-  // トークンの有効期限を確認し、期限切れの場合はリフレッシュを試行
   const expiresAt = localStorage.getItem(TOKEN_EXPIRES_AT_KEY);
   const parsedExpiresAt = expiresAt !== null ? Number(expiresAt) : NaN;
   const isExpired = Number.isFinite(parsedExpiresAt) && Date.now() >= parsedExpiresAt;
   if (isExpired) {
-    const { refreshTokens } = useAuth();
+    const { refreshTokens, clearTokens } = useAuth();
     const refreshed = await refreshTokens();
     if (refreshed !== true) {
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(ID_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
+      clearTokens();
       return navigateTo("/auth/login", { replace: true });
     }
   }

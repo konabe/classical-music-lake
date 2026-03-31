@@ -1,17 +1,10 @@
 import { useRouter } from "#app";
-import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY } from "./useAuth";
+import { useAuth, ID_TOKEN_KEY } from "./useAuth";
 import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "~/types";
 
 const getAuthHeaders = (): Record<string, string> => {
   const token = localStorage.getItem(ID_TOKEN_KEY);
   return token !== null ? { Authorization: `Bearer ${token}` } : {};
-};
-
-const clearAuthTokens = (): void => {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(ID_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-  localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
 };
 
 const handleAuthError = async (
@@ -20,11 +13,11 @@ const handleAuthError = async (
 ): Promise<boolean> => {
   if (status !== 401) return false;
 
-  const { refreshTokens } = useAuth();
+  const { refreshTokens, clearTokens } = useAuth();
   const refreshed = await refreshTokens();
   if (refreshed === true) return true;
 
-  clearAuthTokens();
+  clearTokens();
   router.push("/auth/login");
   return false;
 };
@@ -57,7 +50,8 @@ export const useListeningLogs = () => {
           headers: { ...getAuthHeaders(), ...options.headers },
         });
         if (retried.status === 401) {
-          clearAuthTokens();
+          const { clearTokens } = useAuth();
+          clearTokens();
           router.push("/auth/login");
         }
         return retried;
