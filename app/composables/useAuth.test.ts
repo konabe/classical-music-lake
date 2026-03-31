@@ -1,4 +1,10 @@
-import { useAuth, ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";
+import {
+  useAuth,
+  ACCESS_TOKEN_KEY,
+  ID_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  TOKEN_EXPIRES_AT_KEY,
+} from "./useAuth";
 
 const mockFetch = vi.fn();
 const mockRouterPush = vi.fn();
@@ -185,12 +191,13 @@ describe("useAuth", () => {
       expect(result.errorType).toBe("password");
     });
 
-    it("API 呼び出しが成功したとき success: true と accessToken を返し、idToken を保存する", async () => {
+    it("API 呼び出しが成功したとき success: true と accessToken を返し、idToken・refreshToken・expiresAt を保存する", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
           idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+          refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
           tokenType: "Bearer",
           expiresIn: 3600,
         }),
@@ -202,6 +209,10 @@ describe("useAuth", () => {
       expect(result.success).toBe(true);
       expect(result.accessToken).toBe("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
       expect(localStorage.getItem(ID_TOKEN_KEY)).toBe("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...");
+      expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBe(
+        "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi..."
+      );
+      expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).not.toBeNull();
       expect(mockFetch).toHaveBeenCalledWith(
         "https://api.example.com/auth/login",
         expect.objectContaining({
@@ -279,6 +290,40 @@ describe("useAuth", () => {
       expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
     });
 
+    it("レスポンスに refreshToken がない場合 success: false を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+          expiresIn: 3600,
+        }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+    });
+
+    it("レスポンスに expiresIn がない場合 success: false を返す", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+          refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
+        }),
+      });
+
+      const { login } = useAuth();
+      const result = await login("user@example.com", "ValidPassword123");
+
+      expect(result.success).toBe(false);
+      expect(result.errorType).toBe("general");
+    });
+
     it("認証情報が間違いの場合 success: false とエラーメッセージを返す", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
@@ -334,10 +379,136 @@ describe("useAuth", () => {
       expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
     });
 
+    it("localStorage の refreshToken と tokenExpiresAt が削除される", () => {
+      localStorage.setItem(REFRESH_TOKEN_KEY, "refresh-token-123");
+      localStorage.setItem(TOKEN_EXPIRES_AT_KEY, "1234567890");
+      const { logout } = useAuth();
+      logout();
+      expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).toBeNull();
+    });
+
     it("ログイン画面へナビゲートされる", () => {
       const { logout } = useAuth();
       logout();
       expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
+    });
+  });
+
+  describe("isTokenExpired", () => {
+    it("tokenExpiresAt が設定されていない場合 true を返す", () => {
+      const { isTokenExpired } = useAuth();
+      expect(isTokenExpired()).toBe(true);
+    });
+
+    it("有効期限が過去の場合 true を返す", () => {
+      localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() - 1000));
+      const { isTokenExpired } = useAuth();
+      expect(isTokenExpired()).toBe(true);
+    });
+
+    it("有効期限が未来の場合 false を返す", () => {
+      localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(Date.now() + 60000));
+      const { isTokenExpired } = useAuth();
+      expect(isTokenExpired()).toBe(false);
+    });
+
+    it("tokenExpiresAt が不正な文字列の場合 true を返す", () => {
+      localStorage.setItem(TOKEN_EXPIRES_AT_KEY, "invalid-number");
+      const { isTokenExpired } = useAuth();
+      expect(isTokenExpired()).toBe(true);
+    });
+  });
+
+  describe("refreshTokens", () => {
+    it("refreshToken がない場合 false を返す", async () => {
+      const { refreshTokens } = useAuth();
+      expect(await refreshTokens()).toBe(false);
+    });
+
+    it("リフレッシュ成功時に新しいトークンを保存して true を返す", async () => {
+      localStorage.setItem(REFRESH_TOKEN_KEY, "valid-refresh-token");
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "new-access-token",
+          idToken: "new-id-token",
+          expiresIn: 3600,
+        }),
+      });
+
+      const { refreshTokens } = useAuth();
+      const result = await refreshTokens();
+
+      expect(result).toBe(true);
+      expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBe("new-access-token");
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBe("new-id-token");
+      expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).not.toBeNull();
+    });
+
+    it("リフレッシュ失敗時に false を返す", async () => {
+      localStorage.setItem(REFRESH_TOKEN_KEY, "invalid-refresh-token");
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "InvalidRefreshToken" }),
+      });
+
+      const { refreshTokens } = useAuth();
+      expect(await refreshTokens()).toBe(false);
+    });
+
+    it("レスポンスに expiresIn がない場合 false を返す", async () => {
+      localStorage.setItem(REFRESH_TOKEN_KEY, "valid-refresh-token");
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "new-access-token",
+          idToken: "new-id-token",
+        }),
+      });
+
+      const { refreshTokens } = useAuth();
+      expect(await refreshTokens()).toBe(false);
+    });
+
+    it("ネットワークエラー時に false を返す", async () => {
+      localStorage.setItem(REFRESH_TOKEN_KEY, "valid-refresh-token");
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      const { refreshTokens } = useAuth();
+      expect(await refreshTokens()).toBe(false);
+    });
+
+    it("リフレッシュ中に clearTokens が呼ばれた場合トークンを書き戻さない", async () => {
+      localStorage.setItem(REFRESH_TOKEN_KEY, "valid-refresh-token");
+
+      let resolveFetch: (value: unknown) => void;
+      mockFetch.mockReturnValue(
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        })
+      );
+
+      const { refreshTokens, clearTokens } = useAuth();
+      const refreshPromise = refreshTokens();
+
+      clearTokens();
+      expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBeNull();
+
+      resolveFetch!({
+        ok: true,
+        json: async () => ({
+          accessToken: "new-access-token",
+          idToken: "new-id-token",
+          expiresIn: 3600,
+        }),
+      });
+
+      const result = await refreshPromise;
+      expect(result).toBe(false);
+      expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).toBeNull();
     });
   });
 

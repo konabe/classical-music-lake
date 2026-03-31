@@ -1,9 +1,10 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { useListeningLogs } from "./useListeningLogs";
-import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY } from "./useAuth";
+import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY } from "./useAuth";
 
 const mockFetch = vi.fn();
 const mockRouterPush = vi.fn();
+const mockRefreshTokens = vi.fn();
 
 vi.mock("./useApiBase", () => ({
   useApiBase: () => "https://api.example.com",
@@ -13,6 +14,22 @@ vi.mock("#app", () => ({
   useRouter: () => ({ push: mockRouterPush }),
 }));
 
+vi.mock("./useAuth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./useAuth")>();
+  return {
+    ...actual,
+    useAuth: () => ({
+      refreshTokens: mockRefreshTokens,
+      clearTokens: () => {
+        localStorage.removeItem(actual.ACCESS_TOKEN_KEY);
+        localStorage.removeItem(actual.ID_TOKEN_KEY);
+        localStorage.removeItem(actual.REFRESH_TOKEN_KEY);
+        localStorage.removeItem(actual.TOKEN_EXPIRES_AT_KEY);
+      },
+    }),
+  };
+});
+
 const { mockUseFetch } = vi.hoisted(() => ({ mockUseFetch: vi.fn() }));
 
 mockNuxtImport("useFetch", () => mockUseFetch);
@@ -21,6 +38,8 @@ beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
   mockFetch.mockClear();
   mockRouterPush.mockClear();
+  mockRefreshTokens.mockClear();
+  mockRefreshTokens.mockResolvedValue(false);
   mockUseFetch.mockClear();
   mockUseFetch.mockReturnValue({ data: null, error: null, pending: false, refresh: vi.fn() });
   localStorage.clear();
@@ -28,16 +47,20 @@ beforeEach(() => {
 
 describe("useListeningLogs", () => {
   describe("list", () => {
-    it("401 エラー時にトークンを削除してログイン画面へリダイレクトする", () => {
+    it("401 エラー時にトークンを削除してログイン画面へリダイレクトする", async () => {
       localStorage.setItem(ACCESS_TOKEN_KEY, "expired-access-token");
       localStorage.setItem(ID_TOKEN_KEY, "expired-id-token");
+      localStorage.setItem(REFRESH_TOKEN_KEY, "expired-refresh-token");
+      localStorage.setItem(TOKEN_EXPIRES_AT_KEY, "1234567890");
 
-      let capturedOnResponseError: ((ctx: { response: { status: number } }) => void) | undefined;
+      let capturedOnResponseError:
+        | ((ctx: { response: { status: number } }) => Promise<void>)
+        | undefined;
 
       mockUseFetch.mockImplementation(
         (
           _url: unknown,
-          options: { onResponseError?: (ctx: { response: { status: number } }) => void }
+          options: { onResponseError?: (ctx: { response: { status: number } }) => Promise<void> }
         ) => {
           capturedOnResponseError = options?.onResponseError;
           return { data: null, error: null, pending: false, refresh: vi.fn() };
@@ -45,10 +68,12 @@ describe("useListeningLogs", () => {
       );
 
       useListeningLogs();
-      capturedOnResponseError?.({ response: { status: 401 } });
+      await capturedOnResponseError?.({ response: { status: 401 } });
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
       expect(localStorage.getItem(ID_TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).toBeNull();
       expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
     });
 

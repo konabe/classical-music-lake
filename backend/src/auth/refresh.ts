@@ -6,24 +6,23 @@ import { StatusCodes } from "http-status-codes";
 
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
-import { loginSchema } from "../utils/schemas";
+import { refreshTokenSchema } from "../utils/schemas";
 import { getEnv } from "../utils/env";
 import type { CognitoError } from "../types";
 
 const cognito = new CognitoIdentityProviderClient({});
 
 export const handler = createHandler(async (event) => {
-  const input = parseRequestBody(event.body as unknown, loginSchema);
+  const input = parseRequestBody(event.body as unknown, refreshTokenSchema);
 
   try {
     const env = getEnv();
     const response = await cognito.send(
       new InitiateAuthCommand({
-        AuthFlow: "USER_PASSWORD_AUTH",
+        AuthFlow: "REFRESH_TOKEN_AUTH",
         ClientId: env.cognitoClientId,
         AuthParameters: {
-          USERNAME: input.email,
-          PASSWORD: input.password,
+          REFRESH_TOKEN: input.refreshToken,
         },
       })
     );
@@ -35,7 +34,6 @@ export const handler = createHandler(async (event) => {
       body: {
         accessToken: authResult?.AccessToken,
         idToken: authResult?.IdToken,
-        refreshToken: authResult?.RefreshToken,
         tokenType: authResult?.TokenType ?? "Bearer",
         expiresIn: authResult?.ExpiresIn,
       },
@@ -43,25 +41,12 @@ export const handler = createHandler(async (event) => {
   } catch (error) {
     const cognitoError = error as CognitoError;
 
-    if (
-      cognitoError.name === "NotAuthorizedException" ||
-      cognitoError.name === "UserNotFoundException"
-    ) {
+    if (cognitoError.name === "NotAuthorizedException") {
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         body: {
-          error: "InvalidCredentials",
-          message: "Email or password is incorrect.",
-        },
-      };
-    }
-
-    if (cognitoError.name === "UserNotConfirmedException") {
-      return {
-        statusCode: StatusCodes.FORBIDDEN,
-        body: {
-          error: "UserNotConfirmed",
-          message: "User account is not confirmed. Please verify your email.",
+          error: "InvalidRefreshToken",
+          message: "Refresh token is invalid or expired. Please login again.",
         },
       };
     }
@@ -71,7 +56,7 @@ export const handler = createHandler(async (event) => {
         statusCode: StatusCodes.TOO_MANY_REQUESTS,
         body: {
           error: "TooManyRequests",
-          message: "Too many login attempts. Please try again later.",
+          message: "Too many requests. Please try again later.",
         },
       };
     }

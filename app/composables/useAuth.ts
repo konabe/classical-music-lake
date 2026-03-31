@@ -3,7 +3,19 @@ import { useApiBase } from "./useApiBase";
 
 export const ACCESS_TOKEN_KEY = "accessToken";
 export const ID_TOKEN_KEY = "idToken";
+export const REFRESH_TOKEN_KEY = "refreshToken";
+export const TOKEN_EXPIRES_AT_KEY = "tokenExpiresAt";
 
+const MILLISECONDS_PER_SECOND = 1000;
+let refreshInFlight: Promise<boolean> | null = null;
+let refreshGeneration = 0;
+
+const saveSessionTokens = (accessToken: string, idToken: string, expiresIn: number): void => {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  localStorage.setItem(ID_TOKEN_KEY, idToken);
+  const expiresAt = Date.now() + expiresIn * MILLISECONDS_PER_SECOND;
+  localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
+};
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_UPPERCASE_REGEX = /[A-Z]/;
@@ -186,9 +198,23 @@ export const useAuth = () => {
           errorType: "general",
         };
       }
+      if (typeof data.refreshToken !== "string" || data.refreshToken.trim() === "") {
+        return {
+          success: false,
+          error: "Invalid session data received. Please try again.",
+          errorType: "general",
+        };
+      }
+      if (typeof data.expiresIn !== "number") {
+        return {
+          success: false,
+          error: "Invalid session data received. Please try again.",
+          errorType: "general",
+        };
+      }
       try {
-        localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-        localStorage.setItem(ID_TOKEN_KEY, data.idToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+        saveSessionTokens(data.accessToken, data.idToken, data.expiresIn);
       } catch {
         return {
           success: false,
@@ -271,13 +297,63 @@ export const useAuth = () => {
     }
   };
 
+  const isTokenExpired = (): boolean => {
+    const expiresAt = localStorage.getItem(TOKEN_EXPIRES_AT_KEY);
+    if (expiresAt === null) return true;
+    const parsedExpiresAt = Number(expiresAt);
+    if (!Number.isFinite(parsedExpiresAt)) return true;
+    return Date.now() >= parsedExpiresAt;
+  };
+
+  const doRefresh = async (): Promise<boolean> => {
+    const generation = refreshGeneration;
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (refreshToken === null) return false;
+
+    try {
+      const response = await fetch(`${apiBase}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      if (typeof data.accessToken !== "string" || data.accessToken.trim() === "") return false;
+      if (typeof data.idToken !== "string" || data.idToken.trim() === "") return false;
+      if (typeof data.expiresIn !== "number") return false;
+
+      if (generation !== refreshGeneration) return false;
+      saveSessionTokens(data.accessToken, data.idToken, data.expiresIn);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const refreshTokens = (): Promise<boolean> => {
+    if (refreshInFlight !== null) return refreshInFlight;
+    refreshInFlight = doRefresh().finally(() => {
+      refreshInFlight = null;
+    });
+    return refreshInFlight;
+  };
+
   const isAuthenticated = (): boolean => {
     return localStorage.getItem(ACCESS_TOKEN_KEY) !== null;
   };
 
-  const logout = (): void => {
+  const clearTokens = (): void => {
+    refreshGeneration++;
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(ID_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
+  };
+
+  const logout = (): void => {
+    clearTokens();
     router.push("/auth/login");
   };
 
@@ -290,6 +366,9 @@ export const useAuth = () => {
     verifyEmail,
     resendVerificationCode,
     isAuthenticated,
+    isTokenExpired,
+    refreshTokens,
+    clearTokens,
     logout,
   };
 };
