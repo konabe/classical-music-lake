@@ -17,7 +17,9 @@ const emit = defineEmits<{
     <div class="piece-main">
       <div class="piece-title">{{ piece.title }}</div>
       <div class="piece-composer">{{ piece.composer }}</div>
-      <PieceCategoryList :piece="piece" />
+      <div class="piece-category-wrapper">
+        <PieceCategoryList :piece="piece" />
+      </div>
     </div>
     <div class="piece-actions">
       <button type="button" class="btn-detail" @click="emit('detail')">詳細</button>
@@ -56,7 +58,7 @@ const emit = defineEmits<{
   color: #666;
 }
 
-.piece-main :deep(.piece-category-list) {
+.piece-category-wrapper {
   margin-top: 0.4rem;
 }
 
