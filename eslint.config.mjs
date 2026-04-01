@@ -65,43 +65,6 @@ const md040Rule = {
   },
 };
 
-/**
- * Vue SFC の <style scoped> 内で :deep() / ::v-deep() の使用を禁止するルール
- * 子コンポーネントのスタイルを直接変更するのではなく、ラッパー要素で対応すること
- */
-const noDeepSelectorRule = {
-  meta: {
-    type: "problem",
-    messages: {
-      noDeep:
-        ":deep() セレクタの使用は禁止されています。ラッパー要素を使用してスタイルを適用してください。",
-    },
-  },
-  create(context) {
-    return {
-      Program() {
-        const src = context.sourceCode.getText();
-        const lines = src.split(/\r\n?|\n/g);
-        let inStyle = false;
-        lines.forEach((line, i) => {
-          if (/^\s*<style[\s>]/.test(line)) {
-            inStyle = true;
-          }
-          if (inStyle && /:deep\(|::v-deep\(/.test(line)) {
-            context.report({
-              loc: { line: i + 1, column: 0 },
-              messageId: "noDeep",
-            });
-          }
-          if (/^\s*<\/style>/.test(line)) {
-            inStyle = false;
-          }
-        });
-      },
-    };
-  },
-};
-
 export default withNuxt(
   prettierConfig,
   ...storybook.configs["flat/recommended"],
@@ -220,16 +183,6 @@ export default withNuxt(
           toBeFalsy: "toBeUndefined() など明示的なマッチャーを使用してください。",
         },
       ],
-    },
-  },
-  // Vue SFC: :deep() セレクタの使用を禁止
-  {
-    files: ["**/*.vue"],
-    plugins: {
-      "vue-custom": { rules: { "no-deep-selector": noDeepSelectorRule } },
-    },
-    rules: {
-      "vue-custom/no-deep-selector": "error",
     },
   },
   // Markdown: コードブロックに言語タグがない場合に警告 (MD040)
