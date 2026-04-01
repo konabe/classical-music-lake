@@ -27,7 +27,9 @@ const hasStartedPlaying = ref(false);
       <div class="piece-header">
         <div class="piece-title">{{ piece.title }}</div>
         <div class="piece-composer">{{ piece.composer }}</div>
-        <PieceCategoryList :piece="piece" />
+        <div class="piece-category-wrapper">
+          <PieceCategoryList :piece="piece" />
+        </div>
       </div>
 
       <template v-if="piece.videoUrl">
@@ -73,7 +75,7 @@ const hasStartedPlaying = ref(false);
   color: #666;
 }
 
-.piece-header :deep(.piece-category-list) {
+.piece-category-wrapper {
   margin-top: 0.5rem;
 }
 </style>

@@ -19,8 +19,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run --config tests/e2e/vitest.config.ts",
     "generate-mock-data": "node scripts/generate-mock-data.mjs",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . && stylelint \"app/**/*.vue\"",
+    "lint:fix": "eslint . --fix && stylelint \"app/**/*.vue\" --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('husky', {stdio: 'inherit'}) }\"",
@@ -40,6 +40,9 @@
     "*.{ts,vue}": [
       "eslint --fix",
       "prettier --write"
+    ],
+    "*.vue": [
+      "stylelint --fix"
     ],
     "*.{js,mjs,json,yaml,yml,md}": [
       "prettier --write"
@@ -64,8 +67,11 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.3.3",
     "playwright": "^1.58.2",
+    "postcss-html": "^1.8.1",
     "prettier": "^3.8.1",
     "storybook": "^10.3.1",
+    "stylelint": "^17.6.0",
+    "stylelint-config-recommended-vue": "^1.6.1",
     "typescript": "^6.0.2",
     "vitest": "^4.0.18"
   }
