@@ -19,8 +19,10 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run --config tests/e2e/vitest.config.ts",
     "generate-mock-data": "node scripts/generate-mock-data.mjs",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:fix": "npm run lint:js:fix && npm run lint:css:fix",
+    "lint:js": "eslint .",
+    "lint:js:fix": "eslint . --fix",
     "lint:css": "stylelint \"app/**/*.vue\"",
     "lint:css:fix": "stylelint \"app/**/*.vue\" --fix",
     "format": "prettier --write .",
@@ -42,6 +44,9 @@
     "*.{ts,vue}": [
       "eslint --fix",
       "prettier --write"
+    ],
+    "*.vue": [
+      "stylelint --fix"
     ],
     "*.{js,mjs,json,yaml,yml,md}": [
       "prettier --write"
