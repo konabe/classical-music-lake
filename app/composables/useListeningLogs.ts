@@ -11,11 +11,15 @@ const handleAuthError = async (
   status: number,
   router: ReturnType<typeof useRouter>
 ): Promise<boolean> => {
-  if (status !== 401) return false;
+  if (status !== 401) {
+    return false;
+  }
 
   const { refreshTokens, clearTokens } = useAuth();
   const refreshed = await refreshTokens();
-  if (refreshed === true) return true;
+  if (refreshed) {
+    return true;
+  }
 
   clearTokens();
   router.push("/auth/login");
@@ -44,7 +48,7 @@ export const useListeningLogs = () => {
 
     if (response.status === 401) {
       const refreshed = await handleAuthError(response.status, router);
-      if (refreshed === true) {
+      if (refreshed) {
         const retried = await fetch(url, {
           ...options,
           headers: { ...getAuthHeaders(), ...options.headers },
@@ -65,7 +69,7 @@ export const useListeningLogs = () => {
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status, router);
-      if (refreshed === true) {
+      if (refreshed) {
         await list.refresh();
       }
     },
@@ -77,7 +81,9 @@ export const useListeningLogs = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     });
-    if (!response.ok) return throwResponseError(response);
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
     return response.json();
   };
 
@@ -87,7 +93,9 @@ export const useListeningLogs = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     });
-    if (!response.ok) return throwResponseError(response);
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
     return response.json();
   };
 
@@ -95,7 +103,9 @@ export const useListeningLogs = () => {
     const response = await authenticatedFetch(`${apiBase}/listening-logs/${id}`, {
       method: "DELETE",
     });
-    if (!response.ok) return throwResponseError(response);
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
   };
 
   return { ...list, create, update, deleteLog };
@@ -108,7 +118,7 @@ export const useListeningLog = (id: () => string) => {
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status, router);
-      if (refreshed === true) {
+      if (refreshed) {
         await result.refresh();
       }
     },

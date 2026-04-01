@@ -5,7 +5,9 @@ const apiBase = useApiBase();
 const { data: pieces, error, refresh } = await useFetch<Piece[]>(`${apiBase}/pieces`);
 
 async function handleDelete(piece: Piece) {
-  if (!confirm(`「${piece.title}」を削除しますか？`)) return;
+  if (!confirm(`「${piece.title}」を削除しますか？`)) {
+    return;
+  }
   try {
     await $fetch(`${apiBase}/pieces/${piece.id}`, { method: "DELETE" });
     await refresh();

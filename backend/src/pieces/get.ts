@@ -9,6 +9,8 @@ import type { Piece } from "../types";
 export const handler = createHandler(async (event) => {
   const id = getIdParam(event);
   const result = await dynamo.send(new GetCommand({ TableName: TABLE_PIECES, Key: { id } }));
-  if (result.Item === undefined) throw new createError.NotFound("Piece not found");
+  if (result.Item === undefined) {
+    throw new createError.NotFound("Piece not found");
+  }
   return { statusCode: StatusCodes.OK, body: result.Item as Piece };
 });

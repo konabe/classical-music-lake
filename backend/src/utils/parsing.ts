@@ -10,7 +10,7 @@ export function parseRequestBody<T>(body: unknown, schema?: ZodType<T>): T {
   }
   if (schema !== undefined) {
     const result = schema.safeParse(body);
-    if (result.success === false) {
+    if (!result.success) {
       throw new createError.BadRequest(result.error.issues[0].message);
     }
     return result.data;

@@ -78,6 +78,7 @@ export default withNuxt(
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "vue/component-name-in-template-casing": ["error", "PascalCase"],
+      curly: ["error", "all"],
     },
   },
   {
@@ -101,6 +102,7 @@ export default withNuxt(
           allowNullableEnum: false,
         },
       ],
+      "@typescript-eslint/no-unnecessary-boolean-literal-compare": "error",
     },
   },
   {

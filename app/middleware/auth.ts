@@ -1,7 +1,9 @@
 import { ACCESS_TOKEN_KEY } from "~/composables/useAuth";
 
 export default defineNuxtRouteMiddleware(async () => {
-  if (import.meta.server) return;
+  if (import.meta.server) {
+    return;
+  }
 
   const token = localStorage.getItem(ACCESS_TOKEN_KEY);
   if (token === null) {

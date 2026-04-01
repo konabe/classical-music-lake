@@ -9,7 +9,9 @@ await listeningLogs;
 const { data: logs, refresh, deleteLog } = listeningLogs;
 
 async function handleDelete(id: string) {
-  if (!confirm("この記録を削除しますか？")) return;
+  if (!confirm("この記録を削除しますか？")) {
+    return;
+  }
   await deleteLog(id);
   await refresh();
 }

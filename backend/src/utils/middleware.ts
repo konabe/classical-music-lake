@@ -24,8 +24,10 @@ const httpErrorMiddleware = (): middy.MiddlewareObj<
   onError: async (request) => {
     const error = request.error as HttpError;
     const statusCode = error.statusCode ?? 500;
-    const message = error.expose !== false ? error.message : "Internal server error";
-    if (statusCode >= 500) console.error(error);
+    const message = error.expose ? error.message : "Internal server error";
+    if (statusCode >= 500) {
+      console.error(error);
+    }
     request.response = {
       statusCode,
       headers: { "Content-Type": "application/json" },
