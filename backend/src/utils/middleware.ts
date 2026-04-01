@@ -24,7 +24,8 @@ const httpErrorMiddleware = (): middy.MiddlewareObj<
   onError: async (request) => {
     const error = request.error as HttpError;
     const statusCode = error.statusCode ?? 500;
-    const message = error.expose ? error.message : "Internal server error";
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- HttpError の index signature により expose が any として解決されるため明示比較が必要
+    const message = error.expose === true ? error.message : "Internal server error";
     if (statusCode >= 500) {
       console.error(error);
     }
