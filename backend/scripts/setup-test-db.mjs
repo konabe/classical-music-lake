@@ -30,7 +30,9 @@ async function tableExists() {
     await client.send(new DescribeTableCommand({ TableName: TABLE_NAME }));
     return true;
   } catch (e) {
-    if (e.name === "ResourceNotFoundException") return false;
+    if (e.name === "ResourceNotFoundException") {
+      return false;
+    }
     throw e;
   }
 }
