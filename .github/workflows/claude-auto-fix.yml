@@ -1,0 +1,82 @@
+name: Claude Auto Fix
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types: [completed]
+
+jobs:
+  auto-fix-pr:
+    name: Auto Fix (Pull Request)
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          direct_prompt: |
+            CIワークフロー「Test」がプルリクエストのブランチ「${{ github.event.workflow_run.head_branch }}」で失敗しました。
+            Run ID: ${{ github.event.workflow_run.id }}
+
+            以下の手順で修正してください:
+            1. GitHub ActionsのCIログを確認して失敗原因を特定する
+            2. コードを修正する
+            3. 修正をコミットしてプッシュする
+
+            修正コミットのメッセージは「fix: CI失敗を修正」としてください。
+          additional_permissions: |
+            actions: read
+
+  auto-fix-main:
+    name: Auto Fix (Main Branch)
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          direct_prompt: |
+            CIワークフロー「Test」がmainブランチで失敗しました。
+            Run ID: ${{ github.event.workflow_run.id }}
+
+            以下の手順で修正してください:
+            1. GitHub ActionsのCIログを確認して失敗原因を特定する
+            2. 修正用のブランチを「fix/ci-auto-fix-${{ github.event.workflow_run.id }}」という名前で作成する
+            3. コードを修正する
+            4. 修正をコミットしてプッシュする
+            5. mainブランチに対するプルリクエストを作成する
+
+            PRタイトルは「fix: mainブランチのCI失敗を自動修正」としてください。
+          additional_permissions: |
+            actions: read
