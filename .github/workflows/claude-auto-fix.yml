@@ -2,7 +2,7 @@ name: Claude Auto Fix
 
 on:
   workflow_run:
-    workflows: ["Test"]
+    workflows: ["Test", "Security", "Deploy"]
     types: [completed]
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           direct_prompt: |
-            CIワークフロー「Test」がプルリクエストのブランチ「${{ github.event.workflow_run.head_branch }}」で失敗しました。
+            CIワークフロー「${{ github.event.workflow_run.name }}」がプルリクエストのブランチ「${{ github.event.workflow_run.head_branch }}」で失敗しました。
             Run ID: ${{ github.event.workflow_run.id }}
 
             以下の手順で修正してください:
@@ -67,7 +67,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           direct_prompt: |
-            CIワークフロー「Test」がmainブランチで失敗しました。
+            CIワークフロー「${{ github.event.workflow_run.name }}」がmainブランチで失敗しました。
             Run ID: ${{ github.event.workflow_run.id }}
 
             以下の手順で修正してください:
