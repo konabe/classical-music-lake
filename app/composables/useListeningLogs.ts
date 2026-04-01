@@ -17,7 +17,8 @@ const handleAuthError = async (
 
   const { refreshTokens, clearTokens } = useAuth();
   const refreshed = await refreshTokens();
-  if (refreshed) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
+  if (refreshed === true) {
     return true;
   }
 
@@ -48,7 +49,8 @@ export const useListeningLogs = () => {
 
     if (response.status === 401) {
       const refreshed = await handleAuthError(response.status, router);
-      if (refreshed) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
+      if (refreshed === true) {
         const retried = await fetch(url, {
           ...options,
           headers: { ...getAuthHeaders(), ...options.headers },
@@ -69,7 +71,8 @@ export const useListeningLogs = () => {
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status, router);
-      if (refreshed) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
+      if (refreshed === true) {
         await list.refresh();
       }
     },
@@ -118,7 +121,8 @@ export const useListeningLog = (id: () => string) => {
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status, router);
-      if (refreshed) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
+      if (refreshed === true) {
         await result.refresh();
       }
     },
