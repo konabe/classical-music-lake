@@ -28,7 +28,9 @@ declare global {
 const iframeId = `yt-player-${Math.random().toString(36).slice(2)}`;
 
 onMounted(() => {
-  if (isYouTube.value === false) return;
+  if (!isYouTube.value) {
+    return;
+  }
 
   const initPlayer = () => {
     new window.YT!.Player(iframeId, {

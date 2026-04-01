@@ -9,7 +9,9 @@ const router = useRouter();
 const { deleteLog } = useListeningLogs();
 
 const handleDelete = async () => {
-  if (!confirm("この鑑賞記録を削除しますか？")) return;
+  if (!confirm("この鑑賞記録を削除しますか？")) {
+    return;
+  }
   await deleteLog(props.log.id);
   router.push("/listening-logs");
 };

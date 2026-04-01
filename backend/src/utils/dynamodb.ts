@@ -62,7 +62,9 @@ export async function updateItem<T extends { id: string; createdAt: string; upda
   input: Partial<T>
 ): Promise<T> {
   const existing = await dynamo.send(new GetCommand({ TableName: tableName, Key: { id } }));
-  if (existing.Item === undefined) throw new createError.NotFound("Item not found");
+  if (existing.Item === undefined) {
+    throw new createError.NotFound("Item not found");
+  }
 
   const current = existing.Item as T;
   const updated: T = {

@@ -6,7 +6,9 @@ const { data: piece, error } = await usePiece(() => route.params.id as string);
 const { create } = useListeningLogs();
 
 async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: string }) {
-  if (piece.value === null) return;
+  if (piece.value === null) {
+    return;
+  }
   await create({
     listenedAt: new Date().toISOString(),
     composer: piece.value.composer,

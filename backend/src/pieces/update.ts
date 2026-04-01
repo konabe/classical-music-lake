@@ -14,7 +14,9 @@ export const handler = createHandler(async (event) => {
   const input = parseRequestBody(event.body as unknown, updatePieceSchema);
 
   const existing = await dynamo.send(new GetCommand({ TableName: TABLE_PIECES, Key: { id } }));
-  if (existing.Item === undefined) throw new createError.NotFound("Piece not found");
+  if (existing.Item === undefined) {
+    throw new createError.NotFound("Piece not found");
+  }
 
   const current = existing.Item as Piece;
   const updated: Piece = {

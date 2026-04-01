@@ -11,11 +11,16 @@ const handleAuthError = async (
   status: number,
   router: ReturnType<typeof useRouter>
 ): Promise<boolean> => {
-  if (status !== 401) return false;
+  if (status !== 401) {
+    return false;
+  }
 
   const { refreshTokens, clearTokens } = useAuth();
   const refreshed = await refreshTokens();
-  if (refreshed === true) return true;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
+  if (refreshed === true) {
+    return true;
+  }
 
   clearTokens();
   router.push("/auth/login");
@@ -44,6 +49,7 @@ export const useListeningLogs = () => {
 
     if (response.status === 401) {
       const refreshed = await handleAuthError(response.status, router);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
       if (refreshed === true) {
         const retried = await fetch(url, {
           ...options,
@@ -65,6 +71,7 @@ export const useListeningLogs = () => {
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status, router);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
       if (refreshed === true) {
         await list.refresh();
       }
@@ -77,7 +84,9 @@ export const useListeningLogs = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     });
-    if (!response.ok) return throwResponseError(response);
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
     return response.json();
   };
 
@@ -87,7 +96,9 @@ export const useListeningLogs = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     });
-    if (!response.ok) return throwResponseError(response);
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
     return response.json();
   };
 
@@ -95,7 +106,9 @@ export const useListeningLogs = () => {
     const response = await authenticatedFetch(`${apiBase}/listening-logs/${id}`, {
       method: "DELETE",
     });
-    if (!response.ok) return throwResponseError(response);
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
   };
 
   return { ...list, create, update, deleteLog };
@@ -108,6 +121,7 @@ export const useListeningLog = (id: () => string) => {
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status, router);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
       if (refreshed === true) {
         await result.refresh();
       }

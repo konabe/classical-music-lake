@@ -66,16 +66,28 @@ export const useAuth = () => {
   const router = useRouter();
 
   const validateEmail = (email: string): boolean => {
-    if (email === "" || email.trim() === "") return false;
+    if (email === "" || email.trim() === "") {
+      return false;
+    }
     return EMAIL_REGEX.test(email.trim());
   };
 
   const validatePassword = (password: string): boolean => {
-    if (password === "") return false;
-    if (password.length < PASSWORD_MIN_LENGTH) return false;
-    if (!PASSWORD_UPPERCASE_REGEX.test(password)) return false;
-    if (!PASSWORD_LOWERCASE_REGEX.test(password)) return false;
-    if (!PASSWORD_DIGIT_REGEX.test(password)) return false;
+    if (password === "") {
+      return false;
+    }
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return false;
+    }
+    if (!PASSWORD_UPPERCASE_REGEX.test(password)) {
+      return false;
+    }
+    if (!PASSWORD_LOWERCASE_REGEX.test(password)) {
+      return false;
+    }
+    if (!PASSWORD_DIGIT_REGEX.test(password)) {
+      return false;
+    }
     return true;
   };
 
@@ -299,16 +311,22 @@ export const useAuth = () => {
 
   const isTokenExpired = (): boolean => {
     const expiresAt = localStorage.getItem(TOKEN_EXPIRES_AT_KEY);
-    if (expiresAt === null) return true;
+    if (expiresAt === null) {
+      return true;
+    }
     const parsedExpiresAt = Number(expiresAt);
-    if (!Number.isFinite(parsedExpiresAt)) return true;
+    if (!Number.isFinite(parsedExpiresAt)) {
+      return true;
+    }
     return Date.now() >= parsedExpiresAt;
   };
 
   const doRefresh = async (): Promise<boolean> => {
     const generation = refreshGeneration;
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (refreshToken === null) return false;
+    if (refreshToken === null) {
+      return false;
+    }
 
     try {
       const response = await fetch(`${apiBase}/auth/refresh`, {
@@ -317,14 +335,24 @@ export const useAuth = () => {
         body: JSON.stringify({ refreshToken }),
       });
 
-      if (!response.ok) return false;
+      if (!response.ok) {
+        return false;
+      }
 
       const data = await response.json();
-      if (typeof data.accessToken !== "string" || data.accessToken.trim() === "") return false;
-      if (typeof data.idToken !== "string" || data.idToken.trim() === "") return false;
-      if (typeof data.expiresIn !== "number") return false;
+      if (typeof data.accessToken !== "string" || data.accessToken.trim() === "") {
+        return false;
+      }
+      if (typeof data.idToken !== "string" || data.idToken.trim() === "") {
+        return false;
+      }
+      if (typeof data.expiresIn !== "number") {
+        return false;
+      }
 
-      if (generation !== refreshGeneration) return false;
+      if (generation !== refreshGeneration) {
+        return false;
+      }
       saveSessionTokens(data.accessToken, data.idToken, data.expiresIn);
       return true;
     } catch {
@@ -333,7 +361,9 @@ export const useAuth = () => {
   };
 
   const refreshTokens = (): Promise<boolean> => {
-    if (refreshInFlight !== null) return refreshInFlight;
+    if (refreshInFlight !== null) {
+      return refreshInFlight;
+    }
     refreshInFlight = doRefresh().finally(() => {
       refreshInFlight = null;
     });

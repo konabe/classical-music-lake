@@ -14,12 +14,16 @@ const emit = defineEmits<{
 const code = ref("");
 
 function handleSubmit() {
-  if (props.isLoading) return;
+  if (props.isLoading) {
+    return;
+  }
   emit("submit", code.value);
 }
 
 function handleResend() {
-  if (props.isLoading) return;
+  if (props.isLoading) {
+    return;
+  }
   emit("resend");
 }
 </script>

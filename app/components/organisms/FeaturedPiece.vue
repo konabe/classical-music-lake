@@ -27,7 +27,9 @@ const featured = computed(() => piecesWithVideo.value[currentIndex.value] ?? nul
 const canShuffle = computed(() => piecesWithVideo.value.length > 1);
 
 const shuffle = () => {
-  if (canShuffle.value === false) return;
+  if (!canShuffle.value) {
+    return;
+  }
   let next = currentIndex.value;
   while (next === currentIndex.value) {
     next = Math.floor(Math.random() * piecesWithVideo.value.length);
