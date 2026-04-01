@@ -25,9 +25,9 @@ CD・配信で聴いた演奏を記録し、作曲家・曲名・演奏家・指
 
 | ファイル/ディレクトリ                   | 役割                                                       |
 | --------------------------------------- | ---------------------------------------------------------- |
-| `docs/SPEC.md`                          | システム仕様書。API仕様・データモデル・インフラ構成を記載  |
-| `docs/ARCHITECTURE.md`                  | アーキテクチャ設計書。構成図・技術選定の理由・トレードオフ |
-| `docs/INCEPTION_DECK.md`                | プロジェクトのビジョン・スコープ・フェーズ計画             |
+| @docs/SPEC.md                           | システム仕様書。API仕様・データモデル・インフラ構成を記載  |
+| @docs/ARCHITECTURE.md                   | アーキテクチャ設計書。構成図・技術選定の理由・トレードオフ |
+| @docs/INCEPTION_DECK.md                 | プロジェクトのビジョン・スコープ・フェーズ計画             |
 | `pages/`                                | Nuxt ページコンポーネント（フロントエンドのルーティング）  |
 | `components/`                           | 再利用可能なUIコンポーネント                               |
 | `composables/`                          | Vue Composables（API呼び出しなどの共通ロジック）           |
@@ -41,7 +41,7 @@ CD・配信で聴いた演奏を記録し、作曲家・曲名・演奏家・指
 
 ## コーディング規約
 
-命名規則・フォーマット・インポート順序は ESLint（[eslint.config.mjs](eslint.config.mjs)）と Prettier（[.prettierrc](.prettierrc)）で自動的に強制される。
+命名規則・フォーマット・インポート順序は ESLint（@eslint.config.mjs）と Prettier（@.prettierrc）で自動的に強制される。
 
 ### 共通
 
