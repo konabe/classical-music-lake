@@ -4,30 +4,46 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     labels:
       - "dependencies"
+    groups:
+      patch-updates:
+        update-types:
+          - "patch"
 
   # バックエンド (Lambda)
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     labels:
       - "dependencies"
+    groups:
+      patch-updates:
+        update-types:
+          - "patch"
 
   # インフラ (CDK)
   - package-ecosystem: "npm"
     directory: "/cdk"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     labels:
       - "dependencies"
+    groups:
+      patch-updates:
+        update-types:
+          - "patch"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     labels:
       - "dependencies"
+    groups:
+      patch-updates:
+        update-types:
+          - "patch"
