@@ -1,20 +1,3 @@
-/**
- * フロントエンド共通型定義
- *
- * ## 管理方針
- * - このファイルはフロントエンド（Nuxt）専用の型定義を管理する
- * - フロント・バックエンド共通の定数・型は shared/ に定義し、このファイルから re-export する
- * - backend/src/types/index.ts と共有すべき型（ListeningLog, Piece, Rating など）は
- *   両ファイルで重複定義する（パッケージを分離しているため）
- * - 共有型を変更する場合は、必ず backend/src/types/index.ts も同時に更新すること
- * - バックエンド固有のロジック（isValidRating 等のバリデーション関数）はバックエンド側にのみ存在する
- *
- * ## 変更時のチェックリスト
- * - [ ] 共有定数・型を変更した場合、shared/ のファイルを編集したか
- * - [ ] 共有型を変更した場合、backend/src/types/index.ts にも同じ変更を加えたか
- * - [ ] フロントエンド固有の型のみを追加・変更した場合、バックエンド側への影響はないか確認したか
- */
-
 // 楽曲カテゴリ（shared/constants.ts から re-export）
 import {
   PIECE_GENRES,
