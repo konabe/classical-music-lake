@@ -728,24 +728,31 @@ cdk deploy
 
 ### 8.1 フロント・バックエンド共通型の管理
 
-フロントエンド（`app/types/index.ts`）とバックエンド（`backend/src/types/index.ts`）はパッケージが分離されているため、共有型は両ファイルに重複定義する。
+フロントエンド（`app/types/index.ts`）とバックエンド（`backend/src/types/index.ts`）はパッケージが分離されているため、共有型は両ファイルに重複定義する。ただし、フロント・バックエンドで共通の定数・型は `shared/` ディレクトリに一元管理し、各パッケージの型定義ファイルから re-export する。
+
+#### 共通定数（`shared/` で一元管理）
+
+| 定数名・型名       | ファイル              | 説明                                           |
+| ------------------ | --------------------- | ---------------------------------------------- |
+| `PIECE_GENRES`     | `shared/constants.ts` | ジャンルの値定数配列（型 `PieceGenre` を導出） |
+| `PIECE_ERAS`       | `shared/constants.ts` | 時代の値定数配列（型 `PieceEra` を導出）       |
+| `PIECE_FORMATIONS` | `shared/constants.ts` | 編成の値定数配列（型 `PieceFormation` を導出） |
+| `PIECE_REGIONS`    | `shared/constants.ts` | 地域の値定数配列（型 `PieceRegion` を導出）    |
+
+> `app/types/index.ts` と `backend/src/types/index.ts` の両方から re-export されるため、既存のインポートパスは変更不要。
 
 #### 共有型（両ファイルで同一定義を維持すること）
 
-| 型名・定数名              | 説明                                           |
-| ------------------------- | ---------------------------------------------- |
-| `Rating`                  | 評価値（1〜5 の整数）                          |
-| `ApiErrorResponse`        | APIエラーレスポンスのボディ                    |
-| `ListeningLog`            | 鑑賞ログ                                       |
-| `CreateListeningLogInput` | 鑑賞ログ作成入力                               |
-| `UpdateListeningLogInput` | 鑑賞ログ更新入力                               |
-| `Piece`                   | 楽曲マスタ                                     |
-| `CreatePieceInput`        | 楽曲マスタ作成入力                             |
-| `UpdatePieceInput`        | 楽曲マスタ更新入力                             |
-| `PIECE_GENRES`            | ジャンルの値定数配列（型 `PieceGenre` を導出） |
-| `PIECE_ERAS`              | 時代の値定数配列（型 `PieceEra` を導出）       |
-| `PIECE_FORMATIONS`        | 編成の値定数配列（型 `PieceFormation` を導出） |
-| `PIECE_REGIONS`           | 地域の値定数配列（型 `PieceRegion` を導出）    |
+| 型名・定数名              | 説明                        |
+| ------------------------- | --------------------------- |
+| `Rating`                  | 評価値（1〜5 の整数）       |
+| `ApiErrorResponse`        | APIエラーレスポンスのボディ |
+| `ListeningLog`            | 鑑賞ログ                    |
+| `CreateListeningLogInput` | 鑑賞ログ作成入力            |
+| `UpdateListeningLogInput` | 鑑賞ログ更新入力            |
+| `Piece`                   | 楽曲マスタ                  |
+| `CreatePieceInput`        | 楽曲マスタ作成入力          |
+| `UpdatePieceInput`        | 楽曲マスタ更新入力          |
 
 #### バックエンド固有（`backend/src/types/index.ts` にのみ存在）
 
@@ -755,9 +762,10 @@ cdk deploy
 
 #### 変更時のチェックリスト
 
-1. 共有型を変更する場合、`app/types/index.ts` と `backend/src/types/index.ts` の両方を更新する
-2. バックエンド固有の型・関数はバックエンド側にのみ追加し、フロントエンド側には移植しない
-3. フロントエンド固有の型はフロントエンド側にのみ追加し、バックエンド側には移植しない
+1. 共通定数・型を変更する場合、`shared/` のファイルを編集する（re-export により両パッケージに自動反映）
+2. 共有型を変更する場合、`app/types/index.ts` と `backend/src/types/index.ts` の両方を更新する
+3. バックエンド固有の型・関数はバックエンド側にのみ追加し、フロントエンド側には移植しない
+4. フロントエンド固有の型はフロントエンド側にのみ追加し、バックエンド側には移植しない
 
 ---
 
@@ -788,7 +796,7 @@ cdk deploy
 
 | 日付       | バージョン | 変更内容                                                                                                                                                                                                  |
 | ---------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-02 | 1.7.1      | カテゴリの値を定数配列（`PIECE_GENRES` 等）として一箇所に集約し、型・Zodスキーマ・フォーム選択肢を導出するよう統一                                                                                        |
+| 2026-04-02 | 1.7.1      | カテゴリの値を `shared/constants.ts` に一元管理し、フロント・バックエンドから re-export。型・Zodスキーマ・フォーム選択肢を導出するよう統一                                                                |
 | 2026-03-31 | 1.7.0      | トークンリフレッシュ機能追加（`POST /auth/refresh` エンドポイント新設、ログイン時に `refreshToken`・有効期限を保存、auth ミドルウェアで期限切れ時に自動リフレッシュ、401 時にリフレッシュ試行後リトライ） |
 | 2026-03-28 | 1.6.1      | コード品質改善: truthy/falsy 依存を全廃し明示的な null/undefined 比較に統一。`@typescript-eslint/strict-boolean-expressions` および `vitest/no-restricted-matchers` ESLint ルールを追加し再発を防止       |
 | 2026-03-26 | 1.6.0      | `ListeningLogForm` に楽曲選択時の動画プレビュー機能を追加（`videoUrl` ありの曲を選択すると `VideoPlayer` をインライン表示）                                                                               |

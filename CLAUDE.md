@@ -31,9 +31,10 @@ CD・配信で聴いた演奏を記録し、作曲家・曲名・演奏家・指
 | `pages/`                                | Nuxt ページコンポーネント（フロントエンドのルーティング）  |
 | `components/`                           | 再利用可能なUIコンポーネント                               |
 | `composables/`                          | Vue Composables（API呼び出しなどの共通ロジック）           |
-| `types/index.ts`                        | フロントエンド共通の型定義                                 |
+| `types/index.ts`                        | フロントエンド共通の型定義（shared/ から re-export）       |
+| `shared/constants.ts`                   | フロント・バックエンド共通の定数・型定義                   |
 | `backend/src/listening-logs/`           | 視聴ログ用 Lambda 関数（create/list/get/update/delete）    |
-| `backend/src/types/`                    | バックエンド共通の型定義                                   |
+| `backend/src/types/`                    | バックエンド共通の型定義（shared/ から re-export）         |
 | `backend/src/utils/dynamodb.ts`         | DynamoDB クライアントのラッパー                            |
 | `cdk/lib/classical-music-lake-stack.ts` | AWSインフラ定義（CDK）                                     |
 
@@ -94,7 +95,8 @@ CD・配信で聴いた演奏を記録し、作曲家・曲名・演奏家・指
 
 - フロントエンドの型: `types/index.ts`
 - バックエンドの型: `backend/src/types/index.ts`
-- 両方に同じ型が必要な場合は重複を許容（パッケージを分離しているため）
+- フロント・バックエンド共通の定数・型: `shared/constants.ts` に定義し、各パッケージの型定義ファイルから re-export する
+- 上記以外で両方に同じ型が必要な場合は重複を許容（パッケージを分離しているため）
 
 ---
 

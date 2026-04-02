@@ -3,6 +3,7 @@
  *
  * ## 管理方針
  * - このファイルはバックエンド（Lambda）専用の型定義を管理する
+ * - フロント・バックエンド共通の定数・型は shared/ に定義し、このファイルから re-export する
  * - app/types/index.ts と共有すべき型（ListeningLog, Piece, Rating など）は
  *   両ファイルで重複定義する（パッケージを分離しているため）
  * - 共有型を変更する場合は、必ず app/types/index.ts も同時に更新すること
@@ -10,12 +11,25 @@
  *   （フロントエンド側には不要なため移植しない）
  *
  * ## 変更時のチェックリスト
+ * - [ ] 共有定数・型を変更した場合、shared/ のファイルを編集したか
  * - [ ] 共有型を変更した場合、app/types/index.ts にも同じ変更を加えたか
  * - [ ] バックエンド固有の型・関数のみを追加・変更した場合、フロントエンド側への影響はないか確認したか
  */
 
 // 評価値（1〜5 の整数）
 // ※ app/types/index.ts と同期を保つこと
+// 楽曲カテゴリ（shared/constants.ts から re-export）
+import {
+  PIECE_GENRES,
+  PIECE_ERAS,
+  PIECE_FORMATIONS,
+  PIECE_REGIONS,
+  type PieceGenre,
+  type PieceEra,
+  type PieceFormation,
+  type PieceRegion,
+} from "../../../shared/constants";
+
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
 // バックエンド固有: Rating のバリデーション関数（フロントエンド側には存在しない）
@@ -51,36 +65,8 @@ export interface ListeningLog {
 
 export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
-
-// 楽曲カテゴリ
-// ※ app/types/index.ts と同期を保つこと
-// 値の定数配列を一箇所で定義し、型を導出する
-export const PIECE_GENRES = [
-  "交響曲",
-  "協奏曲",
-  "室内楽",
-  "独奏曲",
-  "歌曲",
-  "オペラ",
-  "宗教音楽",
-  "その他",
-] as const;
-export type PieceGenre = (typeof PIECE_GENRES)[number];
-
-export const PIECE_ERAS = ["バロック", "古典派", "ロマン派", "近現代", "その他"] as const;
-export type PieceEra = (typeof PIECE_ERAS)[number];
-
-export const PIECE_FORMATIONS = ["ピアノ独奏", "弦楽四重奏", "管弦楽", "声楽", "その他"] as const;
-export type PieceFormation = (typeof PIECE_FORMATIONS)[number];
-
-export const PIECE_REGIONS = [
-  "ドイツ・オーストリア",
-  "フランス",
-  "ロシア",
-  "イタリア",
-  "その他",
-] as const;
-export type PieceRegion = (typeof PIECE_REGIONS)[number];
+export { PIECE_GENRES, PIECE_ERAS, PIECE_FORMATIONS, PIECE_REGIONS };
+export type { PieceGenre, PieceEra, PieceFormation, PieceRegion };
 
 // 楽曲マスタ
 // ※ app/types/index.ts と同期を保つこと

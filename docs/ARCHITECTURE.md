@@ -72,7 +72,9 @@ classical-music-lake/
 │   ├── composables/              # Vue Composables（共通ロジック）
 │   ├── utils/
 │   │   └── video.ts              # YouTube URL 判定・動画 ID 抽出・埋め込み URL 変換
-│   └── types/                    # フロントエンド共通型定義
+│   └── types/                    # フロントエンド共通型定義（shared/ から re-export）
+├── shared/                       # フロント・バックエンド共通の定数・型定義
+│   └── constants.ts              # カテゴリ定数配列（PIECE_GENRES 等）と導出型
 ├── backend/
 │   └── src/
 │       ├── auth/                 # 認証 Lambda 関数
