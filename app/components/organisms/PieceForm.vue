@@ -1,38 +1,18 @@
 <script setup lang="ts">
 import type { CreatePieceInput } from "~/types";
+import { PIECE_ERAS, PIECE_FORMATIONS, PIECE_GENRES, PIECE_REGIONS } from "~/types";
 
 function toOptions<T extends string>(values: readonly T[]): { value: T; label: string }[] {
   return values.map((v) => ({ value: v, label: v }));
 }
 
-const genreOptions = toOptions([
-  "交響曲",
-  "協奏曲",
-  "室内楽",
-  "独奏曲",
-  "歌曲",
-  "オペラ",
-  "宗教音楽",
-  "その他",
-] as const);
+const genreOptions = toOptions(PIECE_GENRES);
 
-const eraOptions = toOptions(["バロック", "古典派", "ロマン派", "近現代", "その他"] as const);
+const eraOptions = toOptions(PIECE_ERAS);
 
-const formationOptions = toOptions([
-  "ピアノ独奏",
-  "弦楽四重奏",
-  "管弦楽",
-  "声楽",
-  "その他",
-] as const);
+const formationOptions = toOptions(PIECE_FORMATIONS);
 
-const regionOptions = toOptions([
-  "ドイツ・オーストリア",
-  "フランス",
-  "ロシア",
-  "イタリア",
-  "その他",
-] as const);
+const regionOptions = toOptions(PIECE_REGIONS);
 
 const props = defineProps<{
   initialValues?: Partial<CreatePieceInput>;

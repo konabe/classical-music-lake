@@ -1,16 +1,8 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import SelectInput from "./SelectInput.vue";
+import { PIECE_GENRES } from "~/types";
 
-const genreOptions = [
-  { value: "交響曲", label: "交響曲" },
-  { value: "協奏曲", label: "協奏曲" },
-  { value: "室内楽", label: "室内楽" },
-  { value: "独奏曲", label: "独奏曲" },
-  { value: "歌曲", label: "歌曲" },
-  { value: "オペラ", label: "オペラ" },
-  { value: "宗教音楽", label: "宗教音楽" },
-  { value: "その他", label: "その他" },
-];
+const genreOptions = PIECE_GENRES.map((v) => ({ value: v, label: v }));
 
 const meta: Meta<typeof SelectInput> = {
   title: "Atoms/SelectInput",

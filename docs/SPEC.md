@@ -732,16 +732,20 @@ cdk deploy
 
 #### 共有型（両ファイルで同一定義を維持すること）
 
-| 型名                      | 説明                        |
-| ------------------------- | --------------------------- |
-| `Rating`                  | 評価値（1〜5 の整数）       |
-| `ApiErrorResponse`        | APIエラーレスポンスのボディ |
-| `ListeningLog`            | 鑑賞ログ                    |
-| `CreateListeningLogInput` | 鑑賞ログ作成入力            |
-| `UpdateListeningLogInput` | 鑑賞ログ更新入力            |
-| `Piece`                   | 楽曲マスタ                  |
-| `CreatePieceInput`        | 楽曲マスタ作成入力          |
-| `UpdatePieceInput`        | 楽曲マスタ更新入力          |
+| 型名・定数名              | 説明                                           |
+| ------------------------- | ---------------------------------------------- |
+| `Rating`                  | 評価値（1〜5 の整数）                          |
+| `ApiErrorResponse`        | APIエラーレスポンスのボディ                    |
+| `ListeningLog`            | 鑑賞ログ                                       |
+| `CreateListeningLogInput` | 鑑賞ログ作成入力                               |
+| `UpdateListeningLogInput` | 鑑賞ログ更新入力                               |
+| `Piece`                   | 楽曲マスタ                                     |
+| `CreatePieceInput`        | 楽曲マスタ作成入力                             |
+| `UpdatePieceInput`        | 楽曲マスタ更新入力                             |
+| `PIECE_GENRES`            | ジャンルの値定数配列（型 `PieceGenre` を導出） |
+| `PIECE_ERAS`              | 時代の値定数配列（型 `PieceEra` を導出）       |
+| `PIECE_FORMATIONS`        | 編成の値定数配列（型 `PieceFormation` を導出） |
+| `PIECE_REGIONS`           | 地域の値定数配列（型 `PieceRegion` を導出）    |
 
 #### バックエンド固有（`backend/src/types/index.ts` にのみ存在）
 
@@ -784,6 +788,7 @@ cdk deploy
 
 | 日付       | バージョン | 変更内容                                                                                                                                                                                                  |
 | ---------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-02 | 1.7.1      | カテゴリの値を定数配列（`PIECE_GENRES` 等）として一箇所に集約し、型・Zodスキーマ・フォーム選択肢を導出するよう統一                                                                                        |
 | 2026-03-31 | 1.7.0      | トークンリフレッシュ機能追加（`POST /auth/refresh` エンドポイント新設、ログイン時に `refreshToken`・有効期限を保存、auth ミドルウェアで期限切れ時に自動リフレッシュ、401 時にリフレッシュ試行後リトライ） |
 | 2026-03-28 | 1.6.1      | コード品質改善: truthy/falsy 依存を全廃し明示的な null/undefined 比較に統一。`@typescript-eslint/strict-boolean-expressions` および `vitest/no-restricted-matchers` ESLint ルールを追加し再発を防止       |
 | 2026-03-26 | 1.6.0      | `ListeningLogForm` に楽曲選択時の動画プレビュー機能を追加（`videoUrl` ありの曲を選択すると `VideoPlayer` をインライン表示）                                                                               |

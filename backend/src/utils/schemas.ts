@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PIECE_ERAS, PIECE_FORMATIONS, PIECE_GENRES, PIECE_REGIONS } from "../types/index.js";
 
 const ratingSchema = z
   .number({ error: () => "rating must be between 1 and 5" })
@@ -25,28 +26,13 @@ export const createListeningLogSchema = z.object({
 
 export const updateListeningLogSchema = createListeningLogSchema.partial();
 
-const pieceGenreSchema = z.enum([
-  "交響曲",
-  "協奏曲",
-  "室内楽",
-  "独奏曲",
-  "歌曲",
-  "オペラ",
-  "宗教音楽",
-  "その他",
-]);
+const pieceGenreSchema = z.enum(PIECE_GENRES);
 
-const pieceEraSchema = z.enum(["バロック", "古典派", "ロマン派", "近現代", "その他"]);
+const pieceEraSchema = z.enum(PIECE_ERAS);
 
-const pieceFormationSchema = z.enum(["ピアノ独奏", "弦楽四重奏", "管弦楽", "声楽", "その他"]);
+const pieceFormationSchema = z.enum(PIECE_FORMATIONS);
 
-const pieceRegionSchema = z.enum([
-  "ドイツ・オーストリア",
-  "フランス",
-  "ロシア",
-  "イタリア",
-  "その他",
-]);
+const pieceRegionSchema = z.enum(PIECE_REGIONS);
 
 export const createPieceSchema = z.object({
   title: z
