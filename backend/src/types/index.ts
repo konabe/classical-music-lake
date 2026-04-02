@@ -1,21 +1,15 @@
-/**
- * バックエンド共通型定義
- *
- * ## 管理方針
- * - このファイルはバックエンド（Lambda）専用の型定義を管理する
- * - app/types/index.ts と共有すべき型（ListeningLog, Piece, Rating など）は
- *   両ファイルで重複定義する（パッケージを分離しているため）
- * - 共有型を変更する場合は、必ず app/types/index.ts も同時に更新すること
- * - isValidRating などのバックエンド固有のバリデーション関数はこのファイルにのみ存在する
- *   （フロントエンド側には不要なため移植しない）
- *
- * ## 変更時のチェックリスト
- * - [ ] 共有型を変更した場合、app/types/index.ts にも同じ変更を加えたか
- * - [ ] バックエンド固有の型・関数のみを追加・変更した場合、フロントエンド側への影響はないか確認したか
- */
+// 楽曲カテゴリ（shared/constants.ts から re-export）
+import {
+  PIECE_GENRES,
+  PIECE_ERAS,
+  PIECE_FORMATIONS,
+  PIECE_REGIONS,
+  type PieceGenre,
+  type PieceEra,
+  type PieceFormation,
+  type PieceRegion,
+} from "../../../shared/constants";
 
-// 評価値（1〜5 の整数）
-// ※ app/types/index.ts と同期を保つこと
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
 // バックエンド固有: Rating のバリデーション関数（フロントエンド側には存在しない）
@@ -24,7 +18,6 @@ export function isValidRating(value: unknown): value is Rating {
 }
 
 // APIエラーレスポンスのボディ型
-// ※ app/types/index.ts と同期を保つこと
 export type ApiErrorResponse = {
   message: string;
 };
@@ -35,7 +28,6 @@ export interface CognitoError extends Error {
 }
 
 // 鑑賞ログ（曲・演奏家の記録）
-// ※ app/types/index.ts と同期を保つこと
 export interface ListeningLog {
   id: string;
   userId: string | null; // Cognito sub（未帰属データは null）
@@ -51,24 +43,10 @@ export interface ListeningLog {
 
 export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
-
-// 楽曲カテゴリ
-// ※ app/types/index.ts と同期を保つこと
-export type PieceGenre =
-  | "交響曲"
-  | "協奏曲"
-  | "室内楽"
-  | "独奏曲"
-  | "歌曲"
-  | "オペラ"
-  | "宗教音楽"
-  | "その他";
-export type PieceEra = "バロック" | "古典派" | "ロマン派" | "近現代" | "その他";
-export type PieceFormation = "ピアノ独奏" | "弦楽四重奏" | "管弦楽" | "声楽" | "その他";
-export type PieceRegion = "ドイツ・オーストリア" | "フランス" | "ロシア" | "イタリア" | "その他";
+export { PIECE_GENRES, PIECE_ERAS, PIECE_FORMATIONS, PIECE_REGIONS };
+export type { PieceGenre, PieceEra, PieceFormation, PieceRegion };
 
 // 楽曲マスタ
-// ※ app/types/index.ts と同期を保つこと
 export interface Piece {
   id: string;
   title: string;

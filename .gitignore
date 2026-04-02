@@ -21,6 +21,9 @@ Thumbs.db
 # CDK
 cdk/cdk.out/
 
+# tsc output from shared/
+shared/*.js
+
 # Logs
 *.log
 npm-debug.log*

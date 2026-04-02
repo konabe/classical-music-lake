@@ -1,30 +1,23 @@
-/**
- * フロントエンド共通型定義
- *
- * ## 管理方針
- * - このファイルはフロントエンド（Nuxt）専用の型定義を管理する
- * - backend/src/types/index.ts と共有すべき型（ListeningLog, Piece, Rating など）は
- *   両ファイルで重複定義する（パッケージを分離しているため）
- * - 共有型を変更する場合は、必ず backend/src/types/index.ts も同時に更新すること
- * - バックエンド固有のロジック（isValidRating 等のバリデーション関数）はバックエンド側にのみ存在する
- *
- * ## 変更時のチェックリスト
- * - [ ] 共有型を変更した場合、backend/src/types/index.ts にも同じ変更を加えたか
- * - [ ] フロントエンド固有の型のみを追加・変更した場合、バックエンド側への影響はないか確認したか
- */
+// 楽曲カテゴリ（shared/constants.ts から re-export）
+import {
+  PIECE_GENRES,
+  PIECE_ERAS,
+  PIECE_FORMATIONS,
+  PIECE_REGIONS,
+  type PieceGenre,
+  type PieceEra,
+  type PieceFormation,
+  type PieceRegion,
+} from "../../shared/constants";
 
-// 評価値（1〜5 の整数）
-// ※ backend/src/types/index.ts と同期を保つこと
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
 // APIエラーレスポンスのボディ型
-// ※ backend/src/types/index.ts と同期を保つこと
 export type ApiErrorResponse = {
   message: string;
 };
 
 // 鑑賞ログ（曲・演奏家の記録）
-// ※ backend/src/types/index.ts と同期を保つこと
 export interface ListeningLog {
   id: string;
   userId: string | null; // Cognito sub（未帰属データは null）
@@ -40,24 +33,10 @@ export interface ListeningLog {
 
 export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
-
-// 楽曲カテゴリ
-// ※ backend/src/types/index.ts と同期を保つこと
-export type PieceGenre =
-  | "交響曲"
-  | "協奏曲"
-  | "室内楽"
-  | "独奏曲"
-  | "歌曲"
-  | "オペラ"
-  | "宗教音楽"
-  | "その他";
-export type PieceEra = "バロック" | "古典派" | "ロマン派" | "近現代" | "その他";
-export type PieceFormation = "ピアノ独奏" | "弦楽四重奏" | "管弦楽" | "声楽" | "その他";
-export type PieceRegion = "ドイツ・オーストリア" | "フランス" | "ロシア" | "イタリア" | "その他";
+export { PIECE_GENRES, PIECE_ERAS, PIECE_FORMATIONS, PIECE_REGIONS };
+export type { PieceGenre, PieceEra, PieceFormation, PieceRegion };
 
 // 楽曲マスタ
-// ※ backend/src/types/index.ts と同期を保つこと
 export interface Piece {
   id: string;
   title: string;
