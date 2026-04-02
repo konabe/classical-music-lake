@@ -15,8 +15,6 @@
  * - [ ] フロントエンド固有の型のみを追加・変更した場合、バックエンド側への影響はないか確認したか
  */
 
-// 評価値（1〜5 の整数）
-// ※ backend/src/types/index.ts と同期を保つこと
 // 楽曲カテゴリ（shared/constants.ts から re-export）
 import {
   PIECE_GENRES,
@@ -32,13 +30,11 @@ import {
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
 // APIエラーレスポンスのボディ型
-// ※ backend/src/types/index.ts と同期を保つこと
 export type ApiErrorResponse = {
   message: string;
 };
 
 // 鑑賞ログ（曲・演奏家の記録）
-// ※ backend/src/types/index.ts と同期を保つこと
 export interface ListeningLog {
   id: string;
   userId: string | null; // Cognito sub（未帰属データは null）
@@ -58,7 +54,6 @@ export { PIECE_GENRES, PIECE_ERAS, PIECE_FORMATIONS, PIECE_REGIONS };
 export type { PieceGenre, PieceEra, PieceFormation, PieceRegion };
 
 // 楽曲マスタ
-// ※ backend/src/types/index.ts と同期を保つこと
 export interface Piece {
   id: string;
   title: string;

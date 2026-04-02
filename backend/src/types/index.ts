@@ -16,8 +16,6 @@
  * - [ ] バックエンド固有の型・関数のみを追加・変更した場合、フロントエンド側への影響はないか確認したか
  */
 
-// 評価値（1〜5 の整数）
-// ※ app/types/index.ts と同期を保つこと
 // 楽曲カテゴリ（shared/constants.ts から re-export）
 import {
   PIECE_GENRES,
@@ -38,7 +36,6 @@ export function isValidRating(value: unknown): value is Rating {
 }
 
 // APIエラーレスポンスのボディ型
-// ※ app/types/index.ts と同期を保つこと
 export type ApiErrorResponse = {
   message: string;
 };
@@ -49,7 +46,6 @@ export interface CognitoError extends Error {
 }
 
 // 鑑賞ログ（曲・演奏家の記録）
-// ※ app/types/index.ts と同期を保つこと
 export interface ListeningLog {
   id: string;
   userId: string | null; // Cognito sub（未帰属データは null）
@@ -69,7 +65,6 @@ export { PIECE_GENRES, PIECE_ERAS, PIECE_FORMATIONS, PIECE_REGIONS };
 export type { PieceGenre, PieceEra, PieceFormation, PieceRegion };
 
 // 楽曲マスタ
-// ※ app/types/index.ts と同期を保つこと
 export interface Piece {
   id: string;
   title: string;
