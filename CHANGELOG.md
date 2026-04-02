@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.5.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.4.0...classical-music-lake-v1.5.0) (2026-04-02)
+
+
+### Features
+
+* add custom ESLint rule to ban :deep() selector in Vue SFCs ([3c48572](https://github.com/konabe/classical-music-lake/commit/3c485720bde8cb143ed9be1172094fdf2d1fa128)), closes [#280](https://github.com/konabe/classical-music-lake/issues/280)
+* claude_args に Edit, Read, Write ツールを許可設定 ([c5563f5](https://github.com/konabe/classical-music-lake/commit/c5563f5de7d80859974f14ca6c05bccb7fec4214))
+* if文に波かっこを必須化し、不要なboolean比較を禁止 ([2d1402b](https://github.com/konabe/classical-music-lake/commit/2d1402bf79051e9bfac92d4545208144a3d63d29))
+* トークンリフレッシュ機能を追加して再訪時の認証エラーを解消 ([9c0fc39](https://github.com/konabe/classical-music-lake/commit/9c0fc399d24bde842827e576a48d7bc24ce6d305)), closes [#254](https://github.com/konabe/classical-music-lake/issues/254)
+
+
+### Bug Fixes
+
+* claude.yml の末尾空行を修正して prettier チェックを通す ([1477169](https://github.com/konabe/classical-music-lake/commit/147716934fdd76986b9c9922a417ab856867f0c7))
+* coderabbitレビューコメントへの対応（PR [#301](https://github.com/konabe/classical-music-lake/issues/301)） ([5cd220b](https://github.com/konabe/classical-music-lake/commit/5cd220b116a4192dff64eedd7cb983045803224b))
+* lodash の高severity脆弱性を npm audit fix で修正 ([852cb51](https://github.com/konabe/classical-music-lake/commit/852cb517c4c54ec4d06b5b338cdeef5df9784b2a))
+* middleware の isTokenExpired 重複を解消し refreshTokens のレース条件を修正 ([755873c](https://github.com/konabe/classical-music-lake/commit/755873cd71d588ed82dc545b6bac826a6a417499))
+* middleware.ts の error.expose を明示比較に修正 ([3ff82bf](https://github.com/konabe/classical-music-lake/commit/3ff82bfa6e0acc511da72b332a639e6a824ba80d))
+* pageHeader テストで useAuth をモックし vitest ワーカー終了時のエラーを解消 ([ea5853f](https://github.com/konabe/classical-music-lake/commit/ea5853ff10143fb70dcc4fb4ecc3a18b6e6011f6))
+* refreshTokens の並行呼び出し時の競合を防止 ([dc5bef8](https://github.com/konabe/classical-music-lake/commit/dc5bef8fa82597108e18cbe18248cf26e6a52036))
+* setup-test-db.mjs の波かっこなしif文を修正 ([22e1848](https://github.com/konabe/classical-music-lake/commit/22e1848fbaaa336d3c7866f7787c321cda573706))
+* shared/ に tsconfig.json を追加して CI のバックエンドテストを修正 ([19634f9](https://github.com/konabe/classical-music-lake/commit/19634f9130ed22e28a66cb42de84200319b6c753))
+* strict-boolean-expressions と no-unnecessary-boolean-literal-compare の競合を解消 ([df8ea1a](https://github.com/konabe/classical-music-lake/commit/df8ea1aa8f3daa0d1550af42863930cc655b72d5))
+* suppress EnvironmentTeardownError for vitest 4.1 compatibility ([cdd5da6](https://github.com/konabe/classical-music-lake/commit/cdd5da6b3ea79220788ef1f1d843493207b6ac4e))
+* vitest config に shared/ ディレクトリへのアクセス許可を追加 ([d8f6eaa](https://github.com/konabe/classical-music-lake/commit/d8f6eaa5126bb4a5efecffbab23707e2f7e87ba5))
+* vitest から .claude/worktrees を除外 ([709453b](https://github.com/konabe/classical-music-lake/commit/709453b5232c37e3129c2e0cfc1fd0fd50bf14f9))
+* vitest の vite root をプロジェクトルートに設定 ([5de3864](https://github.com/konabe/classical-music-lake/commit/5de3864ad294938ea5acb1a0c2793ce397c16183))
+* トークンリフレッシュ機能を追加して再訪時の認証エラーを解消 ([3b2ab1c](https://github.com/konabe/classical-music-lake/commit/3b2ab1cc5b8ec7104ab5f450aecf9e784d1d2b0b))
+
 ## [1.4.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.3.0...classical-music-lake-v1.4.0) (2026-03-30)
 
 
