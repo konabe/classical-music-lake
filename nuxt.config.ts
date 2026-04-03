@@ -15,6 +15,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: "", // NUXT_PUBLIC_API_BASE_URL 環境変数で上書き可能
+      cognitoDomain: "", // NUXT_PUBLIC_COGNITO_DOMAIN 環境変数で上書き可能
+      cognitoClientId: "", // NUXT_PUBLIC_COGNITO_CLIENT_ID 環境変数で上書き可能
     },
   },
   test: {

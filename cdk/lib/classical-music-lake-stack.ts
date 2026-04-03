@@ -105,24 +105,177 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       signInCaseSensitive: false,
     });
 
+    // -------------------------
+    // S3 + CloudFront (SPA ホスティング)
+    // App Client の callback URL に CloudFront ドメインが必要なため先に作成する
+    // -------------------------
+    const spaBucket = new s3.Bucket(this, "SpaBucket", {
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      // prod は RETAIN（本番アセットの誤削除防止）、stg/dev は DESTROY
+      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: !isProd,
+      // prod は S3 バージョニング有効（静的ファイルのロールバック用）
+      versioned: isProd,
+    });
+
+    // セキュリティヘッダポリシー（SPA 用: X-Frame-Options: DENY）
+    const securityHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
+      this,
+      "SecurityHeadersPolicy",
+      {
+        securityHeadersBehavior: {
+          strictTransportSecurity: {
+            accessControlMaxAge: cdk.Duration.days(365),
+            includeSubdomains: true,
+            override: true,
+          },
+          contentTypeOptions: { override: true },
+          frameOptions: {
+            frameOption: cloudfront.HeadersFrameOption.DENY,
+            override: true,
+          },
+          xssProtection: { protection: true, modeBlock: true, override: true },
+          referrerPolicy: {
+            referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+            override: true,
+          },
+        },
+      }
+    );
+
+    // Storybook 用セキュリティヘッダポリシー（X-Frame-Options を除外: iframe プレビューに必要）
+    const storybookHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
+      this,
+      "StorybookHeadersPolicy",
+      {
+        securityHeadersBehavior: {
+          strictTransportSecurity: {
+            accessControlMaxAge: cdk.Duration.days(365),
+            includeSubdomains: true,
+            override: true,
+          },
+          contentTypeOptions: { override: true },
+          contentSecurityPolicy: {
+            contentSecurityPolicy: "frame-ancestors 'self';",
+            override: true,
+          },
+          xssProtection: { protection: true, modeBlock: true, override: true },
+          referrerPolicy: {
+            referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+            override: true,
+          },
+        },
+      }
+    );
+
+    const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        responseHeadersPolicy: securityHeadersPolicy,
+      },
+      // index.html はキャッシュしない（SPA デプロイ後に即反映させるため）
+      additionalBehaviors: {
+        "/index.html": {
+          origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          responseHeadersPolicy: securityHeadersPolicy,
+        },
+      },
+      defaultRootObject: "index.html",
+      errorResponses: [
+        // SPA のクライアントサイドルーティング対応
+        // ttl を 0 にして index.html の古いキャッシュが返らないようにする
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: cdk.Duration.seconds(0),
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: cdk.Duration.seconds(0),
+        },
+      ],
+    });
+
+    // CloudFront URL を CORS オリジンとして Lambda 環境変数に設定
+    this.corsAllowOrigin = `https://${distribution.distributionDomainName}`;
+    // dev 環境のみローカル開発用に localhost を許可（NOTE: 3000だとなぜか起動できない）
+    this.corsAllowOrigins =
+      stageName === "dev"
+        ? [this.corsAllowOrigin, "http://localhost:3010"]
+        : [this.corsAllowOrigin];
+
+    // -------------------------
+    // Google Identity Provider
+    // GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET 環境変数が設定されている場合のみ作成
+    // -------------------------
+    const googleClientId = process.env.GOOGLE_CLIENT_ID ?? "";
+    const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? "";
+    const hasGoogleCredentials = googleClientId !== "" && googleClientSecret !== "";
+
+    let googleIdP: cognito.UserPoolIdentityProviderGoogle | undefined;
+    if (hasGoogleCredentials) {
+      googleIdP = new cognito.UserPoolIdentityProviderGoogle(this, "GoogleProvider", {
+        userPool,
+        clientId: googleClientId,
+        clientSecretValue: cdk.SecretValue.unsafePlainText(googleClientSecret),
+        scopes: ["email", "profile", "openid"],
+        attributeMapping: {
+          email: cognito.ProviderAttribute.GOOGLE_EMAIL,
+          givenName: cognito.ProviderAttribute.GOOGLE_GIVEN_NAME,
+          familyName: cognito.ProviderAttribute.GOOGLE_FAMILY_NAME,
+        },
+      });
+    }
+
     // App Client: フロントエンド用
+    const callbackUrls = [`https://${distribution.distributionDomainName}/auth/callback`];
+    const logoutUrls = [`https://${distribution.distributionDomainName}/auth/login`];
+    if (stageName === "dev") {
+      callbackUrls.push("http://localhost:3010/auth/callback");
+      logoutUrls.push("http://localhost:3010/auth/login");
+    }
+
     const appClient = userPool.addClient("FrontendClient", {
       authFlows: {
         userPassword: true,
         custom: true,
       },
+      supportedIdentityProviders: [
+        cognito.UserPoolClientIdentityProvider.COGNITO,
+        ...(hasGoogleCredentials ? [cognito.UserPoolClientIdentityProvider.GOOGLE] : []),
+      ],
       oAuth: {
         flows: {
           authorizationCodeGrant: true,
         },
         scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE],
-        callbackUrls: ["https://classical-music-lake.example.com/auth/callback"],
-        logoutUrls: ["https://classical-music-lake.example.com/login"],
+        callbackUrls,
+        logoutUrls,
       },
       accessTokenValidity: cdk.Duration.minutes(60),
       idTokenValidity: cdk.Duration.minutes(60),
       refreshTokenValidity: cdk.Duration.days(30),
       preventUserExistenceErrors: true,
+    });
+
+    // Google IdP が存在する場合、App Client との依存関係を明示
+    if (googleIdP !== undefined) {
+      appClient.node.addDependency(googleIdP);
+    }
+
+    // Cognito Hosted UI ドメイン（Google OAuth のリダイレクト先として必要）
+    const cognitoDomainPrefix = isProd
+      ? "classical-music-lake"
+      : `classical-music-lake-${stageName}`;
+    userPool.addDomain("CognitoDomain", {
+      cognitoDomain: { domainPrefix: cognitoDomainPrefix },
     });
 
     const commonEnv: Record<string, string> = {
@@ -345,110 +498,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const authRefreshResource = authResource.addResource("refresh");
     authRefreshResource.addMethod("POST", integ(authRefresh));
 
-    // -------------------------
-    // S3 + CloudFront (SPA ホスティング)
-    // -------------------------
-    const spaBucket = new s3.Bucket(this, "SpaBucket", {
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      // prod は RETAIN（本番アセットの誤削除防止）、stg/dev は DESTROY
-      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: !isProd,
-      // prod は S3 バージョニング有効（静的ファイルのロールバック用）
-      versioned: isProd,
-    });
-
-    // セキュリティヘッダポリシー（SPA 用: X-Frame-Options: DENY）
-    const securityHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
-      this,
-      "SecurityHeadersPolicy",
-      {
-        securityHeadersBehavior: {
-          strictTransportSecurity: {
-            accessControlMaxAge: cdk.Duration.days(365),
-            includeSubdomains: true,
-            override: true,
-          },
-          contentTypeOptions: { override: true },
-          frameOptions: {
-            frameOption: cloudfront.HeadersFrameOption.DENY,
-            override: true,
-          },
-          xssProtection: { protection: true, modeBlock: true, override: true },
-          referrerPolicy: {
-            referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
-            override: true,
-          },
-        },
-      }
-    );
-
-    // Storybook 用セキュリティヘッダポリシー（X-Frame-Options を除外: iframe プレビューに必要）
-    const storybookHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
-      this,
-      "StorybookHeadersPolicy",
-      {
-        securityHeadersBehavior: {
-          strictTransportSecurity: {
-            accessControlMaxAge: cdk.Duration.days(365),
-            includeSubdomains: true,
-            override: true,
-          },
-          contentTypeOptions: { override: true },
-          contentSecurityPolicy: {
-            contentSecurityPolicy: "frame-ancestors 'self';",
-            override: true,
-          },
-          xssProtection: { protection: true, modeBlock: true, override: true },
-          referrerPolicy: {
-            referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
-            override: true,
-          },
-        },
-      }
-    );
-
-    const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
-      defaultBehavior: {
-        origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        responseHeadersPolicy: securityHeadersPolicy,
-      },
-      // index.html はキャッシュしない（SPA デプロイ後に即反映させるため）
-      additionalBehaviors: {
-        "/index.html": {
-          origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
-          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-          responseHeadersPolicy: securityHeadersPolicy,
-        },
-      },
-      defaultRootObject: "index.html",
-      errorResponses: [
-        // SPA のクライアントサイドルーティング対応
-        // ttl を 0 にして index.html の古いキャッシュが返らないようにする
-        {
-          httpStatus: 403,
-          responseHttpStatus: 200,
-          responsePagePath: "/index.html",
-          ttl: cdk.Duration.seconds(0),
-        },
-        {
-          httpStatus: 404,
-          responseHttpStatus: 200,
-          responsePagePath: "/index.html",
-          ttl: cdk.Duration.seconds(0),
-        },
-      ],
-    });
-
-    // CloudFront URL を CORS オリジンとして Lambda 環境変数に設定
-    this.corsAllowOrigin = `https://${distribution.distributionDomainName}`;
-    // dev 環境のみローカル開発用に localhost を許可（NOTE: 3000だとなぜか起動できない）
-    this.corsAllowOrigins =
-      stageName === "dev"
-        ? [this.corsAllowOrigin, "http://localhost:3010"]
-        : [this.corsAllowOrigin];
     [
       listeningLogsList,
       listeningLogsGet,
@@ -652,6 +701,11 @@ function handler(event) {
     new cdk.CfnOutput(this, "CognitoUserPoolArn", {
       value: userPool.userPoolArn,
       description: "Cognito User Pool ARN",
+    });
+
+    new cdk.CfnOutput(this, "CognitoDomainName", {
+      value: `${cognitoDomainPrefix}.auth.${this.region}.amazoncognito.com`,
+      description: "Cognito Hosted UI Domain (NUXT_PUBLIC_COGNITO_DOMAIN に設定)",
     });
   }
 

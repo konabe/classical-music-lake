@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "auth" });
 
-const { login } = useAuth();
+const { login, loginWithGoogle } = useAuth();
 const router = useRouter();
 
 const errors = reactive({
@@ -42,5 +42,10 @@ async function handleSubmit(email: string, password: string) {
 </script>
 
 <template>
-  <LoginTemplate :is-loading="isLoading" :errors="errors" @submit="handleSubmit" />
+  <LoginTemplate
+    :is-loading="isLoading"
+    :errors="errors"
+    @submit="handleSubmit"
+    @google-login="loginWithGoogle"
+  />
 </template>

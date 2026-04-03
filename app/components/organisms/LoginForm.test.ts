@@ -63,6 +63,13 @@ describe("LoginForm", () => {
       });
       expect(wrapper.find('a[href="/auth/user-register"]').exists()).toBe(true);
     });
+
+    it("Googleでログインボタンが表示される", async () => {
+      const wrapper = await mountSuspended(LoginForm, {
+        props: { isLoading: false, errors: defaultErrors },
+      });
+      expect(wrapper.find(".btn-google-login").exists()).toBe(true);
+    });
   });
 
   describe("イベント", () => {
@@ -88,6 +95,14 @@ describe("LoginForm", () => {
       const emitted = wrapper.emitted("submit") as [string, string][];
       expect(emitted[0][0]).toBe("user@example.com");
       expect(emitted[0][1]).toBe("MyPassword1");
+    });
+
+    it("Googleでログインボタンをクリックすると googleLogin イベントが emit される", async () => {
+      const wrapper = await mountSuspended(LoginForm, {
+        props: { isLoading: false, errors: defaultErrors },
+      });
+      await wrapper.find(".btn-google-login").trigger("click");
+      expect(wrapper.emitted("googleLogin")).toBeDefined();
     });
   });
 });
