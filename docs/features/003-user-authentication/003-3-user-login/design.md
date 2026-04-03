@@ -158,7 +158,6 @@ Content-Type: application/json
 - HTTPS のみ（本番環境）
 - トークン有効期限（60 分）
 - Rate Limiting（ログイン: 5 req/min）
-- リフレッシュトークンの自動更新（将来フェーズ）
 
 ### 実装しない
 
@@ -172,7 +171,7 @@ Content-Type: application/json
 | **認証フロー**       | USER_PASSWORD_AUTH        | シンプル、Cognito 標準                                                                             |
 | **トークン保存**     | Secure Cookie（HttpOnly） | XSS によるトークン窃取を防止。refresh token は HttpOnly Secure Cookie、access token は短寿命で管理 |
 | **エラーメッセージ** | 汎用化                    | セキュリティ（ユーザー存在有無の推測防止）                                                         |
-| **Refresh Token**    | 実装しない（初期版）      | MVP スコープ削減。トークン有効期限 60 分で対応                                                     |
+| **Refresh Token**    | 実装済み（PR #301, #305） | アクセストークン期限切れ時に自動更新。`POST /auth/refresh` で取得し localStorage に保存            |
 
 ## レビュー結果
 
