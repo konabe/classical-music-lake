@@ -27,10 +27,6 @@
 - 他デバイスへの強制ログアウト連携
 - Token Blacklist（独自 DB によるトークン管理）
 
-## 設計申し送りメモ
+## 関連ADR
 
-- Cognito の `RevokeToken` は Access Token ではなく Refresh Token を引数に取る
-- `RevokeToken` 成功後、その Refresh Token から発行された Access Token は次のリクエスト検証時には通るが、新規発行はできなくなる（Access Token の自然失効 60 分を許容）
-- `/auth/logout` は認証不要（Authorization ヘッダー不要）にしてよい。Refresh Token を本文で受け取るだけ
-- Refresh Token が localStorage に存在しない場合（すでに削除済み等）はフロントエンドからエンドポイントを呼ばずにリダイレクトのみでよい
-- Cognito App Client はシークレットなしのため、`RevokeToken` 呼び出し時に client_secret は不要
+- [ADR-002: ログアウト時に GlobalSignOut による全トークン即時無効化を行わない](../../adr/002-no-global-sign-out.md)
