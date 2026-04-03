@@ -22,7 +22,7 @@ tools: Read, Write, Grep, Glob, Bash
 対象の実装ファイルを Read する。
 型定義も合わせて確認する。
 
-```
+```text
 backend/src/types/index.ts   （バックエンドの場合）
 app/types/index.ts            （フロントエンドの場合）
 shared/constants.ts
@@ -80,16 +80,19 @@ npm run test:frontend  # フロントエンドの場合
 
 ### 5. 完了報告
 
-```
+```markdown
 ## テスト生成サマリ
 
 ### 生成したファイル
+
 - <ファイルパス>
 
 ### テストケース一覧
+
 - <テストケース名>
 
 ### カバーできなかった観点（あれば）
+
 - <内容と理由>
 ```
 
