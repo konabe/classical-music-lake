@@ -15,12 +15,20 @@ vi.mock("./useApiBase", () => ({
   useApiBase: () => "https://api.example.com",
 }));
 
+vi.mock("./useCognitoConfig", () => ({
+  useCognitoConfig: () => ({
+    domain: "test.auth.ap-northeast-1.amazoncognito.com",
+    clientId: "test-client-id",
+  }),
+}));
+
 vi.mock("#app", () => ({
   useRouter: () => ({ push: mockRouterPush }),
 }));
 
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
+  vi.stubGlobal("location", { href: "", origin: "https://app.example.com" });
   mockFetch.mockClear();
   mockRouterPush.mockClear();
   localStorage.clear();
@@ -569,6 +577,61 @@ describe("useAuth", () => {
 
       expect(result.success).toBe(false);
       expect(result.errorType).toBe("general");
+    });
+  });
+
+  describe("loginWithGoogle", () => {
+    it("Cognito Hosted UI の Google OAuth URL へリダイレクトする", () => {
+      const { loginWithGoogle } = useAuth();
+      loginWithGoogle();
+
+      expect(window.location.href).toContain(
+        "test.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize"
+      );
+      expect(window.location.href).toContain("identity_provider=Google");
+      expect(window.location.href).toContain("response_type=code");
+      expect(window.location.href).toContain("client_id=test-client-id");
+      expect(window.location.href).toContain("%2Fauth%2Fcallback");
+    });
+  });
+
+  describe("handleOAuthCallback", () => {
+    it("認可コードでトークンエンドポイントを呼び出してトークンを保存する", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          access_token: "access-token",
+          id_token: "id-token",
+          refresh_token: "refresh-token",
+          expires_in: 3600,
+        }),
+      });
+
+      const { handleOAuthCallback } = useAuth();
+      await handleOAuthCallback("test-code");
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://test.auth.ap-northeast-1.amazoncognito.com/oauth2/token",
+        expect.objectContaining({ method: "POST" })
+      );
+      expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBe("access-token");
+      expect(localStorage.getItem(ID_TOKEN_KEY)).toBe("id-token");
+      expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBe("refresh-token");
+      expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).not.toBeNull();
+    });
+
+    it("トークン取得失敗時にエラーをスローする", async () => {
+      mockFetch.mockResolvedValue({ ok: false });
+
+      const { handleOAuthCallback } = useAuth();
+      await expect(handleOAuthCallback("bad-code")).rejects.toThrow();
+    });
+
+    it("ネットワークエラー時にエラーをスローする", async () => {
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      const { handleOAuthCallback } = useAuth();
+      await expect(handleOAuthCallback("code")).rejects.toThrow();
     });
   });
 

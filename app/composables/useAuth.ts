@@ -1,5 +1,6 @@
 import { useRouter } from "#app";
 import { useApiBase } from "./useApiBase";
+import { useCognitoConfig } from "./useCognitoConfig";
 
 export const ACCESS_TOKEN_KEY = "accessToken";
 export const ID_TOKEN_KEY = "idToken";
@@ -64,6 +65,7 @@ export interface LoginResult {
 export const useAuth = () => {
   const apiBase = useApiBase();
   const router = useRouter();
+  const { domain: cognitoDomain, clientId: cognitoClientId } = useCognitoConfig();
 
   const validateEmail = (email: string): boolean => {
     if (email === "" || email.trim() === "") {
@@ -387,6 +389,41 @@ export const useAuth = () => {
     router.push("/auth/login");
   };
 
+  const loginWithGoogle = (): void => {
+    const redirectUri = `${window.location.origin}/auth/callback`;
+    const url = new URL(`https://${cognitoDomain}/oauth2/authorize`);
+    url.searchParams.set("identity_provider", "Google");
+    url.searchParams.set("redirect_uri", redirectUri);
+    url.searchParams.set("response_type", "code");
+    url.searchParams.set("client_id", cognitoClientId);
+    url.searchParams.set("scope", "email openid profile");
+    window.location.href = url.toString();
+  };
+
+  const handleOAuthCallback = async (code: string): Promise<void> => {
+    const redirectUri = `${window.location.origin}/auth/callback`;
+    const body = new URLSearchParams({
+      grant_type: "authorization_code",
+      client_id: cognitoClientId,
+      code,
+      redirect_uri: redirectUri,
+    });
+
+    const response = await fetch(`https://${cognitoDomain}/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Token exchange failed");
+    }
+
+    const data = await response.json();
+    localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+    saveSessionTokens(data.access_token, data.id_token, data.expires_in);
+  };
+
   return {
     validateEmail,
     validatePassword,
@@ -400,5 +437,7 @@ export const useAuth = () => {
     refreshTokens,
     clearTokens,
     logout,
+    loginWithGoogle,
+    handleOAuthCallback,
   };
 };

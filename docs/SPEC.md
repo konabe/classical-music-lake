@@ -51,12 +51,13 @@
 
 #### フロントエンド Composables
 
-| Composable         | 役割                                                                                |
-| ------------------ | ----------------------------------------------------------------------------------- |
-| `useApiBase`       | API Gateway のベース URL を返す                                                     |
-| `useAuth`          | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired） |
-| `usePieces`        | 曲一覧を取得する                                                                    |
-| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                  |
+| Composable         | 役割                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `useApiBase`       | API Gateway のベース URL を返す                                                                                           |
+| `useCognitoConfig` | Cognito Hosted UI のドメインとクライアント ID を返す                                                                      |
+| `useAuth`          | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback） |
+| `usePieces`        | 曲一覧を取得する                                                                                                          |
+| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                        |
 
 #### フロントエンド レイアウト
 
@@ -315,6 +316,17 @@ Content-Type: application/json
 - 既に確認済み: `400 Bad Request` `{ "error": "UserAlreadyConfirmed", "message": "..." }`
 - ユーザー不存在: `400 Bad Request` `{ "error": "UserNotFound", "message": "..." }`
 - リクエスト過多: `429 Too Many Requests`
+
+#### `GET /auth/callback`（Cognito Hosted UI コールバック）
+
+Cognito Hosted UI からのリダイレクトを受け取り、認可コードをトークンと交換する（フロントエンド処理）
+
+**フロー**
+
+1. Cognito Hosted UI が Google 認証後に `/auth/callback?code=...` へリダイレクト
+2. フロントエンドが `useCognitoConfig` で取得した Cognito ドメインのトークンエンドポイントへ認可コードを送信
+3. 成功時: アクセストークン・IDトークン・リフレッシュトークンを localStorage に保存してトップへ遷移
+4. 失敗時: エラーメッセージを表示
 
 #### `POST /auth/refresh`
 
@@ -794,25 +806,26 @@ cdk deploy
 
 ## 10. 変更履歴
 
-| 日付       | バージョン | 変更内容                                                                                                                                                                                                  |
-| ---------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-03 | 1.7.2      | CORS オリジン制限の強化: prod・stg 環境では CloudFront URL のみ許可、dev 環境のみ localhost:3010 を追加許可するよう変更                                                                                   |
-| 2026-04-02 | 1.7.1      | カテゴリの値を `shared/constants.ts` に一元管理し、フロント・バックエンドから re-export。型・Zodスキーマ・フォーム選択肢を導出するよう統一                                                                |
-| 2026-03-31 | 1.7.0      | トークンリフレッシュ機能追加（`POST /auth/refresh` エンドポイント新設、ログイン時に `refreshToken`・有効期限を保存、auth ミドルウェアで期限切れ時に自動リフレッシュ、401 時にリフレッシュ試行後リトライ） |
-| 2026-03-28 | 1.6.1      | コード品質改善: truthy/falsy 依存を全廃し明示的な null/undefined 比較に統一。`@typescript-eslint/strict-boolean-expressions` および `vitest/no-restricted-matchers` ESLint ルールを追加し再発を防止       |
-| 2026-03-26 | 1.6.0      | `ListeningLogForm` に楽曲選択時の動画プレビュー機能を追加（`videoUrl` ありの曲を選択すると `VideoPlayer` をインライン表示）                                                                               |
-| 2026-03-25 | 1.5.0      | 楽曲詳細ページ（`/pieces/[id]`）追加、`VideoPlayer`・`QuickLogForm`・`PieceDetailTemplate` 新設、動画再生起点のクイックログ記録フローを実装                                                               |
-| 2026-03-23 | 1.3.3      | `useFetch` の `onResponseError` で 401 時に `handleAuthError` を呼び出し、ログイン画面へリダイレクトするよう修正（`useListeningLogs.list`、`useListeningLog`）                                            |
-| 2026-03-22 | 1.3.2      | ヘッダーナビゲーション改善（未ログイン時: 新規登録・ログインリンク表示、ログイン済み時: ログアウトボタン表示・認証リンク非表示）                                                                          |
-| 2026-03-21 | 1.3.1      | ログアウト機能追加（useAuth: logout/isAuthenticated、auth ミドルウェア、ナビバーボタン）                                                                                                                  |
-| 2026-03-25 | 1.4.0      | `Piece` に `videoUrl` フィールドを追加（任意・URL形式バリデーション）、楽曲フォームに動画 URL 入力欄を追加                                                                                                |
-| 2026-03-21 | 1.3.0      | AWS Cognito ユーザー登録機能を追加（`POST /auth/register`、`useAuth` composable）                                                                                                                         |
-| 2026-03-17 | 1.2.5      | CDK CORS 設定を DRY 化（`addCors` ヘルパー）、型定義ファイルの管理方針コメントを整備                                                                                                                      |
-| 2026-03-17 | 1.2.4      | Create入力の実体バリデーション強化（空白のみ禁止・最大文字数制限）                                                                                                                                        |
-| 2026-03-16 | 1.2.3      | Zod を導入しリクエストボディのパース処理にバリデーションを統合                                                                                                                                            |
-| 2026-03-15 | 1.2.2      | `listening-logs/list.ts` を DynamoDB ページネーション対応に統一                                                                                                                                           |
-| 2026-03-15 | 1.2.1      | バックエンドの JSON パース処理を `utils/parsing.ts` に共通化                                                                                                                                              |
-| 2026-03-11 | 1.2.0      | TOPページに管理者向けリンクセクション（楽曲マスタ導線）を追加                                                                                                                                             |
-| 2026-03-07 | 1.1.0      | performer・conductor フィールド削除、DELETE レスポンス 204 に修正                                                                                                                                         |
-| 2026-03-02 | 1.0.1      | Node.js 24.x対応                                                                                                                                                                                          |
-| 2026-03-02 | 1.0.0      | 初版作成                                                                                                                                                                                                  |
+| 日付       | バージョン | 変更内容                                                                                                                                                                                                                       |
+| ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-04-03 | 1.8.0      | Google OAuth 認証を追加（Cognito Hosted UI 経由。`POST /auth/callback` フロー、`loginWithGoogle`・`handleOAuthCallback` を `useAuth` に追加、`useCognitoConfig` 新設、CDK に Google Identity Provider・Cognito Domain を追加） |
+| 2026-04-03 | 1.7.2      | CORS オリジン制限の強化: prod・stg 環境では CloudFront URL のみ許可、dev 環境のみ localhost:3010 を追加許可するよう変更                                                                                                        |
+| 2026-04-02 | 1.7.1      | カテゴリの値を `shared/constants.ts` に一元管理し、フロント・バックエンドから re-export。型・Zodスキーマ・フォーム選択肢を導出するよう統一                                                                                     |
+| 2026-03-31 | 1.7.0      | トークンリフレッシュ機能追加（`POST /auth/refresh` エンドポイント新設、ログイン時に `refreshToken`・有効期限を保存、auth ミドルウェアで期限切れ時に自動リフレッシュ、401 時にリフレッシュ試行後リトライ）                      |
+| 2026-03-28 | 1.6.1      | コード品質改善: truthy/falsy 依存を全廃し明示的な null/undefined 比較に統一。`@typescript-eslint/strict-boolean-expressions` および `vitest/no-restricted-matchers` ESLint ルールを追加し再発を防止                            |
+| 2026-03-26 | 1.6.0      | `ListeningLogForm` に楽曲選択時の動画プレビュー機能を追加（`videoUrl` ありの曲を選択すると `VideoPlayer` をインライン表示）                                                                                                    |
+| 2026-03-25 | 1.5.0      | 楽曲詳細ページ（`/pieces/[id]`）追加、`VideoPlayer`・`QuickLogForm`・`PieceDetailTemplate` 新設、動画再生起点のクイックログ記録フローを実装                                                                                    |
+| 2026-03-23 | 1.3.3      | `useFetch` の `onResponseError` で 401 時に `handleAuthError` を呼び出し、ログイン画面へリダイレクトするよう修正（`useListeningLogs.list`、`useListeningLog`）                                                                 |
+| 2026-03-22 | 1.3.2      | ヘッダーナビゲーション改善（未ログイン時: 新規登録・ログインリンク表示、ログイン済み時: ログアウトボタン表示・認証リンク非表示）                                                                                               |
+| 2026-03-21 | 1.3.1      | ログアウト機能追加（useAuth: logout/isAuthenticated、auth ミドルウェア、ナビバーボタン）                                                                                                                                       |
+| 2026-03-25 | 1.4.0      | `Piece` に `videoUrl` フィールドを追加（任意・URL形式バリデーション）、楽曲フォームに動画 URL 入力欄を追加                                                                                                                     |
+| 2026-03-21 | 1.3.0      | AWS Cognito ユーザー登録機能を追加（`POST /auth/register`、`useAuth` composable）                                                                                                                                              |
+| 2026-03-17 | 1.2.5      | CDK CORS 設定を DRY 化（`addCors` ヘルパー）、型定義ファイルの管理方針コメントを整備                                                                                                                                           |
+| 2026-03-17 | 1.2.4      | Create入力の実体バリデーション強化（空白のみ禁止・最大文字数制限）                                                                                                                                                             |
+| 2026-03-16 | 1.2.3      | Zod を導入しリクエストボディのパース処理にバリデーションを統合                                                                                                                                                                 |
+| 2026-03-15 | 1.2.2      | `listening-logs/list.ts` を DynamoDB ページネーション対応に統一                                                                                                                                                                |
+| 2026-03-15 | 1.2.1      | バックエンドの JSON パース処理を `utils/parsing.ts` に共通化                                                                                                                                                                   |
+| 2026-03-11 | 1.2.0      | TOPページに管理者向けリンクセクション（楽曲マスタ導線）を追加                                                                                                                                                                  |
+| 2026-03-07 | 1.1.0      | performer・conductor フィールド削除、DELETE レスポンス 204 に修正                                                                                                                                                              |
+| 2026-03-02 | 1.0.1      | Node.js 24.x対応                                                                                                                                                                                                               |
+| 2026-03-02 | 1.0.0      | 初版作成                                                                                                                                                                                                                       |

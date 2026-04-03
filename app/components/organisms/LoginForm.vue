@@ -6,6 +6,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   submit: [email: string, password: string];
+  googleLogin: [];
 }>();
 
 const form = reactive({
@@ -48,6 +49,14 @@ function handleSubmit() {
       </ButtonPrimary>
     </form>
 
+    <div class="divider">
+      <span>または</span>
+    </div>
+
+    <button type="button" class="btn-google-login" @click="emit('googleLogin')">
+      Google でログイン
+    </button>
+
     <div class="register-link">
       <p>
         アカウントをお持ちでない方は
@@ -77,5 +86,36 @@ form {
 
 .register-link a:hover {
   text-decoration: underline;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #7a5c38;
+  gap: 0.5rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #d4c5b0;
+}
+
+.btn-google-login {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d4c5b0;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #2d2d50;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-google-login:hover {
+  background-color: #f0ebe3;
 }
 </style>

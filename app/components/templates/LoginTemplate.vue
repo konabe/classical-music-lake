@@ -6,6 +6,7 @@ defineProps<{
 
 const emit = defineEmits<{
   submit: [email: string, password: string];
+  googleLogin: [];
 }>();
 </script>
 
@@ -15,6 +16,7 @@ const emit = defineEmits<{
       :is-loading="isLoading"
       :errors="errors"
       @submit="(email, password) => emit('submit', email, password)"
+      @google-login="emit('googleLogin')"
     />
   </div>
 </template>
