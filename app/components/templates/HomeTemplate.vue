@@ -120,9 +120,7 @@ defineProps<{
 
 <style scoped>
 .home {
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  margin-top: -2rem;
+  margin: -2rem -2rem 0;
   padding-bottom: 4rem;
   overflow-x: hidden;
 }
@@ -329,7 +327,7 @@ defineProps<{
 
 @media (max-width: 600px) {
   .home {
-    margin-top: -1rem;
+    margin: -1rem -1rem 0;
   }
 
   .hero {
