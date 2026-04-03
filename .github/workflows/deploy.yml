@@ -108,11 +108,11 @@ jobs:
           fi
 
       # ----------------------------------------
-      # デプロイ済みスタックから API Base URL を取得
+      # デプロイ済みスタックから API Base URL・Cognito 設定を取得
       # スタックが未作成（初回デプロイ）の場合は空文字のまま続行し、
       # CDK デプロイでスタックを作成後、次回デプロイ時に URL が確定する
       # ----------------------------------------
-      - name: Get API Base URL from CloudFormation
+      - name: Get stack outputs from CloudFormation
         id: get-api-url
         run: |
           API_URL=$(aws cloudformation describe-stacks \
@@ -126,15 +126,39 @@ jobs:
           fi
           echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
+          COGNITO_DOMAIN=$(aws cloudformation describe-stacks \
+            --stack-name "${{ steps.stack.outputs.name }}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`CognitoDomainName`].OutputValue' \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$COGNITO_DOMAIN" ] || [ "$COGNITO_DOMAIN" = "None" ]; then
+            echo "::warning::CognitoDomainName not found — building frontend without Cognito domain"
+            COGNITO_DOMAIN=""
+          fi
+          echo "cognito_domain=$COGNITO_DOMAIN" >> "$GITHUB_OUTPUT"
+
+          COGNITO_CLIENT_ID=$(aws cloudformation describe-stacks \
+            --stack-name "${{ steps.stack.outputs.name }}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`CognitoClientId`].OutputValue' \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$COGNITO_CLIENT_ID" ] || [ "$COGNITO_CLIENT_ID" = "None" ]; then
+            echo "::warning::CognitoClientId not found — building frontend without Cognito client ID"
+            COGNITO_CLIENT_ID=""
+          fi
+          echo "cognito_client_id=$COGNITO_CLIENT_ID" >> "$GITHUB_OUTPUT"
+
       # ----------------------------------------
       # フロントエンド: Nuxt SPA ビルド
       # ----------------------------------------
       - name: Build frontend
         run: npm run generate
         env:
-          # CloudFormation Outputs から取得した API Gateway URL をセット
+          # CloudFormation Outputs から取得した値をセット
           # 初回デプロイ時は空文字になる（CDK デプロイ後の再デプロイで確定）
           NUXT_PUBLIC_API_BASE_URL: ${{ steps.get-api-url.outputs.api_url }}
+          NUXT_PUBLIC_COGNITO_DOMAIN: ${{ steps.get-api-url.outputs.cognito_domain }}
+          NUXT_PUBLIC_COGNITO_CLIENT_ID: ${{ steps.get-api-url.outputs.cognito_client_id }}
 
       - name: Build Storybook
         run: npm run build-storybook
