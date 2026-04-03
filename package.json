@@ -44,7 +44,11 @@
     "*.vue": [
       "stylelint --fix"
     ],
-    "*.{js,mjs,json,yaml,yml,md}": [
+    "*.md": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,mjs,json,yaml,yml}": [
       "prettier --write"
     ]
   },

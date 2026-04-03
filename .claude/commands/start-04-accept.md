@@ -6,12 +6,9 @@
 
 ## 2. ドキュメンテーション
 
-- `Explore` エージェントを使って、更新対象ドキュメントの現状と実装内容の差分を調査する
-
-対応した内容を下記に反映すること
-
-- `docs/ARCHITECTURE.md` アーキテクチャ設計書
-- `docs/SPEC.md` システム仕様書
-- `docs/OPERATIONS.md` 運用ドキュメント
+- `spec-updater` エージェントを使って `docs/SPEC.md` を更新する
+- `Explore` エージェントを使って、以下のドキュメントの現状と実装内容の差分を調査し反映する
+  - `docs/ARCHITECTURE.md` アーキテクチャ設計書
+  - `docs/OPERATIONS.md` 運用ドキュメント
 
 `/docs/features/{index}-{feature-title}/checklist.md` に現状を記録する。
