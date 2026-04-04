@@ -387,10 +387,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     authRefresh.addToRolePolicy(cognitoRefreshPolicy);
 
     // auth/pre-signup: ListUsers + AdminLinkProviderForUser を実行
+    // NOTE: userPool.userPoolArn を使うと CognitoUserPool ↔ AuthPreSignUp の循環依存が
+    // 発生するため、リソースを "*" にして依存関係を断ち切る
     const cognitoPreSignUpPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ["cognito-idp:ListUsers", "cognito-idp:AdminLinkProviderForUser"],
-      resources: [userPool.userPoolArn],
+      resources: ["*"],
     });
     authPreSignUp.addToRolePolicy(cognitoPreSignUpPolicy);
 
