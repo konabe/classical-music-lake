@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.6.0...classical-music-lake-v1.6.1) (2026-04-04)
+
+
+### Bug Fixes
+
+* build frontend after CDK deploy to resolve empty Cognito domain in prod ([#366](https://github.com/konabe/classical-music-lake/issues/366)) ([7dc11ec](https://github.com/konabe/classical-music-lake/commit/7dc11ec9f2fb7261413231a90ad50d0bbd913193))
+
 ## [1.6.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.5.0...classical-music-lake-v1.6.0) (2026-04-04)
 
 
