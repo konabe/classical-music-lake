@@ -206,3 +206,5 @@ jobs:
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
