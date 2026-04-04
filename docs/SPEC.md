@@ -613,16 +613,19 @@ Authorization: Bearer {accessToken}
 ### 6.2 デプロイフロー
 
 ```text
-GitHub (main branch)         → prod 自動デプロイ
-GitHub (stg* タグ push)      → stg 自動デプロイ
+GitHub (main branch push)    → stg 自動デプロイ
+GitHub (release published)   → prod 自動デプロイ
 GitHub (dev* タグ push)      → dev 自動デプロイ
 GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
   → GitHub Actions
-    → Nuxt ビルド (npm run generate)
     → CDK デプロイ (STAGE_NAME 環境変数で対象環境を指定)
       → Lambda + API Gateway + DynamoDB 作成/更新
       → S3 + CloudFront 作成/更新
-      → SPAファイル デプロイ
+    → スタック出力取得（API URL・Cognito ドメイン等）
+    → Nuxt ビルド (npm run generate)
+    → Storybook ビルド
+    → S3 同期（SPA + Storybook）
+    → CloudFront キャッシュ無効化
 ```
 
 ### 6.3 GitHub Actions
@@ -630,12 +633,14 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
 #### deploy.yml（デプロイ）
 
 - **トリガー**:
-  - `push to main` → prod 環境へ自動デプロイ
-  - `push stg* tag` → stg 環境へ自動デプロイ
+  - `push to main` → stg 環境へ自動デプロイ
+  - `release published` → prod 環境へ自動デプロイ
   - `push dev* tag` → dev 環境へ自動デプロイ
   - `workflow_dispatch` → dev / stg / prod を選択してデプロイ
 - **Secrets**:
   - `AWS_ROLE_TO_ASSUME`
+  - `GOOGLE_CLIENT_ID`（Google OAuth 用）
+  - `GOOGLE_CLIENT_SECRET`（Google OAuth 用）
 
 #### sync-db.yml（DB 同期）
 
@@ -808,6 +813,7 @@ cdk deploy
 
 | 日付       | バージョン | 変更内容                                                                                                                                                                                                                                        |
 | ---------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-04 | 1.8.2      | デプロイワークフローの実行順序を修正: CDK デプロイ後にフロントエンドをビルドするよう変更し、prod 環境で Cognito ドメインが空文字になる問題を解消。S3 アップロードを CDK BucketDeployment からワークフローの aws s3 sync に移管                  |
 | 2026-04-04 | 1.8.1      | pre-signup トリガーの Google プロバイダー名正規化バグを修正（Cognito が `event.userName` を `"google_<sub>"` と小文字で渡すのに対し、User Pool の IdP 登録名 `"Google"` と不一致で `AdminLinkProviderForUserCommand` が失敗していた問題を解消） |
 | 2026-04-03 | 1.8.0      | Google OAuth 認証を追加（Cognito Hosted UI 経由。`POST /auth/callback` フロー、`loginWithGoogle`・`handleOAuthCallback` を `useAuth` に追加、`useCognitoConfig` 新設、CDK に Google Identity Provider・Cognito Domain を追加）                  |
 | 2026-04-03 | 1.7.2      | CORS オリジン制限の強化: prod・stg 環境では CloudFront URL のみ許可、dev 環境のみ localhost:3010 を追加許可するよう変更                                                                                                                         |
