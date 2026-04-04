@@ -58,6 +58,37 @@ describe("CallbackPage", () => {
     });
   });
 
+  describe("Cognito がエラーを返した場合", () => {
+    it("error_description をエラーメッセージに含めて表示する", async () => {
+      const wrapper = await mountSuspended(CallbackPage, {
+        route: "/auth/callback?error=access_denied&error_description=Login+option+is+not+available",
+      });
+
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.text()).toContain("ログインに失敗しました");
+      expect(wrapper.text()).toContain("Login option is not available");
+    });
+
+    it("error_description がない場合は汎用メッセージを表示する", async () => {
+      const wrapper = await mountSuspended(CallbackPage, {
+        route: "/auth/callback?error=access_denied",
+      });
+
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.text()).toContain("ログインに失敗しました");
+    });
+
+    it("handleOAuthCallback を呼び出さない", async () => {
+      await mountSuspended(CallbackPage, {
+        route: "/auth/callback?error=access_denied&error_description=some+error",
+      });
+
+      expect(mockHandleOAuthCallback).not.toHaveBeenCalled();
+    });
+  });
+
   describe("code がない場合", () => {
     it("エラーメッセージを表示する", async () => {
       const wrapper = await mountSuspended(CallbackPage, {
