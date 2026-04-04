@@ -71,8 +71,8 @@ function handleSubmit() {
     </FormGroup>
 
     <div class="form-group">
-      <label class="checkbox-label">
-        <input v-model="form.isFavorite" type="checkbox" />
+      <label class="checkbox-label" for="is-favorite">
+        <input id="is-favorite" v-model="form.isFavorite" type="checkbox" />
         お気に入り
       </label>
     </div>

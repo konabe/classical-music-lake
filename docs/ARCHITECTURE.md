@@ -48,6 +48,9 @@ classical-music-lake/
 │   │   │   └── [id]/
 │   │   │       ├── index.vue     # 詳細
 │   │   │       └── edit.vue      # 編集
+│   │   ├── concert-logs/         # コンサート記録関連ページ（要認証）
+│   │   │   ├── index.vue         # 一覧
+│   │   │   └── new.vue           # 新規作成
 │   │   └── pieces/               # 楽曲マスタ関連ページ
 │   │       ├── index.vue         # 一覧
 │   │       ├── new.vue           # 新規作成
@@ -59,15 +62,20 @@ classical-music-lake/
 │   │   │   ├── CategoryBadge.vue # カテゴリ情報をラベル形式のバッジとして表示する
 │   │   │   └── ...
 │   │   ├── molecules/
-│   │   │   ├── VideoPlayer.vue   # YouTube 埋め込み / 外部リンク切り替えプレイヤー
+│   │   │   ├── VideoPlayer.vue      # YouTube 埋め込み / 外部リンク切り替えプレイヤー
 │   │   │   ├── PieceCategoryList.vue  # 楽曲の4軸カテゴリを集約して CategoryBadge で表示する
-│   │   │   ├── PieceItem.vue     # 楽曲一覧の各行（曲名・作曲家・カテゴリバッジ表示）
+│   │   │   ├── PieceItem.vue        # 楽曲一覧の各行（曲名・作曲家・カテゴリバッジ表示）
+│   │   │   ├── ConcertLogItem.vue   # コンサート記録一覧の各行
 │   │   │   └── ...
 │   │   ├── organisms/
-│   │   │   ├── QuickLogForm.vue  # 動画再生後に表示するクイックログ入力フォーム
+│   │   │   ├── QuickLogForm.vue     # 動画再生後に表示するクイックログ入力フォーム
+│   │   │   ├── ConcertLogForm.vue   # コンサート記録作成フォーム
+│   │   │   ├── ConcertLogList.vue   # コンサート記録一覧
 │   │   │   └── ...
 │   │   └── templates/
-│   │       ├── PieceDetailTemplate.vue  # 楽曲詳細ページレイアウト（カテゴリバッジ表示含む）
+│   │       ├── PieceDetailTemplate.vue     # 楽曲詳細ページレイアウト（カテゴリバッジ表示含む）
+│   │       ├── ConcertLogsTemplate.vue     # コンサート記録一覧ページレイアウト
+│   │       ├── ConcertLogNewTemplate.vue   # コンサート記録作成ページレイアウト
 │   │       └── ...
 │   ├── composables/              # Vue Composables（共通ロジック）
 │   ├── utils/
@@ -88,6 +96,9 @@ classical-music-lake/
 │       │   ├── get.ts
 │       │   ├── update.ts
 │       │   └── delete.ts
+│       ├── concert-logs/         # コンサート記録 Lambda 関数
+│       │   ├── create.ts
+│       │   └── list.ts
 │       ├── pieces/               # 楽曲マスタ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts
@@ -217,6 +228,31 @@ classical-music-lake/
           → 動画を確認しながらフォームの他の項目を入力可能
       → videoUrl なし / 「選択しない」: selectedVideoUrl = undefined
           → VideoPlayer は非表示
+```
+
+### コンサート記録一覧取得
+
+```text
+ブラウザ (/concert-logs)
+  → GET /prod/concert-logs
+  → API Gateway + Cognito Authorizer
+  → Lambda (list.ts)
+  → DynamoDB Query GSI1 (userId + createdAt)
+  → レスポンス (createdAt 降順ソート)
+  → ブラウザに返却
+```
+
+### コンサート記録作成
+
+```text
+ブラウザ (/concert-logs/new)
+  → POST /prod/concert-logs (JSON body)
+  → API Gateway + Cognito Authorizer
+  → Lambda (create.ts)
+  → UUID 生成 + userId (Cognito sub) + createdAt/updatedAt 付与
+  → DynamoDB PutItem
+  → 201 Created + 作成済みオブジェクト
+  → ブラウザに返却 → /concert-logs へ遷移
 ```
 
 ### ログアウト
