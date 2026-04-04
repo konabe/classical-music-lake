@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.6.1...classical-music-lake-v1.6.2) (2026-04-04)
+
+
+### Bug Fixes
+
+* defu の高severity脆弱性を npm audit fix で修正 ([c13402f](https://github.com/konabe/classical-music-lake/commit/c13402ff0405116a077a276d738fa41942de0530))
+
 ## [1.6.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.6.0...classical-music-lake-v1.6.1) (2026-04-04)
 
 
