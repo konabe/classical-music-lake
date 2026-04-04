@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.6.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.5.0...classical-music-lake-v1.6.0) (2026-04-04)
+
+
+### Features
+
+* claude code カスタムエージェントを追加 ([3584c18](https://github.com/konabe/classical-music-lake/commit/3584c18473665d2b7cb3af2d7cd0e5d6edeec449))
+* claude code カスタムエージェントを追加 ([ec5fbe8](https://github.com/konabe/classical-music-lake/commit/ec5fbe84b19c60cdcbed0b08231438288d0d92a2))
+* Google OAuth 認証を追加 (closes [#286](https://github.com/konabe/classical-music-lake/issues/286)) ([f16e654](https://github.com/konabe/classical-music-lake/commit/f16e654706c08c62534fd6f0d01da9b6cba52922))
+* Google OAuth 認証を追加 (closes [#286](https://github.com/konabe/classical-music-lake/issues/286)) ([d1a2881](https://github.com/konabe/classical-music-lake/commit/d1a2881ba4a4aa561de418d3501b117aac394ecf))
+* google oauth 認証を追加（closes [#286](https://github.com/konabe/classical-music-lake/issues/286)） ([919dd5b](https://github.com/konabe/classical-music-lake/commit/919dd5b756bccecf2889041bf0815bb7e5ffdbea))
+* pre-signupトリガーでGoogleアカウントと既存ユーザーを自動リンク ([bc7ce03](https://github.com/konabe/classical-music-lake/commit/bc7ce036c3a97e3b286092cbefa0c3315c126eeb))
+* pre-signupトリガーでGoogleアカウントと既存ユーザーを自動リンク ([accf1f9](https://github.com/konabe/classical-music-lake/commit/accf1f9691fa0f17c4cdc2b146144777a9bf64a0))
+
+
+### Bug Fixes
+
+* add shebang to husky hooks for Windows compatibility ([4e0e893](https://github.com/konabe/classical-music-lake/commit/4e0e8937ad6261571515126eb76df7c7e64bb8c8))
+* authPreSignUpのcommonEnvからCognito参照を除去して循環依存を解消 ([8ebd91b](https://github.com/konabe/classical-music-lake/commit/8ebd91bbc92d02f402b56ac90644e47ad40b7aca))
+* authPreSignUpのcommonEnvからCognito参照を除去して循環依存を解消 ([7066de0](https://github.com/konabe/classical-music-lake/commit/7066de050cba18ae5b5c78e581384a9eb7d0a8fc))
+* callbackページでCognitoのerrorパラメーターを処理してエラー詳細を表示 ([75bcd99](https://github.com/konabe/classical-music-lake/commit/75bcd99e323fcbbf07eaaf3cb59b9f85d5dd7394))
+* callbackページでCognitoのerrorパラメーターを処理してエラー詳細を表示 ([87bc165](https://github.com/konabe/classical-music-lake/commit/87bc1654a51a8256f228f49f714f9810fedae61a))
+* deploy時にCognito環境変数をNuxtビルドに渡すよう修正 ([830feb2](https://github.com/konabe/classical-music-lake/commit/830feb2519280e26f9e5686b5ac6209553eef028))
+* deploy時にCognito環境変数をビルドに渡すよう修正 ([1861d6f](https://github.com/konabe/classical-music-lake/commit/1861d6f5c6e76622f7afa47a080edb96683484f3))
+* deploy時にGoogle OAuth認証情報をCDKへ渡すよう修正 ([35d6cd7](https://github.com/konabe/classical-music-lake/commit/35d6cd7c920d7b49d1553e8e3db578f731d89a6a))
+* deploy時にGoogle OAuth認証情報をCDKへ渡すよう修正 ([90d9bca](https://github.com/konabe/classical-music-lake/commit/90d9bcafdd3193f26f55a0627f84508e677a5583))
+* HomeTemplate のヒーロー全幅表示を viewport-width 方式に変更 ([14cb137](https://github.com/konabe/classical-music-lake/commit/14cb13701d7f8cda7d1c75736ccbd16aa485df8d)), closes [#255](https://github.com/konabe/classical-music-lake/issues/255)
+* lint-staged に markdown の ESLint チェックを追加 ([0b69ee3](https://github.com/konabe/classical-music-lake/commit/0b69ee3114c13452fb8b7485d5465aa2eb723fec))
+* pre-signupトリガーでGoogleプロバイダー名の大文字小文字を正規化 ([b49a646](https://github.com/konabe/classical-music-lake/commit/b49a646fcb858f5023aa1ae2449583b5ab26f757))
+* pre-signupトリガーでGoogleプロバイダー名の大文字小文字を正規化 ([349903a](https://github.com/konabe/classical-music-lake/commit/349903ae310cf1c4beba14320456624fe08835d7))
+* pre-signupトリガーのIAMポリシーで循環依存を解消 ([4902585](https://github.com/konabe/classical-music-lake/commit/49025856f4303f9ffaf69853c4c2fa1576d1f186))
+* pre-signupトリガーのIAMポリシーで循環依存を解消 ([cd684d1](https://github.com/konabe/classical-music-lake/commit/cd684d1e1f867e7495dab45aba7b4cb4559de1e1))
+* prod・stg 環境での CORS オリジンを CloudFront URL のみに制限 ([6f288e6](https://github.com/konabe/classical-music-lake/commit/6f288e61864f8345937e85a1d829b9fdb8028c60)), closes [#287](https://github.com/konabe/classical-music-lake/issues/287)
+* prod・stg 環境での CORS オリジンを CloudFront URL のみに制限 ([#287](https://github.com/konabe/classical-music-lake/issues/287)) ([784b366](https://github.com/konabe/classical-music-lake/commit/784b3665f1ae88a118868e56d5dd81d00642919f))
+* エージェントファイルのコードブロックに言語タグを追加 ([42c766c](https://github.com/konabe/classical-music-lake/commit/42c766c6681cb714fab89040882376700ef3d6ca))
+
+
+### Reverts
+
+* homeTemplate.vue のヒーロー全幅表示変更を取り消し ([615bee3](https://github.com/konabe/classical-music-lake/commit/615bee379506fde9fc34d3a9f2e73a26196ce5c2))
+
 ## [1.5.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.4.0...classical-music-lake-v1.5.0) (2026-04-02)
 
 
