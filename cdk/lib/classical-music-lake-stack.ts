@@ -10,7 +10,6 @@ import type { IResource } from "aws-cdk-lib/aws-apigateway";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
-import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import type { Construct } from "constructs";
 import * as path from "path";
@@ -584,14 +583,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       },
     });
 
-    new s3deploy.BucketDeployment(this, "SpaDeployment", {
-      sources: [s3deploy.Source.asset(path.join(__dirname, "../../.output/public"))],
-      destinationBucket: spaBucket,
-      distribution,
-      distributionPaths: ["/*"],
-      // storybook/* を prune 対象から除外することで StorybookDeployment との並列実行を可能にする
-      exclude: ["storybook/*"],
-    });
+    // NOTE: SPA ファイルの S3 アップロードは GitHub Actions ワークフローで実行する。
+    // CDK デプロイ後にスタック出力を読み取ってフロントエンドをビルドするため、
+    // CDK BucketDeployment ではなくワークフローの aws s3 sync で行う。
 
     // -------------------------
     // Storybook ホスティング（/storybook/ パス）
@@ -629,14 +623,7 @@ function handler(event) {
       }
     );
 
-    // SpaDeployment が storybook/* を exclude しているため、並列実行しても storybook ファイルは削除されない
-    new s3deploy.BucketDeployment(this, "StorybookDeployment", {
-      sources: [s3deploy.Source.asset(path.join(__dirname, "../../storybook-static"))],
-      destinationBucket: spaBucket,
-      destinationKeyPrefix: "storybook",
-      distribution,
-      distributionPaths: ["/storybook/*"],
-    });
+    // NOTE: Storybook ファイルの S3 アップロードも GitHub Actions ワークフローで実行する。
 
     // -------------------------
     // CloudWatch アラーム
@@ -734,6 +721,16 @@ function handler(event) {
     new cdk.CfnOutput(this, "CognitoDomainName", {
       value: `${cognitoDomainPrefix}.auth.${this.region}.amazoncognito.com`,
       description: "Cognito Hosted UI Domain (NUXT_PUBLIC_COGNITO_DOMAIN に設定)",
+    });
+
+    new cdk.CfnOutput(this, "SpaBucketName", {
+      value: spaBucket.bucketName,
+      description: "S3 Bucket Name for SPA static files",
+    });
+
+    new cdk.CfnOutput(this, "DistributionId", {
+      value: distribution.distributionId,
+      description: "CloudFront Distribution ID",
     });
   }
 

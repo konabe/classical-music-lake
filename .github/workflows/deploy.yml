@@ -108,62 +108,6 @@ jobs:
           fi
 
       # ----------------------------------------
-      # デプロイ済みスタックから API Base URL・Cognito 設定を取得
-      # スタックが未作成（初回デプロイ）の場合は空文字のまま続行し、
-      # CDK デプロイでスタックを作成後、次回デプロイ時に URL が確定する
-      # ----------------------------------------
-      - name: Get stack outputs from CloudFormation
-        id: get-api-url
-        run: |
-          API_URL=$(aws cloudformation describe-stacks \
-            --stack-name "${{ steps.stack.outputs.name }}" \
-            --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
-            --output text 2>/dev/null || true)
-
-          if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
-            echo "::warning::ApiUrl not found for stack ${{ steps.stack.outputs.name }} — building frontend without API URL (initial deploy)"
-            API_URL=""
-          fi
-          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
-
-          COGNITO_DOMAIN=$(aws cloudformation describe-stacks \
-            --stack-name "${{ steps.stack.outputs.name }}" \
-            --query 'Stacks[0].Outputs[?OutputKey==`CognitoDomainName`].OutputValue' \
-            --output text 2>/dev/null || true)
-
-          if [ -z "$COGNITO_DOMAIN" ] || [ "$COGNITO_DOMAIN" = "None" ]; then
-            echo "::warning::CognitoDomainName not found — building frontend without Cognito domain"
-            COGNITO_DOMAIN=""
-          fi
-          echo "cognito_domain=$COGNITO_DOMAIN" >> "$GITHUB_OUTPUT"
-
-          COGNITO_CLIENT_ID=$(aws cloudformation describe-stacks \
-            --stack-name "${{ steps.stack.outputs.name }}" \
-            --query 'Stacks[0].Outputs[?OutputKey==`CognitoClientId`].OutputValue' \
-            --output text 2>/dev/null || true)
-
-          if [ -z "$COGNITO_CLIENT_ID" ] || [ "$COGNITO_CLIENT_ID" = "None" ]; then
-            echo "::warning::CognitoClientId not found — building frontend without Cognito client ID"
-            COGNITO_CLIENT_ID=""
-          fi
-          echo "cognito_client_id=$COGNITO_CLIENT_ID" >> "$GITHUB_OUTPUT"
-
-      # ----------------------------------------
-      # フロントエンド: Nuxt SPA ビルド
-      # ----------------------------------------
-      - name: Build frontend
-        run: npm run generate
-        env:
-          # CloudFormation Outputs から取得した値をセット
-          # 初回デプロイ時は空文字になる（CDK デプロイ後の再デプロイで確定）
-          NUXT_PUBLIC_API_BASE_URL: ${{ steps.get-api-url.outputs.api_url }}
-          NUXT_PUBLIC_COGNITO_DOMAIN: ${{ steps.get-api-url.outputs.cognito_domain }}
-          NUXT_PUBLIC_COGNITO_CLIENT_ID: ${{ steps.get-api-url.outputs.cognito_client_id }}
-
-      - name: Build Storybook
-        run: npm run build-storybook
-
-      # ----------------------------------------
       # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
       # CDKToolkit が参照する ECR リポジトリが削除されていると bootstrap が
       # 失敗するため、事前に存在確認・作成する
@@ -191,8 +135,8 @@ jobs:
           STAGE_NAME: ${{ env.STAGE_NAME }}
 
       # ----------------------------------------
-      # CDK デプロイ
-      # (インフラ更新 + ビルド済みフロントエンドを S3 へ反映)
+      # CDK デプロイ（インフラのみ）
+      # フロントエンドの S3 アップロードはこの後のステップで行う
       # dev/stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
       # prod: 安全のためフル CloudFormation デプロイ
       # ----------------------------------------
@@ -208,3 +152,101 @@ jobs:
           STAGE_NAME: ${{ env.STAGE_NAME }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+
+      # ----------------------------------------
+      # CDK デプロイ後にスタック出力を取得
+      # CDK デプロイで作成・更新された最新の値を使用するため、
+      # フロントエンドビルドの前に取得する
+      # ----------------------------------------
+      - name: Get stack outputs from CloudFormation
+        id: get-outputs
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name "${{ steps.stack.outputs.name }}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
+            echo "::error::ApiUrl not found in stack outputs"
+            exit 1
+          fi
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+
+          COGNITO_DOMAIN=$(aws cloudformation describe-stacks \
+            --stack-name "${{ steps.stack.outputs.name }}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`CognitoDomainName`].OutputValue' \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$COGNITO_DOMAIN" ] || [ "$COGNITO_DOMAIN" = "None" ]; then
+            echo "::warning::CognitoDomainName not found — building frontend without Cognito domain"
+            COGNITO_DOMAIN=""
+          fi
+          echo "cognito_domain=$COGNITO_DOMAIN" >> "$GITHUB_OUTPUT"
+
+          COGNITO_CLIENT_ID=$(aws cloudformation describe-stacks \
+            --stack-name "${{ steps.stack.outputs.name }}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`CognitoClientId`].OutputValue' \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$COGNITO_CLIENT_ID" ] || [ "$COGNITO_CLIENT_ID" = "None" ]; then
+            echo "::warning::CognitoClientId not found — building frontend without Cognito client ID"
+            COGNITO_CLIENT_ID=""
+          fi
+          echo "cognito_client_id=$COGNITO_CLIENT_ID" >> "$GITHUB_OUTPUT"
+
+          SPA_BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name "${{ steps.stack.outputs.name }}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`SpaBucketName`].OutputValue' \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$SPA_BUCKET" ] || [ "$SPA_BUCKET" = "None" ]; then
+            echo "::error::SpaBucketName not found in stack outputs"
+            exit 1
+          fi
+          echo "spa_bucket=$SPA_BUCKET" >> "$GITHUB_OUTPUT"
+
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+            --stack-name "${{ steps.stack.outputs.name }}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`DistributionId`].OutputValue' \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$DISTRIBUTION_ID" ] || [ "$DISTRIBUTION_ID" = "None" ]; then
+            echo "::error::DistributionId not found in stack outputs"
+            exit 1
+          fi
+          echo "distribution_id=$DISTRIBUTION_ID" >> "$GITHUB_OUTPUT"
+
+      # ----------------------------------------
+      # フロントエンド: Nuxt SPA ビルド
+      # CDK デプロイ後にスタック出力から取得した最新の値を使用
+      # ----------------------------------------
+      - name: Build frontend
+        run: npm run generate
+        env:
+          NUXT_PUBLIC_API_BASE_URL: ${{ steps.get-outputs.outputs.api_url }}
+          NUXT_PUBLIC_COGNITO_DOMAIN: ${{ steps.get-outputs.outputs.cognito_domain }}
+          NUXT_PUBLIC_COGNITO_CLIENT_ID: ${{ steps.get-outputs.outputs.cognito_client_id }}
+
+      - name: Build Storybook
+        run: npm run build-storybook
+
+      # ----------------------------------------
+      # フロントエンドを S3 にアップロード
+      # SPA と Storybook を個別に同期し、CloudFront キャッシュを無効化
+      # ----------------------------------------
+      - name: Deploy SPA to S3
+        run: |
+          aws s3 sync .output/public "s3://${{ steps.get-outputs.outputs.spa_bucket }}" \
+            --delete \
+            --exclude "storybook/*"
+
+      - name: Deploy Storybook to S3
+        run: |
+          aws s3 sync storybook-static "s3://${{ steps.get-outputs.outputs.spa_bucket }}/storybook/" \
+            --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ steps.get-outputs.outputs.distribution_id }}" \
+            --paths "/*"
