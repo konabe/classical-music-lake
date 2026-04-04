@@ -37,9 +37,12 @@ export const handler: PreSignUpTriggerHandler = async (event) => {
     return event;
   }
 
-  // userName は "Google_<providerUserId>" の形式
+  // userName は "google_<providerUserId>" の形式（Cognitoは小文字で渡す）
+  // AdminLinkProviderForUser の ProviderName は User Pool に登録された名称（"Google"）と一致させる必要がある
   const underscoreIndex = event.userName.indexOf("_");
-  const providerName = event.userName.substring(0, underscoreIndex); // "Google"
+  const rawProviderName = event.userName.substring(0, underscoreIndex);
+  // Cognito の IdP 登録名と大文字小文字を一致させる（"google" → "Google"）
+  const providerName = rawProviderName.charAt(0).toUpperCase() + rawProviderName.slice(1);
   const providerUserId = event.userName.substring(underscoreIndex + 1);
 
   // 既存の Cognito ユーザーに外部アカウントをリンク
