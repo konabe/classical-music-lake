@@ -337,6 +337,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const authVerifyEmail = fn("AuthVerifyEmail", "auth/verify-email.ts");
     const authResendCode = fn("AuthResendCode", "auth/resend-verification-code.ts");
     const authRefresh = fn("AuthRefresh", "auth/refresh.ts");
+    const authPreSignUp = fn("AuthPreSignUp", "auth/pre-signup.ts");
+
+    // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
+    // いる場合に自動でアカウントリンクを行う
+    userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, authPreSignUp);
 
     // -------------------------
     // Cognito 権限付与
@@ -380,6 +385,14 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       resources: [userPool.userPoolArn],
     });
     authRefresh.addToRolePolicy(cognitoRefreshPolicy);
+
+    // auth/pre-signup: ListUsers + AdminLinkProviderForUser を実行
+    const cognitoPreSignUpPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["cognito-idp:ListUsers", "cognito-idp:AdminLinkProviderForUser"],
+      resources: [userPool.userPoolArn],
+    });
+    authPreSignUp.addToRolePolicy(cognitoPreSignUpPolicy);
 
     // -------------------------
     // DynamoDB 権限付与
@@ -630,6 +643,7 @@ function handler(event) {
       authVerifyEmail,
       authResendCode,
       authRefresh,
+      authPreSignUp,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成
