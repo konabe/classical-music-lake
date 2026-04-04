@@ -4,6 +4,7 @@ export class AppEnv {
   readonly awsRegion: string;
   readonly dynamoTableListeningLogs: string;
   readonly dynamoTablePieces: string;
+  readonly dynamoTableConcertLogs: string;
 
   constructor() {
     const cognitoClientId = process.env.COGNITO_CLIENT_ID;
@@ -16,6 +17,8 @@ export class AppEnv {
     this.dynamoTableListeningLogs =
       process.env.DYNAMO_TABLE_LISTENING_LOGS ?? "classical-music-listening-logs";
     this.dynamoTablePieces = process.env.DYNAMO_TABLE_PIECES ?? "classical-music-pieces";
+    this.dynamoTableConcertLogs =
+      process.env.DYNAMO_TABLE_CONCERT_LOGS ?? "classical-music-concert-logs";
   }
 }
 

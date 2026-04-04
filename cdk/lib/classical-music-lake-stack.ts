@@ -282,9 +282,33 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // ここで userPool.userPoolId を参照すると authPreSignUp → userPool の依存も生まれて
     // 循環依存になる。authPreSignUp は event.userPoolId から取得するため不要。
     // これらは authPreSignUp を除く関数に個別に addEnvironment() で付与する。
+    // -------------------------
+    // DynamoDB テーブル（コンサート記録）
+    // -------------------------
+    const concertLogsTableName = isProd
+      ? "classical-music-concert-logs"
+      : `classical-music-concert-logs-${stageName}`;
+
+    const concertLogsTable = new dynamodb.Table(this, "ConcertLogsTable", {
+      tableName: concertLogsTableName,
+      partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+    });
+
+    // GSI1: userId + createdAt でユーザー別一覧取得
+    concertLogsTable.addGlobalSecondaryIndex({
+      indexName: "GSI1",
+      partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
     const commonEnv: Record<string, string> = {
       DYNAMO_TABLE_LISTENING_LOGS: listeningLogsTable.tableName,
       DYNAMO_TABLE_PIECES: piecesTable.tableName,
+      DYNAMO_TABLE_CONCERT_LOGS: concertLogsTable.tableName,
     };
 
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry" | "logGroup"> = {
@@ -340,6 +364,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const authResendCode = fn("AuthResendCode", "auth/resend-verification-code.ts");
     const authRefresh = fn("AuthRefresh", "auth/refresh.ts");
     const authPreSignUp = fn("AuthPreSignUp", "auth/pre-signup.ts");
+
+    const concertLogsList = fn("ConcertLogsList", "concert-logs/list.ts");
+    const concertLogsCreate = fn("ConcertLogsCreate", "concert-logs/create.ts");
 
     // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
     // いる場合に自動でアカウントリンクを行う
@@ -411,6 +438,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     piecesTable.grantReadData(getPiece);
     piecesTable.grantReadWriteData(updatePiece);
     piecesTable.grantWriteData(deletePiece);
+    concertLogsTable.grantReadData(concertLogsList);
+    concertLogsTable.grantWriteData(concertLogsCreate);
 
     // -------------------------
     // API Gateway
@@ -470,6 +499,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
 
+    // /concert-logs
+    const concertLogsResource = api.root.addResource("concert-logs");
+    concertLogsResource.addMethod("GET", integ(concertLogsList), withAuth);
+    concertLogsResource.addMethod("POST", integ(concertLogsCreate), withAuth);
+
     // /listening-logs
     const listeningLogsResource = api.root.addResource("listening-logs");
     listeningLogsResource.addMethod("GET", integ(listeningLogsList), withAuth);
@@ -516,6 +550,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     authRefreshResource.addMethod("POST", integ(authRefresh));
 
     const authExcludedFunctions = [
+      concertLogsList,
+      concertLogsCreate,
       listeningLogsList,
       listeningLogsGet,
       listeningLogsCreate,
@@ -546,6 +582,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     // API Gateway の CORS オリジンも CloudFront URL に限定
     // listening-logs は Authorization ヘッダーが必要なため allowHeaders に追加
+    this.addCors(
+      concertLogsResource,
+      ["GET", "POST", "OPTIONS"],
+      ["Content-Type", "Authorization"]
+    );
     this.addCors(
       listeningLogsResource,
       ["GET", "POST", "OPTIONS"],
@@ -629,6 +670,8 @@ function handler(event) {
     // CloudWatch アラーム
     // -------------------------
     const allFunctions = [
+      concertLogsList,
+      concertLogsCreate,
       listeningLogsList,
       listeningLogsGet,
       listeningLogsCreate,
