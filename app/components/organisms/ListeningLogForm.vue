@@ -42,12 +42,17 @@ function handleSubmit() {
 
 <template>
   <form class="log-form" @submit.prevent="handleSubmit">
-    <FormGroup label="鑑賞日時" required>
-      <input v-model="form.listenedAt" type="datetime-local" required />
+    <FormGroup label="鑑賞日時" input-id="listened-at" required>
+      <input id="listened-at" v-model="form.listenedAt" type="datetime-local" required />
     </FormGroup>
 
-    <FormGroup label="楽曲マスタから選択">
-      <select class="piece-select" :disabled="piecesPending" @change="handlePieceSelect">
+    <FormGroup label="楽曲マスタから選択" input-id="piece-select">
+      <select
+        id="piece-select"
+        class="piece-select"
+        :disabled="piecesPending"
+        @change="handlePieceSelect"
+      >
         <option value="">{{ piecesPending ? "読み込み中..." : "選択しない" }}</option>
         <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
           {{ piece.title }} / {{ piece.composer }}
@@ -58,11 +63,16 @@ function handleSubmit() {
     <VideoPlayer v-if="selectedVideoUrl" :video-url="selectedVideoUrl" />
 
     <div class="form-row">
-      <FormGroup label="作曲家" required>
-        <TextInput v-model="form.composer" placeholder="例: ベートーヴェン" required />
+      <FormGroup label="作曲家" input-id="composer" required>
+        <TextInput
+          id="composer"
+          v-model="form.composer"
+          placeholder="例: ベートーヴェン"
+          required
+        />
       </FormGroup>
-      <FormGroup label="曲名" required>
-        <TextInput v-model="form.piece" placeholder="例: 交響曲第9番" required />
+      <FormGroup label="曲名" input-id="piece" required>
+        <TextInput id="piece" v-model="form.piece" placeholder="例: 交響曲第9番" required />
       </FormGroup>
     </div>
 
@@ -77,8 +87,13 @@ function handleSubmit() {
       </label>
     </div>
 
-    <FormGroup label="感想・メモ">
-      <textarea v-model="form.memo" rows="4" placeholder="自由に感想を書いてください..." />
+    <FormGroup label="感想・メモ" input-id="memo">
+      <textarea
+        id="memo"
+        v-model="form.memo"
+        rows="4"
+        placeholder="自由に感想を書いてください..."
+      />
     </FormGroup>
 
     <FormActions :submit-label="submitLabel" @cancel="$router.push('/listening-logs')" />

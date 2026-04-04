@@ -32,24 +32,28 @@ function handleSubmit() {
 
 <template>
   <form class="log-form" @submit.prevent="handleSubmit">
-    <FormGroup label="開催日時" required>
-      <input v-model="form.concertDate" type="datetime-local" required />
+    <FormGroup label="開催日時" input-id="concert-date" required>
+      <input id="concert-date" v-model="form.concertDate" type="datetime-local" required />
     </FormGroup>
 
-    <FormGroup label="会場" required>
-      <TextInput v-model="form.venue" placeholder="例: サントリーホール" required />
+    <FormGroup label="会場" input-id="venue" required>
+      <TextInput id="venue" v-model="form.venue" placeholder="例: サントリーホール" required />
     </FormGroup>
 
-    <FormGroup label="指揮者">
-      <TextInput v-model="form.conductor" placeholder="例: カラヤン" />
+    <FormGroup label="指揮者" input-id="conductor">
+      <TextInput id="conductor" v-model="form.conductor" placeholder="例: カラヤン" />
     </FormGroup>
 
-    <FormGroup label="オーケストラ / アンサンブル">
-      <TextInput v-model="form.orchestra" placeholder="例: ベルリン・フィルハーモニー管弦楽団" />
+    <FormGroup label="オーケストラ / アンサンブル" input-id="orchestra">
+      <TextInput
+        id="orchestra"
+        v-model="form.orchestra"
+        placeholder="例: ベルリン・フィルハーモニー管弦楽団"
+      />
     </FormGroup>
 
-    <FormGroup label="ソリスト">
-      <TextInput v-model="form.soloist" placeholder="例: アルゲリッチ" />
+    <FormGroup label="ソリスト" input-id="soloist">
+      <TextInput id="soloist" v-model="form.soloist" placeholder="例: アルゲリッチ" />
     </FormGroup>
 
     <FormActions
