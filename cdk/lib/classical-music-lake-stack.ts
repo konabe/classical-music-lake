@@ -278,11 +278,14 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       cognitoDomain: { domainPrefix: cognitoDomainPrefix },
     });
 
+    // NOTE: COGNITO_USER_POOL_ID / COGNITO_CLIENT_ID は commonEnv に含めない。
+    // authPreSignUp を addTrigger すると userPool → authPreSignUp の依存が生まれ、
+    // ここで userPool.userPoolId を参照すると authPreSignUp → userPool の依存も生まれて
+    // 循環依存になる。authPreSignUp は event.userPoolId から取得するため不要。
+    // これらは authPreSignUp を除く関数に個別に addEnvironment() で付与する。
     const commonEnv: Record<string, string> = {
       DYNAMO_TABLE_LISTENING_LOGS: listeningLogsTable.tableName,
       DYNAMO_TABLE_PIECES: piecesTable.tableName,
-      COGNITO_USER_POOL_ID: userPool.userPoolId,
-      COGNITO_CLIENT_ID: appClient.userPoolClientId,
     };
 
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry" | "logGroup"> = {
@@ -513,7 +516,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const authRefreshResource = authResource.addResource("refresh");
     authRefreshResource.addMethod("POST", integ(authRefresh));
 
-    [
+    const authExcludedFunctions = [
       listeningLogsList,
       listeningLogsGet,
       listeningLogsCreate,
@@ -529,8 +532,17 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       authVerifyEmail,
       authResendCode,
       authRefresh,
-    ].forEach((fn) => {
+    ];
+
+    authExcludedFunctions.forEach((fn) => {
       fn.addEnvironment("CORS_ALLOW_ORIGIN", this.corsAllowOrigins.join(","));
+    });
+
+    // authPreSignUp を除く関数に Cognito 環境変数を付与
+    // （authPreSignUp は event.userPoolId から取得するため不要かつ循環依存を避けるため除外）
+    authExcludedFunctions.forEach((fn) => {
+      fn.addEnvironment("COGNITO_USER_POOL_ID", userPool.userPoolId);
+      fn.addEnvironment("COGNITO_CLIENT_ID", appClient.userPoolClientId);
     });
 
     // API Gateway の CORS オリジンも CloudFront URL に限定
