@@ -550,8 +550,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     authRefreshResource.addMethod("POST", integ(authRefresh));
 
     const authExcludedFunctions = [
-      concertLogsList,
-      concertLogsCreate,
       listeningLogsList,
       listeningLogsGet,
       listeningLogsCreate,
@@ -567,6 +565,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       authVerifyEmail,
       authResendCode,
       authRefresh,
+      concertLogsList,
+      concertLogsCreate,
     ];
 
     authExcludedFunctions.forEach((fn) => {
@@ -670,8 +670,6 @@ function handler(event) {
     // CloudWatch アラーム
     // -------------------------
     const allFunctions = [
-      concertLogsList,
-      concertLogsCreate,
       listeningLogsList,
       listeningLogsGet,
       listeningLogsCreate,
@@ -688,6 +686,8 @@ function handler(event) {
       authResendCode,
       authRefresh,
       authPreSignUp,
+      concertLogsList,
+      concertLogsCreate,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成
