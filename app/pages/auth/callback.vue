@@ -8,6 +8,17 @@ const { handleOAuthCallback } = useAuth();
 const error = ref<string | null>(null);
 
 onMounted(async () => {
+  // Cognito がエラー時に ?error=...&error_description=... を付けてリダイレクトする
+  const cognitoError = route.query.error as string | undefined;
+  if (cognitoError !== undefined && cognitoError !== "") {
+    const description = route.query.error_description as string | undefined;
+    error.value =
+      description !== undefined && description !== ""
+        ? `ログインに失敗しました: ${description}`
+        : "ログインに失敗しました。もう一度お試しください。";
+    return;
+  }
+
   const code = route.query.code as string | undefined;
   if (code === undefined || code === "") {
     error.value = "ログインに失敗しました。もう一度お試しください。";
