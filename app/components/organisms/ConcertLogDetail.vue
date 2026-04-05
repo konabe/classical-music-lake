@@ -97,6 +97,6 @@ dt {
 }
 
 .no-program {
-  color: #999;
+  color: #666;
 }
 </style>

@@ -206,7 +206,7 @@ function handleSubmit() {
 .drag-handle {
   cursor: grab;
   user-select: none;
-  color: #999;
+  color: #666;
 }
 
 .piece-info {
