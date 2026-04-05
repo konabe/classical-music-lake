@@ -11,6 +11,9 @@ import {
   resendVerificationCodeSchema,
 } from "./schemas";
 
+const fails = (result: { success: boolean }): boolean => !result.success;
+const succeeds = (result: { success: boolean }): boolean => result.success;
+
 const validLog = {
   listenedAt: "2024-01-15T19:30:00.000Z",
   composer: "ベートーヴェン",
@@ -51,7 +54,7 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
-        (composer) => !createListeningLogSchema.safeParse({ ...validLog, composer }).success
+        (composer) => fails(createListeningLogSchema.safeParse({ ...validLog, composer }))
       )
     );
   });
@@ -65,7 +68,7 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
-        (piece) => !createListeningLogSchema.safeParse({ ...validLog, piece }).success
+        (piece) => fails(createListeningLogSchema.safeParse({ ...validLog, piece }))
       )
     );
   });
@@ -74,7 +77,7 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 1, max: 5 }),
-        (rating) => createListeningLogSchema.safeParse({ ...validLog, rating }).success
+        (rating) => succeeds(createListeningLogSchema.safeParse({ ...validLog, rating }))
       )
     );
   });
@@ -83,7 +86,7 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })),
-        (rating) => !createListeningLogSchema.safeParse({ ...validLog, rating }).success
+        (rating) => fails(createListeningLogSchema.safeParse({ ...validLog, rating }))
       )
     );
   });
@@ -92,7 +95,7 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.integer().map((n) => n + 0.5),
-        (rating) => !createListeningLogSchema.safeParse({ ...validLog, rating }).success
+        (rating) => fails(createListeningLogSchema.safeParse({ ...validLog, rating }))
       )
     );
   });
@@ -101,7 +104,7 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 1001, maxLength: 2000 }),
-        (memo) => !createListeningLogSchema.safeParse({ ...validLog, memo }).success
+        (memo) => fails(createListeningLogSchema.safeParse({ ...validLog, memo }))
       )
     );
   });
@@ -162,7 +165,7 @@ describe("createPieceSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
-        (title) => !createPieceSchema.safeParse({ ...validPiece, title }).success
+        (title) => fails(createPieceSchema.safeParse({ ...validPiece, title }))
       )
     );
   });
@@ -176,7 +179,7 @@ describe("createPieceSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
-        (composer) => !createPieceSchema.safeParse({ ...validPiece, composer }).success
+        (composer) => fails(createPieceSchema.safeParse({ ...validPiece, composer }))
       )
     );
   });
@@ -231,7 +234,7 @@ describe("registerSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 1, maxLength: 7 }),
-        (password) => !registerSchema.safeParse({ ...validAuth, password }).success
+        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
       )
     );
   });
@@ -240,7 +243,7 @@ describe("registerSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 8 }).filter((s) => !/[A-Z]/.test(s)),
-        (password) => !registerSchema.safeParse({ ...validAuth, password }).success
+        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
       )
     );
   });
@@ -249,7 +252,7 @@ describe("registerSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 8 }).filter((s) => !/[a-z]/.test(s)),
-        (password) => !registerSchema.safeParse({ ...validAuth, password }).success
+        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
       )
     );
   });
@@ -258,7 +261,7 @@ describe("registerSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 8 }).filter((s) => !/\d/.test(s)),
-        (password) => !registerSchema.safeParse({ ...validAuth, password }).success
+        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
       )
     );
   });
