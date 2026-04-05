@@ -19,13 +19,13 @@ const router = useRouter();
     >
 
     <ul v-else class="log-list">
-      <ListeningLogItem
-        v-for="log in logs"
-        :key="log.id"
-        :listening-log="log"
-        @edit="router.push(`/listening-logs/${log.id}/edit`)"
-        @delete="emit('delete', log.id)"
-      />
+      <li v-for="log in logs" :key="log.id">
+        <ListeningLogItem
+          :listening-log="log"
+          @edit="router.push(`/listening-logs/${log.id}/edit`)"
+          @delete="emit('delete', log.id)"
+        />
+      </li>
     </ul>
   </div>
 </template>
