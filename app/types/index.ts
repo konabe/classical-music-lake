@@ -62,6 +62,7 @@ export interface ConcertLog {
   conductor?: string; // 指揮者名
   orchestra?: string; // オーケストラ・アンサンブル名
   soloist?: string; // ソリスト名
+  pieceIds?: string[]; // プログラム（楽曲マスタ ID の配列、演奏順）
   createdAt: string;
   updatedAt: string;
 }

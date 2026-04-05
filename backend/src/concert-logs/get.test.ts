@@ -89,4 +89,15 @@ describe("GET /concert-logs/:id (get)", () => {
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });
+
+  it("pieceIds を含むログを正常取得して 200 を返す", async () => {
+    const pieceId = "550e8400-e29b-41d4-a716-446655440000";
+    vi.mocked(dynamo.send).mockResolvedValueOnce({
+      Item: { ...testLog, pieceIds: [pieceId] },
+    } as never);
+    const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.pieceIds).toEqual([pieceId]);
+  });
 });

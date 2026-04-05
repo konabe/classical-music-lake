@@ -204,4 +204,49 @@ describe("PUT /concert-logs/:id (update)", () => {
     );
     expect(result?.statusCode).toBe(500);
   });
+
+  it("pieceIds を更新できる", async () => {
+    const pieceId = "550e8400-e29b-41d4-a716-446655440000";
+    const updatedLog: ConcertLog = {
+      ...existingLog,
+      pieceIds: [pieceId],
+      updatedAt: new Date().toISOString(),
+    };
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
+    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce(updatedLog);
+
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ pieceIds: [pieceId] }), TEST_USER_ID),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.pieceIds).toEqual([pieceId]);
+  });
+
+  it("pieceIds を空配列で更新するとプログラムが全削除される", async () => {
+    const existingLogWithPieces: ConcertLog = {
+      ...existingLog,
+      pieceIds: ["550e8400-e29b-41d4-a716-446655440000"],
+    };
+    const updatedLog: ConcertLog = {
+      ...existingLog,
+      pieceIds: [],
+      updatedAt: new Date().toISOString(),
+    };
+    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({
+      Item: existingLogWithPieces,
+    } as never);
+    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce(updatedLog);
+
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ pieceIds: [] }), TEST_USER_ID),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.pieceIds).toEqual([]);
+  });
 });
