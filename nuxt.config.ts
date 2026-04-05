@@ -1,3 +1,5 @@
+import { codecovVitePlugin } from "@codecov/vite-plugin";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-01-01",
@@ -22,5 +24,14 @@ export default defineNuxtConfig({
   test: {
     globals: true,
     environment: "happy-dom",
+  },
+  vite: {
+    plugins: [
+      codecovVitePlugin({
+        enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+        bundleName: "classical-music-lake",
+        uploadToken: process.env.CODECOV_TOKEN,
+      }),
+    ],
   },
 });
