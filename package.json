@@ -14,6 +14,7 @@
     "postinstall": "nuxt prepare",
     "test": "npm run test:backend",
     "test:frontend": "vitest run --exclude 'backend/**'",
+    "test:frontend:ci": "vitest run --exclude 'backend/**' --reporter=default --reporter=junit --outputFile.junit=test-report.junit.xml",
     "test:backend": "cd backend && npm test",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

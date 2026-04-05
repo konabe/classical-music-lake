@@ -37,3 +37,6 @@ storybook-static
 # Stryker
 .stryker-tmp/
 reports/mutation/
+
+# Test reports
+*.junit.xml
