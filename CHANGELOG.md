@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.7.0...classical-music-lake-v1.7.1) (2026-04-05)
+
+
+### Bug Fixes
+
+* 編集・削除後に一覧ページで最新データが取得されない問題を修正 ([c205bc3](https://github.com/konabe/classical-music-lake/commit/c205bc3023bc5bc06aa9bc90f7af0bcab5ba15c9)), closes [#391](https://github.com/konabe/classical-music-lake/issues/391)
+
 ## [1.7.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.6.2...classical-music-lake-v1.7.0) (2026-04-05)
 
 
