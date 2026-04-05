@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.7.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.6.2...classical-music-lake-v1.7.0) (2026-04-05)
+
+
+### Features
+
+* add @codecov/vite-plugin for bundle analysis ([d733a0c](https://github.com/konabe/classical-music-lake/commit/d733a0c5040f4ccd761284609cac908484741397))
+* コンサート記録の作成・一覧機能を追加（012-01） ([b93c772](https://github.com/konabe/classical-music-lake/commit/b93c772f64f03b330c342ce484b00e6a1283b6b1))
+* コンサート記録の作成・一覧機能を追加（ワーク012-01） ([7e78e0c](https://github.com/konabe/classical-music-lake/commit/7e78e0c7843cff31837bde5606a97b7ca1963944))
+
+
+### Bug Fixes
+
+* concert-logs functions to end of arrays to prevent CloudWatch alarm ID conflicts ([9d45fc4](https://github.com/konabe/classical-music-lake/commit/9d45fc415ed219300c09235d44fd135f9a8419a0))
+* formGroupのラベル関連付けをinputId/id明示方式に変更 ([62e70a7](https://github.com/konabe/classical-music-lake/commit/62e70a7cdf0e9f1b849c76180282a86abe682157))
+* memo の trim を考慮した filter を追加しプロパティテストの偽陰性を修正 ([a60d697](https://github.com/konabe/classical-music-lake/commit/a60d697f3b2cb8e0f20d23e7c10ca03405670aee))
+* override undici to &gt;=6.24.0 to resolve high severity vulnerability ([002f1c6](https://github.com/konabe/classical-music-lake/commit/002f1c6c87a7080d7e36285e687056c95ef9208d))
+* フォームラベルのアクセシビリティを改善し eslint-plugin-vuejs-accessibility を追加 ([216e5d1](https://github.com/konabe/classical-music-lake/commit/216e5d19c736be0c6a1429bca74ae768cc95efe6))
+* プロパティ述語をヘルパー関数経由に変更しESLintエラーを修正 ([90c3351](https://github.com/konabe/classical-music-lake/commit/90c335120981043d0d45959da76dbd234cfa785b))
+
 ## [1.6.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.6.1...classical-music-lake-v1.6.2) (2026-04-04)
 
 
