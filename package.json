@@ -14,6 +14,7 @@
     "postinstall": "nuxt prepare",
     "test": "npm run test:backend",
     "test:frontend": "vitest run --exclude 'backend/**'",
+    "test:frontend:ci": "vitest run --exclude 'backend/**' --reporter=default --reporter=junit --outputFile.junit=test-report.junit.xml",
     "test:backend": "cd backend && npm test",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -25,7 +26,9 @@
     "format:check": "prettier --check .",
     "prepare": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('husky', {stdio: 'inherit'}) }\"",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "stryker": "stryker run",
+    "stryker:backend": "cd backend && npm run stryker"
   },
   "dependencies": {
     "nuxt": "^4.4.2",
@@ -34,7 +37,8 @@
   },
   "overrides": {
     "serialize-javascript": ">=7.0.3",
-    "h3-next": "npm:h3@2.0.1-rc.16"
+    "h3-next": "npm:h3@2.0.1-rc.16",
+    "undici": ">=6.24.0"
   },
   "lint-staged": {
     "*.{ts,vue}": [
@@ -53,6 +57,7 @@
     ]
   },
   "devDependencies": {
+    "@codecov/vite-plugin": "^1.9.1",
     "@commitlint/cli": "^20.4.3",
     "@commitlint/config-conventional": "^20.4.3",
     "@nuxt/devtools": "^3.2.4",
@@ -61,6 +66,8 @@
     "@nuxtjs/storybook": "^9.0.1",
     "@storybook/addon-a11y": "^10.3.4",
     "@storybook/addon-docs": "^10.3.4",
+    "@stryker-mutator/core": "^9.6.0",
+    "@stryker-mutator/vitest-runner": "^9.6.0",
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/eslint-plugin": "^1.6.14",
     "@vue/test-utils": "^2.4.6",
@@ -77,7 +84,7 @@
     "storybook": "^10.3.4",
     "stylelint": "^17.6.0",
     "stylelint-config-recommended-vue": "^1.6.1",
-    "typescript": "^6.0.2",
+    "typescript": "~5.9.3",
     "vitest": "^4.1.2"
   }
 }

@@ -7,13 +7,13 @@ const { mockSend } = vi.hoisted(() => ({
 }));
 
 vi.mock("@aws-sdk/client-cognito-identity-provider", () => ({
-  CognitoIdentityProviderClient: vi.fn(function () {
+  CognitoIdentityProviderClient: vi.fn(function (this: Record<string, unknown>) {
     this.send = mockSend;
   }),
-  ListUsersCommand: vi.fn(function (input) {
+  ListUsersCommand: vi.fn(function (this: Record<string, unknown>, input: unknown) {
     this.input = input;
   }),
-  AdminLinkProviderForUserCommand: vi.fn(function (input) {
+  AdminLinkProviderForUserCommand: vi.fn(function (this: Record<string, unknown>, input: unknown) {
     this.input = input;
   }),
 }));

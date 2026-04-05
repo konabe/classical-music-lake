@@ -25,8 +25,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests with coverage
-        run: npm run test:frontend -- --coverage
+      - name: Run tests
+        run: npm run test:frontend:ci
+
+      - name: Run coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: frontend
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: frontend
+          file: test-report.junit.xml
 
   test-backend:
     name: Backend (Vitest)
@@ -48,9 +65,27 @@ jobs:
         run: npm ci
         working-directory: backend
 
-      - name: Run tests with coverage
+      - name: Run tests
+        run: npm run test:ci
+        working-directory: backend
+
+      - name: Run coverage
         run: npm run test:coverage
         working-directory: backend
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: backend
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: backend
+          file: backend/test-report.junit.xml
 
   lint:
     name: Lint & Format

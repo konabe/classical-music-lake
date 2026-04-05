@@ -9,11 +9,13 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "test": "vitest run",
+    "test:ci": "vitest run --reporter=default --reporter=junit --outputFile.junit=test-report.junit.xml",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:setup": "node scripts/setup-test-db.mjs",
     "db:seed": "node scripts/seed-test-db.mjs",
-    "db:reset": "npm run db:setup && npm run db:seed"
+    "db:reset": "npm run db:setup && npm run db:seed",
+    "stryker": "stryker run"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.1022.0",
@@ -32,10 +34,13 @@
     "fast-xml-parser": "5.5.6"
   },
   "devDependencies": {
+    "@stryker-mutator/core": "^9.6.0",
+    "@stryker-mutator/vitest-runner": "^9.6.0",
     "@types/aws-lambda": "^8.10.0",
     "@types/http-errors": "^2.0.5",
     "@vitest/coverage-v8": "^4.1.2",
-    "typescript": "^6.0.2",
+    "fast-check": "^4.6.0",
+    "typescript": "~5.9.3",
     "vitest": "^4.1.2"
   }
 }
