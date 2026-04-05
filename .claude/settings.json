@@ -61,7 +61,8 @@
       "mcp__figma__generate_figma_design",
       "mcp__figma__get_code_connect_suggestions",
       "WebSearch",
-      "WebFetch(domain:www.npmjs.com)"
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(cd:*)"
     ],
     "ask": ["Bash(git push:*)"]
   },
