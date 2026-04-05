@@ -1,6 +1,6 @@
 import { useRouter } from "#app";
 import { useAuth, ID_TOKEN_KEY } from "./useAuth";
-import type { ConcertLog, CreateConcertLogInput } from "~/types";
+import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "~/types";
 
 const getAuthHeaders = (): Record<string, string> => {
   const token = localStorage.getItem(ID_TOKEN_KEY);
@@ -90,5 +90,42 @@ export const useConcertLogs = () => {
     return response.json();
   };
 
-  return { ...list, create };
+  const update = async (id: string, input: UpdateConcertLogInput): Promise<ConcertLog> => {
+    const response = await authenticatedFetch(`${apiBase}/concert-logs/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+    return response.json();
+  };
+
+  const deleteLog = async (id: string): Promise<void> => {
+    const response = await authenticatedFetch(`${apiBase}/concert-logs/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+  };
+
+  return { ...list, create, update, deleteLog };
+};
+
+export const useConcertLog = (id: () => string) => {
+  const apiBase = useApiBase();
+  const router = useRouter();
+  const result = useFetch<ConcertLog>(() => `${apiBase}/concert-logs/${id()}`, {
+    headers: computed(() => getAuthHeaders()),
+    async onResponseError({ response }) {
+      const refreshed = await handleAuthError(response.status, router);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
+      if (refreshed === true) {
+        await result.refresh();
+      }
+    },
+  });
+  return result;
 };

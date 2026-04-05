@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { nowAsDatetimeLocal } from "~/utils/date";
+import { nowAsDatetimeLocal, toDatetimeLocal } from "~/utils/date";
 import type { CreateConcertLogInput } from "~/types";
 
 const props = defineProps<{
+  initialValues?: Partial<CreateConcertLogInput>;
   submitLabel?: string;
 }>();
 
@@ -11,11 +12,14 @@ const emit = defineEmits<{
 }>();
 
 const form = reactive({
-  concertDate: nowAsDatetimeLocal(),
-  venue: "",
-  conductor: "",
-  orchestra: "",
-  soloist: "",
+  concertDate:
+    props.initialValues?.concertDate !== undefined
+      ? toDatetimeLocal(props.initialValues.concertDate)
+      : nowAsDatetimeLocal(),
+  venue: props.initialValues?.venue ?? "",
+  conductor: props.initialValues?.conductor ?? "",
+  orchestra: props.initialValues?.orchestra ?? "",
+  soloist: props.initialValues?.soloist ?? "",
 });
 
 function handleSubmit() {
