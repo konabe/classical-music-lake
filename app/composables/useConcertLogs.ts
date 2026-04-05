@@ -87,6 +87,7 @@ export const useConcertLogs = () => {
     if (!response.ok) {
       return throwResponseError(response);
     }
+    clearNuxtData();
     return response.json();
   };
 
@@ -99,6 +100,7 @@ export const useConcertLogs = () => {
     if (!response.ok) {
       return throwResponseError(response);
     }
+    clearNuxtData();
     return response.json();
   };
 
@@ -109,6 +111,7 @@ export const useConcertLogs = () => {
     if (!response.ok) {
       return throwResponseError(response);
     }
+    clearNuxtData();
   };
 
   return { ...list, create, update, deleteLog };
