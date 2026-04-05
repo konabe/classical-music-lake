@@ -75,18 +75,16 @@ describe("createListeningLogSchema", () => {
 
   it("rating が 1〜5 の整数は常に有効", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 1, max: 5 }),
-        (rating) => succeeds(createListeningLogSchema.safeParse({ ...validLog, rating }))
+      fc.property(fc.integer({ min: 1, max: 5 }), (rating) =>
+        succeeds(createListeningLogSchema.safeParse({ ...validLog, rating }))
       )
     );
   });
 
   it("rating が 1〜5 の範囲外の整数は常にエラー", () => {
     fc.assert(
-      fc.property(
-        fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })),
-        (rating) => fails(createListeningLogSchema.safeParse({ ...validLog, rating }))
+      fc.property(fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })), (rating) =>
+        fails(createListeningLogSchema.safeParse({ ...validLog, rating }))
       )
     );
   });
@@ -100,10 +98,10 @@ describe("createListeningLogSchema", () => {
     );
   });
 
-  it("1001 文字以上の memo は常にエラー", () => {
+  it("trim 後も 1000 文字を超える memo は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1001, maxLength: 2000 }),
+        fc.string({ minLength: 1001, maxLength: 2000 }).filter((s) => s.trim().length > 1000),
         (memo) => fails(createListeningLogSchema.safeParse({ ...validLog, memo }))
       )
     );
@@ -232,9 +230,8 @@ describe("registerSchema", () => {
 
   it("8 文字未満の password は常にエラー", () => {
     fc.assert(
-      fc.property(
-        fc.string({ minLength: 1, maxLength: 7 }),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
+      fc.property(fc.string({ minLength: 1, maxLength: 7 }), (password) =>
+        fails(registerSchema.safeParse({ ...validAuth, password }))
       )
     );
   });
