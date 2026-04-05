@@ -12,7 +12,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <li class="log-item">
+  <div class="log-item">
     <div class="log-main">
       <div class="log-title">
         {{ concertLog.venue }}
@@ -31,7 +31,7 @@ const emit = defineEmits<{
     <div class="log-actions">
       <ButtonSecondary label="詳細" @click="emit('detail')" />
     </div>
-  </li>
+  </div>
 </template>
 
 <style scoped>

@@ -25,14 +25,14 @@ const router = useRouter();
     >
 
     <ul v-else class="piece-list">
-      <PieceItem
-        v-for="piece in pieces"
-        :key="piece.id"
-        :piece="piece"
-        @detail="router.push(`/pieces/${piece.id}`)"
-        @edit="router.push(`/pieces/${piece.id}/edit`)"
-        @delete="emit('delete', piece)"
-      />
+      <li v-for="piece in pieces" :key="piece.id">
+        <PieceItem
+          :piece="piece"
+          @detail="router.push(`/pieces/${piece.id}`)"
+          @edit="router.push(`/pieces/${piece.id}/edit`)"
+          @delete="emit('delete', piece)"
+        />
+      </li>
     </ul>
   </div>
 </template>
