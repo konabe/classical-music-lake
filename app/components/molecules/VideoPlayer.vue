@@ -12,20 +12,24 @@ const emit = defineEmits<{
 const isYouTube = computed(() => isYouTubeUrl(props.videoUrl));
 const embedUrl = computed(() => toYouTubeEmbedUrl(props.videoUrl));
 
+type YTPlayer = { destroy: () => void };
+
 declare global {
-  interface Window {
-    onYouTubeIframeAPIReady?: () => void;
-    YT?: {
-      Player: new (
-        elementId: string,
-        options: { events: { onStateChange: (event: { data: number }) => void } }
-      ) => void;
-      PlayerState: { PLAYING: number };
-    };
-  }
+  var onYouTubeIframeAPIReady: (() => void) | undefined;
+
+  var YT:
+    | {
+        Player: new (
+          elementId: string,
+          options: { events: { onStateChange: (event: { data: number }) => void } }
+        ) => YTPlayer;
+        PlayerState: { PLAYING: number };
+      }
+    | undefined;
 }
 
 const iframeId = `yt-player-${Math.random().toString(36).slice(2)}`;
+let player: YTPlayer | undefined;
 
 onMounted(() => {
   if (!isYouTube.value) {
@@ -33,10 +37,12 @@ onMounted(() => {
   }
 
   const initPlayer = () => {
-    new window.YT!.Player(iframeId, {
+    // YT.Player は内部的に DOM 要素にバインドされるため、
+    // インスタンスを保持してイベント監視を有効にする
+    player = new globalThis.YT!.Player(iframeId, {
       events: {
         onStateChange(event: { data: number }) {
-          if (event.data === window.YT!.PlayerState.PLAYING) {
+          if (event.data === globalThis.YT!.PlayerState.PLAYING) {
             emit("play");
           }
         },
@@ -44,16 +50,20 @@ onMounted(() => {
     });
   };
 
-  if (window.YT?.Player !== undefined) {
-    initPlayer();
-  } else {
-    window.onYouTubeIframeAPIReady = initPlayer;
+  if (globalThis.YT?.Player === undefined) {
+    globalThis.onYouTubeIframeAPIReady = initPlayer;
     if (document.querySelector('script[src="https://www.youtube.com/iframe_api"]') === null) {
       const tag = document.createElement("script");
       tag.src = "https://www.youtube.com/iframe_api";
       document.head.appendChild(tag);
     }
+  } else {
+    initPlayer();
   }
+});
+
+onUnmounted(() => {
+  player?.destroy();
 });
 </script>
 
