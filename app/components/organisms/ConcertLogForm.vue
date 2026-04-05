@@ -121,6 +121,7 @@ function handleSubmit() {
         </button>
       </div>
 
+      <!-- NOSONAR: vuedraggable の tag="ol" により実行時は <ol> でレンダリングされるが、静的解析では検出できないため抑制 -->
       <draggable
         v-model="selectedPieces"
         item-key="id"
@@ -130,6 +131,7 @@ function handleSubmit() {
       >
         <template #item="{ element, index }">
           <li data-testid="program-item" class="program-item">
+            <!-- NOSONAR -->
             <span class="drag-handle" aria-label="ドラッグして並べ替え">☰</span>
             <span class="piece-info">{{ element.title }} / {{ element.composer }}</span>
             <button
