@@ -2,6 +2,7 @@
 
 [![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=konabe_classical-music-lake)
 [![Known Vulnerabilities](https://snyk.io/test/github/konabe/classical-music-lake/badge.svg)](https://snyk.io/test/github/konabe/classical-music-lake)
+[![codecov](https://codecov.io/gh/konabe/classical-music-lake/graph/badge.svg?token=Q5QFLF326W)](https://codecov.io/gh/konabe/classical-music-lake)
 
 クラシック音楽の鑑賞体験を記録・管理するWebアプリケーション。
 

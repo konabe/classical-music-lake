@@ -31,6 +31,12 @@ jobs:
       - name: Run coverage
         run: npm run test:coverage
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: frontend
+
   test-backend:
     name: Backend (Vitest)
     runs-on: ubuntu-latest
@@ -58,6 +64,12 @@ jobs:
       - name: Run coverage
         run: npm run test:coverage
         working-directory: backend
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: backend
 
   lint:
     name: Lint & Format
