@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import * as fc from "fast-check";
 import {
   createListeningLogSchema,
   updateListeningLogSchema,
@@ -46,12 +47,13 @@ describe("createListeningLogSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("composer が 100 文字を超える場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({
-      ...validLog,
-      composer: "a".repeat(101),
-    });
-    expect(result.success).toBe(false);
+  it("trim 後も 100 文字を超える composer は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
+        (composer) => !createListeningLogSchema.safeParse({ ...validLog, composer }).success
+      )
+    );
   });
 
   it("piece が空文字の場合はエラー", () => {
@@ -59,32 +61,49 @@ describe("createListeningLogSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("piece が 200 文字を超える場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({
-      ...validLog,
-      piece: "a".repeat(201),
-    });
-    expect(result.success).toBe(false);
+  it("trim 後も 200 文字を超える piece は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
+        (piece) => !createListeningLogSchema.safeParse({ ...validLog, piece }).success
+      )
+    );
   });
 
-  it("rating が 0 の場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({ ...validLog, rating: 0 });
-    expect(result.success).toBe(false);
+  it("rating が 1〜5 の整数は常に有効", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 5 }),
+        (rating) => createListeningLogSchema.safeParse({ ...validLog, rating }).success
+      )
+    );
   });
 
-  it("rating が 6 の場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({ ...validLog, rating: 6 });
-    expect(result.success).toBe(false);
+  it("rating が 1〜5 の範囲外の整数は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })),
+        (rating) => !createListeningLogSchema.safeParse({ ...validLog, rating }).success
+      )
+    );
   });
 
-  it("rating が小数の場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({ ...validLog, rating: 2.5 });
-    expect(result.success).toBe(false);
+  it("rating が小数の場合は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.integer().map((n) => n + 0.5),
+        (rating) => !createListeningLogSchema.safeParse({ ...validLog, rating }).success
+      )
+    );
   });
 
-  it("memo が 1000 文字を超える場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({ ...validLog, memo: "a".repeat(1001) });
-    expect(result.success).toBe(false);
+  it("1001 文字以上の memo は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 1001, maxLength: 2000 }),
+        (memo) => !createListeningLogSchema.safeParse({ ...validLog, memo }).success
+      )
+    );
   });
 
   it("isFavorite が boolean でない場合はエラー", () => {
@@ -139,9 +158,13 @@ describe("createPieceSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("title が 200 文字を超える場合はエラー", () => {
-    const result = createPieceSchema.safeParse({ ...validPiece, title: "a".repeat(201) });
-    expect(result.success).toBe(false);
+  it("trim 後も 200 文字を超える title は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
+        (title) => !createPieceSchema.safeParse({ ...validPiece, title }).success
+      )
+    );
   });
 
   it("composer が空文字の場合はエラー", () => {
@@ -149,9 +172,13 @@ describe("createPieceSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("composer が 100 文字を超える場合はエラー", () => {
-    const result = createPieceSchema.safeParse({ ...validPiece, composer: "a".repeat(101) });
-    expect(result.success).toBe(false);
+  it("trim 後も 100 文字を超える composer は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
+        (composer) => !createPieceSchema.safeParse({ ...validPiece, composer }).success
+      )
+    );
   });
 
   it("videoUrl が無効な URL の場合はエラー", () => {
@@ -200,24 +227,40 @@ describe("registerSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("password が 8 文字未満の場合はエラー", () => {
-    const result = registerSchema.safeParse({ ...validAuth, password: "Abc1234" });
-    expect(result.success).toBe(false);
+  it("8 文字未満の password は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 1, maxLength: 7 }),
+        (password) => !registerSchema.safeParse({ ...validAuth, password }).success
+      )
+    );
   });
 
-  it("password に大文字が含まれない場合はエラー", () => {
-    const result = registerSchema.safeParse({ ...validAuth, password: "secure1pass" });
-    expect(result.success).toBe(false);
+  it("大文字を含まない password は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 8 }).filter((s) => !/[A-Z]/.test(s)),
+        (password) => !registerSchema.safeParse({ ...validAuth, password }).success
+      )
+    );
   });
 
-  it("password に小文字が含まれない場合はエラー", () => {
-    const result = registerSchema.safeParse({ ...validAuth, password: "SECURE1PASS" });
-    expect(result.success).toBe(false);
+  it("小文字を含まない password は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 8 }).filter((s) => !/[a-z]/.test(s)),
+        (password) => !registerSchema.safeParse({ ...validAuth, password }).success
+      )
+    );
   });
 
-  it("password に数字が含まれない場合はエラー", () => {
-    const result = registerSchema.safeParse({ ...validAuth, password: "SecurePass" });
-    expect(result.success).toBe(false);
+  it("数字を含まない password は常にエラー", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 8 }).filter((s) => !/\d/.test(s)),
+        (password) => !registerSchema.safeParse({ ...validAuth, password }).success
+      )
+    );
   });
 });
 
