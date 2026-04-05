@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "preserve",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ESNext", "dom", "dom.iterable"],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "noEmit": true,
+    "types": ["vitest/globals"],
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "paths": {
+      "~": ["./app"],
+      "~/*": ["./app/*"],
+      "@": ["./app"],
+      "@/*": ["./app/*"],
+      "#shared": ["./shared"],
+      "#shared/*": ["./shared/*"]
+    }
+  },
+  "include": ["app/**/*", "shared/**/*"],
+  "exclude": ["backend/**", "cdk/**", "node_modules", ".nuxt", "dist", ".output"]
+}
