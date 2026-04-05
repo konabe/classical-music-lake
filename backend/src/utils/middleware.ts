@@ -55,7 +55,9 @@ export const createHandler = (handler: LambdaHandler) =>
     // LambdaHandler returns `body: unknown` while APIGatewayProxyResult expects
     // `body: string`. The cast is safe because httpResponseSerializer will
     // JSON.stringify the body at runtime before the response is returned.
-    .handler(handler as middy.Handler<APIGatewayProxyEvent, APIGatewayProxyResult>)
+    .handler(
+      handler as unknown as middy.MiddyfiedHandler<APIGatewayProxyEvent, APIGatewayProxyResult>
+    )
     .use(
       httpCors({
         origins: getEnv().corsAllowOrigins,

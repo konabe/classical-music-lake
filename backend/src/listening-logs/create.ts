@@ -6,7 +6,7 @@ import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { createListeningLogSchema } from "../utils/schemas";
 import { getUserId } from "../utils/auth";
-import type { ListeningLog } from "../types";
+import type { ListeningLog, Rating } from "../types";
 
 export const handler = createHandler(async (event) => {
   const input = parseRequestBody(event.body as unknown, createListeningLogSchema);
@@ -15,6 +15,7 @@ export const handler = createHandler(async (event) => {
   const now = new Date().toISOString();
   const item: ListeningLog = {
     ...input,
+    rating: input.rating as Rating,
     id: randomUUID(),
     userId,
     createdAt: now,

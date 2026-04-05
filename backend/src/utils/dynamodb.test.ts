@@ -122,7 +122,7 @@ describe("updateItem", () => {
   it("アイテムが存在しない場合は 404 を投げる", async () => {
     mockSend.mockResolvedValueOnce({ Item: undefined });
 
-    await expect(updateItem("test-table", "item-1", { name: "updated" })).rejects.toThrow(
+    await expect(updateItem<TestItem>("test-table", "item-1", { name: "updated" })).rejects.toThrow(
       "Item not found"
     );
   });
@@ -161,7 +161,9 @@ describe("updateItem", () => {
   it("ConditionalCheckFailedException が発生した場合は 409 を投げる", async () => {
     mockSend
       .mockResolvedValueOnce({ Item: existing })
-      .mockRejectedValueOnce(new ConditionalCheckFailedException("Condition failed"));
+      .mockRejectedValueOnce(
+        new ConditionalCheckFailedException({ message: "Condition failed", $metadata: {} })
+      );
 
     await expect(updateItem("test-table", "item-1", {})).rejects.toThrow(
       "Item was updated by another request"
