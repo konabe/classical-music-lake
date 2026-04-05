@@ -77,3 +77,4 @@ export interface ConcertLog {
 }
 
 export type CreateConcertLogInput = Omit<ConcertLog, "id" | "userId" | "createdAt" | "updatedAt">;
+export type UpdateConcertLogInput = Partial<CreateConcertLogInput>;
