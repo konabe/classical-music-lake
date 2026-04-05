@@ -667,7 +667,7 @@ Content-Type: application/json
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 17個
+- **関数数**: 18個
   - 視聴ログ用 CRUD 操作 × 5
   - 楽曲マスタ用 CRUD 操作 × 5
   - 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）

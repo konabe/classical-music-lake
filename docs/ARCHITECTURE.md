@@ -238,7 +238,7 @@ classical-music-lake/
   → API Gateway + Cognito Authorizer
   → Lambda (list.ts)
   → DynamoDB Query GSI1 (userId + createdAt)
-  → レスポンス (createdAt 降順ソート)
+  → メモリ内で concertDate 降順にソート
   → ブラウザに返却
 ```
 
