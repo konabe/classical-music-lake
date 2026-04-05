@@ -125,7 +125,7 @@
 1. `CategoryBadge.vue` + テスト + ストーリーを作成し、Atom 単体で動作確認する
 2. `PieceItem.vue` に `CategoryBadge` を組み込む。テスト・ストーリーを更新する
 3. `PieceDetailTemplate.vue` に `CategoryBadge` を組み込む。テスト・ストーリーを更新する
-4. `npm run test:frontend` で全テストが通ることを確認する
+4. `pnpm run test:frontend` で全テストが通ることを確認する
 
 ---
 

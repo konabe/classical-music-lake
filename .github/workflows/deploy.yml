@@ -35,14 +35,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: |
-            package-lock.json
-            backend/package-lock.json
-            cdk/package-lock.json
+          cache: "pnpm"
 
       # ----------------------------------------
       # デプロイ先環境の決定
@@ -65,16 +63,10 @@ jobs:
           fi
 
       # ----------------------------------------
-      # 全依存関係を並列インストール
-      # frontend / backend / CDK を同時に実行して待機することで
-      # 直列実行と比較して約 1〜2 分短縮
+      # 全依存関係をインストール
       # ----------------------------------------
       - name: Install all dependencies
-        run: |
-          npm ci &
-          npm ci --prefix backend &
-          npm ci --prefix cdk &
-          wait
+        run: pnpm install --frozen-lockfile
 
       # ----------------------------------------
       # AWS_ROLE_TO_ASSUME シークレットの存在確認
@@ -143,9 +135,9 @@ jobs:
       - name: CDK Deploy
         run: |
           if [ "$STAGE_NAME" = "prod" ]; then
-            npm run deploy
+            pnpm run deploy
           else
-            npm run deploy -- --hotswap-fallback
+            pnpm run deploy -- --hotswap-fallback
           fi
         working-directory: cdk
         env:
@@ -221,14 +213,14 @@ jobs:
       # CDK デプロイ後にスタック出力から取得した最新の値を使用
       # ----------------------------------------
       - name: Build frontend
-        run: npm run generate
+        run: pnpm run generate
         env:
           NUXT_PUBLIC_API_BASE_URL: ${{ steps.get-outputs.outputs.api_url }}
           NUXT_PUBLIC_COGNITO_DOMAIN: ${{ steps.get-outputs.outputs.cognito_domain }}
           NUXT_PUBLIC_COGNITO_CLIENT_ID: ${{ steps.get-outputs.outputs.cognito_client_id }}
 
       - name: Build Storybook
-        run: npm run build-storybook
+        run: pnpm run build-storybook
 
       # ----------------------------------------
       # フロントエンドを S3 にアップロード

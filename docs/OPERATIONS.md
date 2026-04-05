@@ -12,7 +12,7 @@ push to main
   → Configure AWS credentials
   → Get API Base URL from CloudFormation
   → Install frontend dependencies
-  → Build frontend (npm run generate)
+  → Build frontend (pnpm run generate)
   → CDK Deploy
 ```
 
@@ -26,7 +26,7 @@ GitHub Actions の画面から「Run workflow」で手動トリガー可能。
 
 ```bash
 cd cdk
-npm install
+pnpm install
 cdk bootstrap aws://<AWS_ACCOUNT_ID>/ap-northeast-1
 ```
 

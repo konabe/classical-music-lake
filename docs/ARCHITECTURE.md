@@ -21,7 +21,7 @@
 [GitHub (main ブランチ)]
         ↓ push
 [GitHub Actions]
-  ├── npm run generate  → S3 へアップロード
+  ├── pnpm run generate  → S3 へアップロード
   └── cdk deploy        → Lambda / API Gateway / DynamoDB 更新
 ```
 

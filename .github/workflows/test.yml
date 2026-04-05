@@ -17,19 +17,21 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: npm run test:frontend:ci
+        run: pnpm run test:frontend:ci
 
       - name: Run coverage
-        run: npm run test:coverage
+        run: pnpm run test:coverage
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -55,22 +57,22 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: backend/package-lock.json
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: backend
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: npm run test:ci
+        run: pnpm run test:ci
         working-directory: backend
 
       - name: Run coverage
-        run: npm run test:coverage
+        run: pnpm run test:coverage
         working-directory: backend
 
       - name: Upload coverage reports to Codecov
@@ -97,16 +99,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: ESLint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Prettier
-        run: npm run format:check
+        run: pnpm run format:check

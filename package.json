@@ -3,6 +3,7 @@
   "version": "1.6.2",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.12.1",
   "engines": {
     "node": ">=24.14.0"
   },
@@ -12,10 +13,10 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "npm run test:backend",
+    "test": "pnpm run test:backend",
     "test:frontend": "vitest run --exclude 'backend/**'",
     "test:frontend:ci": "vitest run --exclude 'backend/**' --reporter=default --reporter=junit --outputFile.junit=test-report.junit.xml",
-    "test:backend": "cd backend && npm test",
+    "test:backend": "pnpm -C backend test",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run --config tests/e2e/vitest.config.ts",
@@ -28,17 +29,25 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "stryker": "stryker run",
-    "stryker:backend": "cd backend && npm run stryker"
+    "stryker:backend": "pnpm -C backend run stryker"
   },
   "dependencies": {
     "nuxt": "^4.4.2",
     "vue": "^3.5.31",
     "vue-router": "^4.0.0"
   },
-  "overrides": {
-    "serialize-javascript": ">=7.0.3",
-    "h3-next": "npm:h3@2.0.1-rc.16",
-    "undici": ">=6.24.0"
+  "pnpm": {
+    "overrides": {
+      "serialize-javascript": ">=7.0.3",
+      "h3-next": "npm:h3@2.0.1-rc.16",
+      "undici": ">=6.24.0",
+      "fast-xml-parser": "5.5.6"
+    },
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "unrs-resolver"
+    ]
   },
   "lint-staged": {
     "*.{ts,vue}": [

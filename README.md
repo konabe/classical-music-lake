@@ -31,7 +31,8 @@
 
 - Node.js 24.x 以上
 - AWS CLI（設定済み）
-- AWS CDK CLI (`npm install -g aws-cdk`)
+- pnpm (`corepack enable` で有効化)
+- AWS CDK CLI (`pnpm add -g aws-cdk`)
 
 ### フロントエンド（ローカル開発）
 
@@ -41,21 +42,21 @@ git clone https://github.com/konabe/classical-music-lake.git
 cd classical-music-lake
 
 # 依存パッケージインストール
-npm install
+pnpm install
 
 # 環境変数設定
 cp .env.example .env
 # .env を編集して NUXT_PUBLIC_API_BASE_URL を設定
 
 # 開発サーバー起動
-npm run dev
+pnpm run dev
 ```
 
 ### バックエンド
 
 ```bash
 cd backend
-npm install
+pnpm install
 # Lambda 関数は AWS デプロイ後に動作確認できます
 ```
 
@@ -63,7 +64,7 @@ npm install
 
 ```bash
 cd cdk
-npm install
+pnpm install
 
 # 初回のみ Bootstrap
 cdk bootstrap

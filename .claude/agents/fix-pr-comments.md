@@ -48,13 +48,13 @@ git branch --show-current
 バックエンドのファイルを変更した場合:
 
 ```bash
-npm run test:backend
+pnpm run test:backend
 ```
 
 フロントエンドのファイルを変更した場合:
 
 ```bash
-npm run test:frontend
+pnpm run test:frontend
 ```
 
 テストが失敗した場合は修正してから次へ進む。
