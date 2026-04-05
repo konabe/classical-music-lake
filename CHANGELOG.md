@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.7.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.6.2...classical-music-lake-v1.7.0) (2026-04-05)
+
+
+### Features
+
+* add @codecov/vite-plugin for bundle analysis ([d733a0c](https://github.com/konabe/classical-music-lake/commit/d733a0c5040f4ccd761284609cac908484741397))
+* add program (piece link) to concert logs ([0e859ff](https://github.com/konabe/classical-music-lake/commit/0e859ff458f269c80cbb17086fa48e0fea9c6ca6))
+* npm から pnpm へパッケージマネージャーを移行 ([c196fc7](https://github.com/konabe/classical-music-lake/commit/c196fc717597ae66f7bf3a37f9fc264a14dd0a30)), closes [#379](https://github.com/konabe/classical-music-lake/issues/379)
+* コンサート記録の作成・一覧機能を追加（012-01） ([b93c772](https://github.com/konabe/classical-music-lake/commit/b93c772f64f03b330c342ce484b00e6a1283b6b1))
+* コンサート記録の作成・一覧機能を追加（ワーク012-01） ([7e78e0c](https://github.com/konabe/classical-music-lake/commit/7e78e0c7843cff31837bde5606a97b7ca1963944))
+* コンサート記録の詳細・編集・削除機能を実装 ([4b60721](https://github.com/konabe/classical-music-lake/commit/4b60721596e825553403868a6fff29c1d797ad2f))
+* コンサート記録の詳細・編集・削除機能を実装 (012-02) ([12cdc86](https://github.com/konabe/classical-music-lake/commit/12cdc8653187255e695fef58513f2fafeb4d5ffe))
+
+
+### Bug Fixes
+
+* concert-logs functions to end of arrays to prevent CloudWatch alarm ID conflicts ([9d45fc4](https://github.com/konabe/classical-music-lake/commit/9d45fc415ed219300c09235d44fd135f9a8419a0))
+* formGroupのラベル関連付けをinputId/id明示方式に変更 ([62e70a7](https://github.com/konabe/classical-music-lake/commit/62e70a7cdf0e9f1b849c76180282a86abe682157))
+* improve text contrast to meet WCAG AA requirements ([68591e5](https://github.com/konabe/classical-music-lake/commit/68591e5576326c82644ffa93c21ac5891edac53b))
+* memo の trim を考慮した filter を追加しプロパティテストの偽陰性を修正 ([a60d697](https://github.com/konabe/classical-music-lake/commit/a60d697f3b2cb8e0f20d23e7c10ca03405670aee))
+* override undici to &gt;=6.24.0 to resolve high severity vulnerability ([002f1c6](https://github.com/konabe/classical-music-lake/commit/002f1c6c87a7080d7e36285e687056c95ef9208d))
+* resolve SonarQube warnings in VideoPlayer (S1848, S7764, S7735) ([#390](https://github.com/konabe/classical-music-lake/issues/390)) ([3d2d9a4](https://github.com/konabe/classical-music-lake/commit/3d2d9a48218e1aafe55acde2263c9983529f3953))
+* session-start.sh に corepack enable を追加 ([24292e7](https://github.com/konabe/classical-music-lake/commit/24292e7228b33f9139158059e55f3730799c59c7))
+* sonarqube指摘対応 ([efefbc1](https://github.com/konabe/classical-music-lake/commit/efefbc1026ab17d1bd600097b225cba1c800b40c))
+* sonarqube指摘対応 - ワークフローセキュリティとHTML構造修正 ([658844e](https://github.com/konabe/classical-music-lake/commit/658844ecd44dd03244051563a7ce772bade460f5))
+* suppress SonarQube false positive for li inside vuedraggable ([212f780](https://github.com/konabe/classical-music-lake/commit/212f7809a8e038a7b226fefb40c97d26f057b33d))
+* フォームラベルのアクセシビリティを改善し eslint-plugin-vuejs-accessibility を追加 ([216e5d1](https://github.com/konabe/classical-music-lake/commit/216e5d19c736be0c6a1429bca74ae768cc95efe6))
+* プロパティ述語をヘルパー関数経由に変更しESLintエラーを修正 ([90c3351](https://github.com/konabe/classical-music-lake/commit/90c335120981043d0d45959da76dbd234cfa785b))
+
 ## [1.6.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.6.1...classical-music-lake-v1.6.2) (2026-04-04)
 
 
