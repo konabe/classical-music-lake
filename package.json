@@ -34,7 +34,8 @@
   },
   "overrides": {
     "serialize-javascript": ">=7.0.3",
-    "h3-next": "npm:h3@2.0.1-rc.16"
+    "h3-next": "npm:h3@2.0.1-rc.16",
+    "undici": ">=6.24.0"
   },
   "lint-staged": {
     "*.{ts,vue}": [
@@ -53,6 +54,7 @@
     ]
   },
   "devDependencies": {
+    "@codecov/vite-plugin": "^1.9.1",
     "@commitlint/cli": "^20.4.3",
     "@commitlint/config-conventional": "^20.4.3",
     "@nuxt/devtools": "^3.2.4",
