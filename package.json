@@ -34,7 +34,8 @@
   },
   "overrides": {
     "serialize-javascript": ">=7.0.3",
-    "h3-next": "npm:h3@2.0.1-rc.16"
+    "h3-next": "npm:h3@2.0.1-rc.16",
+    "undici": ">=6.24.0"
   },
   "lint-staged": {
     "*.{ts,vue}": [
