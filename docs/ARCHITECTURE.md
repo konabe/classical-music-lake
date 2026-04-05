@@ -50,7 +50,10 @@ classical-music-lake/
 │   │   │       └── edit.vue      # 編集
 │   │   ├── concert-logs/         # コンサート記録関連ページ（要認証）
 │   │   │   ├── index.vue         # 一覧
-│   │   │   └── new.vue           # 新規作成
+│   │   │   ├── new.vue           # 新規作成
+│   │   │   └── [id]/
+│   │   │       ├── index.vue     # 詳細
+│   │   │       └── edit.vue      # 編集
 │   │   └── pieces/               # 楽曲マスタ関連ページ
 │   │       ├── index.vue         # 一覧
 │   │       ├── new.vue           # 新規作成
@@ -69,13 +72,16 @@ classical-music-lake/
 │   │   │   └── ...
 │   │   ├── organisms/
 │   │   │   ├── QuickLogForm.vue     # 動画再生後に表示するクイックログ入力フォーム
-│   │   │   ├── ConcertLogForm.vue   # コンサート記録作成フォーム
+│   │   │   ├── ConcertLogForm.vue   # コンサート記録作成・編集フォーム（initialValues props で編集対応）
 │   │   │   ├── ConcertLogList.vue   # コンサート記録一覧
+│   │   │   ├── ConcertLogDetail.vue # コンサート記録詳細情報表示（読み取り専用）
 │   │   │   └── ...
 │   │   └── templates/
-│   │       ├── PieceDetailTemplate.vue     # 楽曲詳細ページレイアウト（カテゴリバッジ表示含む）
-│   │       ├── ConcertLogsTemplate.vue     # コンサート記録一覧ページレイアウト
-│   │       ├── ConcertLogNewTemplate.vue   # コンサート記録作成ページレイアウト
+│   │       ├── PieceDetailTemplate.vue         # 楽曲詳細ページレイアウト（カテゴリバッジ表示含む）
+│   │       ├── ConcertLogsTemplate.vue         # コンサート記録一覧ページレイアウト
+│   │       ├── ConcertLogNewTemplate.vue       # コンサート記録作成ページレイアウト
+│   │       ├── ConcertLogDetailTemplate.vue    # コンサート記録詳細ページレイアウト（編集・削除ボタン含む）
+│   │       ├── ConcertLogEditTemplate.vue      # コンサート記録編集ページレイアウト
 │   │       └── ...
 │   ├── composables/              # Vue Composables（共通ロジック）
 │   ├── utils/
@@ -98,7 +104,10 @@ classical-music-lake/
 │       │   └── delete.ts
 │       ├── concert-logs/         # コンサート記録 Lambda 関数
 │       │   ├── create.ts
-│       │   └── list.ts
+│       │   ├── list.ts
+│       │   ├── get.ts
+│       │   ├── update.ts
+│       │   └── delete.ts
 │       ├── pieces/               # 楽曲マスタ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts
@@ -252,6 +261,50 @@ classical-music-lake/
   → UUID 生成 + userId (Cognito sub) + createdAt/updatedAt 付与
   → DynamoDB PutItem
   → 201 Created + 作成済みオブジェクト
+  → ブラウザに返却 → /concert-logs へ遷移
+```
+
+### コンサート記録詳細取得
+
+```text
+ブラウザ (/concert-logs/[id])
+  → useConcertLog(id) で ConcertLog を取得
+  → GET /prod/concert-logs/{id}
+  → API Gateway + Cognito Authorizer
+  → Lambda (get.ts)
+  → DynamoDB GetItem
+  → userId が一致するか検証（不一致は 404）
+  → 200 OK + コンサート記録オブジェクト
+  → ConcertLogDetailTemplate でレンダリング
+```
+
+### コンサート記録更新
+
+```text
+ブラウザ (/concert-logs/[id]/edit)
+  → useConcertLog(id) で既存記録を取得 → ConcertLogForm に初期値をセット
+  → フォーム編集後に useConcertLogs().update(id, values) 実行
+  → PUT /prod/concert-logs/{id} (JSON body)
+  → API Gateway + Cognito Authorizer
+  → Lambda (update.ts)
+  → 既存レコード取得 + userId 検証（不一致は 404）
+  → updateItem でフィールドを部分更新（楽観的ロック）
+  → 200 OK + 更新済みオブジェクト
+  → ブラウザに返却 → /concert-logs/{id} へ遷移
+```
+
+### コンサート記録削除
+
+```text
+ブラウザ (/concert-logs/[id])
+  → 「削除」ボタンをクリック → window.confirm() で確認
+  → useConcertLogs().deleteLog(id) 実行
+  → DELETE /prod/concert-logs/{id}
+  → API Gateway + Cognito Authorizer
+  → Lambda (delete.ts)
+  → 既存レコード取得 + userId 検証（不一致は 404）
+  → DynamoDB DeleteItem
+  → 204 No Content
   → ブラウザに返却 → /concert-logs へ遷移
 ```
 
