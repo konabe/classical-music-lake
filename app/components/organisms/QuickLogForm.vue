@@ -43,14 +43,14 @@ function handleSubmit() {
     </FormGroup>
 
     <div class="form-group">
-      <label class="checkbox-label">
-        <input v-model="isFavorite" type="checkbox" />
+      <label class="checkbox-label" for="is-favorite">
+        <input id="is-favorite" v-model="isFavorite" type="checkbox" />
         お気に入り
       </label>
     </div>
 
-    <FormGroup label="感想・メモ">
-      <textarea v-model="memo" rows="4" placeholder="自由に感想を書いてください..." />
+    <FormGroup label="感想・メモ" input-id="memo">
+      <textarea id="memo" v-model="memo" rows="4" placeholder="自由に感想を書いてください..." />
     </FormGroup>
 
     <div v-if="saved" class="success-message">保存しました！</div>

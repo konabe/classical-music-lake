@@ -62,3 +62,18 @@ export interface Piece {
 
 export type CreatePieceInput = Omit<Piece, "id" | "createdAt" | "updatedAt">;
 export type UpdatePieceInput = Partial<CreatePieceInput>;
+
+// コンサート記録
+export interface ConcertLog {
+  id: string;
+  userId: string; // Cognito sub（認証必須のため null なし）
+  concertDate: string; // ISO 8601 日時
+  venue: string; // 会場名
+  conductor?: string; // 指揮者名
+  orchestra?: string; // オーケストラ・アンサンブル名
+  soloist?: string; // ソリスト名
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateConcertLogInput = Omit<ConcertLog, "id" | "userId" | "createdAt" | "updatedAt">;

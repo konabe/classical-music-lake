@@ -114,6 +114,11 @@ defineProps<{
         <h2>楽曲を探す</h2>
         <p>登録された楽曲一覧を探索する</p>
       </NuxtLink>
+      <NuxtLink to="/concert-logs" class="card">
+        <span class="card-icon">🎹</span>
+        <h2>コンサート記録</h2>
+        <p>実際に聴いたコンサートの記録を残す</p>
+      </NuxtLink>
     </section>
   </div>
 </template>

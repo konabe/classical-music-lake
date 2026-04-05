@@ -9,12 +9,12 @@
 ### 1.2 主要機能
 
 - **視聴ログ管理**: CD・配信サービス等で聴いた録音の記録
+- **コンサート記録管理**: 実際に聴いたコンサートの記録（会場・指揮者・オーケストラ・ソリスト）
 - **ユーザー登録**: メールアドレスとパスワードによるアカウント作成（メール確認付き）
 
 ### 1.3 スコープ
 
-- **現在**: 視聴ログ機能に集中
-- **将来的な拡張**: コンサート記録機能は後回し
+- **現在**: 視聴ログ機能・コンサート記録機能（作成・一覧）
 
 ### 1.4 想定ユーザー
 
@@ -58,6 +58,7 @@
 | `useAuth`          | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback） |
 | `usePieces`        | 曲一覧を取得する                                                                                                          |
 | `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                        |
+| `useConcertLogs`   | コンサート記録の一覧取得（`list`）・作成（`create`）を行う。401 時にトークンリフレッシュを自動試行する                    |
 
 #### フロントエンド レイアウト
 
@@ -67,16 +68,21 @@
 
 #### フロントエンド コンポーネント
 
-| コンポーネント        | 役割                                                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `ListeningLogForm`    | 視聴ログの新規作成・編集で共通利用するフォーム。楽曲マスタから曲を選択した際に `videoUrl` があれば `VideoPlayer` をインライン表示する |
-| `PieceForm`           | 楽曲マスタの新規作成・編集で共通利用するフォーム（`title`, `composer`, `videoUrl`）                                                   |
-| `VideoPlayer`         | 動画 URL を受け取り YouTube 埋め込み / 外部リンクを切り替えて表示する。再生開始時に `play` を emit                                    |
-| `QuickLogForm`        | 作曲家・曲名を自動入力し、評価・お気に入り・メモを入力して `submit` を emit するフォーム                                              |
-| `PieceDetailTemplate` | 楽曲詳細ページのレイアウト。`VideoPlayer` の `play` イベント後に `QuickLogForm` を表示する                                            |
-| `CategoryBadge`       | カテゴリのラベルと値を `label: value` 形式のバッジとして表示する Atom コンポーネント                                                  |
-| `PieceCategoryList`   | 楽曲の4軸カテゴリ（ジャンル・時代・編成・地域）のうち設定済みのものを `CategoryBadge` で並列表示する Molecule コンポーネント          |
-| `PieceItem`           | 楽曲一覧の各行コンポーネント。曲名・作曲家に加えて `PieceCategoryList` でカテゴリバッジを表示する                                     |
+| コンポーネント          | 役割                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `ListeningLogForm`      | 視聴ログの新規作成・編集で共通利用するフォーム。楽曲マスタから曲を選択した際に `videoUrl` があれば `VideoPlayer` をインライン表示する |
+| `PieceForm`             | 楽曲マスタの新規作成・編集で共通利用するフォーム（`title`, `composer`, `videoUrl`）                                                   |
+| `VideoPlayer`           | 動画 URL を受け取り YouTube 埋め込み / 外部リンクを切り替えて表示する。再生開始時に `play` を emit                                    |
+| `QuickLogForm`          | 作曲家・曲名を自動入力し、評価・お気に入り・メモを入力して `submit` を emit するフォーム                                              |
+| `PieceDetailTemplate`   | 楽曲詳細ページのレイアウト。`VideoPlayer` の `play` イベント後に `QuickLogForm` を表示する                                            |
+| `CategoryBadge`         | カテゴリのラベルと値を `label: value` 形式のバッジとして表示する Atom コンポーネント                                                  |
+| `PieceCategoryList`     | 楽曲の4軸カテゴリ（ジャンル・時代・編成・地域）のうち設定済みのものを `CategoryBadge` で並列表示する Molecule コンポーネント          |
+| `PieceItem`             | 楽曲一覧の各行コンポーネント。曲名・作曲家に加えて `PieceCategoryList` でカテゴリバッジを表示する                                     |
+| `ConcertLogItem`        | コンサート記録一覧の各行コンポーネント。会場・開催日時・指揮者・オーケストラ・ソリストを表示し、詳細ボタンの `detail` イベントを emit |
+| `ConcertLogForm`        | コンサート記録の新規作成で利用するフォーム（`concertDate`, `venue`, `conductor`, `orchestra`, `soloist`）                             |
+| `ConcertLogList`        | コンサート記録の一覧を `ConcertLogItem` で描画する Organism コンポーネント                                                            |
+| `ConcertLogNewTemplate` | コンサート記録作成ページのレイアウト。`ConcertLogForm` を包含する                                                                     |
+| `ConcertLogsTemplate`   | コンサート記録一覧ページのレイアウト。`ConcertLogList` を包含する                                                                     |
 
 #### フロントエンド ユーティリティ
 
@@ -194,13 +200,51 @@ interface Piece {
 
 ---
 
+### 3.3 コンサート記録 (ConcertLog)
+
+#### DynamoDBテーブル
+
+- **テーブル名**: `classical-music-concert-logs`
+- **パーティションキー**: `id` (String)
+- **課金モード**: オンデマンド
+- **GSI1**: パーティションキー `userId` (String) + ソートキー `createdAt` (String) — ユーザー別一覧取得に使用
+- **削除ポリシー**: prod は RETAIN、stg/dev は DESTROY
+
+#### データ構造
+
+```typescript
+interface ConcertLog {
+  id: string; // UUID (自動生成)
+  userId: string; // Cognito sub（認証必須のため null なし）
+  concertDate: string; // 開催日時 (ISO 8601形式)
+  venue: string; // 会場名
+  conductor?: string; // 指揮者名（任意）
+  orchestra?: string; // オーケストラ・アンサンブル名（任意）
+  soloist?: string; // ソリスト名（任意）
+  createdAt: string; // 作成日時 (ISO 8601形式)
+  updatedAt: string; // 更新日時 (ISO 8601形式)
+}
+```
+
+#### バリデーション
+
+- `concertDate`: ISO 8601形式の日時文字列（UTC、Zサフィックス必須）。フロントエンドは `datetime-local` 入力値をローカル時刻として `toISOString()` で変換して送信する
+- `venue`: 空文字・空白のみ不可、最大200文字
+- `conductor`: 任意項目。指定する場合は最大100文字
+- `orchestra`: 任意項目。指定する場合は最大100文字
+- `soloist`: 任意項目。指定する場合は最大100文字
+
+> バリデーションは `utils/schemas.ts` の `createConcertLogSchema`（Zod スキーマ）で実施する。
+
+---
+
 ## 4. API仕様
 
 ### 4.1 エンドポイント構成
 
 - **ベースURL**: `https://{api-gateway-url}/prod`
 - **認証**: AWS Cognito User Pool (Bearer Token)
-  - 認証が必要なエンドポイント: `/listening-logs/*`（読み取り・書き込み）
+  - 認証が必要なエンドポイント: `/listening-logs/*`、`/concert-logs/*`（読み取り・書き込み）
   - 公開エンドポイント: `/auth/*`、`/pieces/*`
 - **CORS**: CloudFront URL のみ許可（プリフライト・GatewayResponse の両方で設定）
 
@@ -488,7 +532,77 @@ Authorization: Bearer {accessToken}
 - 成功: `204 No Content`
 - 未存在または他ユーザーのアイテム: `404 Not Found`（存在を隠蔽）
 
-### 4.4 エラーレスポンス一覧
+### 4.4 コンサート記録API
+
+> **認証必須**: すべてのコンサート記録エンドポイントは `Authorization: Bearer {accessToken}` ヘッダーが必要。
+> API Gateway Cognito Authorizer がトークンを検証し、無効な場合は `401 Unauthorized` を返す。
+
+#### `GET /concert-logs`
+
+ログイン中ユーザーのコンサート記録一覧を取得
+
+**リクエスト**
+
+```http
+GET /concert-logs
+Authorization: Bearer {accessToken}
+```
+
+**レスポンス**
+
+```json
+[
+  {
+    "id": "uuid",
+    "userId": "cognito-sub",
+    "concertDate": "2024-01-15T19:00:00.000Z",
+    "venue": "サントリーホール",
+    "conductor": "カラヤン",
+    "orchestra": "ベルリン・フィルハーモニー管弦楽団",
+    "soloist": "アルゲリッチ",
+    "createdAt": "2024-01-15T20:00:00.000Z",
+    "updatedAt": "2024-01-15T20:00:00.000Z"
+  }
+]
+```
+
+**ソート順**: `concertDate` 降順（新しい順）
+
+**アクセス制御**: DynamoDB GSI1（userId + createdAt）を使ったクエリにより、ログイン中ユーザーの記録のみ返却
+
+#### `POST /concert-logs`
+
+新規コンサート記録を作成
+
+**リクエスト**
+
+```json
+POST /concert-logs
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "concertDate": "2024-01-15T19:00:00.000Z",
+  "venue": "サントリーホール",
+  "conductor": "カラヤン",
+  "orchestra": "ベルリン・フィルハーモニー管弦楽団",
+  "soloist": "アルゲリッチ"
+}
+```
+
+**レスポンス**
+
+- 成功: `201 Created` + 作成された ConcertLog オブジェクト
+- バリデーションエラー: `400 Bad Request`
+
+**自動生成項目**
+
+- `id`: UUID v4
+- `userId`: トークンから取得した Cognito sub
+- `createdAt`: 現在時刻
+- `updatedAt`: 現在時刻
+
+### 4.5 エラーレスポンス一覧
 
 全エラーレスポンスは以下の形式で返される：
 
@@ -504,7 +618,7 @@ Authorization: Bearer {accessToken}
 | `404 Not Found`             | リソース未存在     | 指定IDの視聴ログが存在しない                   |
 | `500 Internal Server Error` | サーバー内部エラー | DynamoDB接続エラーなど予期しないエラー         |
 
-### 4.5 データバリデーションルール
+### 4.6 データバリデーションルール
 
 #### 視聴ログ（ListeningLog）
 
@@ -516,6 +630,16 @@ Authorization: Bearer {accessToken}
 | `rating`     | 1 \| 2 \| 3 \| 4 \| 5 | ✅   | 1〜5の整数                                 |
 | `isFavorite` | boolean               | ✅   | `true` または `false`                      |
 | `memo`       | string                | -    | 最大1000文字                               |
+
+#### コンサート記録（ConcertLog）
+
+| フィールド    | 型     | 必須 | バリデーション                             |
+| ------------- | ------ | ---- | ------------------------------------------ |
+| `concertDate` | string | ✅   | ISO 8601形式（例: `2024-01-15T19:00:00Z`） |
+| `venue`       | string | ✅   | 空文字・空白のみ不可、最大200文字          |
+| `conductor`   | string | -    | 最大100文字                                |
+| `orchestra`   | string | -    | 最大100文字                                |
+| `soloist`     | string | -    | 最大100文字                                |
 
 #### 自動生成フィールド（入力不可）
 
@@ -534,14 +658,25 @@ Authorization: Bearer {accessToken}
 #### DynamoDB
 
 - **ListeningLogs**: `classical-music-listening-logs`
-- **削除ポリシー**: RETAIN（データ保持）
+  - 削除ポリシー: RETAIN（データ保持）
+- **Pieces**: `classical-music-pieces`
+  - 削除ポリシー: RETAIN（データ保持）
+- **ConcertLogs**: `classical-music-concert-logs`
+  - 削除ポリシー: prod は RETAIN、stg/dev は DESTROY
 
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 6個（視聴ログ用CRUD操作 × 5 + ユーザー登録 × 1）
+- **関数数**: 18個
+  - 視聴ログ用 CRUD 操作 × 5
+  - 楽曲マスタ用 CRUD 操作 × 5
+  - 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）
+  - PreSignUp トリガー × 1
+  - コンサート記録 × 2（list・create）
 - **環境変数**:
   - `DYNAMO_TABLE_LISTENING_LOGS`
+  - `DYNAMO_TABLE_PIECES`
+  - `DYNAMO_TABLE_CONCERT_LOGS`
   - `COGNITO_USER_POOL_ID`（認証系 Lambda で使用）
   - `COGNITO_CLIENT_ID`（認証系 Lambda で使用）
 
@@ -581,6 +716,8 @@ Authorization: Bearer {accessToken}
 #### バックエンド（Lambda）
 
 - `DYNAMO_TABLE_LISTENING_LOGS`: 視聴ログテーブル名（CDK が自動設定）
+- `DYNAMO_TABLE_PIECES`: 楽曲マスタテーブル名（CDK が自動設定）
+- `DYNAMO_TABLE_CONCERT_LOGS`: コンサート記録テーブル名（CDK が自動設定）
 - `CORS_ALLOW_ORIGIN`: 許可する CORS オリジン（CDK が CloudFront URL を自動設定。未設定時は `"*"` にフォールバックするが、本番・stg は CDK が必ず設定するため未設定にはならない）
 
 #### CI/CD（GitHub Secrets）
@@ -604,11 +741,11 @@ Authorization: Bearer {accessToken}
 
 ### 6.1 環境構成
 
-| 環境   | スタック名                    | DynamoDB テーブル名                  | 削除ポリシー | 用途                                     |
-| ------ | ----------------------------- | ------------------------------------ | ------------ | ---------------------------------------- |
-| `prod` | `ClassicalMusicLakeStack`     | `classical-music-listening-logs`     | RETAIN       | 本番環境                                 |
-| `stg`  | `ClassicalMusicLakeStack-stg` | `classical-music-listening-logs-stg` | DESTROY      | リリース前の検証環境                     |
-| `dev`  | `ClassicalMusicLakeStack-dev` | `classical-music-listening-logs-dev` | DESTROY      | 開発環境（ローカル環境からの接続も想定） |
+| 環境   | スタック名                    | DynamoDB テーブル名（視聴ログ）      | DynamoDB テーブル名（コンサート記録） | 削除ポリシー | 用途                                     |
+| ------ | ----------------------------- | ------------------------------------ | ------------------------------------- | ------------ | ---------------------------------------- |
+| `prod` | `ClassicalMusicLakeStack`     | `classical-music-listening-logs`     | `classical-music-concert-logs`        | RETAIN       | 本番環境                                 |
+| `stg`  | `ClassicalMusicLakeStack-stg` | `classical-music-listening-logs-stg` | `classical-music-concert-logs-stg`    | DESTROY      | リリース前の検証環境                     |
+| `dev`  | `ClassicalMusicLakeStack-dev` | `classical-music-listening-logs-dev` | `classical-music-concert-logs-dev`    | DESTROY      | 開発環境（ローカル環境からの接続も想定） |
 
 ### 6.2 デプロイフロー
 
@@ -647,7 +784,7 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
 - **概要**: prod の DynamoDB データを stg へ全件コピーする
 - **対象テーブル**:
   - `classical-music-pieces` → `classical-music-pieces-stg`
-  - ※ 視聴ログ（`classical-music-listening-logs`）は個人情報を含むため同期対象外
+  - ※ 視聴ログ（`classical-music-listening-logs`）・コンサート記録（`classical-music-concert-logs`）は個人情報を含むため同期対象外
 - **トリガー**:
   - スケジュール: 毎日 0:00 JST（UTC 15:00）に自動実行
   - `workflow_dispatch`: 手動実行も可能
@@ -770,6 +907,8 @@ cdk deploy
 | `Piece`                   | 楽曲マスタ                  |
 | `CreatePieceInput`        | 楽曲マスタ作成入力          |
 | `UpdatePieceInput`        | 楽曲マスタ更新入力          |
+| `ConcertLog`              | コンサート記録              |
+| `CreateConcertLogInput`   | コンサート記録作成入力      |
 
 #### バックエンド固有（`backend/src/types/index.ts` にのみ存在）
 
@@ -795,6 +934,7 @@ cdk deploy
 - **検索機能なし**: DynamoDB Scanのみ
 - **ページネーションなし（フロント向け）**: API はページネーション済みで全件取得するが、フロントエンドへのページング機能は未実装
 - **画像アップロードなし**: テキストベースのみ
+- **コンサート記録の詳細・編集・削除は未実装**: 現時点では作成・一覧のみ
 
 ### 9.2 将来的な拡張案
 
@@ -806,33 +946,4 @@ cdk deploy
 - タグ・カテゴリ機能
 - データのエクスポート機能
 - 統計・分析ダッシュボード
-
----
-
-## 10. 変更履歴
-
-| 日付       | バージョン | 変更内容                                                                                                                                                                                                                                        |
-| ---------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-04 | 1.8.2      | デプロイワークフローの実行順序を修正: CDK デプロイ後にフロントエンドをビルドするよう変更し、prod 環境で Cognito ドメインが空文字になる問題を解消。S3 アップロードを CDK BucketDeployment からワークフローの aws s3 sync に移管                  |
-| 2026-04-04 | 1.8.1      | pre-signup トリガーの Google プロバイダー名正規化バグを修正（Cognito が `event.userName` を `"google_<sub>"` と小文字で渡すのに対し、User Pool の IdP 登録名 `"Google"` と不一致で `AdminLinkProviderForUserCommand` が失敗していた問題を解消） |
-| 2026-04-03 | 1.8.0      | Google OAuth 認証を追加（Cognito Hosted UI 経由。`POST /auth/callback` フロー、`loginWithGoogle`・`handleOAuthCallback` を `useAuth` に追加、`useCognitoConfig` 新設、CDK に Google Identity Provider・Cognito Domain を追加）                  |
-| 2026-04-03 | 1.7.2      | CORS オリジン制限の強化: prod・stg 環境では CloudFront URL のみ許可、dev 環境のみ localhost:3010 を追加許可するよう変更                                                                                                                         |
-| 2026-04-02 | 1.7.1      | カテゴリの値を `shared/constants.ts` に一元管理し、フロント・バックエンドから re-export。型・Zodスキーマ・フォーム選択肢を導出するよう統一                                                                                                      |
-| 2026-03-31 | 1.7.0      | トークンリフレッシュ機能追加（`POST /auth/refresh` エンドポイント新設、ログイン時に `refreshToken`・有効期限を保存、auth ミドルウェアで期限切れ時に自動リフレッシュ、401 時にリフレッシュ試行後リトライ）                                       |
-| 2026-03-28 | 1.6.1      | コード品質改善: truthy/falsy 依存を全廃し明示的な null/undefined 比較に統一。`@typescript-eslint/strict-boolean-expressions` および `vitest/no-restricted-matchers` ESLint ルールを追加し再発を防止                                             |
-| 2026-03-26 | 1.6.0      | `ListeningLogForm` に楽曲選択時の動画プレビュー機能を追加（`videoUrl` ありの曲を選択すると `VideoPlayer` をインライン表示）                                                                                                                     |
-| 2026-03-25 | 1.5.0      | 楽曲詳細ページ（`/pieces/[id]`）追加、`VideoPlayer`・`QuickLogForm`・`PieceDetailTemplate` 新設、動画再生起点のクイックログ記録フローを実装                                                                                                     |
-| 2026-03-23 | 1.3.3      | `useFetch` の `onResponseError` で 401 時に `handleAuthError` を呼び出し、ログイン画面へリダイレクトするよう修正（`useListeningLogs.list`、`useListeningLog`）                                                                                  |
-| 2026-03-22 | 1.3.2      | ヘッダーナビゲーション改善（未ログイン時: 新規登録・ログインリンク表示、ログイン済み時: ログアウトボタン表示・認証リンク非表示）                                                                                                                |
-| 2026-03-21 | 1.3.1      | ログアウト機能追加（useAuth: logout/isAuthenticated、auth ミドルウェア、ナビバーボタン）                                                                                                                                                        |
-| 2026-03-25 | 1.4.0      | `Piece` に `videoUrl` フィールドを追加（任意・URL形式バリデーション）、楽曲フォームに動画 URL 入力欄を追加                                                                                                                                      |
-| 2026-03-21 | 1.3.0      | AWS Cognito ユーザー登録機能を追加（`POST /auth/register`、`useAuth` composable）                                                                                                                                                               |
-| 2026-03-17 | 1.2.5      | CDK CORS 設定を DRY 化（`addCors` ヘルパー）、型定義ファイルの管理方針コメントを整備                                                                                                                                                            |
-| 2026-03-17 | 1.2.4      | Create入力の実体バリデーション強化（空白のみ禁止・最大文字数制限）                                                                                                                                                                              |
-| 2026-03-16 | 1.2.3      | Zod を導入しリクエストボディのパース処理にバリデーションを統合                                                                                                                                                                                  |
-| 2026-03-15 | 1.2.2      | `listening-logs/list.ts` を DynamoDB ページネーション対応に統一                                                                                                                                                                                 |
-| 2026-03-15 | 1.2.1      | バックエンドの JSON パース処理を `utils/parsing.ts` に共通化                                                                                                                                                                                    |
-| 2026-03-11 | 1.2.0      | TOPページに管理者向けリンクセクション（楽曲マスタ導線）を追加                                                                                                                                                                                   |
-| 2026-03-07 | 1.1.0      | performer・conductor フィールド削除、DELETE レスポンス 204 に修正                                                                                                                                                                               |
-| 2026-03-02 | 1.0.1      | Node.js 24.x対応                                                                                                                                                                                                                                |
-| 2026-03-02 | 1.0.0      | 初版作成                                                                                                                                                                                                                                        |
+- コンサート記録の詳細・編集・削除機能

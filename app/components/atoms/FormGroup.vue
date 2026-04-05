@@ -9,6 +9,7 @@ defineProps<{
 
 <template>
   <div class="form-group">
+    <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
     <label :for="inputId">
       {{ label }}
       <RequiredMark v-if="required" />
