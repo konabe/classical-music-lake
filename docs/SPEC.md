@@ -826,7 +826,7 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
       → Lambda + API Gateway + DynamoDB 作成/更新
       → S3 + CloudFront 作成/更新
     → スタック出力取得（API URL・Cognito ドメイン等）
-    → Nuxt ビルド (npm run generate)
+    → Nuxt ビルド (pnpm run generate)
     → Storybook ビルド
     → S3 同期（SPA + Storybook）
     → CloudFront キャッシュ無効化
@@ -907,7 +907,7 @@ git push origin main
 ### 7.1 必須ツール
 
 - Node.js 24.x以上
-- npm または yarn
+- pnpm（`corepack enable` で有効化）
 - AWS CLI
 - AWS CDK CLI
 
@@ -917,20 +917,20 @@ git push origin main
 
 ```bash
 # 依存パッケージインストール
-npm install
+pnpm install
 
 # 環境変数設定
 export NUXT_PUBLIC_API_BASE_URL=https://your-api-url/prod
 
 # 開発サーバー起動
-npm run dev
+pnpm run dev
 ```
 
 #### バックエンド開発
 
 ```bash
 cd backend
-npm install
+pnpm install
 # Lambda関数は AWS SAM や Serverless Framework でローカルテスト可能
 ```
 
@@ -938,7 +938,7 @@ npm install
 
 ```bash
 cd cdk
-npm install
+pnpm install
 cdk bootstrap  # 初回のみ
 cdk deploy
 ```
