@@ -201,7 +201,7 @@ describe("PUT /listening-logs/:id (update)", () => {
       ...existingLog,
       isFavorite: true,
       updatedAt: new Date().toISOString(),
-    });
+    } as never);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ isFavorite: true }), TEST_USER_ID),

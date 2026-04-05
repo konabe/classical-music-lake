@@ -1,9 +1,11 @@
 <script setup lang="ts">
 defineProps<{
   modelValue: string;
+  id?: string;
   type?: "text" | "email" | "password";
   placeholder?: string;
   disabled?: boolean;
+  required?: boolean;
 }>();
 
 defineEmits<{
@@ -13,11 +15,13 @@ defineEmits<{
 
 <template>
   <input
+    :id="id"
     class="text-input"
     :type="type ?? 'text'"
     :value="modelValue"
     :placeholder="placeholder"
     :disabled="disabled"
+    :required="required"
     @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
   />
 </template>

@@ -51,5 +51,5 @@ export const makeAuthEvent = (
     authorizer: {
       claims: { sub: userId },
     },
-  } as APIGatewayProxyEvent["requestContext"],
+  } as unknown as APIGatewayProxyEvent["requestContext"],
 });

@@ -1,6 +1,7 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from "eslint-plugin-storybook";
 import vitest from "@vitest/eslint-plugin";
+import vueA11y from "eslint-plugin-vuejs-accessibility";
 
 // @ts-check
 import prettierConfig from "eslint-config-prettier";
@@ -79,6 +80,13 @@ export default withNuxt(
       "@typescript-eslint/no-explicit-any": "error",
       "vue/component-name-in-template-casing": ["error", "PascalCase"],
       curly: ["error", "all"],
+    },
+  },
+  {
+    files: ["app/**/*.vue"],
+    plugins: { "vuejs-accessibility": vueA11y },
+    rules: {
+      "vuejs-accessibility/label-has-for": ["error", { required: { some: ["nesting", "id"] } }],
     },
   },
   {

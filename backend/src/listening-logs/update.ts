@@ -22,6 +22,10 @@ export const handler = createHandler(async (event) => {
     throw new createError.NotFound("Listening log not found");
   }
 
-  const updated = await updateItem<ListeningLog>(TABLE_LISTENING_LOGS, id, input);
+  const updated = await updateItem<ListeningLog>(
+    TABLE_LISTENING_LOGS,
+    id,
+    input as Partial<ListeningLog>
+  );
   return { statusCode: StatusCodes.OK, body: updated };
 }).use(jsonBodyParser);
