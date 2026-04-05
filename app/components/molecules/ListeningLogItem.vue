@@ -13,7 +13,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <li class="log-item">
+  <div class="log-item">
     <div class="log-main">
       <div class="log-title">
         <FavoriteIndicator :is-favorite="listeningLog.isFavorite" />
@@ -34,7 +34,7 @@ const emit = defineEmits<{
       <ButtonSecondary label="編集" @click="emit('edit')" />
       <ButtonDanger label="削除" @click="emit('delete')" />
     </div>
-  </li>
+  </div>
 </template>
 
 <style scoped>

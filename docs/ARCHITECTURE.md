@@ -72,15 +72,15 @@ classical-music-lake/
 │   │   │   └── ...
 │   │   ├── organisms/
 │   │   │   ├── QuickLogForm.vue     # 動画再生後に表示するクイックログ入力フォーム
-│   │   │   ├── ConcertLogForm.vue   # コンサート記録作成・編集フォーム（initialValues props で編集対応）
+│   │   │   ├── ConcertLogForm.vue   # コンサート記録作成・編集フォーム（楽曲選択・vuedraggable並べ替え含む）
 │   │   │   ├── ConcertLogList.vue   # コンサート記録一覧
-│   │   │   ├── ConcertLogDetail.vue # コンサート記録詳細情報表示（読み取り専用）
+│   │   │   ├── ConcertLogDetail.vue # コンサート記録詳細情報表示（プログラム表示含む、読み取り専用）
 │   │   │   └── ...
 │   │   └── templates/
 │   │       ├── PieceDetailTemplate.vue         # 楽曲詳細ページレイアウト（カテゴリバッジ表示含む）
 │   │       ├── ConcertLogsTemplate.vue         # コンサート記録一覧ページレイアウト
 │   │       ├── ConcertLogNewTemplate.vue       # コンサート記録作成ページレイアウト
-│   │       ├── ConcertLogDetailTemplate.vue    # コンサート記録詳細ページレイアウト（編集・削除ボタン含む）
+│   │       ├── ConcertLogDetailTemplate.vue    # コンサート記録詳細ページレイアウト（編集・削除ボタン、usePieces連携含む）
 │   │       ├── ConcertLogEditTemplate.vue      # コンサート記録編集ページレイアウト
 │   │       └── ...
 │   ├── composables/              # Vue Composables（共通ロジック）
@@ -255,12 +255,14 @@ classical-music-lake/
 
 ```text
 ブラウザ (/concert-logs/new)
-  → POST /prod/concert-logs (JSON body)
+  → ConcertLogForm が usePieces() で楽曲一覧を取得
+  → vuedraggable で楽曲を選択・並べ替え（pieceIds 配列として保持）
+  → POST /prod/concert-logs (JSON body: { concertDate, venue, ..., pieceIds })
   → API Gateway + Cognito Authorizer
   → Lambda (create.ts)
-  → UUID 生成 + userId (Cognito sub) + createdAt/updatedAt 付与
+  → UUID 生成 + userId (Cognito sub) + createdAt/updatedAt + pieceIds 付与
   → DynamoDB PutItem
-  → 201 Created + 作成済みオブジェクト
+  → 201 Created + 作成済みオブジェクト（pieceIds 含む）
   → ブラウザに返却 → /concert-logs へ遷移
 ```
 
@@ -274,8 +276,11 @@ classical-music-lake/
   → Lambda (get.ts)
   → DynamoDB GetItem
   → userId が一致するか検証（不一致は 404）
-  → 200 OK + コンサート記録オブジェクト
+  → 200 OK + コンサート記録オブジェクト（pieceIds 含む）
   → ConcertLogDetailTemplate でレンダリング
+      → usePieces() で楽曲一覧を取得
+      → ConcertLogDetail に pieces prop として渡す
+      → pieceIds に基づきプログラムを演奏順で表示
 ```
 
 ### コンサート記録更新

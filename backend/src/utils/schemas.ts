@@ -125,6 +125,7 @@ export const createConcertLogSchema = z.object({
   conductor: z.string().trim().max(100, "conductor must be 100 characters or less").optional(),
   orchestra: z.string().trim().max(100, "orchestra must be 100 characters or less").optional(),
   soloist: z.string().trim().max(100, "soloist must be 100 characters or less").optional(),
+  pieceIds: z.array(z.string().uuid("pieceId must be a valid UUID")).optional(),
 });
 
 export const updateConcertLogSchema = createConcertLogSchema.partial();
