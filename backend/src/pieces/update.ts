@@ -19,13 +19,13 @@ export const handler = createHandler(async (event) => {
   }
 
   const current = existing.Item as Piece;
-  const updated: Piece = {
+  const updated = {
     ...current,
     ...input,
     id,
     createdAt: current.createdAt,
     updatedAt: new Date().toISOString(),
-  };
+  } as Piece;
   if (input.videoUrl === "") {
     delete updated.videoUrl;
   }
