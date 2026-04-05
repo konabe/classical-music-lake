@@ -33,3 +33,7 @@ npm-debug.log*
 
 *storybook.log
 storybook-static
+
+# Stryker
+.stryker-tmp/
+reports/mutation/
