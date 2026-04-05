@@ -26,7 +26,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test:frontend
+        run: npx vitest run --exclude 'backend/**' --reporter=default --reporter=junit --outputFile.junit=test-report.junit.xml
 
       - name: Run coverage
         run: npm run test:coverage
@@ -36,6 +36,14 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: frontend
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: frontend
+          file: test-report.junit.xml
 
   test-backend:
     name: Backend (Vitest)
@@ -58,7 +66,7 @@ jobs:
         working-directory: backend
 
       - name: Run tests
-        run: npm test
+        run: npx vitest run --reporter=default --reporter=junit --outputFile.junit=test-report.junit.xml
         working-directory: backend
 
       - name: Run coverage
@@ -70,6 +78,14 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: backend
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: backend
+          file: backend/test-report.junit.xml
 
   lint:
     name: Lint & Format
