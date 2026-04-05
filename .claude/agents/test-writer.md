@@ -12,8 +12,8 @@ tools: Read, Write, Grep, Glob, Bash
 
 | 対象                             | フレームワーク            | コマンド                | 配置場所                      |
 | -------------------------------- | ------------------------- | ----------------------- | ----------------------------- |
-| バックエンド（Lambda）           | Vitest                    | `npm run test:backend`  | `backend/src/**/*.test.ts`    |
-| フロントエンド（Vue/Composable） | Vitest + @nuxt/test-utils | `npm run test:frontend` | `**/*.test.ts`（backend除外） |
+| バックエンド（Lambda）           | Vitest                    | `pnpm run test:backend`  | `backend/src/**/*.test.ts`    |
+| フロントエンド（Vue/Composable） | Vitest + @nuxt/test-utils | `pnpm run test:frontend` | `**/*.test.ts`（backend除外） |
 
 ## 作業手順
 
@@ -72,8 +72,8 @@ find app -name "*.test.ts" | head -5
 ### 4. テストの実行と修正
 
 ```bash
-npm run test:backend   # バックエンドの場合
-npm run test:frontend  # フロントエンドの場合
+pnpm run test:backend   # バックエンドの場合
+pnpm run test:frontend  # フロントエンドの場合
 ```
 
 失敗した場合はエラーを読んで修正する。

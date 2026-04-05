@@ -42,7 +42,7 @@
 
 ### PRを出す前に
 
-- `npm test`（フロントエンド）と `cd backend && npm test`（バックエンド）を実行してテストが通ることを確認する
+- `pnpm test`（フロントエンド）と `pnpm -C backend test`（バックエンド）を実行してテストが通ることを確認する
 - ESLint・Prettier のエラーがないことを確認する（pre-commit フックで自動チェック）
 - PRテンプレートのチェックリストをすべて確認する
 

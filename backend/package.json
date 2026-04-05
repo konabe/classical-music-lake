@@ -14,7 +14,7 @@
     "test:coverage": "vitest run --coverage",
     "db:setup": "node scripts/setup-test-db.mjs",
     "db:seed": "node scripts/seed-test-db.mjs",
-    "db:reset": "npm run db:setup && npm run db:seed",
+    "db:reset": "pnpm run db:setup && pnpm run db:seed",
     "stryker": "stryker run"
   },
   "dependencies": {
@@ -29,9 +29,6 @@
     "http-errors": "^2.0.1",
     "http-status-codes": "^2.3.0",
     "zod": "^4.3.6"
-  },
-  "overrides": {
-    "fast-xml-parser": "5.5.6"
   },
   "devDependencies": {
     "@stryker-mutator/core": "^9.6.0",
