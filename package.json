@@ -53,6 +53,7 @@
     ]
   },
   "devDependencies": {
+    "@codecov/vite-plugin": "^1.9.1",
     "@commitlint/cli": "^20.4.3",
     "@commitlint/config-conventional": "^20.4.3",
     "@nuxt/devtools": "^3.2.4",
