@@ -15,12 +15,9 @@ const router = useRouter();
     >
 
     <ul v-else class="log-list">
-      <ConcertLogItem
-        v-for="log in logs"
-        :key="log.id"
-        :concert-log="log"
-        @detail="router.push(`/concert-logs/${log.id}`)"
-      />
+      <li v-for="log in logs" :key="log.id">
+        <ConcertLogItem :concert-log="log" @detail="router.push(`/concert-logs/${log.id}`)" />
+      </li>
     </ul>
   </div>
 </template>

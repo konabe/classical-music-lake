@@ -13,7 +13,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <li class="piece-item">
+  <div class="piece-item">
     <div class="piece-main">
       <div class="piece-title">{{ piece.title }}</div>
       <div class="piece-composer">{{ piece.composer }}</div>
@@ -26,7 +26,7 @@ const emit = defineEmits<{
       <ButtonSecondary label="編集" @click="emit('edit')" />
       <ButtonDanger label="削除" @click="emit('delete')" />
     </div>
-  </li>
+  </div>
 </template>
 
 <style scoped>
