@@ -7,6 +7,7 @@ const props = defineProps<{
 
 const router = useRouter();
 const { deleteLog } = useConcertLogs();
+const { data: pieces } = usePieces();
 
 const handleDelete = async () => {
   if (!confirm("このコンサート記録を削除しますか？")) {
@@ -27,7 +28,7 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <ConcertLogDetail :log="log" />
+    <ConcertLogDetail :log="log" :pieces="pieces ?? []" />
   </div>
 </template>
 

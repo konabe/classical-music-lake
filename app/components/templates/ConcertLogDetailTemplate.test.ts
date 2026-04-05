@@ -3,7 +3,7 @@ import { flushPromises } from "@vue/test-utils";
 import ConcertLogDetailTemplate from "./ConcertLogDetailTemplate.vue";
 import ButtonDanger from "~/components/atoms/ButtonDanger.vue";
 import ButtonSecondary from "~/components/atoms/ButtonSecondary.vue";
-import type { ConcertLog } from "~/types";
+import type { ConcertLog, Piece } from "~/types";
 
 const mockDeleteLog = vi.fn();
 
@@ -16,6 +16,27 @@ vi.mock("~/composables/useConcertLogs", () => ({
     create: vi.fn(),
     update: vi.fn(),
     deleteLog: mockDeleteLog,
+  }),
+}));
+
+const mockPieces: Piece[] = [
+  {
+    id: "piece-1",
+    title: "交響曲第9番",
+    composer: "ベートーヴェン",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+];
+
+vi.mock("~/composables/usePieces", () => ({
+  usePieces: () => ({
+    data: ref(mockPieces),
+    pending: ref(false),
+    error: ref(null),
+    refresh: vi.fn(),
+    createPiece: vi.fn(),
+    updatePiece: vi.fn(),
   }),
 }));
 
@@ -102,6 +123,16 @@ describe("ConcertLogDetailTemplate", () => {
       });
       await wrapper.find(".btn-danger").trigger("click");
       expect(mockDeleteLog).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("プログラム表示", () => {
+    it("pieceIds がある場合、楽曲名が表示される", async () => {
+      const wrapper = await mountSuspended(ConcertLogDetailTemplate, {
+        props: { log: { ...sampleLog, pieceIds: ["piece-1"] } },
+        global: { components: { ButtonSecondary, ButtonDanger } },
+      });
+      expect(wrapper.text()).toContain("交響曲第9番");
     });
   });
 });

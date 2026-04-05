@@ -1,10 +1,20 @@
 <script setup lang="ts">
 import { formatDatetime } from "~/utils/date";
-import type { ConcertLog } from "~/types";
+import type { ConcertLog, Piece } from "~/types";
 
-defineProps<{
+const props = defineProps<{
   log: ConcertLog;
+  pieces: Piece[];
 }>();
+
+const programPieces = computed(() => {
+  if (props.log.pieceIds === undefined || props.log.pieceIds.length === 0) {
+    return [];
+  }
+  return props.log.pieceIds
+    .map((id) => props.pieces.find((p) => p.id === id))
+    .filter((p): p is Piece => p !== undefined);
+});
 </script>
 
 <template>
@@ -31,6 +41,16 @@ defineProps<{
         <dt>ソリスト</dt>
         <dd>{{ log.soloist }}</dd>
       </template>
+
+      <dt>プログラム</dt>
+      <dd>
+        <ol v-if="programPieces.length > 0" class="program-list">
+          <li v-for="piece in programPieces" :key="piece.id">
+            {{ piece.title }} / {{ piece.composer }}
+          </li>
+        </ol>
+        <span v-else class="no-program">プログラムなし</span>
+      </dd>
     </dl>
   </article>
 </template>
@@ -65,5 +85,18 @@ dt {
   font-weight: bold;
   color: #888;
   font-size: 0.9rem;
+}
+
+.program-list {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.program-list li {
+  margin-bottom: 0.3rem;
+}
+
+.no-program {
+  color: #666;
 }
 </style>

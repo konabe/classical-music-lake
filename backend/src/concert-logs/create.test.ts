@@ -243,4 +243,53 @@ describe("POST /concert-logs (create)", () => {
     );
     expect(result?.statusCode).toBe(500);
   });
+
+  it("pieceIds を含めて正常に作成して 201 を返す", async () => {
+    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    const pieceIds = [
+      "550e8400-e29b-41d4-a716-446655440000",
+      "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    ];
+    const result = await handler(
+      makeAuthEvent(TEST_USER_ID, {
+        body: JSON.stringify({ ...validInput, pieceIds }),
+        httpMethod: "POST",
+        path: "/concert-logs",
+      }),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(201);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.pieceIds).toEqual(pieceIds);
+  });
+
+  it("pieceIds が空配列でも正常に作成できる", async () => {
+    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    const result = await handler(
+      makeAuthEvent(TEST_USER_ID, {
+        body: JSON.stringify({ ...validInput, pieceIds: [] }),
+        httpMethod: "POST",
+        path: "/concert-logs",
+      }),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(201);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.pieceIds).toEqual([]);
+  });
+
+  it("pieceIds に UUID 形式でない文字列が含まれる場合は 400 を返す", async () => {
+    const result = await handler(
+      makeAuthEvent(TEST_USER_ID, {
+        body: JSON.stringify({ ...validInput, pieceIds: ["not-a-uuid"] }),
+        httpMethod: "POST",
+        path: "/concert-logs",
+      }),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+  });
 });
