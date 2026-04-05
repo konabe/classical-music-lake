@@ -4,11 +4,17 @@ export const usePieces = () => {
   const apiBase = useApiBase();
   const list = useFetch<Piece[]>(`${apiBase}/pieces`);
 
-  const createPiece = (input: CreatePieceInput) =>
-    $fetch<Piece>(`${apiBase}/pieces`, { method: "POST", body: input });
+  const createPiece = async (input: CreatePieceInput) => {
+    const result = await $fetch<Piece>(`${apiBase}/pieces`, { method: "POST", body: input });
+    clearNuxtData();
+    return result;
+  };
 
-  const updatePiece = (id: string, input: UpdatePieceInput) =>
-    $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
+  const updatePiece = async (id: string, input: UpdatePieceInput) => {
+    const result = await $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
+    clearNuxtData();
+    return result;
+  };
 
   return { ...list, createPiece, updatePiece };
 };
