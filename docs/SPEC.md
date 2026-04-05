@@ -14,7 +14,7 @@
 
 ### 1.3 スコープ
 
-- **現在**: 視聴ログ機能・コンサート記録機能（作成・一覧）
+- **現在**: 視聴ログ機能・コンサート記録機能（作成・一覧・詳細・編集・削除）
 
 ### 1.4 想定ユーザー
 
@@ -51,14 +51,15 @@
 
 #### フロントエンド Composables
 
-| Composable         | 役割                                                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `useApiBase`       | API Gateway のベース URL を返す                                                                                           |
-| `useCognitoConfig` | Cognito Hosted UI のドメインとクライアント ID を返す                                                                      |
-| `useAuth`          | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback） |
-| `usePieces`        | 曲一覧を取得する                                                                                                          |
-| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                        |
-| `useConcertLogs`   | コンサート記録の一覧取得（`list`）・作成（`create`）を行う。401 時にトークンリフレッシュを自動試行する                    |
+| Composable         | 役割                                                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useApiBase`       | API Gateway のベース URL を返す                                                                                                               |
+| `useCognitoConfig` | Cognito Hosted UI のドメインとクライアント ID を返す                                                                                          |
+| `useAuth`          | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback）                     |
+| `usePieces`        | 曲一覧を取得する                                                                                                                              |
+| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                                            |
+| `useConcertLogs`   | コンサート記録の一覧取得（`list`）・作成（`create`）・更新（`update`）・削除（`deleteLog`）を行う。401 時にトークンリフレッシュを自動試行する |
+| `useConcertLog`    | 特定のコンサート記録を id で取得する（詳細ページ用）                                                                                          |
 
 #### フロントエンド レイアウト
 
@@ -68,21 +69,24 @@
 
 #### フロントエンド コンポーネント
 
-| コンポーネント          | 役割                                                                                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `ListeningLogForm`      | 視聴ログの新規作成・編集で共通利用するフォーム。楽曲マスタから曲を選択した際に `videoUrl` があれば `VideoPlayer` をインライン表示する |
-| `PieceForm`             | 楽曲マスタの新規作成・編集で共通利用するフォーム（`title`, `composer`, `videoUrl`）                                                   |
-| `VideoPlayer`           | 動画 URL を受け取り YouTube 埋め込み / 外部リンクを切り替えて表示する。再生開始時に `play` を emit                                    |
-| `QuickLogForm`          | 作曲家・曲名を自動入力し、評価・お気に入り・メモを入力して `submit` を emit するフォーム                                              |
-| `PieceDetailTemplate`   | 楽曲詳細ページのレイアウト。`VideoPlayer` の `play` イベント後に `QuickLogForm` を表示する                                            |
-| `CategoryBadge`         | カテゴリのラベルと値を `label: value` 形式のバッジとして表示する Atom コンポーネント                                                  |
-| `PieceCategoryList`     | 楽曲の4軸カテゴリ（ジャンル・時代・編成・地域）のうち設定済みのものを `CategoryBadge` で並列表示する Molecule コンポーネント          |
-| `PieceItem`             | 楽曲一覧の各行コンポーネント。曲名・作曲家に加えて `PieceCategoryList` でカテゴリバッジを表示する                                     |
-| `ConcertLogItem`        | コンサート記録一覧の各行コンポーネント。会場・開催日時・指揮者・オーケストラ・ソリストを表示し、詳細ボタンの `detail` イベントを emit |
-| `ConcertLogForm`        | コンサート記録の新規作成で利用するフォーム（`concertDate`, `venue`, `conductor`, `orchestra`, `soloist`）                             |
-| `ConcertLogList`        | コンサート記録の一覧を `ConcertLogItem` で描画する Organism コンポーネント                                                            |
-| `ConcertLogNewTemplate` | コンサート記録作成ページのレイアウト。`ConcertLogForm` を包含する                                                                     |
-| `ConcertLogsTemplate`   | コンサート記録一覧ページのレイアウト。`ConcertLogList` を包含する                                                                     |
+| コンポーネント             | 役割                                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `ListeningLogForm`         | 視聴ログの新規作成・編集で共通利用するフォーム。楽曲マスタから曲を選択した際に `videoUrl` があれば `VideoPlayer` をインライン表示する |
+| `PieceForm`                | 楽曲マスタの新規作成・編集で共通利用するフォーム（`title`, `composer`, `videoUrl`）                                                   |
+| `VideoPlayer`              | 動画 URL を受け取り YouTube 埋め込み / 外部リンクを切り替えて表示する。再生開始時に `play` を emit                                    |
+| `QuickLogForm`             | 作曲家・曲名を自動入力し、評価・お気に入り・メモを入力して `submit` を emit するフォーム                                              |
+| `PieceDetailTemplate`      | 楽曲詳細ページのレイアウト。`VideoPlayer` の `play` イベント後に `QuickLogForm` を表示する                                            |
+| `CategoryBadge`            | カテゴリのラベルと値を `label: value` 形式のバッジとして表示する Atom コンポーネント                                                  |
+| `PieceCategoryList`        | 楽曲の4軸カテゴリ（ジャンル・時代・編成・地域）のうち設定済みのものを `CategoryBadge` で並列表示する Molecule コンポーネント          |
+| `PieceItem`                | 楽曲一覧の各行コンポーネント。曲名・作曲家に加えて `PieceCategoryList` でカテゴリバッジを表示する                                     |
+| `ConcertLogItem`           | コンサート記録一覧の各行コンポーネント。会場・開催日時・指揮者・オーケストラ・ソリストを表示し、詳細ボタンの `detail` イベントを emit |
+| `ConcertLogForm`           | コンサート記録の新規作成・編集で利用するフォーム（`concertDate`, `venue`, `conductor`, `orchestra`, `soloist`）                       |
+| `ConcertLogList`           | コンサート記録の一覧を `ConcertLogItem` で描画する Organism コンポーネント                                                            |
+| `ConcertLogDetail`         | コンサート記録の詳細表示（会場・開催日時・指揮者・オーケストラ・ソリスト）を行う Organism コンポーネント                              |
+| `ConcertLogNewTemplate`    | コンサート記録作成ページのレイアウト。`ConcertLogForm` を包含する                                                                     |
+| `ConcertLogsTemplate`      | コンサート記録一覧ページのレイアウト。`ConcertLogList` を包含する                                                                     |
+| `ConcertLogDetailTemplate` | コンサート記録詳細ページのレイアウト。`ConcertLogDetail` を包含し、編集・削除ボタンを提供する                                         |
+| `ConcertLogEditTemplate`   | コンサート記録編集ページのレイアウト。`ConcertLogForm` を包含する                                                                     |
 
 #### フロントエンド ユーティリティ
 
@@ -234,7 +238,7 @@ interface ConcertLog {
 - `orchestra`: 任意項目。指定する場合は最大100文字
 - `soloist`: 任意項目。指定する場合は最大100文字
 
-> バリデーションは `utils/schemas.ts` の `createConcertLogSchema`（Zod スキーマ）で実施する。
+> バリデーションは `utils/schemas.ts` の `createConcertLogSchema`（作成時）・`updateConcertLogSchema`（更新時）Zod スキーマで実施する。`updateConcertLogSchema` は `createConcertLogSchema.partial()` により全フィールドが任意となる。
 
 ---
 
@@ -570,6 +574,22 @@ Authorization: Bearer {accessToken}
 
 **アクセス制御**: DynamoDB GSI1（userId + createdAt）を使ったクエリにより、ログイン中ユーザーの記録のみ返却
 
+#### `GET /concert-logs/{id}`
+
+特定のコンサート記録を取得
+
+**リクエスト**
+
+```http
+GET /concert-logs/{id}
+Authorization: Bearer {accessToken}
+```
+
+**レスポンス**
+
+- 成功: `200 OK` + ConcertLog オブジェクト
+- 未存在または他ユーザーのアイテム: `404 Not Found`（存在を隠蔽）
+
 #### `POST /concert-logs`
 
 新規コンサート記録を作成
@@ -601,6 +621,51 @@ Content-Type: application/json
 - `userId`: トークンから取得した Cognito sub
 - `createdAt`: 現在時刻
 - `updatedAt`: 現在時刻
+
+#### `PUT /concert-logs/{id}`
+
+既存のコンサート記録を更新
+
+**リクエスト**
+
+```json
+PUT /concert-logs/{id}
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "venue": "東京文化会館",
+  "conductor": "小澤征爾"
+}
+```
+
+**レスポンス**
+
+- 成功: `200 OK` + 更新された ConcertLog オブジェクト
+- 未存在または他ユーザーのアイテム: `404 Not Found`（存在を隠蔽）
+- バリデーションエラー: `400 Bad Request`
+
+**更新動作**
+
+- 部分更新（Partial Update）をサポート
+- `updatedAt` は自動更新
+- `id`, `createdAt`, `userId` は更新不可
+
+#### `DELETE /concert-logs/{id}`
+
+コンサート記録を削除
+
+**リクエスト**
+
+```http
+DELETE /concert-logs/{id}
+Authorization: Bearer {accessToken}
+```
+
+**レスポンス**
+
+- 成功: `204 No Content`
+- 未存在または他ユーザーのアイテム: `404 Not Found`（存在を隠蔽）
 
 ### 4.5 エラーレスポンス一覧
 
@@ -641,6 +706,8 @@ Content-Type: application/json
 | `orchestra`   | string | -    | 最大100文字                                |
 | `soloist`     | string | -    | 最大100文字                                |
 
+> 更新時（`PUT /concert-logs/{id}`）はすべてのフィールドが任意となる（`updateConcertLogSchema` は `createConcertLogSchema.partial()` で導出）。
+
 #### 自動生成フィールド（入力不可）
 
 | フィールド  | 内容                           |
@@ -667,12 +734,12 @@ Content-Type: application/json
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 18個
+- **関数数**: 21個
   - 視聴ログ用 CRUD 操作 × 5
   - 楽曲マスタ用 CRUD 操作 × 5
   - 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）
   - PreSignUp トリガー × 1
-  - コンサート記録 × 2（list・create）
+  - コンサート記録 × 5（list・create・get・update・delete）
 - **環境変数**:
   - `DYNAMO_TABLE_LISTENING_LOGS`
   - `DYNAMO_TABLE_PIECES`
@@ -897,18 +964,19 @@ cdk deploy
 
 #### 共有型（両ファイルで同一定義を維持すること）
 
-| 型名・定数名              | 説明                        |
-| ------------------------- | --------------------------- |
-| `Rating`                  | 評価値（1〜5 の整数）       |
-| `ApiErrorResponse`        | APIエラーレスポンスのボディ |
-| `ListeningLog`            | 鑑賞ログ                    |
-| `CreateListeningLogInput` | 鑑賞ログ作成入力            |
-| `UpdateListeningLogInput` | 鑑賞ログ更新入力            |
-| `Piece`                   | 楽曲マスタ                  |
-| `CreatePieceInput`        | 楽曲マスタ作成入力          |
-| `UpdatePieceInput`        | 楽曲マスタ更新入力          |
-| `ConcertLog`              | コンサート記録              |
-| `CreateConcertLogInput`   | コンサート記録作成入力      |
+| 型名・定数名              | 説明                                                       |
+| ------------------------- | ---------------------------------------------------------- |
+| `Rating`                  | 評価値（1〜5 の整数）                                      |
+| `ApiErrorResponse`        | APIエラーレスポンスのボディ                                |
+| `ListeningLog`            | 鑑賞ログ                                                   |
+| `CreateListeningLogInput` | 鑑賞ログ作成入力                                           |
+| `UpdateListeningLogInput` | 鑑賞ログ更新入力                                           |
+| `Piece`                   | 楽曲マスタ                                                 |
+| `CreatePieceInput`        | 楽曲マスタ作成入力                                         |
+| `UpdatePieceInput`        | 楽曲マスタ更新入力                                         |
+| `ConcertLog`              | コンサート記録                                             |
+| `CreateConcertLogInput`   | コンサート記録作成入力                                     |
+| `UpdateConcertLogInput`   | コンサート記録更新入力（`Partial<CreateConcertLogInput>`） |
 
 #### バックエンド固有（`backend/src/types/index.ts` にのみ存在）
 
@@ -934,7 +1002,6 @@ cdk deploy
 - **検索機能なし**: DynamoDB Scanのみ
 - **ページネーションなし（フロント向け）**: API はページネーション済みで全件取得するが、フロントエンドへのページング機能は未実装
 - **画像アップロードなし**: テキストベースのみ
-- **コンサート記録の詳細・編集・削除は未実装**: 現時点では作成・一覧のみ
 
 ### 9.2 将来的な拡張案
 
@@ -946,4 +1013,3 @@ cdk deploy
 - タグ・カテゴリ機能
 - データのエクスポート機能
 - 統計・分析ダッシュボード
-- コンサート記録の詳細・編集・削除機能

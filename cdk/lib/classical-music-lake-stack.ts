@@ -367,6 +367,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     const concertLogsList = fn("ConcertLogsList", "concert-logs/list.ts");
     const concertLogsCreate = fn("ConcertLogsCreate", "concert-logs/create.ts");
+    const concertLogsGet = fn("ConcertLogsGet", "concert-logs/get.ts");
+    const concertLogsUpdate = fn("ConcertLogsUpdate", "concert-logs/update.ts");
+    const concertLogsDelete = fn("ConcertLogsDelete", "concert-logs/delete.ts");
 
     // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
     // いる場合に自動でアカウントリンクを行う
@@ -440,6 +443,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     piecesTable.grantWriteData(deletePiece);
     concertLogsTable.grantReadData(concertLogsList);
     concertLogsTable.grantWriteData(concertLogsCreate);
+    concertLogsTable.grantReadData(concertLogsGet);
+    concertLogsTable.grantReadWriteData(concertLogsUpdate);
+    concertLogsTable.grantReadWriteData(concertLogsDelete);
 
     // -------------------------
     // API Gateway
@@ -504,6 +510,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     concertLogsResource.addMethod("GET", integ(concertLogsList), withAuth);
     concertLogsResource.addMethod("POST", integ(concertLogsCreate), withAuth);
 
+    // /concert-logs/{id}
+    const concertLogResource = concertLogsResource.addResource("{id}");
+    concertLogResource.addMethod("GET", integ(concertLogsGet), withAuth);
+    concertLogResource.addMethod("PUT", integ(concertLogsUpdate), withAuth);
+    concertLogResource.addMethod("DELETE", integ(concertLogsDelete), withAuth);
+
     // /listening-logs
     const listeningLogsResource = api.root.addResource("listening-logs");
     listeningLogsResource.addMethod("GET", integ(listeningLogsList), withAuth);
@@ -567,6 +579,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       authRefresh,
       concertLogsList,
       concertLogsCreate,
+      concertLogsGet,
+      concertLogsUpdate,
+      concertLogsDelete,
     ];
 
     authExcludedFunctions.forEach((fn) => {
@@ -585,6 +600,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     this.addCors(
       concertLogsResource,
       ["GET", "POST", "OPTIONS"],
+      ["Content-Type", "Authorization"]
+    );
+    this.addCors(
+      concertLogResource,
+      ["GET", "PUT", "DELETE", "OPTIONS"],
       ["Content-Type", "Authorization"]
     );
     this.addCors(
@@ -688,6 +708,9 @@ function handler(event) {
       authPreSignUp,
       concertLogsList,
       concertLogsCreate,
+      concertLogsGet,
+      concertLogsUpdate,
+      concertLogsDelete,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成
