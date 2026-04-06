@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.7.1...classical-music-lake-v1.8.0) (2026-04-06)
+
+
+### Features
+
+* コンサート記録にコンサート名(title)フィールドを追加 ([b613786](https://github.com/konabe/classical-music-lake/commit/b61378659ca37075fbdfe4ff7baaa7114c1855a1)), closes [#394](https://github.com/konabe/classical-music-lake/issues/394)
+
+
+### Bug Fixes
+
+* タイトル未設定時に＜コンサート名なし＞を表示するように変更 ([5672738](https://github.com/konabe/classical-music-lake/commit/5672738382a117cdbf4a13f2705d639be662ed91))
+
 ## [1.7.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.7.0...classical-music-lake-v1.7.1) (2026-04-05)
 
 
