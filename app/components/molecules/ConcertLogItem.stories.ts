@@ -26,6 +26,15 @@ export const Full: Story = {
   args: { concertLog: sampleLog },
 };
 
+export const WithTitle: Story = {
+  args: {
+    concertLog: {
+      ...sampleLog,
+      title: "ベルリン・フィル来日公演 2024",
+    },
+  },
+};
+
 export const VenueOnly: Story = {
   args: {
     concertLog: {

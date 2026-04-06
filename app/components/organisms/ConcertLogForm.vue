@@ -15,6 +15,7 @@ const emit = defineEmits<{
 const { data: pieces, pending: piecesPending } = usePieces();
 
 const form = reactive({
+  title: props.initialValues?.title ?? "",
   concertDate:
     props.initialValues?.concertDate !== undefined
       ? toDatetimeLocal(props.initialValues.concertDate)
@@ -67,6 +68,7 @@ function removePiece(index: number) {
 
 function handleSubmit() {
   const input: CreateConcertLogInput = {
+    title: form.title !== "" ? form.title : undefined,
     concertDate: new Date(form.concertDate).toISOString(),
     venue: form.venue,
     conductor: form.conductor !== "" ? form.conductor : undefined,
@@ -80,6 +82,14 @@ function handleSubmit() {
 
 <template>
   <form class="log-form" @submit.prevent="handleSubmit">
+    <FormGroup label="コンサート名" input-id="title">
+      <TextInput
+        id="title"
+        v-model="form.title"
+        placeholder="例: 〇〇交響楽団 定期演奏会 第123回"
+      />
+    </FormGroup>
+
     <FormGroup label="開催日時" input-id="concert-date" required>
       <input id="concert-date" v-model="form.concertDate" type="datetime-local" required />
     </FormGroup>

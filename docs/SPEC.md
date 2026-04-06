@@ -69,24 +69,24 @@
 
 #### フロントエンド コンポーネント
 
-| コンポーネント             | 役割                                                                                                                                                                                                                 |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ListeningLogForm`         | 視聴ログの新規作成・編集で共通利用するフォーム。楽曲マスタから曲を選択した際に `videoUrl` があれば `VideoPlayer` をインライン表示する                                                                                |
-| `PieceForm`                | 楽曲マスタの新規作成・編集で共通利用するフォーム（`title`, `composer`, `videoUrl`）                                                                                                                                  |
-| `VideoPlayer`              | 動画 URL を受け取り YouTube 埋め込み / 外部リンクを切り替えて表示する。再生開始時に `play` を emit                                                                                                                   |
-| `QuickLogForm`             | 作曲家・曲名を自動入力し、評価・お気に入り・メモを入力して `submit` を emit するフォーム                                                                                                                             |
-| `PieceDetailTemplate`      | 楽曲詳細ページのレイアウト。`VideoPlayer` の `play` イベント後に `QuickLogForm` を表示する                                                                                                                           |
-| `CategoryBadge`            | カテゴリのラベルと値を `label: value` 形式のバッジとして表示する Atom コンポーネント                                                                                                                                 |
-| `PieceCategoryList`        | 楽曲の4軸カテゴリ（ジャンル・時代・編成・地域）のうち設定済みのものを `CategoryBadge` で並列表示する Molecule コンポーネント                                                                                         |
-| `PieceItem`                | 楽曲一覧の各行コンポーネント。曲名・作曲家に加えて `PieceCategoryList` でカテゴリバッジを表示する                                                                                                                    |
-| `ConcertLogItem`           | コンサート記録一覧の各行コンポーネント。会場・開催日時・指揮者・オーケストラ・ソリストを表示し、詳細ボタンの `detail` イベントを emit                                                                                |
-| `ConcertLogForm`           | コンサート記録の新規作成・編集で利用するフォーム（`concertDate`, `venue`, `conductor`, `orchestra`, `soloist`, `pieceIds`）。vuedraggable による楽曲選択・並べ替えUIを含む（`usePieces()` で全件取得）               |
-| `ConcertLogList`           | コンサート記録の一覧を `ConcertLogItem` で描画する Organism コンポーネント                                                                                                                                           |
-| `ConcertLogDetail`         | コンサート記録の詳細表示（会場・開催日時・指揮者・オーケストラ・ソリスト・プログラム）を行う Organism コンポーネント。`pieces` prop を受け取り楽曲一覧をプログラムとして表示する。未設定時は「プログラムなし」を表示 |
-| `ConcertLogNewTemplate`    | コンサート記録作成ページのレイアウト。`ConcertLogForm` を包含する                                                                                                                                                    |
-| `ConcertLogsTemplate`      | コンサート記録一覧ページのレイアウト。`ConcertLogList` を包含する                                                                                                                                                    |
-| `ConcertLogDetailTemplate` | コンサート記録詳細ページのレイアウト。`usePieces()` を呼び出して `ConcertLogDetail` に pieces を渡す。編集・削除ボタンを提供する                                                                                     |
-| `ConcertLogEditTemplate`   | コンサート記録編集ページのレイアウト。`ConcertLogForm` を包含する                                                                                                                                                    |
+| コンポーネント             | 役割                                                                                                                                                                                                                                                                         |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ListeningLogForm`         | 視聴ログの新規作成・編集で共通利用するフォーム。楽曲マスタから曲を選択した際に `videoUrl` があれば `VideoPlayer` をインライン表示する                                                                                                                                        |
+| `PieceForm`                | 楽曲マスタの新規作成・編集で共通利用するフォーム（`title`, `composer`, `videoUrl`）                                                                                                                                                                                          |
+| `VideoPlayer`              | 動画 URL を受け取り YouTube 埋め込み / 外部リンクを切り替えて表示する。再生開始時に `play` を emit                                                                                                                                                                           |
+| `QuickLogForm`             | 作曲家・曲名を自動入力し、評価・お気に入り・メモを入力して `submit` を emit するフォーム                                                                                                                                                                                     |
+| `PieceDetailTemplate`      | 楽曲詳細ページのレイアウト。`VideoPlayer` の `play` イベント後に `QuickLogForm` を表示する                                                                                                                                                                                   |
+| `CategoryBadge`            | カテゴリのラベルと値を `label: value` 形式のバッジとして表示する Atom コンポーネント                                                                                                                                                                                         |
+| `PieceCategoryList`        | 楽曲の4軸カテゴリ（ジャンル・時代・編成・地域）のうち設定済みのものを `CategoryBadge` で並列表示する Molecule コンポーネント                                                                                                                                                 |
+| `PieceItem`                | 楽曲一覧の各行コンポーネント。曲名・作曲家に加えて `PieceCategoryList` でカテゴリバッジを表示する                                                                                                                                                                            |
+| `ConcertLogItem`           | コンサート記録一覧の各行コンポーネント。`title` がある場合はタイトルを、ない場合は会場名を主表示とし、開催日時・指揮者・オーケストラ・ソリストを表示する。詳細ボタンの `detail` イベントを emit                                                                              |
+| `ConcertLogForm`           | コンサート記録の新規作成・編集で利用するフォーム（`title`, `concertDate`, `venue`, `conductor`, `orchestra`, `soloist`, `pieceIds`）。vuedraggable による楽曲選択・並べ替えUIを含む（`usePieces()` で全件取得）                                                              |
+| `ConcertLogList`           | コンサート記録の一覧を `ConcertLogItem` で描画する Organism コンポーネント                                                                                                                                                                                                   |
+| `ConcertLogDetail`         | コンサート記録の詳細表示を行う Organism コンポーネント。`title` がある場合は見出しに表示し会場は詳細欄に表示する。開催日時・指揮者・オーケストラ・ソリスト・プログラムを表示。`pieces` prop を受け取り楽曲一覧をプログラムとして表示する。未設定時は「プログラムなし」を表示 |
+| `ConcertLogNewTemplate`    | コンサート記録作成ページのレイアウト。`ConcertLogForm` を包含する                                                                                                                                                                                                            |
+| `ConcertLogsTemplate`      | コンサート記録一覧ページのレイアウト。`ConcertLogList` を包含する                                                                                                                                                                                                            |
+| `ConcertLogDetailTemplate` | コンサート記録詳細ページのレイアウト。`usePieces()` を呼び出して `ConcertLogDetail` に pieces を渡す。編集・削除ボタンを提供する                                                                                                                                             |
+| `ConcertLogEditTemplate`   | コンサート記録編集ページのレイアウト。`ConcertLogForm` を包含する                                                                                                                                                                                                            |
 
 #### フロントエンド ユーティリティ
 
@@ -220,6 +220,7 @@ interface Piece {
 interface ConcertLog {
   id: string; // UUID (自動生成)
   userId: string; // Cognito sub（認証必須のため null なし）
+  title?: string; // コンサート名（任意）
   concertDate: string; // 開催日時 (ISO 8601形式)
   venue: string; // 会場名
   conductor?: string; // 指揮者名（任意）
@@ -233,6 +234,7 @@ interface ConcertLog {
 
 #### バリデーション
 
+- `title`: 任意項目。指定する場合は空文字・空白のみ不可、最大200文字
 - `concertDate`: ISO 8601形式の日時文字列（UTC、Zサフィックス必須）。フロントエンドは `datetime-local` 入力値をローカル時刻として `toISOString()` で変換して送信する
 - `venue`: 空文字・空白のみ不可、最大200文字
 - `conductor`: 任意項目。指定する場合は最大100文字
@@ -561,6 +563,7 @@ Authorization: Bearer {accessToken}
   {
     "id": "uuid",
     "userId": "cognito-sub",
+    "title": "〇〇交響楽団 定期演奏会 第123回",
     "concertDate": "2024-01-15T19:00:00.000Z",
     "venue": "サントリーホール",
     "conductor": "カラヤン",
@@ -605,6 +608,7 @@ Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {
+  "title": "〇〇交響楽団 定期演奏会 第123回",
   "concertDate": "2024-01-15T19:00:00.000Z",
   "venue": "サントリーホール",
   "conductor": "カラヤン",
@@ -638,6 +642,7 @@ Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {
+  "title": "東京フィル特別演奏会",
   "venue": "東京文化会館",
   "conductor": "小澤征爾",
   "pieceIds": ["piece-uuid-1", "piece-uuid-3"]
@@ -705,6 +710,7 @@ Authorization: Bearer {accessToken}
 
 | フィールド    | 型       | 必須 | バリデーション                             |
 | ------------- | -------- | ---- | ------------------------------------------ |
+| `title`       | string   | -    | 空文字・空白のみ不可、最大200文字          |
 | `concertDate` | string   | ✅   | ISO 8601形式（例: `2024-01-15T19:00:00Z`） |
 | `venue`       | string   | ✅   | 空文字・空白のみ不可、最大200文字          |
 | `conductor`   | string   | -    | 最大100文字                                |
@@ -980,7 +986,7 @@ cdk deploy
 | `Piece`                   | 楽曲マスタ                                                 |
 | `CreatePieceInput`        | 楽曲マスタ作成入力                                         |
 | `UpdatePieceInput`        | 楽曲マスタ更新入力                                         |
-| `ConcertLog`              | コンサート記録                                             |
+| `ConcertLog`              | コンサート記録（`title` フィールドを含む）                 |
 | `CreateConcertLogInput`   | コンサート記録作成入力                                     |
 | `UpdateConcertLogInput`   | コンサート記録更新入力（`Partial<CreateConcertLogInput>`） |
 
@@ -1019,3 +1025,11 @@ cdk deploy
 - タグ・カテゴリ機能
 - データのエクスポート機能
 - 統計・分析ダッシュボード
+
+---
+
+## 10. 変更履歴
+
+| 日付       | バージョン | 変更概要                                                                 |
+| ---------- | ---------- | ------------------------------------------------------------------------ |
+| 2026-04-06 | 1.0.1      | ConcertLog に `title`（コンサート名、任意、最大200文字）フィールドを追加 |

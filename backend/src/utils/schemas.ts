@@ -116,6 +116,12 @@ export const refreshTokenSchema = z.object({
 });
 
 export const createConcertLogSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "title must be a non-empty string")
+    .max(200, "title must be 200 characters or less")
+    .optional(),
   concertDate: z.iso.datetime({ offset: false }),
   venue: z
     .string()
