@@ -33,6 +33,22 @@ const samplePieces: Piece[] = [
 
 describe("ConcertLogDetail", () => {
   describe("表示", () => {
+    it("title がない場合、＜コンサート名なし＞が見出しに表示される", async () => {
+      const wrapper = await mountSuspended(ConcertLogDetail, {
+        props: { log: sampleLog, pieces: [] },
+      });
+      expect(wrapper.find("h1").text()).toBe("＜コンサート名なし＞");
+    });
+
+    it("title がある場合、title が見出しに表示され会場は詳細に表示される", async () => {
+      const wrapper = await mountSuspended(ConcertLogDetail, {
+        props: { log: { ...sampleLog, title: "ベルリン・フィル来日公演" }, pieces: [] },
+      });
+      expect(wrapper.find("h1").text()).toBe("ベルリン・フィル来日公演");
+      expect(wrapper.text()).toContain("会場");
+      expect(wrapper.text()).toContain("サントリーホール");
+    });
+
     it("会場名が表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
         props: { log: sampleLog, pieces: [] },

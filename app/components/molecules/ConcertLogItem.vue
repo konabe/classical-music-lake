@@ -15,8 +15,9 @@ const emit = defineEmits<{
   <div class="log-item">
     <div class="log-main">
       <div class="log-title">
-        {{ concertLog.venue }}
+        {{ concertLog.title ?? "＜コンサート名なし＞" }}
       </div>
+      <div class="log-venue">{{ concertLog.venue }}</div>
       <div class="log-meta">
         <span class="date">{{ formatDate(concertLog.concertDate) }}</span>
       </div>
@@ -51,6 +52,12 @@ const emit = defineEmits<{
   font-weight: bold;
   color: #1e2d5a;
   margin-bottom: 0.3rem;
+}
+
+.log-venue {
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 0.2rem;
 }
 
 .log-meta {

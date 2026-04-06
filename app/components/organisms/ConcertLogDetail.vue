@@ -20,10 +20,13 @@ const programPieces = computed(() => {
 <template>
   <article class="log-detail">
     <header>
-      <h1>{{ log.venue }}</h1>
+      <h1>{{ log.title ?? "＜コンサート名なし＞" }}</h1>
     </header>
 
     <dl class="detail-list">
+      <dt>会場</dt>
+      <dd>{{ log.venue }}</dd>
+
       <dt>開催日時</dt>
       <dd>{{ formatDatetime(log.concertDate) }}</dd>
 

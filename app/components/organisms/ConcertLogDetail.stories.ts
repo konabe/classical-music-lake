@@ -68,6 +68,17 @@ export const WithoutSoloist: Story = {
   },
 };
 
+export const WithTitle: Story = {
+  args: {
+    log: {
+      ...baseLog,
+      title: "ベルリン・フィル来日公演 2024",
+      pieceIds: ["piece-1", "piece-2"],
+    },
+    pieces: samplePieces,
+  },
+};
+
 export const WithProgram: Story = {
   args: {
     log: {
