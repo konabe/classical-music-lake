@@ -33,11 +33,11 @@ const samplePieces: Piece[] = [
 
 describe("ConcertLogDetail", () => {
   describe("表示", () => {
-    it("title がない場合、会場名が見出しに表示される", async () => {
+    it("title がない場合、＜コンサート名なし＞が見出しに表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
         props: { log: sampleLog, pieces: [] },
       });
-      expect(wrapper.find("h1").text()).toBe("サントリーホール");
+      expect(wrapper.find("h1").text()).toBe("＜コンサート名なし＞");
     });
 
     it("title がある場合、title が見出しに表示され会場は詳細に表示される", async () => {
