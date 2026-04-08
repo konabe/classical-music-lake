@@ -5,6 +5,7 @@ import type { ConcertLog, Piece } from "~/types";
 const sampleLog: ConcertLog = {
   id: "log-1",
   userId: "user-1",
+  title: "定期演奏会 第100回",
   concertDate: "2024-01-15T19:00:00.000Z",
   venue: "サントリーホール",
   conductor: "小澤征爾",
@@ -33,18 +34,11 @@ const samplePieces: Piece[] = [
 
 describe("ConcertLogDetail", () => {
   describe("表示", () => {
-    it("title がない場合、＜コンサート名なし＞が見出しに表示される", async () => {
+    it("title が見出しに表示され会場は詳細に表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
         props: { log: sampleLog, pieces: [] },
       });
-      expect(wrapper.find("h1").text()).toBe("＜コンサート名なし＞");
-    });
-
-    it("title がある場合、title が見出しに表示され会場は詳細に表示される", async () => {
-      const wrapper = await mountSuspended(ConcertLogDetail, {
-        props: { log: { ...sampleLog, title: "ベルリン・フィル来日公演" }, pieces: [] },
-      });
-      expect(wrapper.find("h1").text()).toBe("ベルリン・フィル来日公演");
+      expect(wrapper.find("h1").text()).toBe("定期演奏会 第100回");
       expect(wrapper.text()).toContain("会場");
       expect(wrapper.text()).toContain("サントリーホール");
     });

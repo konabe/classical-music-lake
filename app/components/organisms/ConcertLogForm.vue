@@ -68,7 +68,7 @@ function removePiece(index: number) {
 
 function handleSubmit() {
   const input: CreateConcertLogInput = {
-    title: form.title !== "" ? form.title : undefined,
+    title: form.title,
     concertDate: new Date(form.concertDate).toISOString(),
     venue: form.venue,
     conductor: form.conductor !== "" ? form.conductor : undefined,
@@ -82,11 +82,12 @@ function handleSubmit() {
 
 <template>
   <form class="log-form" @submit.prevent="handleSubmit">
-    <FormGroup label="コンサート名" input-id="title">
+    <FormGroup label="コンサート名" input-id="title" required>
       <TextInput
         id="title"
         v-model="form.title"
         placeholder="例: 〇〇交響楽団 定期演奏会 第123回"
+        required
       />
     </FormGroup>
 
