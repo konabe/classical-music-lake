@@ -20,7 +20,7 @@ const programPieces = computed(() => {
 <template>
   <article class="log-detail">
     <header>
-      <h1>{{ log.title ?? "＜コンサート名なし＞" }}</h1>
+      <h1>{{ log.title }}</h1>
     </header>
 
     <dl class="detail-list">

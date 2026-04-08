@@ -67,7 +67,7 @@ export type UpdatePieceInput = Partial<CreatePieceInput>;
 export interface ConcertLog {
   id: string;
   userId: string; // Cognito sub（認証必須のため null なし）
-  title?: string; // コンサート名
+  title: string; // コンサート名
   concertDate: string; // ISO 8601 日時
   venue: string; // 会場名
   conductor?: string; // 指揮者名

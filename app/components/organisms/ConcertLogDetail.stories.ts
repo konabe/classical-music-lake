@@ -13,6 +13,7 @@ type Story = StoryObj<typeof ConcertLogDetail>;
 const baseLog: ConcertLog = {
   id: "log-1",
   userId: "user-1",
+  title: "定期演奏会 第100回",
   concertDate: "2024-01-15T19:00:00.000Z",
   venue: "サントリーホール",
   conductor: "小澤征爾",
@@ -65,17 +66,6 @@ export const WithoutSoloist: Story = {
       soloist: undefined,
     },
     pieces: [],
-  },
-};
-
-export const WithTitle: Story = {
-  args: {
-    log: {
-      ...baseLog,
-      title: "ベルリン・フィル来日公演 2024",
-      pieceIds: ["piece-1", "piece-2"],
-    },
-    pieces: samplePieces,
   },
 };
 
