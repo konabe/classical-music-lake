@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.8.0...classical-music-lake-v1.9.0) (2026-04-08)
+
+
+### Features
+
+* コンサート記録のコンサート名(title)を必須入力に変更 ([a073e95](https://github.com/konabe/classical-music-lake/commit/a073e9590dbf4e6c9c124d05f537cc142c543b65))
+* コンサート記録のコンサート名(title)を必須入力に変更 ([cd8d235](https://github.com/konabe/classical-music-lake/commit/cd8d2354de61cd873fc66d5dba80472dca135efe))
+
 ## [1.8.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.7.1...classical-music-lake-v1.8.0) (2026-04-06)
 
 

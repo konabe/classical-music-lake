@@ -14,6 +14,7 @@ const sampleLogs: ConcertLog[] = [
   {
     id: "1",
     userId: "user-1",
+    title: "ベルリン・フィル来日公演",
     concertDate: "2024-03-01T19:00:00.000Z",
     venue: "サントリーホール",
     conductor: "カラヤン",
