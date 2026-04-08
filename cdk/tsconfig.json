@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"]
+    "types": ["node"],
+    "noUncheckedSideEffectImports": false
   },
   "include": ["bin/**/*", "lib/**/*"],
   "exclude": ["node_modules", "dist", "cdk.out"]
