@@ -13,6 +13,7 @@ type Story = StoryObj<typeof ConcertLogEditTemplate>;
 const sampleLog: ConcertLog = {
   id: "log-1",
   userId: "user-1",
+  title: "定期演奏会 第100回",
   concertDate: "2024-01-15T19:00:00.000Z",
   venue: "サントリーホール",
   conductor: "小澤征爾",
