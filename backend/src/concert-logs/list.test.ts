@@ -19,6 +19,7 @@ const mockEvent = makeAuthEvent(TEST_USER_ID);
 const makeConcertLog = (id: string, concertDate: string, userId = TEST_USER_ID): ConcertLog => ({
   id,
   userId,
+  title: "定期演奏会",
   concertDate,
   venue: "サントリーホール",
   createdAt: "2024-06-01T09:00:00.000Z",

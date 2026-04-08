@@ -15,7 +15,7 @@ const emit = defineEmits<{
   <div class="log-item">
     <div class="log-main">
       <div class="log-title">
-        {{ concertLog.title ?? "＜コンサート名なし＞" }}
+        {{ concertLog.title }}
       </div>
       <div class="log-venue">{{ concertLog.venue }}</div>
       <div class="log-meta">
