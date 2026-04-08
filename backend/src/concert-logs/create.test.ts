@@ -20,6 +20,7 @@ const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
 
 const validInput = {
+  title: "定期演奏会 第123回",
   concertDate: "2024-01-15T19:00:00.000Z",
   venue: "サントリーホール",
 };

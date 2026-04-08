@@ -38,6 +38,7 @@ function makeEvent(id?: string, userId?: string): APIGatewayProxyEvent {
 const testLog: ConcertLog = {
   id: "abc-123",
   userId: TEST_USER_ID,
+  title: "定期演奏会 第100回",
   concertDate: "2024-01-15T19:00:00.000Z",
   venue: "サントリーホール",
   conductor: "小澤征爾",
