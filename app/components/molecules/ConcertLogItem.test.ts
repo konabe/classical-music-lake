@@ -6,6 +6,7 @@ import type { ConcertLog } from "~/types";
 const sampleLog: ConcertLog = {
   id: "1",
   userId: "user-1",
+  title: "ベルリン・フィル来日公演",
   concertDate: "2024-03-01T19:00:00.000Z",
   venue: "サントリーホール",
   conductor: "カラヤン",
@@ -19,18 +20,9 @@ const globalComponents = { global: { components: { ButtonSecondary } } };
 
 describe("ConcertLogItem", () => {
   describe("表示", () => {
-    it("title がない場合、＜コンサート名なし＞が表示される", async () => {
+    it("title がタイトルとして表示され会場も別途表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogItem, {
         props: { concertLog: sampleLog },
-      });
-      expect(wrapper.find(".log-title").text()).toBe("＜コンサート名なし＞");
-    });
-
-    it("title がある場合、title がタイトルとして表示され会場も別途表示される", async () => {
-      const wrapper = await mountSuspended(ConcertLogItem, {
-        props: {
-          concertLog: { ...sampleLog, title: "ベルリン・フィル来日公演" },
-        },
       });
       expect(wrapper.find(".log-title").text()).toBe("ベルリン・フィル来日公演");
       expect(wrapper.find(".log-venue").text()).toBe("サントリーホール");

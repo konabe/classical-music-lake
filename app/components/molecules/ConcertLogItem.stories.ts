@@ -13,6 +13,7 @@ type Story = StoryObj<typeof ConcertLogItem>;
 const sampleLog: ConcertLog = {
   id: "1",
   userId: "user-1",
+  title: "ベルリン・フィル来日公演",
   concertDate: "2024-03-01T19:00:00.000Z",
   venue: "サントリーホール",
   conductor: "カラヤン",
@@ -22,17 +23,8 @@ const sampleLog: ConcertLog = {
   updatedAt: "2024-03-01T09:00:00.000Z",
 };
 
-export const Full: Story = {
+export const Default: Story = {
   args: { concertLog: sampleLog },
-};
-
-export const WithTitle: Story = {
-  args: {
-    concertLog: {
-      ...sampleLog,
-      title: "ベルリン・フィル来日公演 2024",
-    },
-  },
 };
 
 export const VenueOnly: Story = {
