@@ -60,30 +60,7 @@ classical-music-lake/
 │   │       └── [id]/
 │   │           ├── index.vue     # 詳細（動画再生 + クイックログ記録）
 │   │           └── edit.vue      # 編集
-│   ├── components/               # 共通UIコンポーネント（Atomic Design）
-│   │   ├── atoms/
-│   │   │   ├── CategoryBadge.vue     # カテゴリ情報をラベル形式のバッジとして表示する
-│   │   │   ├── YouTubeThumbnail.vue  # YouTube 動画 URL からサムネイル画像を表示する
-│   │   │   └── ...
-│   │   ├── molecules/
-│   │   │   ├── VideoPlayer.vue      # YouTube 埋め込み / 外部リンク切り替えプレイヤー
-│   │   │   ├── PieceCategoryList.vue  # 楽曲の4軸カテゴリを集約して CategoryBadge で表示する
-│   │   │   ├── PieceItem.vue        # 楽曲一覧の各行（曲名・作曲家・カテゴリバッジ・YouTube サムネイル表示）
-│   │   │   ├── ConcertLogItem.vue   # コンサート記録一覧の各行
-│   │   │   └── ...
-│   │   ├── organisms/
-│   │   │   ├── QuickLogForm.vue     # 動画再生後に表示するクイックログ入力フォーム
-│   │   │   ├── ConcertLogForm.vue   # コンサート記録作成・編集フォーム（楽曲選択・vuedraggable並べ替え含む）
-│   │   │   ├── ConcertLogList.vue   # コンサート記録一覧
-│   │   │   ├── ConcertLogDetail.vue # コンサート記録詳細情報表示（プログラム表示含む、読み取り専用）
-│   │   │   └── ...
-│   │   └── templates/
-│   │       ├── PieceDetailTemplate.vue         # 楽曲詳細ページレイアウト（カテゴリバッジ表示含む）
-│   │       ├── ConcertLogsTemplate.vue         # コンサート記録一覧ページレイアウト
-│   │       ├── ConcertLogNewTemplate.vue       # コンサート記録作成ページレイアウト
-│   │       ├── ConcertLogDetailTemplate.vue    # コンサート記録詳細ページレイアウト（編集・削除ボタン、usePieces連携含む）
-│   │       ├── ConcertLogEditTemplate.vue      # コンサート記録編集ページレイアウト
-│   │       └── ...
+│   ├── components/               # 共通UIコンポーネント（Atomic Design: atoms / molecules / organisms / templates）
 │   ├── composables/              # Vue Composables（共通ロジック）
 │   ├── utils/
 │   │   └── video.ts              # YouTube URL 判定・動画 ID 抽出・埋め込み URL 変換
@@ -204,42 +181,6 @@ classical-music-lake/
   → / へナビゲート
 ```
 
-### 楽曲詳細ページでのクイックログ記録
-
-```text
-ブラウザ (/pieces/[id])
-  → usePiece(id) で Piece を取得
-  → PieceDetailTemplate (piece, error)
-      → VideoPlayer (videoUrl)
-          → YouTube IFrame Player API で再生状態を監視
-          → 再生開始時に @play emit
-      → @play 受信: hasStartedPlaying = true
-      → QuickLogForm (v-if="hasStartedPlaying", composer, piece)
-          → 「記録する」で @submit emit { rating, isFavorite, memo }
-      → @save emit (pages/pieces/[id]/index.vue へ)
-  → useListeningLogs().create({
-      listenedAt: new Date().toISOString(),
-      composer: piece.composer,
-      piece: piece.title,
-      ...values,
-    })
-  → POST /prod/listening-logs → DynamoDB PutItem
-  → 完了メッセージ表示（ページ遷移なし）
-```
-
-### 視聴ログフォームでの動画プレビュー
-
-```text
-ブラウザ (/listening-logs/new, /listening-logs/[id]/edit)
-  → ListeningLogForm が usePieces() で楽曲一覧を取得
-  → 楽曲マスタセレクトで曲を選択
-      → videoUrl あり: selectedVideoUrl に videoUrl をセット
-          → VideoPlayer (v-if="selectedVideoUrl") が表示
-          → 動画を確認しながらフォームの他の項目を入力可能
-      → videoUrl なし / 「選択しない」: selectedVideoUrl = undefined
-          → VideoPlayer は非表示
-```
-
 ### コンサート記録一覧取得
 
 ```text
@@ -256,8 +197,8 @@ classical-music-lake/
 
 ```text
 ブラウザ (/concert-logs/new)
-  → ConcertLogForm が usePieces() で楽曲一覧を取得
-  → vuedraggable で楽曲を選択・並べ替え（pieceIds 配列として保持）
+  → usePieces() で楽曲一覧を取得
+  → 楽曲を選択・並べ替え（pieceIds 配列として保持）
   → POST /prod/concert-logs (JSON body: { concertDate, venue, ..., pieceIds })
   → API Gateway + Cognito Authorizer
   → Lambda (create.ts)
@@ -278,17 +219,15 @@ classical-music-lake/
   → DynamoDB GetItem
   → userId が一致するか検証（不一致は 404）
   → 200 OK + コンサート記録オブジェクト（pieceIds 含む）
-  → ConcertLogDetailTemplate でレンダリング
-      → usePieces() で楽曲一覧を取得
-      → ConcertLogDetail に pieces prop として渡す
-      → pieceIds に基づきプログラムを演奏順で表示
+  → usePieces() で楽曲一覧を取得
+  → pieceIds に基づきプログラムを演奏順で表示
 ```
 
 ### コンサート記録更新
 
 ```text
 ブラウザ (/concert-logs/[id]/edit)
-  → useConcertLog(id) で既存記録を取得 → ConcertLogForm に初期値をセット
+  → useConcertLog(id) で既存記録を取得しフォーム初期値にセット
   → フォーム編集後に useConcertLogs().update(id, values) 実行
   → PUT /prod/concert-logs/{id} (JSON body)
   → API Gateway + Cognito Authorizer
