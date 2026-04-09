@@ -30,11 +30,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run pnpm audit
-        # GHSA-v2wj-q39q-566r / GHSA-p9ff-h696-f583: vite dev server fs.deny bypass
-        # 影響範囲は @codecov/vite-plugin 経由の dev-only 依存のみで本番ビルド成果物には影響しない。
-        # vite 7.3.2 の修正は Nuxt の virtual:public モジュールを誤ブロックするため現状アップグレード不可。
-        # Nuxt 側の対応を待つまでの一時的なリスク受容として除外する。
-        run: pnpm audit --audit-level=high --ignore GHSA-v2wj-q39q-566r --ignore GHSA-p9ff-h696-f583
+        run: pnpm audit --audit-level=high
 
   audit-backend:
     name: Security (Backend)
@@ -57,11 +53,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run pnpm audit
-        # GHSA-v2wj-q39q-566r / GHSA-p9ff-h696-f583: vite dev server fs.deny bypass
-        # 影響範囲は @codecov/vite-plugin 経由の dev-only 依存のみで本番ビルド成果物には影響しない。
-        # vite 7.3.2 の修正は Nuxt の virtual:public モジュールを誤ブロックするため現状アップグレード不可。
-        # Nuxt 側の対応を待つまでの一時的なリスク受容として除外する。
-        run: pnpm audit --audit-level=high --ignore GHSA-v2wj-q39q-566r --ignore GHSA-p9ff-h696-f583
+        run: pnpm audit --audit-level=high
         working-directory: backend
 
   audit-cdk:
@@ -85,9 +77,5 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run pnpm audit
-        # GHSA-v2wj-q39q-566r / GHSA-p9ff-h696-f583: vite dev server fs.deny bypass
-        # 影響範囲は @codecov/vite-plugin 経由の dev-only 依存のみで本番ビルド成果物には影響しない。
-        # vite 7.3.2 の修正は Nuxt の virtual:public モジュールを誤ブロックするため現状アップグレード不可。
-        # Nuxt 側の対応を待つまでの一時的なリスク受容として除外する。
-        run: pnpm audit --audit-level=high --ignore GHSA-v2wj-q39q-566r --ignore GHSA-p9ff-h696-f583
+        run: pnpm audit --audit-level=high
         working-directory: cdk

@@ -48,7 +48,13 @@
       "@parcel/watcher",
       "esbuild",
       "unrs-resolver"
-    ]
+    ],
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-v2wj-q39q-566r",
+        "GHSA-p9ff-h696-f583"
+      ]
+    }
   },
   "lint-staged": {
     "*.{ts,vue}": [
