@@ -20,6 +20,21 @@ const samplePieceWithCategories: Piece = {
   region: "ドイツ・オーストリア",
 };
 
+const samplePieceWithYouTubeUrl: Piece = {
+  ...samplePiece,
+  videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+};
+
+const samplePieceWithShortYouTubeUrl: Piece = {
+  ...samplePiece,
+  videoUrl: "https://youtu.be/dQw4w9WgXcQ",
+};
+
+const samplePieceWithNonYouTubeUrl: Piece = {
+  ...samplePiece,
+  videoUrl: "https://example.com/video.mp4",
+};
+
 const globalComponents = { global: { components: { ButtonSecondary, ButtonDanger } } };
 
 describe("PieceItem", () => {
@@ -145,6 +160,67 @@ describe("PieceItem", () => {
       expect(wrapper.text()).not.toContain("時代:");
       expect(wrapper.text()).not.toContain("編成:");
       expect(wrapper.text()).not.toContain("地域:");
+    });
+  });
+
+  describe("YouTube サムネイル表示", () => {
+    it("videoUrl が YouTube URL の場合、サムネイル領域が表示される", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePieceWithYouTubeUrl },
+      });
+      expect(wrapper.find(".piece-thumbnail").exists()).toBe(true);
+      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(true);
+    });
+
+    it("videoUrl が短縮形式の YouTube URL の場合、サムネイル領域が表示される", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePieceWithShortYouTubeUrl },
+      });
+      expect(wrapper.find(".piece-thumbnail").exists()).toBe(true);
+      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(true);
+    });
+
+    it("videoUrl が未設定の場合、サムネイル領域が表示されない", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePiece },
+      });
+      expect(wrapper.find(".piece-thumbnail").exists()).toBe(false);
+      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(false);
+    });
+
+    it("videoUrl が YouTube 以外の URL の場合、サムネイル領域が表示されない", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePieceWithNonYouTubeUrl },
+      });
+      expect(wrapper.find(".piece-thumbnail").exists()).toBe(false);
+      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(false);
+    });
+
+    it("サムネイル画像に曲名を含む alt 属性が設定されている", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePieceWithYouTubeUrl },
+      });
+      const img = wrapper.find("img.youtube-thumbnail");
+      expect(img.attributes("alt")).toBe("交響曲第9番 ニ短調 Op.125 の動画サムネイル");
+    });
+
+    it("サムネイル領域の button に曲名を含む aria-label が設定されている", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePieceWithYouTubeUrl },
+      });
+      expect(wrapper.find(".piece-thumbnail").attributes("aria-label")).toBe(
+        "交響曲第9番 ニ短調 Op.125 の詳細を開く"
+      );
+    });
+
+    it("サムネイル領域クリックで detail イベントが emit される", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePieceWithYouTubeUrl },
+        ...globalComponents,
+      });
+      await wrapper.find(".piece-thumbnail").trigger("click");
+      expect(wrapper.emitted("detail")).toBeDefined();
+      expect(wrapper.emitted("detail")?.length).toBe(1);
     });
   });
 });

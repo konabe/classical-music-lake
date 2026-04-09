@@ -54,3 +54,25 @@ export const WithPartialCategories: Story = {
     },
   },
 };
+
+export const WithYouTubeThumbnail: Story = {
+  args: {
+    piece: {
+      ...samplePiece,
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+  },
+};
+
+export const WithYouTubeThumbnailAndCategories: Story = {
+  args: {
+    piece: {
+      ...samplePiece,
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      genre: "交響曲",
+      era: "ロマン派",
+      formation: "管弦楽",
+      region: "ドイツ・オーストリア",
+    },
+  },
+};

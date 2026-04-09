@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Piece } from "~/types";
+import { isYouTubeUrl } from "~/utils/video";
 
-defineProps<{
+const props = defineProps<{
   piece: Piece;
 }>();
 
@@ -10,10 +11,25 @@ const emit = defineEmits<{
   delete: [];
   detail: [];
 }>();
+
+const hasYouTubeThumbnail = computed(
+  () => props.piece.videoUrl !== undefined && isYouTubeUrl(props.piece.videoUrl)
+);
+
+const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイル`);
 </script>
 
 <template>
   <div class="piece-item">
+    <button
+      v-if="hasYouTubeThumbnail"
+      type="button"
+      class="piece-thumbnail"
+      :aria-label="`${piece.title} の詳細を開く`"
+      @click="emit('detail')"
+    >
+      <YouTubeThumbnail :video-url="piece.videoUrl" :alt="thumbnailAlt" />
+    </button>
     <div class="piece-main">
       <div class="piece-title">{{ piece.title }}</div>
       <div class="piece-composer">{{ piece.composer }}</div>
@@ -41,9 +57,33 @@ const emit = defineEmits<{
   gap: 1rem;
 }
 
+.piece-thumbnail {
+  flex-shrink: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: opacity 0.2s;
+}
+
+.piece-thumbnail:hover {
+  opacity: 0.85;
+}
+
+.piece-thumbnail:focus-visible {
+  outline: 2px solid #c2a878;
+  outline-offset: 2px;
+}
+
 .piece-main {
   flex: 1;
   min-width: 0;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .piece-title {
@@ -89,7 +129,21 @@ const emit = defineEmits<{
     align-items: flex-start;
   }
 
+  .piece-thumbnail {
+    order: 1;
+    width: 100%;
+    max-width: 240px;
+    align-self: center;
+  }
+
+  .piece-main {
+    order: 2;
+    width: 100%;
+    min-height: 0;
+  }
+
   .piece-actions {
+    order: 3;
     width: 100%;
     justify-content: flex-end;
   }
