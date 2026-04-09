@@ -164,44 +164,35 @@ describe("PieceItem", () => {
   });
 
   describe("YouTube サムネイル表示", () => {
+    const expectThumbnailVisible = async (piece: Piece, shouldExist: boolean) => {
+      const wrapper = await mountSuspended(PieceItem, { props: { piece } });
+      expect(wrapper.find(".piece-thumbnail").exists()).toBe(shouldExist);
+      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(shouldExist);
+    };
+
     it("videoUrl が YouTube URL の場合、サムネイル領域が表示される", async () => {
-      const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithYouTubeUrl },
-      });
-      expect(wrapper.find(".piece-thumbnail").exists()).toBe(true);
-      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(true);
+      await expectThumbnailVisible(samplePieceWithYouTubeUrl, true);
     });
 
     it("videoUrl が短縮形式の YouTube URL の場合、サムネイル領域が表示される", async () => {
-      const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithShortYouTubeUrl },
-      });
-      expect(wrapper.find(".piece-thumbnail").exists()).toBe(true);
-      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(true);
+      await expectThumbnailVisible(samplePieceWithShortYouTubeUrl, true);
     });
 
     it("videoUrl が未設定の場合、サムネイル領域が表示されない", async () => {
-      const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
-      });
-      expect(wrapper.find(".piece-thumbnail").exists()).toBe(false);
-      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(false);
+      await expectThumbnailVisible(samplePiece, false);
     });
 
     it("videoUrl が YouTube 以外の URL の場合、サムネイル領域が表示されない", async () => {
-      const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithNonYouTubeUrl },
-      });
-      expect(wrapper.find(".piece-thumbnail").exists()).toBe(false);
-      expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(false);
+      await expectThumbnailVisible(samplePieceWithNonYouTubeUrl, false);
     });
 
     it("サムネイル画像に曲名を含む alt 属性が設定されている", async () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePieceWithYouTubeUrl },
       });
-      const img = wrapper.find("img.youtube-thumbnail");
-      expect(img.attributes("alt")).toBe("交響曲第9番 ニ短調 Op.125 の動画サムネイル");
+      expect(wrapper.find("img.youtube-thumbnail").attributes("alt")).toBe(
+        "交響曲第9番 ニ短調 Op.125 の動画サムネイル"
+      );
     });
 
     it("サムネイル領域の button に曲名を含む aria-label が設定されている", async () => {
