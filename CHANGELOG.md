@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.9.0...classical-music-lake-v1.9.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* disable noUncheckedSideEffectImports in CDK tsconfig for TypeScript 6 ([#421](https://github.com/konabe/classical-music-lake/issues/421)) ([9060442](https://github.com/konabe/classical-music-lake/commit/9060442116f585a105a7ed0c5422d6457e4d5a97))
+
 ## [1.9.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.8.0...classical-music-lake-v1.9.0) (2026-04-08)
 
 
