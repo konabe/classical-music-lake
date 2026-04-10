@@ -44,6 +44,12 @@
       "Bash(gh pr:*)",
       "Bash(git run view:*)",
       "Bash(git run list:*)",
+      "Bash(cd:*)",
+      "Bash(aws logs describe-log-groups:*)",
+      "Bash(aws logs describe-log-streams:*)",
+      "Bash(aws cognito-idp admin-get-user:*)",
+      "Bash(aws cognito-idp:*)",
+      "Bash(aws lambda list-functions:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__query-docs",
       "mcp__playwright__browser_navigate",
@@ -65,7 +71,6 @@
       "mcp__figma__get_code_connect_suggestions",
       "WebSearch",
       "WebFetch(domain:www.npmjs.com)",
-      "Bash(cd:*)"
     ],
     "ask": ["Bash(git push:*)"]
   },
