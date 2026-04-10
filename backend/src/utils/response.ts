@@ -5,8 +5,23 @@ export const ok = (body: Record<string, unknown>) => ({
   body,
 });
 
+export const created = (body: Record<string, unknown>) => ({
+  statusCode: StatusCodes.CREATED,
+  body,
+});
+
 export const badRequest = (error: string, message: string) => ({
   statusCode: StatusCodes.BAD_REQUEST,
+  body: { error, message },
+});
+
+export const unauthorized = (error: string, message: string) => ({
+  statusCode: StatusCodes.UNAUTHORIZED,
+  body: { error, message },
+});
+
+export const forbidden = (error: string, message: string) => ({
+  statusCode: StatusCodes.FORBIDDEN,
   body: { error, message },
 });
 

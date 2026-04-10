@@ -16,7 +16,7 @@ beforeEach(() => {
 describe("CallbackPage", () => {
   describe("code がある場合", () => {
     it("handleOAuthCallback を code 付きで呼び出す", async () => {
-      mockHandleOAuthCallback.mockResolvedValue(undefined);
+      mockHandleOAuthCallback.mockResolvedValue({ success: true });
 
       await mountSuspended(CallbackPage, {
         route: "/auth/callback?code=test-auth-code",
@@ -27,9 +27,9 @@ describe("CallbackPage", () => {
 
     it("成功時に / へリダイレクトする", async () => {
       // handleOAuthCallback を pending にして spy セットアップ後に解決させる
-      let resolveCallback!: () => void;
+      let resolveCallback!: (value: { success: boolean }) => void;
       mockHandleOAuthCallback.mockReturnValue(
-        new Promise<void>((resolve) => {
+        new Promise<{ success: boolean }>((resolve) => {
           resolveCallback = resolve;
         })
       );
@@ -39,14 +39,17 @@ describe("CallbackPage", () => {
       });
       const pushSpy = vi.spyOn(wrapper.vm.$router, "push");
 
-      resolveCallback();
+      resolveCallback({ success: true });
       await wrapper.vm.$nextTick();
 
       expect(pushSpy).toHaveBeenCalledWith("/");
     });
 
     it("handleOAuthCallback が失敗したときエラーメッセージを表示する", async () => {
-      mockHandleOAuthCallback.mockRejectedValue(new Error("Token exchange failed"));
+      mockHandleOAuthCallback.mockResolvedValue({
+        success: false,
+        error: "Token exchange failed",
+      });
 
       const wrapper = await mountSuspended(CallbackPage, {
         route: "/auth/callback?code=bad-code",

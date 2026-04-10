@@ -620,18 +620,20 @@ describe("useAuth", () => {
       expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).not.toBeNull();
     });
 
-    it("トークン取得失敗時にエラーをスローする", async () => {
+    it("トークン取得失敗時に success: false を返す", async () => {
       mockFetch.mockResolvedValue({ ok: false });
 
       const { handleOAuthCallback } = useAuth();
-      await expect(handleOAuthCallback("bad-code")).rejects.toThrow();
+      const result = await handleOAuthCallback("bad-code");
+      expect(result.success).toBe(false);
     });
 
-    it("ネットワークエラー時にエラーをスローする", async () => {
+    it("ネットワークエラー時に success: false を返す", async () => {
       mockFetch.mockRejectedValue(new Error("Network error"));
 
       const { handleOAuthCallback } = useAuth();
-      await expect(handleOAuthCallback("code")).rejects.toThrow();
+      const result = await handleOAuthCallback("code");
+      expect(result.success).toBe(false);
     });
   });
 

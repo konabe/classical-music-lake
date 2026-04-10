@@ -2,12 +2,12 @@ import {
   CognitoIdentityProviderClient,
   SignUpCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { StatusCodes } from "http-status-codes";
 
 import { createHandler, jsonBodyParser } from "../utils/middleware";
 import { parseRequestBody } from "../utils/parsing";
 import { registerSchema } from "../utils/schemas";
 import { getEnv } from "../utils/env";
+import { created, badRequest, tooManyRequests } from "../utils/response";
 import type { CognitoError } from "../types";
 
 const cognito = new CognitoIdentityProviderClient({});
@@ -31,44 +31,25 @@ export const handler = createHandler(async (event) => {
       })
     );
 
-    return {
-      statusCode: StatusCodes.CREATED,
-      body: {
-        message: "User created successfully. Please check your email to verify your account.",
-      },
-    };
+    return created({
+      message: "User created successfully. Please check your email to verify your account.",
+    });
   } catch (error) {
     const cognitoError = error as CognitoError;
 
     if (cognitoError.name === "UsernameExistsException") {
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        body: {
-          error: "UserExists",
-          message: "An account with the given email already exists.",
-        },
-      };
+      return badRequest("UserExists", "An account with the given email already exists.");
     }
 
     if (cognitoError.name === "InvalidPasswordException") {
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        body: {
-          error: "InvalidPassword",
-          message:
-            "Password does not meet the requirements. Password must be at least 8 characters long and contain uppercase, lowercase, and numeric characters.",
-        },
-      };
+      return badRequest(
+        "InvalidPassword",
+        "Password does not meet the requirements. Password must be at least 8 characters long and contain uppercase, lowercase, and numeric characters."
+      );
     }
 
     if (cognitoError.name === "TooManyRequestsException") {
-      return {
-        statusCode: StatusCodes.TOO_MANY_REQUESTS,
-        body: {
-          error: "TooManyRequests",
-          message: "Too many registration attempts. Please try again later.",
-        },
-      };
+      return tooManyRequests("Too many registration attempts. Please try again later.");
     }
 
     throw error;

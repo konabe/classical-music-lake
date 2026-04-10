@@ -400,7 +400,9 @@ export const useAuth = () => {
     window.location.href = url.toString();
   };
 
-  const handleOAuthCallback = async (code: string): Promise<void> => {
+  const handleOAuthCallback = async (
+    code: string
+  ): Promise<{ success: boolean; error?: string }> => {
     const redirectUri = `${window.location.origin}/auth/callback`;
     const body = new URLSearchParams({
       grant_type: "authorization_code",
@@ -409,19 +411,24 @@ export const useAuth = () => {
       redirect_uri: redirectUri,
     });
 
-    const response = await fetch(`https://${cognitoDomain}/oauth2/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-    });
+    try {
+      const response = await fetch(`https://${cognitoDomain}/oauth2/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
 
-    if (!response.ok) {
-      throw new Error("Token exchange failed");
+      if (!response.ok) {
+        return { success: false, error: "Token exchange failed" };
+      }
+
+      const data = await response.json();
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+      saveSessionTokens(data.access_token, data.id_token, data.expires_in);
+      return { success: true };
+    } catch {
+      return { success: false, error: "Network error" };
     }
-
-    const data = await response.json();
-    localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-    saveSessionTokens(data.access_token, data.id_token, data.expires_in);
   };
 
   return {
