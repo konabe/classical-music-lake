@@ -24,10 +24,10 @@ onMounted(async () => {
     error.value = "ログインに失敗しました。もう一度お試しください。";
     return;
   }
-  try {
-    await handleOAuthCallback(code);
+  const result = await handleOAuthCallback(code);
+  if (result.success) {
     await router.push("/");
-  } catch {
+  } else {
     error.value = "ログインに失敗しました。もう一度お試しください。";
   }
 });
