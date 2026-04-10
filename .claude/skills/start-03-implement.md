@@ -1,3 +1,11 @@
+---
+name: start-03-implement
+description: ワークのコーディング・テスト・リファクタリング・PR発行を行う開発フローのStep 3。設計完了後に実装フェーズを開始するときに使う。
+disable-model-invocation: true
+argument-hint: "[work name or path]"
+allowed-tools: Bash(git add *) Bash(git commit *) Bash(git push *) Bash(gh pr create *)
+---
+
 # 実装について
 
 ## 1. 事前準備

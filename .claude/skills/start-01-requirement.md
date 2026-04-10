@@ -1,3 +1,11 @@
+---
+name: start-01-requirement
+description: 新機能の要件定義・ワーク分割・requirement.md作成を行う開発フローのStep 1。新機能・新しい開発を始めるときに使う。
+disable-model-invocation: true
+argument-hint: "[feature description]"
+allowed-tools: Bash(git checkout *) Bash(git pull *) Bash(git checkout -b *)
+---
+
 # 要件定義とワーク分割について
 
 ## 1. Gitの準備

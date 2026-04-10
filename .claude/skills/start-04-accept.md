@@ -1,3 +1,10 @@
+---
+name: start-04-accept
+description: ワークの検収・SPEC.md/ARCHITECTURE.md更新を行う開発フローのStep 4（最終）。実装のPRがマージされた後にドキュメントを更新するときに使う。
+disable-model-invocation: true
+argument-hint: "[work name or path]"
+---
+
 # 検収について
 
 ## 1. 事前準備
