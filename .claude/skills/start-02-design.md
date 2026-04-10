@@ -1,3 +1,10 @@
+---
+name: start-02-design
+description: ワークの設計・design.md作成・レビュー反映を行う開発フローのStep 2。要件定義完了後に設計フェーズを開始するときに使う。
+disable-model-invocation: true
+argument-hint: "[work name or path]"
+---
+
 # 設計について
 
 ## 1. 事前準備

@@ -41,3 +41,6 @@ reports/mutation/
 
 # Test reports
 *.junit.xml
+
+# Temporary local output
+tmp/

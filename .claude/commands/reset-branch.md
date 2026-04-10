@@ -1,1 +1,0 @@
-mainブランチにswitchして、pullする。
