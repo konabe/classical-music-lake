@@ -1,5 +1,5 @@
 ---
-name: reset-branch
+name: start-00-fresh
 description: mainブランチに切り替えて最新状態にpullする。新しい作業を始める前の準備として使う。
 disable-model-invocation: true
 allowed-tools: Bash(git checkout *) Bash(git pull *)
