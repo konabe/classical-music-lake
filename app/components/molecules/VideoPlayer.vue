@@ -28,7 +28,7 @@ declare global {
     | undefined;
 }
 
-const iframeId = `yt-player-${Math.random().toString(36).slice(2)}`;
+const iframeId = `yt-player-${Math.random().toString(36).slice(2)}`; // NOSONAR: セキュリティ目的ではなく DOM 要素の一意 ID 生成に使用
 let player: YTPlayer | undefined;
 
 onMounted(() => {
@@ -69,7 +69,13 @@ onUnmounted(() => {
 
 <template>
   <div class="video-player">
-    <iframe v-if="isYouTube" :id="iframeId" :src="embedUrl" class="youtube-iframe" />
+    <iframe
+      v-if="isYouTube"
+      :id="iframeId"
+      :src="embedUrl"
+      class="youtube-iframe"
+      title="YouTube 動画プレーヤー"
+    />
     <a
       v-else
       :href="videoUrl"

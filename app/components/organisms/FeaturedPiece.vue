@@ -12,13 +12,13 @@ const currentIndex = ref(0);
 
 onMounted(() => {
   if (piecesWithVideo.value.length > 0) {
-    currentIndex.value = Math.floor(Math.random() * piecesWithVideo.value.length);
+    currentIndex.value = Math.floor(Math.random() * piecesWithVideo.value.length); // NOSONAR: セキュリティ目的ではなく表示曲のランダム選択に使用
   }
 });
 
 watch(piecesWithVideo, (pieces) => {
   if (pieces.length > 0) {
-    currentIndex.value = Math.floor(Math.random() * pieces.length);
+    currentIndex.value = Math.floor(Math.random() * pieces.length); // NOSONAR: セキュリティ目的ではなく表示曲のランダム選択に使用
   }
 });
 
@@ -32,7 +32,7 @@ const shuffle = () => {
   }
   let next = currentIndex.value;
   while (next === currentIndex.value) {
-    next = Math.floor(Math.random() * piecesWithVideo.value.length);
+    next = Math.floor(Math.random() * piecesWithVideo.value.length); // NOSONAR: セキュリティ目的ではなく表示曲のシャッフルに使用
   }
   currentIndex.value = next;
 };

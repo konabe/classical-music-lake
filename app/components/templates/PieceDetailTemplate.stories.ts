@@ -41,7 +41,7 @@ export const WithoutVideo: Story = {
   },
 };
 
-export const Error: Story = {
+export const WithError: Story = {
   args: {
     piece: null,
     error: new globalThis.Error("取得失敗"),

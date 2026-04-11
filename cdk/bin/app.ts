@@ -16,7 +16,7 @@ const stageName = rawStageName as StageName;
 const stackName =
   stageName === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stageName}`;
 
-new ClassicalMusicLakeStack(app, stackName, {
+const _stack = new ClassicalMusicLakeStack(app, stackName, {
   stageName,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
