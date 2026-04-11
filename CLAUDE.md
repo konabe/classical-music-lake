@@ -68,6 +68,24 @@ CD・配信で聴いた演奏を記録し、作曲家・曲名・演奏家・指
 
 ---
 
+## コミットメッセージ規約
+
+このプロジェクトは [Conventional Commits](https://www.conventionalcommits.org/) を採用しており、`commitlint`（`@commitlint/config-conventional`）と husky の `commit-msg` フックで自動検証される。
+
+### フォーマット
+
+```text
+type(scope): 日本語の説明
+```
+
+- `scope` は省略可能
+- 説明（subject）は日本語で記述する
+- subject の先頭を英大文字にしない（`subject-case` ルール）。ファイル名等を先頭に置く場合は日本語から始める形に言い換える
+- 末尾にピリオド（`.`・`。`）を付けない
+- ヘッダー全体は100文字以内
+
+---
+
 ## テストコマンド
 
 | 対象               | コマンド                 |
