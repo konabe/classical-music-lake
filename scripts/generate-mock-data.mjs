@@ -105,12 +105,12 @@ const memos = [
 ];
 
 function randomItem(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Math.floor(Math.random() * arr.length)]; // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
 }
 
 function generateLog(index) {
   const composerData = randomItem(composers);
-  const daysAgo = index * 3 + Math.floor(Math.random() * 3);
+  const daysAgo = index * 3 + Math.floor(Math.random() * 3); // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
   const listenedDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
   const createdDate = new Date(listenedDate.getTime() + 60 * 60 * 1000);
 
@@ -120,17 +120,19 @@ function generateLog(index) {
     composer: composerData.name,
     piece: randomItem(composerData.pieces),
     performer: randomItem(performers),
-    rating: Math.floor(Math.random() * 5) + 1,
-    isFavorite: Math.random() > 0.7,
+    rating: Math.floor(Math.random() * 5) + 1, // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
+    isFavorite: Math.random() > 0.7, // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
     createdAt: createdDate.toISOString(),
     updatedAt: createdDate.toISOString(),
   };
 
   if (Math.random() > 0.4) {
+    // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
     log.conductor = randomItem(conductors);
   }
 
   if (Math.random() > 0.5) {
+    // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
     log.memo = randomItem(memos);
   }
 

@@ -17,7 +17,7 @@ const saveSessionTokens = (accessToken: string, idToken: string, expiresIn: numb
   const expiresAt = Date.now() + expiresIn * MILLISECONDS_PER_SECOND;
   localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(expiresAt));
 };
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_REGEX = /^[^\s@]{1,64}@[^\s@]{1,255}$/;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_UPPERCASE_REGEX = /[A-Z]/;
 const PASSWORD_LOWERCASE_REGEX = /[a-z]/;

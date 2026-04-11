@@ -110,6 +110,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     const spaBucket = new s3.Bucket(this, "SpaBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
       // prod は RETAIN（本番アセットの誤削除防止）、stg/dev は DESTROY
       removalPolicy: this.removalPolicy(isProd),
       autoDeleteObjects: !isProd,
@@ -527,39 +528,42 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogResource.addMethod("PUT", integ(listeningLogsUpdate), withAuth);
     listeningLogResource.addMethod("DELETE", integ(listeningLogsDelete), withAuth);
 
+    // 認証不要エンドポイント用オプション
+    const withoutAuth = { authorizationType: apigateway.AuthorizationType.NONE };
+
     // /pieces
     const piecesResource = api.root.addResource("pieces");
-    piecesResource.addMethod("GET", integ(listPieces));
-    piecesResource.addMethod("POST", integ(createPiece));
+    piecesResource.addMethod("GET", integ(listPieces), withoutAuth);
+    piecesResource.addMethod("POST", integ(createPiece), withoutAuth);
 
     // /pieces/{id}
     const pieceResource = piecesResource.addResource("{id}");
-    pieceResource.addMethod("GET", integ(getPiece));
-    pieceResource.addMethod("PUT", integ(updatePiece));
-    pieceResource.addMethod("DELETE", integ(deletePiece));
+    pieceResource.addMethod("GET", integ(getPiece), withoutAuth);
+    pieceResource.addMethod("PUT", integ(updatePiece), withoutAuth);
+    pieceResource.addMethod("DELETE", integ(deletePiece), withoutAuth);
 
     // /auth
     const authResource = api.root.addResource("auth");
 
     // /auth/register (登録フロー: 認証不要)
     const authRegisterResource = authResource.addResource("register");
-    authRegisterResource.addMethod("POST", integ(authRegister));
+    authRegisterResource.addMethod("POST", integ(authRegister), withoutAuth);
 
     // /auth/login (ログインフロー: 認証不要)
     const authLoginResource = authResource.addResource("login");
-    authLoginResource.addMethod("POST", integ(authLogin));
+    authLoginResource.addMethod("POST", integ(authLogin), withoutAuth);
 
     // /auth/verify-email (メール確認: 認証不要)
     const authVerifyEmailResource = authResource.addResource("verify-email");
-    authVerifyEmailResource.addMethod("POST", integ(authVerifyEmail));
+    authVerifyEmailResource.addMethod("POST", integ(authVerifyEmail), withoutAuth);
 
     // /auth/resend-verification-code (認証コード再送信: 認証不要)
     const authResendCodeResource = authResource.addResource("resend-verification-code");
-    authResendCodeResource.addMethod("POST", integ(authResendCode));
+    authResendCodeResource.addMethod("POST", integ(authResendCode), withoutAuth);
 
     // /auth/refresh (トークンリフレッシュ: 認証不要)
     const authRefreshResource = authResource.addResource("refresh");
-    authRefreshResource.addMethod("POST", integ(authRefresh));
+    authRefreshResource.addMethod("POST", integ(authRefresh), withoutAuth);
 
     const authExcludedFunctions = [
       listeningLogsList,
