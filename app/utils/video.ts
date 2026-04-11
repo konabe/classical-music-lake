@@ -3,12 +3,12 @@ export function isYouTubeUrl(url: string): boolean {
 }
 
 export function extractYouTubeVideoId(url: string): string | null {
-  const watchMatch = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+  const watchMatch = /youtube\.com\/watch\?v=([^&]+)/.exec(url);
   if (watchMatch !== null) {
     return watchMatch[1];
   }
 
-  const shortMatch = url.match(/youtu\.be\/([^?]+)/);
+  const shortMatch = /youtu\.be\/([^?]+)/.exec(url);
   if (shortMatch !== null) {
     return shortMatch[1];
   }
