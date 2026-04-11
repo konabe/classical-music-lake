@@ -62,5 +62,5 @@ export const handler: PreSignUpTriggerHandler = async (event) => {
     })
   );
 
-  return event;
+  return { ...event };
 };
