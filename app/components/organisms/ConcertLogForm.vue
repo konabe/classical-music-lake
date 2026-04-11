@@ -140,8 +140,8 @@ function handleSubmit() {
         handle=".drag-handle"
       >
         <template #item="{ element, index }">
+          <!-- NOSONAR: draggable コンポーネントが tag="ol" で ol を生成するため li の親は ol になる -->
           <li data-testid="program-item" class="program-item">
-            <!-- NOSONAR -->
             <span class="drag-handle" aria-label="ドラッグして並べ替え">☰</span>
             <span class="piece-info">{{ element.title }} / {{ element.composer }}</span>
             <button
