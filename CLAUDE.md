@@ -100,17 +100,6 @@ type(scope): 日本語の説明
 | `chore`    | その他の変更（ビルドプロセスやツール設定など）     |
 | `revert`   | 過去のコミットの取り消し                           |
 
-### コミットメッセージの例
-
-```text
-feat: コンサート記録にソリスト項目を追加
-fix: 編集後に一覧ページで最新データが取得されない問題を修正
-docs: SPEC.mdにコンサート記録APIの仕様を追記
-refactor: composableのHTTPロジックをuseAuthenticatedApiに統一
-chore(deps): bump typescript from 5.9.3 to 6.0.2
-test: コンサート記録作成のバリデーションテストを追加
-```
-
 ---
 
 ## テストコマンド
