@@ -13,7 +13,7 @@ export const handler = createHandler(async (event) => {
 
   const result = await dynamo.send(new GetCommand({ TableName: TABLE_CONCERT_LOGS, Key: { id } }));
   const item = result.Item as ConcertLog | undefined;
-  if (item === undefined || item.userId !== userId) {
+  if (item?.userId !== userId) {
     throw new createError.NotFound("Concert log not found");
   }
 
