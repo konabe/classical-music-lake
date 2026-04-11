@@ -126,7 +126,9 @@ async function main() {
   console.log("シード完了");
 }
 
-main().catch((e) => {
+try {
+  await main();
+} catch (e) {
   console.error("エラー:", e.message);
   process.exit(1);
-});
+}
