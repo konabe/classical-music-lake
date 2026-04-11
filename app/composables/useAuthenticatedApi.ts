@@ -6,7 +6,7 @@ export const useAuthenticatedApi = () => {
 
   const getAuthHeaders = (): Record<string, string> => {
     const token = localStorage.getItem(ID_TOKEN_KEY);
-    return token !== null ? { Authorization: `Bearer ${token}` } : {};
+    return token === null ? {} : { Authorization: `Bearer ${token}` };
   };
 
   const handleAuthError = async (status: number): Promise<boolean> => {

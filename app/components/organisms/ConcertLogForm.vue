@@ -17,9 +17,9 @@ const { data: pieces, pending: piecesPending } = usePieces();
 const form = reactive({
   title: props.initialValues?.title ?? "",
   concertDate:
-    props.initialValues?.concertDate !== undefined
-      ? toDatetimeLocal(props.initialValues.concertDate)
-      : nowAsDatetimeLocal(),
+    props.initialValues?.concertDate === undefined
+      ? nowAsDatetimeLocal()
+      : toDatetimeLocal(props.initialValues.concertDate),
   venue: props.initialValues?.venue ?? "",
   conductor: props.initialValues?.conductor ?? "",
   orchestra: props.initialValues?.orchestra ?? "",
@@ -71,9 +71,9 @@ function handleSubmit() {
     title: form.title,
     concertDate: new Date(form.concertDate).toISOString(),
     venue: form.venue,
-    conductor: form.conductor !== "" ? form.conductor : undefined,
-    orchestra: form.orchestra !== "" ? form.orchestra : undefined,
-    soloist: form.soloist !== "" ? form.soloist : undefined,
+    conductor: form.conductor === "" ? undefined : form.conductor,
+    orchestra: form.orchestra === "" ? undefined : form.orchestra,
+    soloist: form.soloist === "" ? undefined : form.soloist,
     pieceIds: selectedPieces.value.map((p) => p.id),
   };
   emit("submit", input);
