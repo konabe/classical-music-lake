@@ -69,7 +69,13 @@ onUnmounted(() => {
 
 <template>
   <div class="video-player">
-    <iframe v-if="isYouTube" :id="iframeId" :src="embedUrl" class="youtube-iframe" />
+    <iframe
+      v-if="isYouTube"
+      :id="iframeId"
+      :src="embedUrl"
+      class="youtube-iframe"
+      title="YouTube 動画プレーヤー"
+    />
     <a
       v-else
       :href="videoUrl"
