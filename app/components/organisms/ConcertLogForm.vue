@@ -141,7 +141,7 @@ function handleSubmit() {
       >
         <template #item="{ element, index }">
           <li data-testid="program-item" class="program-item">
-            <!-- NOSONAR: draggable コンポーネントが tag="ol" で ol を生成するため li の親は ol になる -->
+            <!-- NOSONAR: draggableがolラッパーを生成するためliの親はolになる -->
             <span class="drag-handle" aria-label="ドラッグして並べ替え">☰</span>
             <span class="piece-info">{{ element.title }} / {{ element.composer }}</span>
             <button
