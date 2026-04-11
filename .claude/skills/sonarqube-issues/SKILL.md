@@ -1,20 +1,21 @@
 ---
 name: sonarqube-issues
-description: SonarQube CloudからIssueおよびSecurity Hotspotを取得して一覧表示する。コード品質・セキュリティの確認やIssue対応時に使う。
+description: SonarQube CloudからIssue・Security Hotspot・コード重複（Duplications）を取得して一覧表示する。コード品質・セキュリティの確認やIssue対応時に使う。
 disable-model-invocation: true
 allowed-tools: WebFetch
 argument-hint: "[severities|types|statuses|hotspots] (例: severities:CRITICAL,MAJOR types:BUG hotspots:TO_REVIEW)"
 ---
 
-# SonarQube Cloud Issue / Security Hotspot 取得
+# SonarQube Cloud Issue / Security Hotspot / Duplications 取得
 
-SonarQube Cloud の API を使って、プロジェクトの Issue と Security Hotspot を取得・分析する。
+SonarQube Cloud の API を使って、プロジェクトの Issue・Security Hotspot・コード重複を取得・分析する。
 
 ## プロジェクト情報
 
 - **プロジェクトキー**: `konabe_classical-music-lake`
 - **Issue API**: `https://sonarcloud.io/api/issues/search`
 - **Hotspot API**: `https://sonarcloud.io/api/hotspots/search`
+- **Measures API**: `https://sonarcloud.io/api/measures/component`
 - **認証**: 不要（公開プロジェクト）
 
 ## 手順
@@ -54,6 +55,23 @@ https://sonarcloud.io/api/hotspots/search?projectKey=konabe_classical-music-lake
 ```
 
 各レスポンスの `paging.total` を TO_REVIEW / REVIEWED の件数として記録する。
+
+### 2a. Duplications サマリーの取得
+
+Issue サマリーと**同時に**以下の URL を WebFetch で呼び出す：
+
+```text
+https://sonarcloud.io/api/measures/component?component=konabe_classical-music-lake&metricKeys=duplicated_lines_density,duplicated_lines,duplicated_blocks,duplicated_files
+```
+
+レスポンスの `component.measures` 配列から以下を抽出する：
+
+| metricKey | 意味 |
+|-----------|------|
+| `duplicated_lines_density` | 重複行の割合（%） |
+| `duplicated_lines` | 重複している行数 |
+| `duplicated_blocks` | 重複ブロック数 |
+| `duplicated_files` | 重複を含むファイル数 |
 
 ### 3. サマリーの表示
 
@@ -95,6 +113,15 @@ https://sonarcloud.io/api/hotspots/search?projectKey=konabe_classical-music-lake
 |------------|------|
 | TO_REVIEW（要確認） | N |
 | REVIEWED（確認済み） | N |
+
+## Duplications サマリー
+
+| 指標 | 値 |
+|------|----|
+| 重複行の割合 | N.N% |
+| 重複行数 | N 行 |
+| 重複ブロック数 | N |
+| 重複を含むファイル数 | N |
 ```
 
 ### 4. 詳細 Issue 一覧の取得
