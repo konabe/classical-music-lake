@@ -346,11 +346,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // Lambda 関数
     // -------------------------
-    const listeningLogsList = fn("ListeningLogsList", "listening-logs/list.ts");
-    const listeningLogsGet = fn("ListeningLogsGet", "listening-logs/get.ts");
-    const listeningLogsCreate = fn("ListeningLogsCreate", "listening-logs/create.ts");
-    const listeningLogsUpdate = fn("ListeningLogsUpdate", "listening-logs/update.ts");
-    const listeningLogsDelete = fn("ListeningLogsDelete", "listening-logs/delete.ts");
+    const listeningLogsList = fn("ListeningLogsList", "handlers/listening-logs/list.ts");
+    const listeningLogsGet = fn("ListeningLogsGet", "handlers/listening-logs/get.ts");
+    const listeningLogsCreate = fn("ListeningLogsCreate", "handlers/listening-logs/create.ts");
+    const listeningLogsUpdate = fn("ListeningLogsUpdate", "handlers/listening-logs/update.ts");
+    const listeningLogsDelete = fn("ListeningLogsDelete", "handlers/listening-logs/delete.ts");
 
     const listPieces = fn("ListPieces", "handlers/pieces/list.ts");
     const createPiece = fn("CreatePiece", "handlers/pieces/create.ts");

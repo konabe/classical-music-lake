@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { ListeningLog } from "../types";
+import type { ListeningLog } from "../../types";
 
 import { handler as createHandler } from "./create";
 import { handler as listHandler } from "./list";
@@ -18,6 +18,12 @@ const { mockSend } = vi.hoisted(() => ({ mockSend: vi.fn() }));
 
 vi.mock("@aws-sdk/client-dynamodb", () => ({
   DynamoDBClient: vi.fn(),
+  ConditionalCheckFailedException: class ConditionalCheckFailedException extends Error {
+    constructor(message?: string) {
+      super(message);
+      this.name = "ConditionalCheckFailedException";
+    }
+  },
 }));
 
 vi.mock("@aws-sdk/lib-dynamodb", () => ({
@@ -28,6 +34,7 @@ vi.mock("@aws-sdk/lib-dynamodb", () => ({
   GetCommand: vi.fn(),
   QueryCommand: vi.fn(),
   DeleteCommand: vi.fn(),
+  ScanCommand: vi.fn(),
 }));
 
 const mockContext = {} as Context;

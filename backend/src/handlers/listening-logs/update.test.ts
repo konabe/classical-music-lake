@@ -1,15 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Conflict } from "http-errors";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { ListeningLog } from "../types";
+import type { ListeningLog } from "../../types";
 
 import { handler } from "./update";
-import * as dynamodb from "../utils/dynamodb";
+import * as listeningLogRepository from "../../repositories/listening-log-repository";
 
-vi.mock("../utils/dynamodb", () => ({
-  updateItem: vi.fn(),
-  dynamo: { send: vi.fn() },
-  TABLE_LISTENING_LOGS: "test-listening-logs",
+vi.mock("../../repositories/listening-log-repository", () => ({
+  findById: vi.fn(),
+  update: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -163,30 +162,30 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("他ユーザーのアイテムを更新しようとした場合は 404 を返す", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(existingLog);
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), OTHER_USER_ID),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(404);
-    expect(dynamodb.updateItem).not.toHaveBeenCalled();
+    expect(listeningLogRepository.update).not.toHaveBeenCalled();
   });
 
   it("userId が null のアイテム（未帰属データ）を更新しようとした場合は 404 を返す", async () => {
     const nullUserLog = { ...existingLog, userId: null };
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: nullUserLog } as never);
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(nullUserLog);
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(404);
-    expect(dynamodb.updateItem).not.toHaveBeenCalled();
+    expect(listeningLogRepository.update).not.toHaveBeenCalled();
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
@@ -196,12 +195,12 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("rating を含まない更新は rating のバリデーションをスキップする", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce({
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(listeningLogRepository.update).mockResolvedValueOnce({
       ...existingLog,
       isFavorite: true,
       updatedAt: new Date().toISOString(),
-    } as never);
+    });
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ isFavorite: true }), TEST_USER_ID),
@@ -218,8 +217,8 @@ describe("PUT /listening-logs/:id (update)", () => {
       isFavorite: true,
       updatedAt: new Date().toISOString(),
     };
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce(updatedLog);
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(listeningLogRepository.update).mockResolvedValueOnce(updatedLog);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4, isFavorite: true }), TEST_USER_ID),
@@ -236,8 +235,8 @@ describe("PUT /listening-logs/:id (update)", () => {
 
   it("updatedAt が更新されること", async () => {
     const now = new Date().toISOString();
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce({
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(listeningLogRepository.update).mockResolvedValueOnce({
       ...existingLog,
       updatedAt: now,
     });
@@ -253,8 +252,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("id は上書きされない", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce({
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(listeningLogRepository.update).mockResolvedValueOnce({
       ...existingLog,
       updatedAt: new Date().toISOString(),
     });
@@ -269,8 +268,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockRejectedValueOnce(
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(listeningLogRepository.update).mockRejectedValueOnce(
       new Conflict("Item was updated by another request")
     );
     const result = await handler(
@@ -282,8 +281,8 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Item was updated by another request");
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(listeningLogRepository.findById).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,

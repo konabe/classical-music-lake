@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ListeningLog } from "../types";
+import type { ListeningLog } from "../../types";
 
 import { handler } from "./list";
-import * as dynamodb from "../utils/dynamodb";
-import { makeLog, makeAuthEvent } from "../test/fixtures";
+import * as listeningLogRepository from "../../repositories/listening-log-repository";
+import { makeLog, makeAuthEvent } from "../../test/fixtures";
 
-vi.mock("../utils/dynamodb", () => ({
-  queryItemsByUserId: vi.fn(),
-  TABLE_LISTENING_LOGS: "test-listening-logs",
+vi.mock("../../repositories/listening-log-repository", () => ({
+  findByUserId: vi.fn(),
 }));
 
 const mockContext = {} as Parameters<typeof handler>[1];
@@ -22,7 +21,7 @@ describe("GET /listening-logs (list)", () => {
   });
 
   it("空リストの場合は 200 で空配列を返す", async () => {
-    vi.mocked(dynamodb.queryItemsByUserId).mockResolvedValueOnce([]);
+    vi.mocked(listeningLogRepository.findByUserId).mockResolvedValueOnce([]);
     const result = await handler(mockEvent, mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
     expect(JSON.parse(result?.body ?? "[]")).toEqual([]);
@@ -34,7 +33,7 @@ describe("GET /listening-logs (list)", () => {
       makeLog("2", "2024-01-15T00:00:00.000Z"),
       makeLog("3", "2024-01-05T00:00:00.000Z"),
     ];
-    vi.mocked(dynamodb.queryItemsByUserId).mockResolvedValueOnce(logs);
+    vi.mocked(listeningLogRepository.findByUserId).mockResolvedValueOnce(logs);
 
     const result = await handler(mockEvent, mockContext, mockCallback);
     const body: ListeningLog[] = JSON.parse(result?.body ?? "[]");
@@ -46,15 +45,17 @@ describe("GET /listening-logs (list)", () => {
 
   it("userId でフィルタリングして自分のログのみ返す", async () => {
     const logs = [makeLog("1", "2024-01-10T00:00:00.000Z", TEST_USER_ID)];
-    vi.mocked(dynamodb.queryItemsByUserId).mockResolvedValueOnce(logs);
+    vi.mocked(listeningLogRepository.findByUserId).mockResolvedValueOnce(logs);
 
     await handler(mockEvent, mockContext, mockCallback);
 
-    expect(dynamodb.queryItemsByUserId).toHaveBeenCalledWith("test-listening-logs", TEST_USER_ID);
+    expect(listeningLogRepository.findByUserId).toHaveBeenCalledWith(TEST_USER_ID);
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamodb.queryItemsByUserId).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(listeningLogRepository.findByUserId).mockRejectedValueOnce(
+      new Error("DynamoDB error")
+    );
     const result = await handler(mockEvent, mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

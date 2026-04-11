@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { handler } from "./delete";
-import { dynamo } from "../utils/dynamodb";
+import * as listeningLogRepository from "../../repositories/listening-log-repository";
 
-vi.mock("../utils/dynamodb", () => ({
-  dynamo: { send: vi.fn() },
-  TABLE_LISTENING_LOGS: "test-listening-logs",
+vi.mock("../../repositories/listening-log-repository", () => ({
+  findById: vi.fn(),
+  remove: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -40,7 +40,7 @@ const existingItem = {
   listenedAt: "2024-01-15T20:00:00.000Z",
   composer: "ベートーヴェン",
   piece: "交響曲第9番",
-  rating: 5,
+  rating: 5 as const,
   isFavorite: true,
   createdAt: "2024-01-15T21:00:00.000Z",
   updatedAt: "2024-01-15T21:00:00.000Z",
@@ -58,7 +58,7 @@ describe("DELETE /listening-logs/:id (delete)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", TEST_USER_ID),
       mockContext,
@@ -68,31 +68,30 @@ describe("DELETE /listening-logs/:id (delete)", () => {
   });
 
   it("他ユーザーのアイテムを削除しようとした場合は 404 を返す（存在を隠蔽）", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: existingItem } as never);
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(existingItem);
     const result = await handler(makeEvent("abc-123", OTHER_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
-    expect(vi.mocked(dynamo.send)).toHaveBeenCalledTimes(1); // DeleteCommand は呼ばれない
+    expect(listeningLogRepository.remove).not.toHaveBeenCalled();
   });
 
   it("userId が null のアイテム（未帰属データ）を削除しようとした場合は 404 を返す", async () => {
     const nullUserItem = { ...existingItem, userId: null };
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: nullUserItem } as never);
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(nullUserItem);
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
   });
 
   it("正常削除して 204 を返す", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingItem } as never) // GetCommand
-      .mockResolvedValueOnce({} as never); // DeleteCommand
+    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(existingItem);
+    vi.mocked(listeningLogRepository.remove).mockResolvedValueOnce();
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
-    expect(vi.mocked(dynamo.send)).toHaveBeenCalledTimes(2);
+    expect(listeningLogRepository.remove).toHaveBeenCalledTimes(1);
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(listeningLogRepository.findById).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

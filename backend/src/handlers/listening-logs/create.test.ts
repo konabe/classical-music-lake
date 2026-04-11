@@ -1,20 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { PutCommand } from "@aws-sdk/lib-dynamodb";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./create";
-import { dynamo } from "../utils/dynamodb";
-import { makeEvent, makeAuthEvent } from "../test/fixtures";
+import * as listeningLogRepository from "../../repositories/listening-log-repository";
+import { makeEvent, makeAuthEvent } from "../../test/fixtures";
 
-vi.mock("../utils/dynamodb", () => ({
-  dynamo: { send: vi.fn() },
-  TABLE_LISTENING_LOGS: "test-listening-logs",
+vi.mock("../../repositories/listening-log-repository", () => ({
+  save: vi.fn(),
 }));
-
-vi.mock("@aws-sdk/lib-dynamodb", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@aws-sdk/lib-dynamodb")>();
-  return { ...actual };
-});
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
@@ -148,7 +141,7 @@ describe("POST /listening-logs (create)", () => {
   });
 
   it("正常に作成して 201 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(listeningLogRepository.save).mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -169,7 +162,7 @@ describe("POST /listening-logs (create)", () => {
   });
 
   it("作成アイテムに UUID が付与される", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(listeningLogRepository.save).mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -184,7 +177,7 @@ describe("POST /listening-logs (create)", () => {
   });
 
   it("createdAt と updatedAt が同じ値で設定される", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(listeningLogRepository.save).mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -198,8 +191,8 @@ describe("POST /listening-logs (create)", () => {
     expect(body.createdAt).toBe(body.updatedAt);
   });
 
-  it("userId が DynamoDB に保存される", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+  it("userId が保存される", async () => {
+    vi.mocked(listeningLogRepository.save).mockResolvedValueOnce();
     await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -210,12 +203,12 @@ describe("POST /listening-logs (create)", () => {
       mockCallback
     );
 
-    const sentCommand = vi.mocked(dynamo.send).mock.calls[0][0] as PutCommand;
-    expect(sentCommand.input.Item?.userId).toBe(TEST_USER_ID);
+    const savedItem = vi.mocked(listeningLogRepository.save).mock.calls[0][0];
+    expect(savedItem.userId).toBe(TEST_USER_ID);
   });
 
   it("レスポンスボディに userId が含まれる", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(listeningLogRepository.save).mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -229,8 +222,8 @@ describe("POST /listening-logs (create)", () => {
     expect(body.userId).toBe(TEST_USER_ID);
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(listeningLogRepository.save).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
