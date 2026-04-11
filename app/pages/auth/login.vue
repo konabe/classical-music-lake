@@ -23,17 +23,15 @@ async function handleSubmit(email: string, password: string) {
 
     if (result.success) {
       await router.push("/");
+    } else if (result.errorType === "email") {
+      errors.email = "有効なメールアドレスを入力してください";
+    } else if (result.errorType === "password") {
+      errors.password = "パスワードを入力してください"; // NOSONAR: エラーメッセージであり実際のパスワードではない
+    } else if (result.errorType === "not_confirmed") {
+      sessionStorage.setItem("pendingPassword", password);
+      await router.push("/auth/verify-email", { state: { email } });
     } else {
-      if (result.errorType === "email") {
-        errors.email = "有効なメールアドレスを入力してください";
-      } else if (result.errorType === "password") {
-        errors.password = "パスワードを入力してください"; // NOSONAR: エラーメッセージであり実際のパスワードではない
-      } else if (result.errorType === "not_confirmed") {
-        sessionStorage.setItem("pendingPassword", password);
-        await router.push("/auth/verify-email", { state: { email } });
-      } else {
-        errors.general = "メールアドレスまたはパスワードが正しくありません。";
-      }
+      errors.general = "メールアドレスまたはパスワードが正しくありません。";
     }
   } finally {
     isLoading.value = false;

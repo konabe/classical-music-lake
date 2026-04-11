@@ -21,8 +21,8 @@ export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
 }
 
 export class ClassicalMusicLakeStack extends cdk.Stack {
-  private corsAllowOrigin: string = "";
-  private corsAllowOrigins: string[] = [];
+  private readonly corsAllowOrigin: string = "";
+  private readonly corsAllowOrigins: string[] = [];
 
   constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
