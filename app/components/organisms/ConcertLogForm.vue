@@ -140,18 +140,11 @@ function handleSubmit() {
         handle=".drag-handle"
       >
         <template #item="{ element, index }">
-          <li data-testid="program-item" class="program-item">
-            <!-- NOSONAR: draggableがolラッパーを生成するためliの親はolになる -->
+          <!-- prettier-ignore -->
+          <li data-testid="program-item" class="program-item"> <!-- NOSONAR: draggableがolラッパーを生成するためliの親はolになる -->
             <span class="drag-handle" aria-label="ドラッグして並べ替え">☰</span>
             <span class="piece-info">{{ element.title }} / {{ element.composer }}</span>
-            <button
-              type="button"
-              data-testid="remove-piece"
-              class="btn-remove-piece"
-              @click="removePiece(index)"
-            >
-              削除
-            </button>
+            <button type="button" data-testid="remove-piece" class="btn-remove-piece" @click="removePiece(index)">削除</button>
           </li>
         </template>
       </draggable>
