@@ -127,12 +127,12 @@ function generateLog(index) {
   };
 
   if (Math.random() > 0.4) {
-    // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
+    // NOSONAR
     log.conductor = randomItem(conductors);
   }
 
   if (Math.random() > 0.5) {
-    // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
+    // NOSONAR
     log.memo = randomItem(memos);
   }
 
