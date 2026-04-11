@@ -236,7 +236,7 @@ function handleSubmit() {
 }
 
 .btn-remove-piece:hover {
-  background: #e53e3e;
+  background: #c0392b;
   color: #fff;
 }
 </style>
