@@ -585,13 +585,13 @@ describe("useAuth", () => {
       const { loginWithGoogle } = useAuth();
       loginWithGoogle();
 
-      expect(window.location.href).toContain(
+      expect(globalThis.location.href).toContain(
         "test.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize"
       );
-      expect(window.location.href).toContain("identity_provider=Google");
-      expect(window.location.href).toContain("response_type=code");
-      expect(window.location.href).toContain("client_id=test-client-id");
-      expect(window.location.href).toContain("%2Fauth%2Fcallback");
+      expect(globalThis.location.href).toContain("identity_provider=Google");
+      expect(globalThis.location.href).toContain("response_type=code");
+      expect(globalThis.location.href).toContain("client_id=test-client-id");
+      expect(globalThis.location.href).toContain("%2Fauth%2Fcallback");
     });
   });
 

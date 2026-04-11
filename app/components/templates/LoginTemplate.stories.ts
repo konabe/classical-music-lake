@@ -30,7 +30,7 @@ export const WithErrors: Story = {
     isLoading: false,
     errors: {
       email: "有効なメールアドレスを入力してください",
-      password: "パスワードが正しくありません",
+      password: "パスワードが正しくありません", // NOSONAR: エラーメッセージであり実際のパスワードではない
       general: "ログインに失敗しました",
     },
   },

@@ -86,7 +86,7 @@ describe("ConcertLogDetailTemplate", () => {
         global: { components: { ButtonSecondary, ButtonDanger } },
       });
       await wrapper.find(".btn-danger").trigger("click");
-      expect(window.confirm).toHaveBeenCalledWith("このコンサート記録を削除しますか？");
+      expect(globalThis.confirm).toHaveBeenCalledWith("このコンサート記録を削除しますか？");
     });
 
     it("confirm で OK を選択すると deleteLog が呼ばれる", async () => {

@@ -15,7 +15,7 @@ export const handler = createHandler(async (event) => {
     new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id } })
   );
   const item = result.Item as ListeningLog | undefined;
-  if (item === undefined || item.userId !== userId) {
+  if (item?.userId !== userId) {
     throw new createError.NotFound("Listening log not found");
   }
 

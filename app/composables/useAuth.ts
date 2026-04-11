@@ -390,20 +390,20 @@ export const useAuth = () => {
   };
 
   const loginWithGoogle = (): void => {
-    const redirectUri = `${window.location.origin}/auth/callback`;
+    const redirectUri = `${globalThis.location.origin}/auth/callback`;
     const url = new URL(`https://${cognitoDomain}/oauth2/authorize`);
     url.searchParams.set("identity_provider", "Google");
     url.searchParams.set("redirect_uri", redirectUri);
     url.searchParams.set("response_type", "code");
     url.searchParams.set("client_id", cognitoClientId);
     url.searchParams.set("scope", "email openid profile");
-    window.location.href = url.toString();
+    globalThis.location.href = url.toString();
   };
 
   const handleOAuthCallback = async (
     code: string
   ): Promise<{ success: boolean; error?: string }> => {
-    const redirectUri = `${window.location.origin}/auth/callback`;
+    const redirectUri = `${globalThis.location.origin}/auth/callback`;
     const body = new URLSearchParams({
       grant_type: "authorization_code",
       client_id: cognitoClientId,

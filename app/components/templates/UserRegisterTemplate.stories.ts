@@ -32,7 +32,7 @@ export const WithErrors: Story = {
     isLoading: false,
     errors: {
       email: "このメールアドレスは既に登録されています",
-      password: "パスワードは8文字以上で、大文字・小文字・数字を含む必要があります",
+      password: "パスワードは8文字以上で、大文字・小文字・数字を含む必要があります", // NOSONAR: エラーメッセージであり実際のパスワードではない
     },
     successMessage: "",
   },

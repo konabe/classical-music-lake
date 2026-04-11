@@ -18,7 +18,7 @@ export const handler = createHandler(async (event) => {
     new GetCommand({ TableName: TABLE_CONCERT_LOGS, Key: { id } })
   );
   const existingItem = existing.Item as ConcertLog | undefined;
-  if (existingItem === undefined || existingItem.userId !== userId) {
+  if (existingItem?.userId !== userId) {
     throw new createError.NotFound("Concert log not found");
   }
 

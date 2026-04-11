@@ -15,9 +15,9 @@ const { data: pieces, pending: piecesPending } = usePieces();
 
 const form = reactive<CreateListeningLogInput>({
   listenedAt:
-    props.initialValues?.listenedAt !== undefined
-      ? toDatetimeLocal(props.initialValues.listenedAt)
-      : nowAsDatetimeLocal(),
+    props.initialValues?.listenedAt === undefined
+      ? nowAsDatetimeLocal()
+      : toDatetimeLocal(props.initialValues.listenedAt),
   composer: props.initialValues?.composer ?? "",
   piece: props.initialValues?.piece ?? "",
   rating: props.initialValues?.rating ?? 3,
