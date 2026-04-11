@@ -16,7 +16,8 @@ const stageName = rawStageName as StageName;
 const stackName =
   stageName === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stageName}`;
 
-const _stack = new ClassicalMusicLakeStack(app, stackName, {
+// prettier-ignore
+new ClassicalMusicLakeStack(app, stackName, { // NOSONAR: CDK はスタックのインスタンス化時に app へ自動登録されるため戻り値は不要
   stageName,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
