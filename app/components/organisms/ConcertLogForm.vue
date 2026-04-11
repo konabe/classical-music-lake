@@ -132,7 +132,6 @@ function handleSubmit() {
         </button>
       </div>
 
-      <!-- NOSONAR: vuedraggable の tag="ol" により実行時は <ol> でレンダリングされるが、静的解析では検出できないため抑制 -->
       <draggable
         v-model="selectedPieces"
         item-key="id"
@@ -236,7 +235,7 @@ function handleSubmit() {
 }
 
 .btn-remove-piece:hover {
-  background: #e53e3e;
+  background: #c0392b;
   color: #fff;
 }
 </style>

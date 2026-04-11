@@ -14,7 +14,7 @@ import { randomUUID } from "node:crypto";
 const args = process.argv.slice(2);
 const countArg = args.find((a) => a.startsWith("--count="));
 const outputArg = args.find((a) => a.startsWith("--output="));
-const rawCount = countArg ? parseInt(countArg.split("=")[1], 10) : 10;
+const rawCount = countArg ? Number.parseInt(countArg.split("=")[1], 10) : 10;
 if (!Number.isInteger(rawCount) || rawCount < 0) {
   console.error("エラー: --count には 0 以上の整数を指定してください");
   process.exit(1);
