@@ -1,19 +1,15 @@
-import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { Piece } from "../types";
+import createError from "http-errors";
+import type { Piece } from "../../types";
 
 import { handler } from "./update";
-import { dynamo } from "../utils/dynamodb";
+import * as pieceRepository from "../../repositories/piece-repository";
 
-vi.mock("../utils/dynamodb", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../utils/dynamodb")>();
-  return {
-    ...actual,
-    dynamo: { send: vi.fn() },
-    TABLE_PIECES: "test-pieces",
-  };
-});
+vi.mock("../../repositories/piece-repository", () => ({
+  findById: vi.fn(),
+  saveWithOptimisticLock: vi.fn(),
+}));
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
@@ -125,9 +121,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("title を含まない更新は title のバリデーションをスキップする", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingPiece } as never)
-      .mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+    vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ composer: "モーツァルト" })),
@@ -138,7 +133,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ title: "新タイトル" })),
       mockContext,
@@ -148,9 +143,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("正常更新して 200 を返す", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingPiece } as never)
-      .mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+    vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番", composer: "ベートーヴェン" })),
@@ -166,9 +160,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("updatedAt が更新されること", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingPiece } as never)
-      .mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+    vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
     const before = new Date(existingPiece.updatedAt).getTime();
     const result = await handler(
@@ -181,9 +174,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("createdAt は上書きされない", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingPiece } as never)
-      .mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+    vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
@@ -195,9 +187,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("id は上書きされない", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingPiece } as never)
-      .mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+    vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
@@ -209,11 +200,10 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingPiece } as never)
-      .mockRejectedValueOnce(
-        new ConditionalCheckFailedException({ message: "conflict", $metadata: {} })
-      );
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+    vi.mocked(pieceRepository.saveWithOptimisticLock).mockRejectedValueOnce(
+      new createError.Conflict("Piece was updated by another request")
+    );
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
@@ -224,8 +214,8 @@ describe("PUT /pieces/{id} (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Piece was updated by another request");
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(pieceRepository.findById).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
       mockContext,
@@ -235,9 +225,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("videoUrl を追加して更新できる", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingPiece } as never)
-      .mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+    vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ videoUrl: "https://www.youtube.com/watch?v=xyz" })),
@@ -250,9 +239,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("videoUrl を空文字で送信すると削除される", async () => {
-    vi.mocked(dynamo.send)
-      .mockResolvedValueOnce({ Item: existingPieceWithVideoUrl } as never)
-      .mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPieceWithVideoUrl);
+    vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ videoUrl: "" })),
@@ -266,9 +254,8 @@ describe("PUT /pieces/{id} (update)", () => {
 
   describe("カテゴリフィールド", () => {
     it("カテゴリを追加して更新できる", async () => {
-      vi.mocked(dynamo.send)
-        .mockResolvedValueOnce({ Item: existingPiece } as never)
-        .mockResolvedValueOnce({} as never);
+      vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+      vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
       const result = await handler(
         makeEvent(
@@ -297,9 +284,8 @@ describe("PUT /pieces/{id} (update)", () => {
         genre: "交響曲",
         era: "古典派",
       };
-      vi.mocked(dynamo.send)
-        .mockResolvedValueOnce({ Item: existingWithCategory } as never)
-        .mockResolvedValueOnce({} as never);
+      vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingWithCategory);
+      vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ genre: "協奏曲", era: "ロマン派" })),
@@ -320,9 +306,8 @@ describe("PUT /pieces/{id} (update)", () => {
         formation: "管弦楽",
         region: "ドイツ・オーストリア",
       };
-      vi.mocked(dynamo.send)
-        .mockResolvedValueOnce({ Item: existingWithCategory } as never)
-        .mockResolvedValueOnce({} as never);
+      vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingWithCategory);
+      vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ genre: "", era: "", formation: "", region: "" })),
@@ -338,9 +323,8 @@ describe("PUT /pieces/{id} (update)", () => {
     });
 
     it("一部のカテゴリのみ更新できる", async () => {
-      vi.mocked(dynamo.send)
-        .mockResolvedValueOnce({ Item: existingPiece } as never)
-        .mockResolvedValueOnce({} as never);
+      vi.mocked(pieceRepository.findById).mockResolvedValueOnce(existingPiece);
+      vi.mocked(pieceRepository.saveWithOptimisticLock).mockResolvedValueOnce();
 
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ genre: "室内楽" })),

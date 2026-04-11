@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { Piece } from "../types";
+import type { Piece } from "../../types";
 
 import { handler } from "./get";
-import { dynamo } from "../utils/dynamodb";
+import * as pieceRepository from "../../repositories/piece-repository";
 
-vi.mock("../utils/dynamodb", () => ({
-  dynamo: { send: vi.fn() },
-  TABLE_PIECES: "test-pieces",
+vi.mock("../../repositories/piece-repository", () => ({
+  findById: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -50,14 +49,14 @@ describe("GET /pieces/{id} (get)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(undefined);
     const result = await handler(makeEvent("not-found-id"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Piece not found");
   });
 
   it("正常に取得して 200 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({ Item: testPiece } as never);
+    vi.mocked(pieceRepository.findById).mockResolvedValueOnce(testPiece);
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
 
@@ -67,8 +66,8 @@ describe("GET /pieces/{id} (get)", () => {
     expect(body.composer).toBe("ベートーヴェン");
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(pieceRepository.findById).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

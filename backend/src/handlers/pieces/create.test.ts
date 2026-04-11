@@ -2,12 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./create";
-import { dynamo } from "../utils/dynamodb";
-import { makeEvent } from "../test/fixtures";
+import * as pieceRepository from "../../repositories/piece-repository";
+import { makeEvent } from "../../test/fixtures";
 
-vi.mock("../utils/dynamodb", () => ({
-  dynamo: { send: vi.fn() },
-  TABLE_PIECES: "test-pieces",
+vi.mock("../../repositories/piece-repository", () => ({
+  save: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -151,7 +150,7 @@ describe("POST /pieces (create)", () => {
   });
 
   it("videoUrl なしで正常に作成して 201 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.save).mockResolvedValueOnce();
     const result = await handler(
       makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
       mockContext,
@@ -169,7 +168,7 @@ describe("POST /pieces (create)", () => {
   });
 
   it("有効な videoUrl を指定して作成できる", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.save).mockResolvedValueOnce();
     const result = await handler(
       makeEvent({
         body: JSON.stringify({ ...validInput, videoUrl: "https://www.youtube.com/watch?v=abc123" }),
@@ -185,7 +184,7 @@ describe("POST /pieces (create)", () => {
   });
 
   it("作成アイテムに UUID が付与される", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.save).mockResolvedValueOnce();
     const result = await handler(
       makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
       mockContext,
@@ -200,7 +199,7 @@ describe("POST /pieces (create)", () => {
     vi.useFakeTimers();
     vi.setSystemTime(now);
 
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.save).mockResolvedValueOnce();
     const result = await handler(
       makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
       mockContext,
@@ -214,7 +213,7 @@ describe("POST /pieces (create)", () => {
 
   describe("カテゴリフィールド", () => {
     it("全カテゴリを指定して作成できる", async () => {
-      vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+      vi.mocked(pieceRepository.save).mockResolvedValueOnce();
       const result = await handler(
         makeEvent({
           body: JSON.stringify({
@@ -239,7 +238,7 @@ describe("POST /pieces (create)", () => {
     });
 
     it("カテゴリなしで作成できる（後方互換性）", async () => {
-      vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+      vi.mocked(pieceRepository.save).mockResolvedValueOnce();
       const result = await handler(
         makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
         mockContext,
@@ -254,7 +253,7 @@ describe("POST /pieces (create)", () => {
     });
 
     it("一部のカテゴリのみ指定して作成できる", async () => {
-      vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+      vi.mocked(pieceRepository.save).mockResolvedValueOnce();
       const result = await handler(
         makeEvent({
           body: JSON.stringify({ ...validInput, genre: "協奏曲", era: "ロマン派" }),
@@ -325,8 +324,8 @@ describe("POST /pieces (create)", () => {
     });
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(pieceRepository.save).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
       mockContext,

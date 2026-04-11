@@ -352,11 +352,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const listeningLogsUpdate = fn("ListeningLogsUpdate", "listening-logs/update.ts");
     const listeningLogsDelete = fn("ListeningLogsDelete", "listening-logs/delete.ts");
 
-    const listPieces = fn("ListPieces", "pieces/list.ts");
-    const createPiece = fn("CreatePiece", "pieces/create.ts");
-    const getPiece = fn("GetPiece", "pieces/get.ts");
-    const updatePiece = fn("UpdatePiece", "pieces/update.ts");
-    const deletePiece = fn("DeletePiece", "pieces/delete.ts");
+    const listPieces = fn("ListPieces", "handlers/pieces/list.ts");
+    const createPiece = fn("CreatePiece", "handlers/pieces/create.ts");
+    const getPiece = fn("GetPiece", "handlers/pieces/get.ts");
+    const updatePiece = fn("UpdatePiece", "handlers/pieces/update.ts");
+    const deletePiece = fn("DeletePiece", "handlers/pieces/delete.ts");
 
     const authRegister = fn("AuthRegister", "auth/register.ts");
     const authLogin = fn("AuthLogin", "auth/login.ts");

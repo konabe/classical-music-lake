@@ -1,13 +1,11 @@
-import type { DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { handler } from "./delete";
-import { dynamo } from "../utils/dynamodb";
+import * as pieceRepository from "../../repositories/piece-repository";
 
-vi.mock("../utils/dynamodb", () => ({
-  dynamo: { send: vi.fn() },
-  TABLE_PIECES: "test-pieces",
+vi.mock("../../repositories/piece-repository", () => ({
+  remove: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -42,25 +40,21 @@ describe("DELETE /pieces/{id} (delete)", () => {
   });
 
   it("正常に削除して 204 を返す", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+    vi.mocked(pieceRepository.remove).mockResolvedValueOnce();
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
   });
 
-  it("正しい TableName と Key で DeleteCommand を送信する", async () => {
-    vi.mocked(dynamo.send).mockResolvedValueOnce({} as never);
+  it("正しい id で Repository.remove を呼び出す", async () => {
+    vi.mocked(pieceRepository.remove).mockResolvedValueOnce();
     await handler(makeEvent("test-id-123"), mockContext, mockCallback);
 
-    const sentCommand = vi.mocked(dynamo.send).mock.calls[0][0] as DeleteCommand;
-    expect(sentCommand.input).toEqual({
-      TableName: "test-pieces",
-      Key: { id: "test-id-123" },
-    });
+    expect(pieceRepository.remove).toHaveBeenCalledWith("test-id-123");
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(pieceRepository.remove).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

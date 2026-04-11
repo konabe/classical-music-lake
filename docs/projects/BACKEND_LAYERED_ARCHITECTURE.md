@@ -34,7 +34,7 @@
 
 ## 2. ターゲットアーキテクチャ
 
-以下の3層に分離する。
+以下の4層に分離する。
 
 ```text
 backend/src/
@@ -91,6 +91,12 @@ backend/src/
 │       ├── refresh-token.ts
 │       └── resend-verification-code.ts
 │
+├── domain/                # ドメインロジック（純粋関数・外部依存なし）
+│   ├── piece.ts           #   エンティティ生成、マージ、ソート、フィールドクリア
+│   ├── listening-log.ts   #   エンティティ生成、ソート、認可チェック
+│   ├── concert-log.ts     #   エンティティ生成、ソート、認可チェック
+│   └── auth-error.ts      #   Cognito エラー → アプリケーションエラー変換
+│
 ├── repositories/          # DynamoDB / Cognito アクセス（データ永続化・外部サービス呼び出しのみ）
 │   ├── listening-log-repository.ts
 │   ├── piece-repository.ts
@@ -112,18 +118,20 @@ backend/src/
 
 ### 各層の責務
 
-| 層                | 責務                                                                                                                                          | 依存先                  |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| **handlers/**     | HTTPリクエスト解析（Zodバリデーション）、UseCase呼び出し、HTTPレスポンス構築                                                                  | usecases/, utils/       |
-| **usecases/**     | ユースケース実行、認可チェック（userId一致検証）、エンティティ生成（UUID・日時付与）、ソート、フィールド削除ロジック、Cognitoエラーマッピング | repositories/           |
-| **repositories/** | DynamoDB CRUD操作、Cognito SDK呼び出し。ドメインロジックを含まない                                                                            | utils/dynamodb, AWS SDK |
-| **utils/**        | ミドルウェア（middy）、バリデーションスキーマ（Zod）、レスポンスヘルパー、認証ユーティリティ                                                  | 外部ライブラリのみ      |
+| 層                | 責務                                                                                                                             | 依存先                  |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **handlers/**     | HTTPリクエスト解析（Zodバリデーション）、UseCase呼び出し、HTTPレスポンス構築                                                     | usecases/, utils/       |
+| **usecases/**     | ユースケース実行。domain と repository を組み合わせてワークフローを実行する                                                      | domain/, repositories/  |
+| **domain/**       | エンティティ生成（UUID・日時付与）、マージ、ソート、認可チェック、フィールド削除、エラー変換。純粋関数で構成し外部依存を持たない | なし                    |
+| **repositories/** | DynamoDB CRUD操作、Cognito SDK呼び出し。ドメインロジックを含まない                                                               | utils/dynamodb, AWS SDK |
+| **utils/**        | ミドルウェア（middy）、バリデーションスキーマ（Zod）、レスポンスヘルパー、認証ユーティリティ                                     | 外部ライブラリのみ      |
 
 ### 依存方向
 
 ```text
-handler → usecase → repository → DynamoDB / Cognito
-                  ↘ utils/
+handler → usecase → domain（純粋関数）
+                  → repository → DynamoDB / Cognito
+         → utils/
 ```
 
 逆方向の参照を禁止する。
@@ -149,31 +157,52 @@ export const update = async (id: string, input: Partial<ListeningLog>): Promise<
 export const remove = async (id: string): Promise<void> => { ... };
 ```
 
+### domain/
+
+- 1エンティティ1ファイル（純粋関数のみ）
+- 外部依存なし（AWS SDK, http-errors 等を import しない）
+- エンティティ生成（UUID・日時付与）、マージ、ソート、フィールド削除を担当
+- テスト時にモック不要（純粋関数のためそのままテスト可能）
+
+```typescript
+// domain/piece.ts の例
+export const buildPiece = (input: CreatePieceInput): Piece => {
+  const now = new Date().toISOString();
+  return { ...input, id: randomUUID(), createdAt: now, updatedAt: now };
+};
+
+export const mergePieceUpdate = (current: Piece, input: UpdatePieceInput): Piece => {
+  const updated = {
+    ...current,
+    ...input,
+    id: current.id,
+    createdAt: current.createdAt,
+    updatedAt: new Date().toISOString(),
+  };
+  // 空文字フィールドを削除
+  for (const key of ["videoUrl", "genre", "era", "formation", "region"] as const) {
+    if (input[key] === "") delete updated[key];
+  }
+  return updated;
+};
+
+export const sortPiecesByTitleJa = (pieces: Piece[]): Piece[] =>
+  [...pieces].sort((a, b) => a.title.localeCompare(b.title, "ja"));
+```
+
 ### usecases/
 
 - 1ユースケース1ファイル（関数エクスポート）
-- エンティティ生成ロジック（UUID・日時付与・オブジェクト構築）を担当
-- 認可チェック（userId一致検証）を担当
-- ソートロジック（`listenedAt` 降順、日本語ロケールソート等）を担当
-- `pieces/update` の空文字フィールド削除ロジックを担当
+- domain と repository を組み合わせてワークフローを実行
+- 認可チェック（userId一致検証）はここで実行
 - Cognito エラー → アプリケーションエラー変換を担当
 
 ```typescript
-// usecases/listening-log/create-listening-log.ts の例
-export const createListeningLog = async (
-  input: CreateListeningLogInput,
-  userId: string
-): Promise<ListeningLog> => {
-  const now = new Date().toISOString();
-  const item: ListeningLog = {
-    ...input,
-    id: randomUUID(),
-    userId,
-    createdAt: now,
-    updatedAt: now,
-  };
-  await repository.save(item);
-  return item;
+// usecases/piece/create-piece.ts の例
+export const createPiece = async (input: CreatePieceInput): Promise<Piece> => {
+  const piece = buildPiece(input);
+  await pieceRepository.save(piece);
+  return piece;
 };
 ```
 
@@ -201,63 +230,63 @@ export const handler = createHandler(async (event) => {
 
 ## 4. フェーズ計画
 
-### フェーズ 1: repositories/ 層の作成
+縦割りアプローチで `pieces` → `listening-logs` → `concert-logs` → `auth` の順に完了させる。各機能ドメインで repository → domain → usecase → handler の順に作成する。
 
-DynamoDB / Cognito 操作をハンドラーから分離し、Repository に集約する。
+### フェーズ 1: pieces のレイヤー化（パターン確立）
 
-対象:
+- [ ] `repositories/piece-repository.ts` — `findById`, `findAll`, `save`, `saveWithOptimisticLock`, `remove`
+- [ ] `domain/piece.ts` — `buildPiece`, `mergePieceUpdate`, `sortPiecesByTitleJa`
+- [ ] `usecases/piece/` — CRUD 5ファイル
+- [ ] `pieces/*.ts` → `handlers/pieces/*.ts` に移動・スリム化
+- [ ] CDK Stack のエントリポイント更新（pieces 5箇所）
+- [ ] テスト更新・追加
+
+### フェーズ 2: listening-logs のレイヤー化
 
 - [ ] `repositories/listening-log-repository.ts` — `findById`, `findByUserId`, `save`, `update`, `remove`
-- [ ] `repositories/piece-repository.ts` — `findById`, `findAll`, `save`, `saveWithOptimisticLock`, `remove`
-- [ ] `repositories/concert-log-repository.ts` — `findById`, `findByUserId`, `save`, `update`, `remove`
-- [ ] `repositories/cognito-auth-repository.ts` — `signUp`, `initiateAuth`, `confirmSignUp`, `resendConfirmationCode`, `refreshToken`
-- [ ] Repository 層のユニットテスト追加
-
-### フェーズ 2: usecases/ 層の作成
-
-ビジネスロジックをハンドラーから分離し、UseCase に集約する。
-
-対象:
-
-- [ ] `usecases/listening-log/` — CRUD 5ファイル（UUID生成、日時付与、userId検証、ソート）
-- [ ] `usecases/piece/` — CRUD 5ファイル（UUID生成、日時付与、空文字フィールド削除、日本語ソート）
-- [ ] `usecases/concert-log/` — CRUD 5ファイル（UUID生成、日時付与、userId検証、ソート）
-- [ ] `usecases/auth/` — 5ファイル（Cognito エラーマッピング集約）
-- [ ] UseCase 層のユニットテスト追加（Repository をモック）
-
-### フェーズ 3: handlers/ 層のスリム化 + CDK パス変更
-
-既存の Lambda ファイルを `handlers/` に移動し、UseCase 呼び出しのみに絞る。
-
-対象:
-
+- [ ] `domain/listening-log.ts` — `buildListeningLog`, `sortByListenedAtDesc`, `assertOwnership`
+- [ ] `usecases/listening-log/` — CRUD 5ファイル
 - [ ] `listening-logs/*.ts` → `handlers/listening-logs/*.ts` に移動・スリム化
-- [ ] `pieces/*.ts` → `handlers/pieces/*.ts` に移動・スリム化
+- [ ] CDK Stack のエントリポイント更新（listening-logs 5箇所）
+- [ ] テスト更新・追加
+
+### フェーズ 3: concert-logs のレイヤー化
+
+- [ ] `repositories/concert-log-repository.ts` — `findById`, `findByUserId`, `save`, `update`, `remove`
+- [ ] `domain/concert-log.ts` — `buildConcertLog`, `sortByConcertDateDesc`, `assertOwnership`
+- [ ] `usecases/concert-log/` — CRUD 5ファイル
 - [ ] `concert-logs/*.ts` → `handlers/concert-logs/*.ts` に移動・スリム化
+- [ ] CDK Stack のエントリポイント更新（concert-logs 5箇所）
+- [ ] テスト更新・追加
+
+### フェーズ 4: auth のレイヤー化
+
+- [ ] `repositories/cognito-auth-repository.ts` — `signUp`, `initiateAuth`, `confirmSignUp`, `resendConfirmationCode`, `refreshToken`
+- [ ] `domain/auth-error.ts` — Cognito エラー → アプリケーションエラー変換
+- [ ] `usecases/auth/` — 5ファイル
 - [ ] `auth/*.ts` → `handlers/auth/*.ts` に移動・スリム化
-- [ ] CDK Stack のエントリポイント更新（全21箇所）
-- [ ] 既存テストの import パス更新 + モック対象を Repository/UseCase に変更
-- [ ] 旧ディレクトリの削除
+- [ ] CDK Stack のエントリポイント更新（auth 6箇所）
+- [ ] テスト更新・追加
 
-### フェーズ 4: 依存方向の徹底
+### フェーズ 5: 依存方向の徹底
 
-- [ ] handler → usecase → repository の単方向依存を維持し、逆方向の参照を禁止する
+- [ ] handler → usecase → domain / repository の単方向依存を維持し、逆方向の参照を禁止する
 - [ ] ESLint ルール or アーキテクチャテストで依存方向を検証する仕組みを検討
 
 ---
 
 ## 5. 進め方
 
-**縦割りアプローチ**: 1つの機能ドメイン（例: `listening-logs`）をフェーズ1〜3まで先行して完了させ、パターンを確立してから残りの機能ドメインに展開する。
+**縦割りアプローチ**: `pieces` から先行してパターンを確立し、残りの機能ドメインに展開する。
 
 ```text
-listening-logs (repository → usecase → handler) ← 最初にパターン確立
+pieces (repository → domain → usecase → handler) ← 最初にパターン確立
     ↓
-pieces (repository → usecase → handler)
+listening-logs (repository → domain → usecase → handler)
     ↓
-concert-logs (repository → usecase → handler)
+concert-logs (repository → domain → usecase → handler)
     ↓
-auth (repository → usecase → handler)
+auth (repository → domain → usecase → handler)
 ```
 
 各フェーズの完了条件: `pnpm run test:backend` が全件パスすること。
@@ -266,9 +295,9 @@ auth (repository → usecase → handler)
 
 ## 6. リスクと注意点
 
-| リスク                       | 影響度 | 対策                                                                                                          |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
-| CDK エントリポイント変更ミス | 高     | `cdk diff` で Lambda コード変更のみであることを検証。フェーズ3で handlers 移動と CDK 更新を同一コミットで行う |
-| `vi.mock()` パスの更新漏れ   | 中     | ハンドラー移動後は `vi.mock("../../utils/...")` にパスが変わる。テスト全件パスで漏れを検出                    |
-| 既存テスト29件の破壊         | 中     | フェーズ1・2は新規ファイル追加のみで既存コードに触れない。フェーズ3で一括更新                                 |
-| 過度な抽象化                 | 低     | インターフェース定義・DI コンテナは不要。関数エクスポートによる軽量な設計を維持                               |
+| リスク                       | 影響度 | 対策                                                                                              |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------- |
+| CDK エントリポイント変更ミス | 高     | `cdk diff` で Lambda コード変更のみであることを検証。handlers 移動と CDK 更新を同一コミットで行う |
+| `vi.mock()` パスの更新漏れ   | 中     | ハンドラー移動後は `vi.mock("../../utils/...")` にパスが変わる。テスト全件パスで漏れを検出        |
+| 既存テスト29件の破壊         | 中     | 各フェーズで `pnpm run test:backend` 全件パスを確認してからコミット                               |
+| 過度な抽象化                 | 低     | インターフェース定義・DI コンテナは不要。関数エクスポートによる軽量な設計を維持                   |

@@ -1,14 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { Piece } from "../types";
+import type { Piece } from "../../types";
 
 import { handler } from "./list";
-import * as dynamodb from "../utils/dynamodb";
-import { makePiece } from "../test/fixtures";
+import * as pieceRepository from "../../repositories/piece-repository";
+import { makePiece } from "../../test/fixtures";
 
-vi.mock("../utils/dynamodb", () => ({
-  scanAllItems: vi.fn(),
-  TABLE_PIECES: "test-pieces",
+vi.mock("../../repositories/piece-repository", () => ({
+  findAll: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -21,14 +20,7 @@ describe("GET /pieces (list)", () => {
   });
 
   it("空リストの場合は 200 で空配列を返す", async () => {
-    vi.mocked(dynamodb.scanAllItems).mockResolvedValueOnce([]);
-    const result = await handler(mockEvent, mockContext, mockCallback);
-    expect(result?.statusCode).toBe(200);
-    expect(JSON.parse(result?.body ?? "[]")).toEqual([]);
-  });
-
-  it("Items が undefined の場合も空配列を返す", async () => {
-    vi.mocked(dynamodb.scanAllItems).mockResolvedValueOnce([]);
+    vi.mocked(pieceRepository.findAll).mockResolvedValueOnce([]);
     const result = await handler(mockEvent, mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
     expect(JSON.parse(result?.body ?? "[]")).toEqual([]);
@@ -40,7 +32,7 @@ describe("GET /pieces (list)", () => {
       makePiece("2", "アイネ・クライネ・ナハトムジーク"),
       makePiece("3", "春の祭典"),
     ];
-    vi.mocked(dynamodb.scanAllItems).mockResolvedValueOnce(pieces);
+    vi.mocked(pieceRepository.findAll).mockResolvedValueOnce(pieces);
 
     const result = await handler(mockEvent, mockContext, mockCallback);
     const body: Piece[] = JSON.parse(result?.body ?? "[]");
@@ -50,24 +42,22 @@ describe("GET /pieces (list)", () => {
     expect(body.map((p) => p.id)).toEqual(sorted.map((p) => p.id));
   });
 
-  it("LastEvaluatedKey がある場合はページングして全件取得する", async () => {
-    const page1 = [makePiece("1", "交響曲第9番")];
-    const page2 = [makePiece("2", "アイネ・クライネ・ナハトムジーク")];
-    vi.mocked(dynamodb.scanAllItems).mockResolvedValueOnce([...page1, ...page2]);
+  it("Repository から取得した全件を返す", async () => {
+    const pieces = [
+      makePiece("1", "交響曲第9番"),
+      makePiece("2", "アイネ・クライネ・ナハトムジーク"),
+    ];
+    vi.mocked(pieceRepository.findAll).mockResolvedValueOnce(pieces);
 
     const result = await handler(mockEvent, mockContext, mockCallback);
     const body: Piece[] = JSON.parse(result?.body ?? "[]");
 
-    expect(dynamodb.scanAllItems).toHaveBeenCalledTimes(1);
+    expect(pieceRepository.findAll).toHaveBeenCalledTimes(1);
     expect(body).toHaveLength(2);
-    const sortedIds = [...page1, ...page2]
-      .sort((a, b) => a.title.localeCompare(b.title, "ja"))
-      .map((p) => p.id);
-    expect(body.map((p) => p.id)).toEqual(sortedIds);
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamodb.scanAllItems).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(pieceRepository.findAll).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(mockEvent, mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });
