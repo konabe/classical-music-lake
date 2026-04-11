@@ -12,7 +12,7 @@ import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import type { Construct } from "constructs";
-import * as path from "path";
+import * as path from "node:path";
 
 export type StageName = "dev" | "stg" | "prod";
 
