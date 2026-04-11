@@ -28,8 +28,8 @@
 
 ```text
 [ユーザー]
-    ↓
-[CloudFront] ← S3 (静的ホスティング)
+    ↓ nocturne-app.com / stg.nocturne-app.com / dev.nocturne-app.com
+[Route53] → [CloudFront + ACM証明書] ← S3 (静的ホスティング)
     ↓
 [Nuxt.js SPA]
     ↓ (API呼び出し + JWT トークン)
@@ -747,11 +747,25 @@ Authorization: Bearer {accessToken}
 - **App Client**: SRP 認証フロー（シークレットなし）
 - **CDK Output**: `CognitoUserPoolId`, `CognitoClientId`, `CognitoUserPoolArn`
 
+#### Route53
+
+- **Hosted Zone**: `nocturne-app.com`（`NocturneAppDnsStack` で管理、us-east-1）
+- **A レコード**: 各環境の CloudFront ディストリビューションへのエイリアスレコード
+  - prod: `nocturne-app.com`
+  - stg: `stg.nocturne-app.com`
+  - dev: `dev.nocturne-app.com`
+
+#### ACM (Certificate Manager)
+
+- **証明書**: `nocturne-app.com` + `*.nocturne-app.com`（ワイルドカード）
+- **リージョン**: us-east-1（CloudFront 用の証明書は us-east-1 に配置が必須）
+- **検証方式**: DNS 検証（Route53 の Hosted Zone で自動検証）
+
 #### API Gateway
 
 - **名前**: `classical-music-lake`
 - **ステージ**: `prod`
-- **CORS**: CloudFront URL のみ許可（プリフライト・GatewayResponse の両方で設定）
+- **CORS**: カスタムドメイン URL を許可（プリフライト・GatewayResponse の両方で設定）
 
 #### S3
 
@@ -762,6 +776,7 @@ Authorization: Bearer {accessToken}
 #### CloudFront
 
 - **用途**: SPAの配信
+- **カスタムドメイン**: 環境ごとにカスタムドメインを設定（ACM 証明書を使用）
 - **エラーハンドリング**: 404/403 → index.html（SPA対応）
 - **プロトコル**: HTTPS強制
 
@@ -776,7 +791,7 @@ Authorization: Bearer {accessToken}
 - `DYNAMO_TABLE_LISTENING_LOGS`: 視聴ログテーブル名（CDK が自動設定）
 - `DYNAMO_TABLE_PIECES`: 楽曲マスタテーブル名（CDK が自動設定）
 - `DYNAMO_TABLE_CONCERT_LOGS`: コンサート記録テーブル名（CDK が自動設定）
-- `CORS_ALLOW_ORIGIN`: 許可する CORS オリジン（CDK が CloudFront URL を自動設定。未設定時は `"*"` にフォールバックするが、本番・stg は CDK が必ず設定するため未設定にはならない）
+- `CORS_ALLOW_ORIGIN`: 許可する CORS オリジン（CDK がカスタムドメイン URL + CloudFront URL を自動設定。未設定時は `"*"` にフォールバックするが、本番・stg は CDK が必ず設定するため未設定にはならない）
 
 #### CI/CD（GitHub Secrets）
 
@@ -799,11 +814,13 @@ Authorization: Bearer {accessToken}
 
 ### 6.1 環境構成
 
-| 環境   | スタック名                    | DynamoDB テーブル名（視聴ログ）      | DynamoDB テーブル名（コンサート記録） | 削除ポリシー | 用途                                     |
-| ------ | ----------------------------- | ------------------------------------ | ------------------------------------- | ------------ | ---------------------------------------- |
-| `prod` | `ClassicalMusicLakeStack`     | `classical-music-listening-logs`     | `classical-music-concert-logs`        | RETAIN       | 本番環境                                 |
-| `stg`  | `ClassicalMusicLakeStack-stg` | `classical-music-listening-logs-stg` | `classical-music-concert-logs-stg`    | DESTROY      | リリース前の検証環境                     |
-| `dev`  | `ClassicalMusicLakeStack-dev` | `classical-music-listening-logs-dev` | `classical-music-concert-logs-dev`    | DESTROY      | 開発環境（ローカル環境からの接続も想定） |
+| 環境   | スタック名                    | カスタムドメイン       | DynamoDB テーブル名（視聴ログ）      | DynamoDB テーブル名（コンサート記録） | 削除ポリシー | 用途                                     |
+| ------ | ----------------------------- | ---------------------- | ------------------------------------ | ------------------------------------- | ------------ | ---------------------------------------- |
+| `prod` | `ClassicalMusicLakeStack`     | `nocturne-app.com`     | `classical-music-listening-logs`     | `classical-music-concert-logs`        | RETAIN       | 本番環境                                 |
+| `stg`  | `ClassicalMusicLakeStack-stg` | `stg.nocturne-app.com` | `classical-music-listening-logs-stg` | `classical-music-concert-logs-stg`    | DESTROY      | リリース前の検証環境                     |
+| `dev`  | `ClassicalMusicLakeStack-dev` | `dev.nocturne-app.com` | `classical-music-listening-logs-dev` | `classical-music-concert-logs-dev`    | DESTROY      | 開発環境（ローカル環境からの接続も想定） |
+
+> **DNS スタック**: `NocturneAppDnsStack`（us-east-1）は全環境で共有する Route53 Hosted Zone と ACM 証明書を管理する。初回のみ手動デプロイが必要（`npx cdk deploy NocturneAppDnsStack`）。
 
 ### 6.2 デプロイフロー
 
@@ -813,9 +830,11 @@ GitHub (release published)   → prod 自動デプロイ
 GitHub (dev* タグ push)      → dev 自動デプロイ
 GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
   → GitHub Actions
-    → CDK デプロイ (STAGE_NAME 環境変数で対象環境を指定)
+    → CDK Bootstrap (ap-northeast-1 + us-east-1)
+    → CDK デプロイ (STAGE_NAME 環境変数で対象スタックを指定)
       → Lambda + API Gateway + DynamoDB 作成/更新
-      → S3 + CloudFront 作成/更新
+      → S3 + CloudFront 作成/更新（カスタムドメイン + ACM 証明書）
+      → Route53 A レコード作成/更新
     → スタック出力取得（API URL・Cognito ドメイン等）
     → Nuxt ビルド (pnpm run generate)
     → Storybook ビルド

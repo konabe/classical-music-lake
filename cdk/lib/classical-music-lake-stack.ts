@@ -11,6 +11,9 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as cognito from "aws-cdk-lib/aws-cognito";
+import * as route53 from "aws-cdk-lib/aws-route53";
+import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
+import type * as acm from "aws-cdk-lib/aws-certificatemanager";
 import type { Construct } from "constructs";
 import * as path from "node:path";
 
@@ -18,6 +21,8 @@ export type StageName = "dev" | "stg" | "prod";
 
 export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
   stageName: StageName;
+  hostedZone: route53.IHostedZone;
+  certificate: acm.ICertificate;
 }
 
 export class ClassicalMusicLakeStack extends cdk.Stack {
@@ -27,8 +32,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
 
-    const { stageName } = props;
+    const { stageName, hostedZone, certificate } = props;
     const isProd = stageName === "prod";
+    const domainName = isProd ? "nocturne-app.com" : `${stageName}.nocturne-app.com`;
 
     // -------------------------
     // DynamoDB テーブル
@@ -169,6 +175,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     );
 
     const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
+      domainNames: [domainName],
+      certificate,
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -203,13 +211,15 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       ],
     });
 
-    // CloudFront URL を CORS オリジンとして Lambda 環境変数に設定
-    this.corsAllowOrigin = `https://${distribution.distributionDomainName}`;
+    // カスタムドメインを CORS オリジンとして Lambda 環境変数に設定
+    // 移行期間中は CloudFront デフォルトドメインも許可（DNS 切り替え完了後に削除可能）
+    this.corsAllowOrigin = `https://${domainName}`;
+    const cloudFrontOrigin = `https://${distribution.distributionDomainName}`;
     // dev 環境のみローカル開発用に localhost を許可（NOTE: 3000だとなぜか起動できない）
     this.corsAllowOrigins =
       stageName === "dev"
-        ? [this.corsAllowOrigin, "http://localhost:3010"]
-        : [this.corsAllowOrigin];
+        ? [this.corsAllowOrigin, cloudFrontOrigin, "http://localhost:3010"]
+        : [this.corsAllowOrigin, cloudFrontOrigin];
 
     // -------------------------
     // Google Identity Provider
@@ -235,8 +245,15 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     }
 
     // App Client: フロントエンド用
-    const callbackUrls = [`https://${distribution.distributionDomainName}/auth/callback`];
-    const logoutUrls = [`https://${distribution.distributionDomainName}/auth/login`];
+    // 移行期間中は CloudFront デフォルトドメインも callback URL に含める
+    const callbackUrls = [
+      `https://${domainName}/auth/callback`,
+      `https://${distribution.distributionDomainName}/auth/callback`,
+    ];
+    const logoutUrls = [
+      `https://${domainName}/auth/login`,
+      `https://${distribution.distributionDomainName}/auth/login`,
+    ];
     if (stageName === "dev") {
       callbackUrls.push("http://localhost:3010/auth/callback");
       logoutUrls.push("http://localhost:3010/auth/login");
@@ -691,6 +708,15 @@ function handler(event) {
     // NOTE: Storybook ファイルの S3 アップロードも GitHub Actions ワークフローで実行する。
 
     // -------------------------
+    // Route53 A レコード（カスタムドメイン → CloudFront）
+    // -------------------------
+    new route53.ARecord(this, "CloudFrontAliasRecord", {
+      zone: hostedZone,
+      recordName: domainName,
+      target: route53.RecordTarget.fromAlias(new route53Targets.CloudFrontTarget(distribution)),
+    });
+
+    // -------------------------
     // CloudWatch アラーム
     // -------------------------
     const allFunctions = [
@@ -764,12 +790,12 @@ function handler(event) {
     });
 
     new cdk.CfnOutput(this, "SpaUrl", {
-      value: this.corsAllowOrigin,
-      description: "CloudFront URL (フロントエンド)",
+      value: `https://${domainName}`,
+      description: "カスタムドメイン URL (フロントエンド)",
     });
 
     new cdk.CfnOutput(this, "StorybookUrl", {
-      value: `${this.corsAllowOrigin}/storybook/`,
+      value: `https://${domainName}/storybook/`,
       description: "Storybook URL",
     });
 
