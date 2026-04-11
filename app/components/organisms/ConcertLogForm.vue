@@ -141,8 +141,8 @@ function handleSubmit() {
         handle=".drag-handle"
       >
         <template #item="{ element, index }">
-          <li data-testid="program-item" class="program-item">
-            <!-- NOSONAR -->
+          <!-- prettier-ignore -->
+          <li data-testid="program-item" class="program-item"> <!-- NOSONAR -->
             <span class="drag-handle" aria-label="ドラッグして並べ替え">☰</span>
             <span class="piece-info">{{ element.title }} / {{ element.composer }}</span>
             <button
