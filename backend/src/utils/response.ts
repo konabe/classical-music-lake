@@ -1,11 +1,11 @@
 import { StatusCodes } from "http-status-codes";
 
-export const ok = (body: Record<string, unknown>) => ({
+export const ok = (body: unknown) => ({
   statusCode: StatusCodes.OK,
   body,
 });
 
-export const created = (body: Record<string, unknown>) => ({
+export const created = (body: unknown) => ({
   statusCode: StatusCodes.CREATED,
   body,
 });

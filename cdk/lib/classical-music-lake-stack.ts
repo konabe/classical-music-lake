@@ -346,30 +346,30 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // Lambda 関数
     // -------------------------
-    const listeningLogsList = fn("ListeningLogsList", "listening-logs/list.ts");
-    const listeningLogsGet = fn("ListeningLogsGet", "listening-logs/get.ts");
-    const listeningLogsCreate = fn("ListeningLogsCreate", "listening-logs/create.ts");
-    const listeningLogsUpdate = fn("ListeningLogsUpdate", "listening-logs/update.ts");
-    const listeningLogsDelete = fn("ListeningLogsDelete", "listening-logs/delete.ts");
+    const listeningLogsList = fn("ListeningLogsList", "handlers/listening-logs/list.ts");
+    const listeningLogsGet = fn("ListeningLogsGet", "handlers/listening-logs/get.ts");
+    const listeningLogsCreate = fn("ListeningLogsCreate", "handlers/listening-logs/create.ts");
+    const listeningLogsUpdate = fn("ListeningLogsUpdate", "handlers/listening-logs/update.ts");
+    const listeningLogsDelete = fn("ListeningLogsDelete", "handlers/listening-logs/delete.ts");
 
-    const listPieces = fn("ListPieces", "pieces/list.ts");
-    const createPiece = fn("CreatePiece", "pieces/create.ts");
-    const getPiece = fn("GetPiece", "pieces/get.ts");
-    const updatePiece = fn("UpdatePiece", "pieces/update.ts");
-    const deletePiece = fn("DeletePiece", "pieces/delete.ts");
+    const listPieces = fn("ListPieces", "handlers/pieces/list.ts");
+    const createPiece = fn("CreatePiece", "handlers/pieces/create.ts");
+    const getPiece = fn("GetPiece", "handlers/pieces/get.ts");
+    const updatePiece = fn("UpdatePiece", "handlers/pieces/update.ts");
+    const deletePiece = fn("DeletePiece", "handlers/pieces/delete.ts");
 
-    const authRegister = fn("AuthRegister", "auth/register.ts");
-    const authLogin = fn("AuthLogin", "auth/login.ts");
-    const authVerifyEmail = fn("AuthVerifyEmail", "auth/verify-email.ts");
-    const authResendCode = fn("AuthResendCode", "auth/resend-verification-code.ts");
-    const authRefresh = fn("AuthRefresh", "auth/refresh.ts");
-    const authPreSignUp = fn("AuthPreSignUp", "auth/pre-signup.ts");
+    const authRegister = fn("AuthRegister", "handlers/auth/register.ts");
+    const authLogin = fn("AuthLogin", "handlers/auth/login.ts");
+    const authVerifyEmail = fn("AuthVerifyEmail", "handlers/auth/verify-email.ts");
+    const authResendCode = fn("AuthResendCode", "handlers/auth/resend-verification-code.ts");
+    const authRefresh = fn("AuthRefresh", "handlers/auth/refresh.ts");
+    const authPreSignUp = fn("AuthPreSignUp", "handlers/auth/pre-signup.ts");
 
-    const concertLogsList = fn("ConcertLogsList", "concert-logs/list.ts");
-    const concertLogsCreate = fn("ConcertLogsCreate", "concert-logs/create.ts");
-    const concertLogsGet = fn("ConcertLogsGet", "concert-logs/get.ts");
-    const concertLogsUpdate = fn("ConcertLogsUpdate", "concert-logs/update.ts");
-    const concertLogsDelete = fn("ConcertLogsDelete", "concert-logs/delete.ts");
+    const concertLogsList = fn("ConcertLogsList", "handlers/concert-logs/list.ts");
+    const concertLogsCreate = fn("ConcertLogsCreate", "handlers/concert-logs/create.ts");
+    const concertLogsGet = fn("ConcertLogsGet", "handlers/concert-logs/get.ts");
+    const concertLogsUpdate = fn("ConcertLogsUpdate", "handlers/concert-logs/update.ts");
+    const concertLogsDelete = fn("ConcertLogsDelete", "handlers/concert-logs/delete.ts");
 
     // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
     // いる場合に自動でアカウントリンクを行う
