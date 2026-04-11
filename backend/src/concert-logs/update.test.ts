@@ -20,18 +20,18 @@ const OTHER_USER_ID = "cognito-sub-other-user";
 
 function makeEvent(id?: string, body?: string | null, userId?: string): APIGatewayProxyEvent {
   return {
-    body: body !== undefined ? body : null,
+    body: body === undefined ? null : body,
     headers: {},
     multiValueHeaders: {},
     httpMethod: "PUT",
     isBase64Encoded: false,
     path: `/concert-logs/${id ?? ""}`,
-    pathParameters: id !== undefined ? { id } : null,
+    pathParameters: id === undefined ? null : { id },
     queryStringParameters: null,
     multiValueQueryStringParameters: null,
     stageVariables: null,
     requestContext: {
-      authorizer: userId !== undefined ? { claims: { sub: userId } } : undefined,
+      authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
     } as APIGatewayProxyEvent["requestContext"],
     resource: "",
   };

@@ -24,12 +24,12 @@ function makeEvent(id?: string, userId?: string): APIGatewayProxyEvent {
     httpMethod: "GET",
     isBase64Encoded: false,
     path: `/listening-logs/${id ?? ""}`,
-    pathParameters: id !== undefined ? { id } : null,
+    pathParameters: id === undefined ? null : { id },
     queryStringParameters: null,
     multiValueQueryStringParameters: null,
     stageVariables: null,
     requestContext: {
-      authorizer: userId !== undefined ? { claims: { sub: userId } } : undefined,
+      authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
     } as APIGatewayProxyEvent["requestContext"],
     resource: "",
   };

@@ -21,7 +21,7 @@ function makeEvent(id: string | null): APIGatewayProxyEvent {
     httpMethod: "DELETE",
     isBase64Encoded: false,
     path: `/pieces/${id ?? ""}`,
-    pathParameters: id !== null ? { id } : null,
+    pathParameters: id === null ? null : { id },
     queryStringParameters: null,
     multiValueQueryStringParameters: null,
     stageVariables: null,
