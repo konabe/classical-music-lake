@@ -41,7 +41,8 @@ describe("pre-signup", () => {
     it("triggerSource が PreSignUp_ExternalProvider 以外のときは Cognito を呼ばずに event を返す", async () => {
       const event = makeEvent({ triggerSource: "PreSignUp_SignUp" as never });
       const result = await handler(event, {} as never, {} as never);
-      expect(result).toEqual(event);
+      expect(result.response.autoConfirmUser).toBeUndefined();
+      expect(result.response.autoVerifyEmail).toBeUndefined();
       expect(mockSend).not.toHaveBeenCalled();
     });
 
@@ -50,7 +51,8 @@ describe("pre-signup", () => {
         request: { userAttributes: { email: "" } } as never,
       });
       const result = await handler(event, {} as never, {} as never);
-      expect(result).toEqual(event);
+      expect(result.response.autoConfirmUser).toBeUndefined();
+      expect(result.response.autoVerifyEmail).toBeUndefined();
       expect(mockSend).not.toHaveBeenCalled();
     });
 
@@ -58,7 +60,8 @@ describe("pre-signup", () => {
       mockSend.mockResolvedValue({ Users: [] });
       const event = makeEvent();
       const result = await handler(event, {} as never, {} as never);
-      expect(result).toEqual(event);
+      expect(result.response.autoConfirmUser).toBeUndefined();
+      expect(result.response.autoVerifyEmail).toBeUndefined();
       expect(mockSend).toHaveBeenCalledTimes(1); // ListUsers のみ
     });
 
@@ -68,7 +71,8 @@ describe("pre-signup", () => {
       });
       const event = makeEvent();
       const result = await handler(event, {} as never, {} as never);
-      expect(result).toEqual(event);
+      expect(result.response.autoConfirmUser).toBeUndefined();
+      expect(result.response.autoVerifyEmail).toBeUndefined();
       expect(mockSend).toHaveBeenCalledTimes(1);
     });
   });
@@ -89,7 +93,8 @@ describe("pre-signup", () => {
       const event = makeEvent({ userName: "google_100749370741417953110" });
       const result = await handler(event, {} as never, {} as never);
 
-      expect(result).toEqual(event);
+      expect(result.response.autoConfirmUser).toBe(true);
+      expect(result.response.autoVerifyEmail).toBe(true);
       expect(mockSend).toHaveBeenCalledTimes(2);
 
       const linkCall = mockSend.mock.calls[1][0];
