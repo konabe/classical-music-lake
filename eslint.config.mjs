@@ -209,5 +209,100 @@ export default withNuxt(
       "no-irregular-whitespace": "off",
       "local/md040": "error",
     },
+  },
+  // レイヤードアーキテクチャの依存方向を強制（handler → usecase → domain / repository）
+  // テストファイルはモックのためレイヤー外を参照するので除外
+  {
+    files: ["backend/src/handlers/**/*.ts"],
+    ignores: ["**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/domain/*"],
+              message: "handlers から domain への直接参照は禁止です。usecases を経由してください",
+            },
+            {
+              group: ["**/repositories/*"],
+              message:
+                "handlers から repositories への直接参照は禁止です。usecases を経由してください",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["backend/src/usecases/**/*.ts"],
+    ignores: ["**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/handlers/**"],
+              message: "usecases から handlers への参照は禁止です",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["backend/src/domain/**/*.ts"],
+    ignores: ["**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/handlers/**"],
+              message: "domain は純粋関数層です。handlers への参照は禁止です",
+            },
+            {
+              group: ["**/usecases/**"],
+              message: "domain は純粋関数層です。usecases への参照は禁止です",
+            },
+            {
+              group: ["**/repositories/*"],
+              message: "domain は純粋関数層です。repositories への参照は禁止です",
+            },
+            {
+              group: ["**/utils/*"],
+              message: "domain は純粋関数層です。utils への参照は禁止です",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["backend/src/repositories/**/*.ts"],
+    ignores: ["**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/handlers/**"],
+              message: "repositories から handlers への参照は禁止です",
+            },
+            {
+              group: ["**/usecases/**"],
+              message: "repositories から usecases への参照は禁止です",
+            },
+            {
+              group: ["**/domain/*"],
+              message: "repositories から domain への参照は禁止です",
+            },
+          ],
+        },
+      ],
+    },
   }
 );
