@@ -502,7 +502,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       cognitoUserPools: [userPool],
       authorizerName: "CognitoAuthorizer",
     });
-    const withAuth = { authorizer: cognitoAuthorizer };
+    const withAuth = { authorizer: cognitoAuthorizer }; // NOSONAR: Cognito Authorizer による認証を明示的に設定
 
     const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
 
@@ -529,7 +529,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogResource.addMethod("DELETE", integ(listeningLogsDelete), withAuth);
 
     // 認証不要エンドポイント用オプション
-    const withoutAuth = { authorizationType: apigateway.AuthorizationType.NONE };
+    const withoutAuth = { authorizationType: apigateway.AuthorizationType.NONE }; // NOSONAR: /pieces/* と /auth/* は意図的に公開エンドポイントとして設計
 
     // /pieces
     const piecesResource = api.root.addResource("pieces");
