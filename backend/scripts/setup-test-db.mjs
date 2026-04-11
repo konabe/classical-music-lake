@@ -58,7 +58,9 @@ async function main() {
   console.log(`テーブルを作成しました: ${TABLE_NAME}`);
 }
 
-main().catch((e) => {
+try {
+  await main();
+} catch (e) {
   console.error("エラー:", e.message);
   process.exit(1);
-});
+}
