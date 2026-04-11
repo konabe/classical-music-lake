@@ -112,6 +112,14 @@ jobs:
             || aws ecr create-repository --repository-name "$REPO" 2>/dev/null \
             || true
 
+      - name: Ensure ECR repository for CDK bootstrap (us-east-1)
+        run: |
+          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+          REPO="cdk-hnb659fds-container-assets-${ACCOUNT}-us-east-1"
+          aws ecr describe-repositories --repository-names "$REPO" --region us-east-1 2>/dev/null \
+            || aws ecr create-repository --repository-name "$REPO" --region us-east-1 2>/dev/null \
+            || true
+
       # ----------------------------------------
       # 孤立リソースのクリーンアップ
       # ロールバック時に残ったロググループを削除（存在しない場合は無視）
@@ -120,8 +128,17 @@ jobs:
         run: |
           aws logs delete-log-group --log-group-name "/aws/apigateway/classical-music-lake-${STAGE_NAME}" 2>/dev/null || true
 
-      - name: CDK Bootstrap
+      - name: CDK Bootstrap (ap-northeast-1)
         run: npx cdk bootstrap
+        working-directory: cdk
+        env:
+          STAGE_NAME: ${{ env.STAGE_NAME }}
+
+      # DnsStack（ACM 証明書）が us-east-1 にあるため、crossRegionReferences 用にブートストラップ
+      - name: CDK Bootstrap (us-east-1)
+        run: |
+          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+          npx cdk bootstrap "aws://${ACCOUNT}/us-east-1"
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
@@ -131,13 +148,15 @@ jobs:
       # フロントエンドの S3 アップロードはこの後のステップで行う
       # dev/stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
       # prod: 安全のためフル CloudFormation デプロイ
+      # NOTE: DnsStack は ACM 証明書の DNS 検証完了まで CloudFormation がペンディングするため
+      #       CI/CD では対象外。初回は手動で `npx cdk deploy NocturneAppDnsStack` を実行すること
       # ----------------------------------------
       - name: CDK Deploy
         run: |
           if [ "$STAGE_NAME" = "prod" ]; then
-            pnpm run deploy
+            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never
           else
-            pnpm run deploy -- --hotswap-fallback
+            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --hotswap-fallback
           fi
         working-directory: cdk
         env:
