@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.9.1...classical-music-lake-v1.10.0) (2026-04-11)
+
+
+### Features
+
+* sonarQube CloudのIssue取得スキルを追加 ([#434](https://github.com/konabe/classical-music-lake/issues/434)) ([ad14712](https://github.com/konabe/classical-music-lake/commit/ad147124a8e6dc49bf77e1aea1f97cb594f44719))
+
 ## [1.9.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.9.0...classical-music-lake-v1.9.1) (2026-04-10)
 
 
