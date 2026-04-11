@@ -5,18 +5,21 @@ type AuthErrorResponse = {
   body: { error: string; message: string };
 };
 
-type CognitoErrorName =
+type ErrorMapKey =
   | "UsernameExistsException"
   | "InvalidPasswordException"
-  | "NotAuthorizedException"
-  | "UserNotFoundException"
+  | "NotAuthorizedException_login"
+  | "UserNotFoundException_login"
   | "UserNotConfirmedException"
   | "CodeMismatchException"
   | "ExpiredCodeException"
+  | "NotAuthorizedException_verify"
+  | "NotAuthorizedException_refresh"
   | "InvalidParameterException"
+  | "UserNotFoundException_resend"
   | "TooManyRequestsException";
 
-const errorMap: Record<string, AuthErrorResponse> = {
+const errorMap: Record<ErrorMapKey, AuthErrorResponse> = {
   // register
   UsernameExistsException: {
     statusCode: StatusCodes.BAD_REQUEST,
@@ -125,15 +128,16 @@ export const mapCognitoError = (
     return mapped;
   }
 
-  // コンテキスト別のマッピング
-  const contextKey = `${errorName}_${context}` as CognitoErrorName | string;
-  if (errorMap[contextKey] !== undefined) {
+  // コンテキスト別のマッピング（例: NotAuthorizedException_login）
+  const contextKey = `${errorName}_${context}` as ErrorMapKey;
+  if (contextKey in errorMap) {
     return errorMap[contextKey];
   }
 
-  // コンテキスト不要なマッピング
-  if (errorMap[errorName] !== undefined) {
-    return errorMap[errorName];
+  // コンテキスト不要なマッピング（例: UsernameExistsException）
+  const directKey = errorName as ErrorMapKey;
+  if (directKey in errorMap) {
+    return errorMap[directKey];
   }
 
   return undefined;

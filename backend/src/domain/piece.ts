@@ -22,6 +22,7 @@ export const mergePieceUpdate = (current: Piece, input: UpdatePieceInput): Piece
     createdAt: current.createdAt,
     updatedAt: new Date().toISOString(),
   };
+  // クリア可能なフィールドの値が空文字列の場合、キーごと削除する（フロントから空文字を送信してフィールドをクリアする仕様）
   const cleared = Object.fromEntries(
     Object.entries(merged).filter(
       ([key, value]) => !(CLEARABLE_FIELDS as readonly string[]).includes(key) || value !== ""
