@@ -1,14 +1,12 @@
 // 楽曲カテゴリ（shared/constants.ts から re-export）
-import {
+import type { PieceGenre, PieceEra, PieceFormation, PieceRegion } from "../../../shared/constants";
+export {
   PIECE_GENRES,
   PIECE_ERAS,
   PIECE_FORMATIONS,
   PIECE_REGIONS,
-  type PieceGenre,
-  type PieceEra,
-  type PieceFormation,
-  type PieceRegion,
 } from "../../../shared/constants";
+export type { PieceGenre, PieceEra, PieceFormation, PieceRegion } from "../../../shared/constants";
 
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
@@ -43,8 +41,6 @@ export interface ListeningLog {
 
 export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
-export { PIECE_GENRES, PIECE_ERAS, PIECE_FORMATIONS, PIECE_REGIONS };
-export type { PieceGenre, PieceEra, PieceFormation, PieceRegion };
 
 // 楽曲マスタ
 export interface Piece {
