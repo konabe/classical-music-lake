@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Context } from "aws-lambda";
 
 import { handler } from "./resend-verification-code";
-import { makeEvent } from "../../test/fixtures";
+import {
+  makeEvent,
+  mockContext,
+  mockCallback,
+  describeInvalidBodyCases,
+} from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   signUp: vi.fn(),
@@ -20,9 +24,6 @@ vi.mock("../../repositories/cognito-auth-repository", () => ({
   }),
 }));
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
-
 const validInput = {
   email: "user@example.com",
 };
@@ -32,22 +33,7 @@ describe("POST /auth/resend-verification-code", () => {
     vi.clearAllMocks();
   });
 
-  describe("リクエストボディ異常系", () => {
-    it.each<[string | null, number, string]>([
-      [null, 400, "Request body is required"],
-      ["null", 400, "Request body is required"],
-      ["[]", 400, "Request body must be a JSON object"],
-      ["invalid json", 422, "Invalid or malformed JSON was provided"],
-    ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(
-        makeEvent({ body, httpMethod: "POST", path: "/auth/resend-verification-code" }),
-        mockContext,
-        mockCallback
-      );
-      expect(result?.statusCode).toBe(statusCode);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
-    });
-  });
+  describeInvalidBodyCases(handler, "/auth/resend-verification-code");
 
   describe("必須フィールド検証", () => {
     it("email が存在しない場合は 400 を返す", async () => {
