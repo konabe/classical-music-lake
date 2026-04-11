@@ -1,5 +1,10 @@
 import * as cognitoAuthRepository from "../../repositories/cognito-auth-repository";
 
+// Cognito が PreSignUp で渡す小文字のプロバイダー名と、IdP 登録名のマッピング
+const providerNameMap: Record<string, string> = {
+  google: "Google",
+};
+
 export const linkExternalProvider = async (
   userPoolId: string,
   email: string,
@@ -12,11 +17,13 @@ export const linkExternalProvider = async (
     return false;
   }
 
-  // userName は "google_<providerUserId>" の形式（Cognitoは小文字で渡す）
+  // userName は "google_<providerUserId>" の形式
   const underscoreIndex = userName.indexOf("_");
   const rawProviderName = userName.substring(0, underscoreIndex);
-  // Cognito の IdP 登録名と大文字小文字を一致させる（"google" → "Google"）
-  const providerName = rawProviderName.charAt(0).toUpperCase() + rawProviderName.slice(1);
+  const providerName = providerNameMap[rawProviderName];
+  if (providerName === undefined) {
+    return false;
+  }
   const providerUserId = userName.substring(underscoreIndex + 1);
 
   await cognitoAuthRepository.linkProviderForUser(
