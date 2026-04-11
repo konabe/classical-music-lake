@@ -17,6 +17,7 @@ const stackName =
   stageName === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stageName}`;
 
 new ClassicalMusicLakeStack(app, stackName, {
+  // NOSONAR: CDK はスタックのインスタンス化時に app へ自動登録されるため戻り値は不要
   stageName,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
