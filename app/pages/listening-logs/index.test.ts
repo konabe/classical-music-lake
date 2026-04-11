@@ -62,7 +62,7 @@ describe("ListeningLogsPage（削除フロー結合）", () => {
   it("1件目の削除ボタンをクリックすると confirm が表示される", async () => {
     const wrapper = await mountSuspended(ListeningLogsPage);
     await wrapper.findAll(".btn-danger")[0].trigger("click");
-    expect(window.confirm).toHaveBeenCalledWith("この記録を削除しますか？");
+    expect(globalThis.confirm).toHaveBeenCalledWith("この記録を削除しますか？");
   });
 
   it("1件目の削除ボタンをクリックすると log-001 の deleteLog が呼ばれる", async () => {
