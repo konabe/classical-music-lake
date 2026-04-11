@@ -16,12 +16,15 @@ const stageName = rawStageName as StageName;
 const stackName =
   stageName === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stageName}`;
 
-new ClassicalMusicLakeStack(app, stackName, {
-  // NOSONAR: CDK はスタックのインスタンス化時に app へ自動登録されるため戻り値は不要
-  stageName,
-  env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION ?? "ap-northeast-1",
-  },
-  terminationProtection: stageName === "prod",
-});
+new ClassicalMusicLakeStack(
+  /* NOSONAR: CDK はスタックのインスタンス化時に app へ自動登録されるため戻り値は不要 */ app,
+  stackName,
+  {
+    stageName,
+    env: {
+      account: process.env.CDK_DEFAULT_ACCOUNT,
+      region: process.env.CDK_DEFAULT_REGION ?? "ap-northeast-1",
+    },
+    terminationProtection: stageName === "prod",
+  }
+);
