@@ -126,13 +126,13 @@ function generateLog(index) {
     updatedAt: createdDate.toISOString(),
   };
 
-  if (Math.random() > 0.4) {
-    // NOSONAR
+  const addConductor = Math.random() > 0.4; // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
+  if (addConductor) {
     log.conductor = randomItem(conductors);
   }
 
-  if (Math.random() > 0.5) {
-    // NOSONAR
+  const addMemo = Math.random() > 0.5; // NOSONAR: モックデータ生成用でありセキュリティ目的ではない
+  if (addMemo) {
     log.memo = randomItem(memos);
   }
 
