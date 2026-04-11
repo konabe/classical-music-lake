@@ -365,11 +365,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const authRefresh = fn("AuthRefresh", "auth/refresh.ts");
     const authPreSignUp = fn("AuthPreSignUp", "auth/pre-signup.ts");
 
-    const concertLogsList = fn("ConcertLogsList", "concert-logs/list.ts");
-    const concertLogsCreate = fn("ConcertLogsCreate", "concert-logs/create.ts");
-    const concertLogsGet = fn("ConcertLogsGet", "concert-logs/get.ts");
-    const concertLogsUpdate = fn("ConcertLogsUpdate", "concert-logs/update.ts");
-    const concertLogsDelete = fn("ConcertLogsDelete", "concert-logs/delete.ts");
+    const concertLogsList = fn("ConcertLogsList", "handlers/concert-logs/list.ts");
+    const concertLogsCreate = fn("ConcertLogsCreate", "handlers/concert-logs/create.ts");
+    const concertLogsGet = fn("ConcertLogsGet", "handlers/concert-logs/get.ts");
+    const concertLogsUpdate = fn("ConcertLogsUpdate", "handlers/concert-logs/update.ts");
+    const concertLogsDelete = fn("ConcertLogsDelete", "handlers/concert-logs/delete.ts");
 
     // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
     // いる場合に自動でアカウントリンクを行う

@@ -1,15 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Conflict } from "http-errors";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { ConcertLog } from "../types";
+import type { ConcertLog } from "../../types";
 
 import { handler } from "./update";
-import * as dynamodb from "../utils/dynamodb";
+import * as concertLogRepository from "../../repositories/concert-log-repository";
 
-vi.mock("../utils/dynamodb", () => ({
-  updateItem: vi.fn(),
-  dynamo: { send: vi.fn() },
-  TABLE_CONCERT_LOGS: "test-concert-logs",
+vi.mock("../../repositories/concert-log-repository", () => ({
+  findById: vi.fn(),
+  update: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -125,18 +124,18 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("他ユーザーのアイテムを更新しようとした場合は 404 を返す", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
+    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), OTHER_USER_ID),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(404);
-    expect(dynamodb.updateItem).not.toHaveBeenCalled();
+    expect(concertLogRepository.update).not.toHaveBeenCalled();
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: undefined } as never);
+    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
@@ -151,8 +150,8 @@ describe("PUT /concert-logs/:id (update)", () => {
       venue: "東京文化会館",
       updatedAt: new Date().toISOString(),
     };
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce(updatedLog);
+    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(concertLogRepository.update).mockResolvedValueOnce(updatedLog);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
@@ -167,8 +166,8 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("venue のみ更新して concertDate はそのままであること", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce({
+    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(concertLogRepository.update).mockResolvedValueOnce({
       ...existingLog,
       venue: "東京文化会館",
       updatedAt: new Date().toISOString(),
@@ -183,8 +182,8 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockRejectedValueOnce(
+    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(concertLogRepository.update).mockRejectedValueOnce(
       new Conflict("Item was updated by another request")
     );
     const result = await handler(
@@ -196,8 +195,8 @@ describe("PUT /concert-logs/:id (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Item was updated by another request");
   });
 
-  it("DynamoDB エラー時に 500 を返す", async () => {
-    vi.mocked(dynamodb.dynamo.send).mockRejectedValueOnce(new Error("DynamoDB error"));
+  it("Repository エラー時に 500 を返す", async () => {
+    vi.mocked(concertLogRepository.findById).mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
@@ -213,8 +212,8 @@ describe("PUT /concert-logs/:id (update)", () => {
       pieceIds: [pieceId],
       updatedAt: new Date().toISOString(),
     };
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({ Item: existingLog } as never);
-    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce(updatedLog);
+    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
+    vi.mocked(concertLogRepository.update).mockResolvedValueOnce(updatedLog);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [pieceId] }), TEST_USER_ID),
@@ -236,10 +235,8 @@ describe("PUT /concert-logs/:id (update)", () => {
       pieceIds: [],
       updatedAt: new Date().toISOString(),
     };
-    vi.mocked(dynamodb.dynamo.send).mockResolvedValueOnce({
-      Item: existingLogWithPieces,
-    } as never);
-    vi.mocked(dynamodb.updateItem).mockResolvedValueOnce(updatedLog);
+    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLogWithPieces);
+    vi.mocked(concertLogRepository.update).mockResolvedValueOnce(updatedLog);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [] }), TEST_USER_ID),
