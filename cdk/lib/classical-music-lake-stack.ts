@@ -42,7 +42,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       // prod は RETAIN、stg/dev は DESTROY（スタック削除時にテーブルも削除）
-      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      removalPolicy: this.removalPolicy(isProd),
       // ポイントインタイムリカバリ（PITR）有効化（35日間のバックアップ自動保持）
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
@@ -81,7 +81,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     const userPool = new cognito.UserPool(this, "CognitoUserPool", {
       userPoolName,
-      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      removalPolicy: this.removalPolicy(isProd),
       selfSignUpEnabled: true,
       signInAliases: { email: true },
       passwordPolicy: {
@@ -111,7 +111,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const spaBucket = new s3.Bucket(this, "SpaBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       // prod は RETAIN（本番アセットの誤削除防止）、stg/dev は DESTROY
-      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      removalPolicy: this.removalPolicy(isProd),
       autoDeleteObjects: !isProd,
       // prod は S3 バージョニング有効（静的ファイルのロールバック用）
       versioned: isProd,
@@ -293,7 +293,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       tableName: concertLogsTableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      removalPolicy: this.removalPolicy(isProd),
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
@@ -333,7 +333,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       // CloudWatch Logs 保持期間を 3 ヶ月に設定（カスタムリソース不要の explicit LogGroup）
       const logGroup = new logs.LogGroup(this, `${id}LogGroup`, {
         retention: logs.RetentionDays.THREE_MONTHS,
-        removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+        removalPolicy: this.removalPolicy(isProd),
       });
       return new lambdaNodejs.NodejsFunction(this, id, {
         ...commonFnProps,
@@ -468,7 +468,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // logGroupName を指定しない（CDK 自動生成名）ことで既存リソースとの名前衝突を回避
     const apiAccessLogGroup = new logs.LogGroup(this, "ApiAccessLogs", {
       retention: logs.RetentionDays.THREE_MONTHS,
-      removalPolicy: isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      removalPolicy: this.removalPolicy(isProd),
     });
 
     const api = new apigateway.RestApi(this, "Api", {
@@ -798,6 +798,10 @@ function handler(event) {
       value: distribution.distributionId,
       description: "CloudFront Distribution ID",
     });
+  }
+
+  private removalPolicy(isProd: boolean): cdk.RemovalPolicy {
+    return isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY;
   }
 
   private addCors(
