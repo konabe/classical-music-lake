@@ -2,20 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./refresh";
-import { makeEvent } from "../test/fixtures";
+import * as cognitoAuthRepository from "../../repositories/cognito-auth-repository";
+import { makeEvent } from "../../test/fixtures";
 
-// Mock AWS SDK v3 Cognito
-const { mockSend } = vi.hoisted(() => ({
-  mockSend: vi.fn(),
-}));
-
-vi.mock("@aws-sdk/client-cognito-identity-provider", () => ({
-  CognitoIdentityProviderClient: vi.fn(function (this: Record<string, unknown>) {
-    this.send = mockSend;
-  }),
-  InitiateAuthCommand: vi.fn(function (this: Record<string, unknown>, input: unknown) {
-    this.input = input;
-  }),
+vi.mock("../../repositories/cognito-auth-repository", () => ({
+  refreshToken: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -78,13 +69,11 @@ describe("POST /auth/refresh", () => {
 
   describe("成功系", () => {
     it("有効なリフレッシュトークンで新しいトークンを返す", async () => {
-      mockSend.mockResolvedValue({
-        AuthenticationResult: {
-          AccessToken: "new-access-token",
-          IdToken: "new-id-token",
-          TokenType: "Bearer",
-          ExpiresIn: 3600,
-        },
+      vi.mocked(cognitoAuthRepository.refreshToken).mockResolvedValueOnce({
+        accessToken: "new-access-token",
+        idToken: "new-id-token",
+        tokenType: "Bearer",
+        expiresIn: 3600,
       });
 
       const result = await handler(
@@ -103,14 +92,16 @@ describe("POST /auth/refresh", () => {
       expect(body.idToken).toBe("new-id-token");
       expect(body.tokenType).toBe("Bearer");
       expect(body.expiresIn).toBe(3600);
-      expect(mockSend).toHaveBeenCalled();
+      expect(cognitoAuthRepository.refreshToken).toHaveBeenCalledWith(validInput.refreshToken);
     });
   });
 
   describe("Cognito エラー系", () => {
     it("リフレッシュトークンが無効な場合 401 を返す (NotAuthorizedException)", async () => {
-      const error = { name: "NotAuthorizedException", message: "Invalid Refresh Token." };
-      mockSend.mockRejectedValue(error);
+      const error = Object.assign(new Error("Invalid Refresh Token."), {
+        name: "NotAuthorizedException",
+      });
+      vi.mocked(cognitoAuthRepository.refreshToken).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -128,8 +119,10 @@ describe("POST /auth/refresh", () => {
     });
 
     it("リクエスト過多の場合 429 を返す (TooManyRequestsException)", async () => {
-      const error = { name: "TooManyRequestsException", message: "Too many requests." };
-      mockSend.mockRejectedValue(error);
+      const error = Object.assign(new Error("Too many requests."), {
+        name: "TooManyRequestsException",
+      });
+      vi.mocked(cognitoAuthRepository.refreshToken).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -147,8 +140,10 @@ describe("POST /auth/refresh", () => {
     });
 
     it("その他の Cognito エラーの場合 500 を返す", async () => {
-      const error = { name: "ServiceUnavailableException", message: "Service unavailable." };
-      mockSend.mockRejectedValue(error);
+      const error = Object.assign(new Error("Service unavailable."), {
+        name: "ServiceUnavailableException",
+      });
+      vi.mocked(cognitoAuthRepository.refreshToken).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({

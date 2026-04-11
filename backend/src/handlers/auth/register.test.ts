@@ -2,20 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./register";
-import { makeEvent } from "../test/fixtures";
+import * as cognitoAuthRepository from "../../repositories/cognito-auth-repository";
+import { makeEvent } from "../../test/fixtures";
 
-// Mock AWS SDK v3 Cognito
-const { mockSend } = vi.hoisted(() => ({
-  mockSend: vi.fn(),
-}));
-
-vi.mock("@aws-sdk/client-cognito-identity-provider", () => ({
-  CognitoIdentityProviderClient: vi.fn(function (this: Record<string, unknown>) {
-    this.send = mockSend;
-  }),
-  SignUpCommand: vi.fn(function (this: Record<string, unknown>, input: unknown) {
-    this.input = input;
-  }),
+vi.mock("../../repositories/cognito-auth-repository", () => ({
+  signUp: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -166,13 +157,7 @@ describe("POST /auth/register", () => {
 
   describe("成功系", () => {
     it("有効なメール・パスワードで登録に成功し、201 を返す", async () => {
-      mockSend.mockResolvedValue({
-        UserSub: "user-sub-id",
-        CodeDeliveryDetails: {
-          Destination: "u***@example.com",
-          DeliveryMedium: "EMAIL",
-        },
-      });
+      vi.mocked(cognitoAuthRepository.signUp).mockResolvedValueOnce();
 
       const result = await handler(
         makeEvent({
@@ -187,17 +172,19 @@ describe("POST /auth/register", () => {
       expect(result?.statusCode).toBe(201);
       const body = JSON.parse(result?.body ?? "{}");
       expect(body.message).toContain("successfully");
-      expect(mockSend).toHaveBeenCalled();
+      expect(cognitoAuthRepository.signUp).toHaveBeenCalledWith(
+        validInput.email,
+        validInput.password
+      );
     });
   });
 
   describe("Cognito エラー系", () => {
     it("メール重複時に 400 を返す", async () => {
-      const error: { name: string; message: string } = {
+      const error = Object.assign(new Error("UsernameExistsException"), {
         name: "UsernameExistsException",
-        message: "UsernameExistsException",
-      };
-      mockSend.mockRejectedValue(error);
+      });
+      vi.mocked(cognitoAuthRepository.signUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -214,11 +201,10 @@ describe("POST /auth/register", () => {
     });
 
     it("無効なパスワード時に 400 を返す", async () => {
-      const error: { name: string; message: string } = {
+      const error = Object.assign(new Error("InvalidPasswordException"), {
         name: "InvalidPasswordException",
-        message: "InvalidPasswordException",
-      };
-      mockSend.mockRejectedValue(error);
+      });
+      vi.mocked(cognitoAuthRepository.signUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -236,11 +222,10 @@ describe("POST /auth/register", () => {
     });
 
     it("その他の Cognito エラー時に 500 を返す", async () => {
-      const error: { name: string; message: string } = {
+      const error = Object.assign(new Error("ServiceUnavailableException"), {
         name: "ServiceUnavailableException",
-        message: "ServiceUnavailableException",
-      };
-      mockSend.mockRejectedValue(error);
+      });
+      vi.mocked(cognitoAuthRepository.signUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -256,11 +241,10 @@ describe("POST /auth/register", () => {
     });
 
     it("リクエスト過多時に 429 を返す", async () => {
-      const error: { name: string; message: string } = {
+      const error = Object.assign(new Error("TooManyRequestsException"), {
         name: "TooManyRequestsException",
-        message: "TooManyRequestsException",
-      };
-      mockSend.mockRejectedValue(error);
+      });
+      vi.mocked(cognitoAuthRepository.signUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({

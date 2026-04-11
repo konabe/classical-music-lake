@@ -2,19 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./resend-verification-code";
-import { makeEvent } from "../test/fixtures";
+import * as cognitoAuthRepository from "../../repositories/cognito-auth-repository";
+import { makeEvent } from "../../test/fixtures";
 
-const { mockSend } = vi.hoisted(() => ({
-  mockSend: vi.fn(),
-}));
-
-vi.mock("@aws-sdk/client-cognito-identity-provider", () => ({
-  CognitoIdentityProviderClient: vi.fn(function (this: Record<string, unknown>) {
-    this.send = mockSend;
-  }),
-  ResendConfirmationCodeCommand: vi.fn(function (this: Record<string, unknown>, input: unknown) {
-    this.input = input;
-  }),
+vi.mock("../../repositories/cognito-auth-repository", () => ({
+  resendConfirmationCode: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -77,7 +69,7 @@ describe("POST /auth/resend-verification-code", () => {
 
   describe("成功系", () => {
     it("有効な email で再送信に成功し、200 を返す", async () => {
-      mockSend.mockResolvedValue({});
+      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockResolvedValueOnce();
 
       const result = await handler(
         makeEvent({
@@ -92,16 +84,16 @@ describe("POST /auth/resend-verification-code", () => {
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}");
       expect(body.message).toBeDefined();
-      expect(mockSend).toHaveBeenCalled();
+      expect(cognitoAuthRepository.resendConfirmationCode).toHaveBeenCalledWith(validInput.email);
     });
   });
 
   describe("Cognito エラー系", () => {
     it("既に確認済みのユーザーに再送信する場合は 400 を返す", async () => {
-      mockSend.mockRejectedValue({
+      const error = Object.assign(new Error("User is already confirmed"), {
         name: "InvalidParameterException",
-        message: "User is already confirmed",
       });
+      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -118,10 +110,10 @@ describe("POST /auth/resend-verification-code", () => {
     });
 
     it("ユーザーが存在しない場合は 400 を返す", async () => {
-      mockSend.mockRejectedValue({
+      const error = Object.assign(new Error("User does not exist"), {
         name: "UserNotFoundException",
-        message: "User does not exist",
       });
+      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -137,10 +129,10 @@ describe("POST /auth/resend-verification-code", () => {
     });
 
     it("リクエスト過多時に 429 を返す", async () => {
-      mockSend.mockRejectedValue({
+      const error = Object.assign(new Error("Too many requests"), {
         name: "TooManyRequestsException",
-        message: "Too many requests",
       });
+      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -156,10 +148,10 @@ describe("POST /auth/resend-verification-code", () => {
     });
 
     it("その他の Cognito エラー時に 500 を返す", async () => {
-      mockSend.mockRejectedValue({
+      const error = Object.assign(new Error("Service unavailable"), {
         name: "ServiceUnavailableException",
-        message: "Service unavailable",
       });
+      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({

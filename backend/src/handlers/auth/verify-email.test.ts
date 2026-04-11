@@ -2,19 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./verify-email";
-import { makeEvent } from "../test/fixtures";
+import * as cognitoAuthRepository from "../../repositories/cognito-auth-repository";
+import { makeEvent } from "../../test/fixtures";
 
-const { mockSend } = vi.hoisted(() => ({
-  mockSend: vi.fn(),
-}));
-
-vi.mock("@aws-sdk/client-cognito-identity-provider", () => ({
-  CognitoIdentityProviderClient: vi.fn(function (this: Record<string, unknown>) {
-    this.send = mockSend;
-  }),
-  ConfirmSignUpCommand: vi.fn(function (this: Record<string, unknown>, input: unknown) {
-    this.input = input;
-  }),
+vi.mock("../../repositories/cognito-auth-repository", () => ({
+  confirmSignUp: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -104,7 +96,7 @@ describe("POST /auth/verify-email", () => {
 
   describe("成功系", () => {
     it("有効な email と code で確認に成功し、200 を返す", async () => {
-      mockSend.mockResolvedValue({});
+      vi.mocked(cognitoAuthRepository.confirmSignUp).mockResolvedValueOnce();
 
       const result = await handler(
         makeEvent({
@@ -119,13 +111,17 @@ describe("POST /auth/verify-email", () => {
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}");
       expect(body.message).toBeDefined();
-      expect(mockSend).toHaveBeenCalled();
+      expect(cognitoAuthRepository.confirmSignUp).toHaveBeenCalledWith(
+        validInput.email,
+        validInput.code
+      );
     });
   });
 
   describe("Cognito エラー系", () => {
     it("コードが不一致の場合は 400 を返す", async () => {
-      mockSend.mockRejectedValue({ name: "CodeMismatchException", message: "Invalid code" });
+      const error = Object.assign(new Error("Invalid code"), { name: "CodeMismatchException" });
+      vi.mocked(cognitoAuthRepository.confirmSignUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -142,7 +138,8 @@ describe("POST /auth/verify-email", () => {
     });
 
     it("コードが期限切れの場合は 400 を返す", async () => {
-      mockSend.mockRejectedValue({ name: "ExpiredCodeException", message: "Expired code" });
+      const error = Object.assign(new Error("Expired code"), { name: "ExpiredCodeException" });
+      vi.mocked(cognitoAuthRepository.confirmSignUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -159,10 +156,10 @@ describe("POST /auth/verify-email", () => {
     });
 
     it("既に確認済みの場合は 400 を返す", async () => {
-      mockSend.mockRejectedValue({
+      const error = Object.assign(new Error("User cannot be confirmed"), {
         name: "NotAuthorizedException",
-        message: "User cannot be confirmed",
       });
+      vi.mocked(cognitoAuthRepository.confirmSignUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -179,10 +176,10 @@ describe("POST /auth/verify-email", () => {
     });
 
     it("リクエスト過多時に 429 を返す", async () => {
-      mockSend.mockRejectedValue({
+      const error = Object.assign(new Error("Too many requests"), {
         name: "TooManyRequestsException",
-        message: "Too many requests",
       });
+      vi.mocked(cognitoAuthRepository.confirmSignUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -198,10 +195,10 @@ describe("POST /auth/verify-email", () => {
     });
 
     it("その他の Cognito エラー時に 500 を返す", async () => {
-      mockSend.mockRejectedValue({
+      const error = Object.assign(new Error("Service unavailable"), {
         name: "ServiceUnavailableException",
-        message: "Service unavailable",
       });
+      vi.mocked(cognitoAuthRepository.confirmSignUp).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({

@@ -358,12 +358,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const updatePiece = fn("UpdatePiece", "handlers/pieces/update.ts");
     const deletePiece = fn("DeletePiece", "handlers/pieces/delete.ts");
 
-    const authRegister = fn("AuthRegister", "auth/register.ts");
-    const authLogin = fn("AuthLogin", "auth/login.ts");
-    const authVerifyEmail = fn("AuthVerifyEmail", "auth/verify-email.ts");
-    const authResendCode = fn("AuthResendCode", "auth/resend-verification-code.ts");
-    const authRefresh = fn("AuthRefresh", "auth/refresh.ts");
-    const authPreSignUp = fn("AuthPreSignUp", "auth/pre-signup.ts");
+    const authRegister = fn("AuthRegister", "handlers/auth/register.ts");
+    const authLogin = fn("AuthLogin", "handlers/auth/login.ts");
+    const authVerifyEmail = fn("AuthVerifyEmail", "handlers/auth/verify-email.ts");
+    const authResendCode = fn("AuthResendCode", "handlers/auth/resend-verification-code.ts");
+    const authRefresh = fn("AuthRefresh", "handlers/auth/refresh.ts");
+    const authPreSignUp = fn("AuthPreSignUp", "handlers/auth/pre-signup.ts");
 
     const concertLogsList = fn("ConcertLogsList", "handlers/concert-logs/list.ts");
     const concertLogsCreate = fn("ConcertLogsCreate", "handlers/concert-logs/create.ts");

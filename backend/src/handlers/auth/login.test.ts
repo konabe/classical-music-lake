@@ -2,20 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./login";
-import { makeEvent } from "../test/fixtures";
+import * as cognitoAuthRepository from "../../repositories/cognito-auth-repository";
+import { makeEvent } from "../../test/fixtures";
 
-// Mock AWS SDK v3 Cognito
-const { mockSend } = vi.hoisted(() => ({
-  mockSend: vi.fn(),
-}));
-
-vi.mock("@aws-sdk/client-cognito-identity-provider", () => ({
-  CognitoIdentityProviderClient: vi.fn(function (this: Record<string, unknown>) {
-    this.send = mockSend;
-  }),
-  InitiateAuthCommand: vi.fn(function (this: Record<string, unknown>, input: unknown) {
-    this.input = input;
-  }),
+vi.mock("../../repositories/cognito-auth-repository", () => ({
+  initiateAuth: vi.fn(),
 }));
 
 const mockContext = {} as Context;
@@ -123,14 +114,12 @@ describe("POST /auth/login", () => {
 
   describe("成功系", () => {
     it("有効な認証情報でログインに成功し、200 と accessToken・idToken・refreshToken を返す", async () => {
-      mockSend.mockResolvedValue({
-        AuthenticationResult: {
-          AccessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-          IdToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-          RefreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
-          TokenType: "Bearer",
-          ExpiresIn: 3600,
-        },
+      vi.mocked(cognitoAuthRepository.initiateAuth).mockResolvedValueOnce({
+        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+        refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
+        tokenType: "Bearer",
+        expiresIn: 3600,
       });
 
       const result = await handler(
@@ -150,14 +139,19 @@ describe("POST /auth/login", () => {
       expect(body.refreshToken).toBe("eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...");
       expect(body.tokenType).toBe("Bearer");
       expect(body.expiresIn).toBe(3600);
-      expect(mockSend).toHaveBeenCalled();
+      expect(cognitoAuthRepository.initiateAuth).toHaveBeenCalledWith(
+        validInput.email,
+        validInput.password
+      );
     });
   });
 
   describe("Cognito エラー系", () => {
     it("認証情報が間違いの場合 401 を返す (NotAuthorizedException)", async () => {
-      const error = { name: "NotAuthorizedException", message: "Incorrect username or password." };
-      mockSend.mockRejectedValue(error);
+      const error = Object.assign(new Error("Incorrect username or password."), {
+        name: "NotAuthorizedException",
+      });
+      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -175,8 +169,10 @@ describe("POST /auth/login", () => {
     });
 
     it("ユーザーが存在しない場合 401 を返す (UserNotFoundException)", async () => {
-      const error = { name: "UserNotFoundException", message: "User does not exist." };
-      mockSend.mockRejectedValue(error);
+      const error = Object.assign(new Error("User does not exist."), {
+        name: "UserNotFoundException",
+      });
+      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -194,8 +190,10 @@ describe("POST /auth/login", () => {
     });
 
     it("メール未確認の場合 403 を返す (UserNotConfirmedException)", async () => {
-      const error = { name: "UserNotConfirmedException", message: "User is not confirmed." };
-      mockSend.mockRejectedValue(error);
+      const error = Object.assign(new Error("User is not confirmed."), {
+        name: "UserNotConfirmedException",
+      });
+      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -213,8 +211,10 @@ describe("POST /auth/login", () => {
     });
 
     it("リクエスト過多の場合 429 を返す (TooManyRequestsException)", async () => {
-      const error = { name: "TooManyRequestsException", message: "Too many requests." };
-      mockSend.mockRejectedValue(error);
+      const error = Object.assign(new Error("Too many requests."), {
+        name: "TooManyRequestsException",
+      });
+      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -232,8 +232,10 @@ describe("POST /auth/login", () => {
     });
 
     it("その他の Cognito エラーの場合 500 を返す", async () => {
-      const error = { name: "ServiceUnavailableException", message: "Service unavailable." };
-      mockSend.mockRejectedValue(error);
+      const error = Object.assign(new Error("Service unavailable."), {
+        name: "ServiceUnavailableException",
+      });
+      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
