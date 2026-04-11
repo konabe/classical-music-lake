@@ -63,8 +63,12 @@ export const handler: PreSignUpTriggerHandler = async (event) => {
   );
 
   // リンク済みの外部プロバイダーユーザーは自動確認する
-  event.response.autoConfirmUser = true;
-  event.response.autoVerifyEmail = true;
-
-  return event;
+  return {
+    ...event,
+    response: {
+      ...event.response,
+      autoConfirmUser: true,
+      autoVerifyEmail: true,
+    },
+  };
 };
