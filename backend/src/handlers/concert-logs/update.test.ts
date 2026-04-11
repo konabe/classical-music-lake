@@ -4,11 +4,19 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ConcertLog } from "../../types";
 
 import { handler } from "./update";
-import * as concertLogRepository from "../../repositories/concert-log-repository";
+
+const mockRepo = vi.hoisted(() => ({
+  save: vi.fn(),
+  findById: vi.fn(),
+  findByUserId: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+}));
 
 vi.mock("../../repositories/concert-log-repository", () => ({
-  findById: vi.fn(),
-  update: vi.fn(),
+  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
+    return mockRepo;
+  }),
 }));
 
 const mockContext = {} as Context;
@@ -124,18 +132,18 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("他ユーザーのアイテムを更新しようとした場合は 404 を返す", async () => {
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
+    mockRepo.findById.mockResolvedValueOnce(existingLog);
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), OTHER_USER_ID),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(404);
-    expect(concertLogRepository.update).not.toHaveBeenCalled();
+    expect(mockRepo.update).not.toHaveBeenCalled();
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(undefined);
+    mockRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
@@ -150,8 +158,8 @@ describe("PUT /concert-logs/:id (update)", () => {
       venue: "東京文化会館",
       updatedAt: new Date().toISOString(),
     };
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
-    vi.mocked(concertLogRepository.update).mockResolvedValueOnce(updatedLog);
+    mockRepo.findById.mockResolvedValueOnce(existingLog);
+    mockRepo.update.mockResolvedValueOnce(updatedLog);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
@@ -166,8 +174,8 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("venue のみ更新して concertDate はそのままであること", async () => {
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
-    vi.mocked(concertLogRepository.update).mockResolvedValueOnce({
+    mockRepo.findById.mockResolvedValueOnce(existingLog);
+    mockRepo.update.mockResolvedValueOnce({
       ...existingLog,
       venue: "東京文化会館",
       updatedAt: new Date().toISOString(),
@@ -182,10 +190,8 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
-    vi.mocked(concertLogRepository.update).mockRejectedValueOnce(
-      new Conflict("Item was updated by another request")
-    );
+    mockRepo.findById.mockResolvedValueOnce(existingLog);
+    mockRepo.update.mockRejectedValueOnce(new Conflict("Item was updated by another request"));
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
@@ -196,7 +202,7 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    vi.mocked(concertLogRepository.findById).mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
@@ -212,8 +218,8 @@ describe("PUT /concert-logs/:id (update)", () => {
       pieceIds: [pieceId],
       updatedAt: new Date().toISOString(),
     };
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLog);
-    vi.mocked(concertLogRepository.update).mockResolvedValueOnce(updatedLog);
+    mockRepo.findById.mockResolvedValueOnce(existingLog);
+    mockRepo.update.mockResolvedValueOnce(updatedLog);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [pieceId] }), TEST_USER_ID),
@@ -235,8 +241,8 @@ describe("PUT /concert-logs/:id (update)", () => {
       pieceIds: [],
       updatedAt: new Date().toISOString(),
     };
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingLogWithPieces);
-    vi.mocked(concertLogRepository.update).mockResolvedValueOnce(updatedLog);
+    mockRepo.findById.mockResolvedValueOnce(existingLogWithPieces);
+    mockRepo.update.mockResolvedValueOnce(updatedLog);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [] }), TEST_USER_ID),

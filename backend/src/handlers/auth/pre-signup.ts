@@ -1,9 +1,10 @@
 import type { PreSignUpTriggerHandler } from "aws-lambda";
 
-import { linkExternalProvider } from "../../usecases/auth/link-external-provider";
+import { createAuthUsecase } from "../../usecases/auth-usecase";
+
+const usecase = createAuthUsecase();
 
 export const handler: PreSignUpTriggerHandler = async (event) => {
-  // 外部プロバイダー（Google等）経由のサインアップ以外はスキップ
   if (event.triggerSource !== "PreSignUp_ExternalProvider") {
     return event;
   }
@@ -13,7 +14,7 @@ export const handler: PreSignUpTriggerHandler = async (event) => {
     return event;
   }
 
-  await linkExternalProvider(event.userPoolId, email, event.userName);
+  await usecase.linkExternalProvider(event.userPoolId, email, event.userName);
 
   return { ...event };
 };

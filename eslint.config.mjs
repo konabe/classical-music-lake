@@ -298,7 +298,8 @@ export default withNuxt(
             },
             {
               group: ["**/domain/*"],
-              message: "repositories から domain への参照は禁止です",
+              allowTypeImports: true,
+              message: "repositories から domain への値参照は禁止です（type import は許可）",
             },
           ],
         },

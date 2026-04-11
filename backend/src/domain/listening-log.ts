@@ -2,12 +2,35 @@ import { randomUUID } from "node:crypto";
 
 import type { CreateListeningLogInput, ListeningLog } from "../types";
 
-export const buildListeningLog = (input: CreateListeningLogInput): ListeningLog => {
-  const now = new Date().toISOString();
-  return { ...input, id: randomUUID(), createdAt: now, updatedAt: now };
+export type ListeningLogRepository = {
+  findById(id: string): Promise<ListeningLog | undefined>;
+  findByUserId(userId: string): Promise<ListeningLog[]>;
+  save(item: ListeningLog): Promise<void>;
+  update(id: string, input: Partial<ListeningLog>): Promise<ListeningLog>;
+  remove(id: string): Promise<void>;
 };
 
-export const sortByListenedAtDesc = (logs: ListeningLog[]): ListeningLog[] =>
-  [...logs].sort((a, b) => b.listenedAt.localeCompare(a.listenedAt));
+export class ListeningLogEntity {
+  private constructor(private readonly props: ListeningLog) {}
 
-export const isOwner = (log: ListeningLog, userId: string): boolean => log.userId === userId;
+  static create(input: CreateListeningLogInput): ListeningLogEntity {
+    const now = new Date().toISOString();
+    return new ListeningLogEntity({ ...input, id: randomUUID(), createdAt: now, updatedAt: now });
+  }
+
+  static reconstruct(data: ListeningLog): ListeningLogEntity {
+    return new ListeningLogEntity(data);
+  }
+
+  static sortByListenedAtDesc(entities: ListeningLogEntity[]): ListeningLogEntity[] {
+    return [...entities].sort((a, b) => b.props.listenedAt.localeCompare(a.props.listenedAt));
+  }
+
+  isOwnedBy(userId: string): boolean {
+    return this.props.userId === userId;
+  }
+
+  toPlain(): ListeningLog {
+    return { ...this.props };
+  }
+}

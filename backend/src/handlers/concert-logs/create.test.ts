@@ -2,11 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./create";
-import * as concertLogRepository from "../../repositories/concert-log-repository";
 import { makeEvent, makeAuthEvent } from "../../test/fixtures";
 
-vi.mock("../../repositories/concert-log-repository", () => ({
+const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
+  findById: vi.fn(),
+  findByUserId: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+}));
+
+vi.mock("../../repositories/concert-log-repository", () => ({
+  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
+    return mockRepo;
+  }),
 }));
 
 const mockContext = {} as Context;
@@ -120,7 +129,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("正常に作成して 201 を返す", async () => {
-    vi.mocked(concertLogRepository.save).mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -140,7 +149,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("任意フィールドを含めて正常に作成して 201 を返す", async () => {
-    vi.mocked(concertLogRepository.save).mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify({
@@ -164,7 +173,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("作成アイテムに UUID が付与される", async () => {
-    vi.mocked(concertLogRepository.save).mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -179,7 +188,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("createdAt と updatedAt が同じ値で設定される", async () => {
-    vi.mocked(concertLogRepository.save).mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -194,7 +203,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("userId が保存される", async () => {
-    vi.mocked(concertLogRepository.save).mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce();
     await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -205,12 +214,12 @@ describe("POST /concert-logs (create)", () => {
       mockCallback
     );
 
-    const savedItem = vi.mocked(concertLogRepository.save).mock.calls[0][0];
+    const savedItem = mockRepo.save.mock.calls[0][0];
     expect(savedItem.userId).toBe(TEST_USER_ID);
   });
 
   it("レスポンスボディに userId が含まれる", async () => {
-    vi.mocked(concertLogRepository.save).mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -225,7 +234,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    vi.mocked(concertLogRepository.save).mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.save.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -239,7 +248,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("pieceIds を含めて正常に作成して 201 を返す", async () => {
-    vi.mocked(concertLogRepository.save).mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce();
     const pieceIds = [
       "550e8400-e29b-41d4-a716-446655440000",
       "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
@@ -259,7 +268,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("pieceIds が空配列でも正常に作成できる", async () => {
-    vi.mocked(concertLogRepository.save).mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify({ ...validInput, pieceIds: [] }),

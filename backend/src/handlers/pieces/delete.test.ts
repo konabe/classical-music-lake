@@ -2,10 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { handler } from "./delete";
-import * as pieceRepository from "../../repositories/piece-repository";
+
+const mockRepo = vi.hoisted(() => ({
+  save: vi.fn(),
+  findById: vi.fn(),
+  findAll: vi.fn(),
+  saveWithOptimisticLock: vi.fn(),
+  remove: vi.fn(),
+}));
 
 vi.mock("../../repositories/piece-repository", () => ({
-  remove: vi.fn(),
+  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
+    return mockRepo;
+  }),
 }));
 
 const mockContext = {} as Context;
@@ -40,21 +49,21 @@ describe("DELETE /pieces/{id} (delete)", () => {
   });
 
   it("正常に削除して 204 を返す", async () => {
-    vi.mocked(pieceRepository.remove).mockResolvedValueOnce();
+    mockRepo.remove.mockResolvedValueOnce();
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
   });
 
   it("正しい id で Repository.remove を呼び出す", async () => {
-    vi.mocked(pieceRepository.remove).mockResolvedValueOnce();
+    mockRepo.remove.mockResolvedValueOnce();
     await handler(makeEvent("test-id-123"), mockContext, mockCallback);
 
-    expect(pieceRepository.remove).toHaveBeenCalledWith("test-id-123");
+    expect(mockRepo.remove).toHaveBeenCalledWith("test-id-123");
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    vi.mocked(pieceRepository.remove).mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.remove.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

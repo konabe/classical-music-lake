@@ -3,11 +3,20 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Piece } from "../../types";
 
 import { handler } from "./list";
-import * as pieceRepository from "../../repositories/piece-repository";
 import { makePiece } from "../../test/fixtures";
 
-vi.mock("../../repositories/piece-repository", () => ({
+const mockRepo = vi.hoisted(() => ({
+  save: vi.fn(),
+  findById: vi.fn(),
   findAll: vi.fn(),
+  saveWithOptimisticLock: vi.fn(),
+  remove: vi.fn(),
+}));
+
+vi.mock("../../repositories/piece-repository", () => ({
+  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
+    return mockRepo;
+  }),
 }));
 
 const mockContext = {} as Context;
@@ -20,7 +29,7 @@ describe("GET /pieces (list)", () => {
   });
 
   it("空リストの場合は 200 で空配列を返す", async () => {
-    vi.mocked(pieceRepository.findAll).mockResolvedValueOnce([]);
+    mockRepo.findAll.mockResolvedValueOnce([]);
     const result = await handler(mockEvent, mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
     expect(JSON.parse(result?.body ?? "[]")).toEqual([]);
@@ -32,7 +41,7 @@ describe("GET /pieces (list)", () => {
       makePiece("2", "アイネ・クライネ・ナハトムジーク"),
       makePiece("3", "春の祭典"),
     ];
-    vi.mocked(pieceRepository.findAll).mockResolvedValueOnce(pieces);
+    mockRepo.findAll.mockResolvedValueOnce(pieces);
 
     const result = await handler(mockEvent, mockContext, mockCallback);
     const body: Piece[] = JSON.parse(result?.body ?? "[]");
@@ -47,17 +56,17 @@ describe("GET /pieces (list)", () => {
       makePiece("1", "交響曲第9番"),
       makePiece("2", "アイネ・クライネ・ナハトムジーク"),
     ];
-    vi.mocked(pieceRepository.findAll).mockResolvedValueOnce(pieces);
+    mockRepo.findAll.mockResolvedValueOnce(pieces);
 
     const result = await handler(mockEvent, mockContext, mockCallback);
     const body: Piece[] = JSON.parse(result?.body ?? "[]");
 
-    expect(pieceRepository.findAll).toHaveBeenCalledTimes(1);
+    expect(mockRepo.findAll).toHaveBeenCalledTimes(1);
     expect(body).toHaveLength(2);
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    vi.mocked(pieceRepository.findAll).mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.findAll.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(mockEvent, mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

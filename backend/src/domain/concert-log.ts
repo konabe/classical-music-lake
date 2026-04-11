@@ -2,12 +2,41 @@ import { randomUUID } from "node:crypto";
 
 import type { ConcertLog, CreateConcertLogInput } from "../types";
 
-export const buildConcertLog = (input: CreateConcertLogInput, userId: string): ConcertLog => {
-  const now = new Date().toISOString();
-  return { ...input, id: randomUUID(), userId, createdAt: now, updatedAt: now };
+export type ConcertLogRepository = {
+  findById(id: string): Promise<ConcertLog | undefined>;
+  findByUserId(userId: string): Promise<ConcertLog[]>;
+  save(item: ConcertLog): Promise<void>;
+  update(id: string, input: Partial<ConcertLog>): Promise<ConcertLog>;
+  remove(id: string): Promise<void>;
 };
 
-export const sortByConcertDateDesc = (logs: ConcertLog[]): ConcertLog[] =>
-  [...logs].sort((a, b) => b.concertDate.localeCompare(a.concertDate));
+export class ConcertLogEntity {
+  private constructor(private readonly props: ConcertLog) {}
 
-export const isOwner = (log: ConcertLog, userId: string): boolean => log.userId === userId;
+  static create(input: CreateConcertLogInput, userId: string): ConcertLogEntity {
+    const now = new Date().toISOString();
+    return new ConcertLogEntity({
+      ...input,
+      id: randomUUID(),
+      userId,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  static reconstruct(data: ConcertLog): ConcertLogEntity {
+    return new ConcertLogEntity(data);
+  }
+
+  static sortByConcertDateDesc(entities: ConcertLogEntity[]): ConcertLogEntity[] {
+    return [...entities].sort((a, b) => b.props.concertDate.localeCompare(a.props.concertDate));
+  }
+
+  isOwnedBy(userId: string): boolean {
+    return this.props.userId === userId;
+  }
+
+  toPlain(): ConcertLog {
+    return { ...this.props };
+  }
+}

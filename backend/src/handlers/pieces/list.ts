@@ -1,8 +1,10 @@
 import { createHandler } from "../../utils/middleware";
 import { ok } from "../../utils/response";
-import { listPieces } from "../../usecases/piece/list-pieces";
+import { createPieceUsecase } from "../../usecases/piece-usecase";
+
+const usecase = createPieceUsecase();
 
 export const handler = createHandler(async () => {
-  const pieces = await listPieces();
+  const pieces = await usecase.list();
   return ok(pieces);
 });

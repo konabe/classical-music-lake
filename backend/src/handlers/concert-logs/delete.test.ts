@@ -2,11 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { handler } from "./delete";
-import * as concertLogRepository from "../../repositories/concert-log-repository";
+
+const mockRepo = vi.hoisted(() => ({
+  save: vi.fn(),
+  findById: vi.fn(),
+  findByUserId: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+}));
 
 vi.mock("../../repositories/concert-log-repository", () => ({
-  findById: vi.fn(),
-  remove: vi.fn(),
+  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
+    return mockRepo;
+  }),
 }));
 
 const mockContext = {} as Context;
@@ -57,7 +65,7 @@ describe("DELETE /concert-logs/:id (delete)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(undefined);
+    mockRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", TEST_USER_ID),
       mockContext,
@@ -67,23 +75,23 @@ describe("DELETE /concert-logs/:id (delete)", () => {
   });
 
   it("他ユーザーのアイテムを削除しようとした場合は 404 を返す（存在を隠蔽）", async () => {
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingItem);
+    mockRepo.findById.mockResolvedValueOnce(existingItem);
     const result = await handler(makeEvent("abc-123", OTHER_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
-    expect(concertLogRepository.remove).not.toHaveBeenCalled();
+    expect(mockRepo.remove).not.toHaveBeenCalled();
   });
 
   it("正常削除して 204 を返す", async () => {
-    vi.mocked(concertLogRepository.findById).mockResolvedValueOnce(existingItem);
-    vi.mocked(concertLogRepository.remove).mockResolvedValueOnce();
+    mockRepo.findById.mockResolvedValueOnce(existingItem);
+    mockRepo.remove.mockResolvedValueOnce();
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
-    expect(concertLogRepository.remove).toHaveBeenCalledTimes(1);
+    expect(mockRepo.remove).toHaveBeenCalledTimes(1);
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    vi.mocked(concertLogRepository.findById).mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });
