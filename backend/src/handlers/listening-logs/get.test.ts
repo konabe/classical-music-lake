@@ -3,10 +3,19 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ListeningLog } from "../../types";
 
 import { handler } from "./get";
-import * as listeningLogRepository from "../../repositories/listening-log-repository";
+
+const mockRepo = vi.hoisted(() => ({
+  save: vi.fn(),
+  findById: vi.fn(),
+  findByUserId: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+}));
 
 vi.mock("../../repositories/listening-log-repository", () => ({
-  findById: vi.fn(),
+  DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
+    return mockRepo;
+  }),
 }));
 
 const mockContext = {} as Context;
@@ -59,7 +68,7 @@ describe("GET /listening-logs/:id (get)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(undefined);
+    mockRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", TEST_USER_ID),
       mockContext,
@@ -69,20 +78,20 @@ describe("GET /listening-logs/:id (get)", () => {
   });
 
   it("他ユーザーのアイテムにアクセスした場合は 404 を返す（存在を隠蔽）", async () => {
-    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(testLog);
+    mockRepo.findById.mockResolvedValueOnce(testLog);
     const result = await handler(makeEvent("abc-123", OTHER_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
   });
 
   it("userId が null のアイテム（未帰属データ）にアクセスした場合は 404 を返す", async () => {
     const nullUserLog = { ...testLog, userId: null };
-    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(nullUserLog);
+    mockRepo.findById.mockResolvedValueOnce(nullUserLog);
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
   });
 
   it("正常取得して 200 を返す", async () => {
-    vi.mocked(listeningLogRepository.findById).mockResolvedValueOnce(testLog);
+    mockRepo.findById.mockResolvedValueOnce(testLog);
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
 
@@ -92,7 +101,7 @@ describe("GET /listening-logs/:id (get)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    vi.mocked(listeningLogRepository.findById).mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

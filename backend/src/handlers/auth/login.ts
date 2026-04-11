@@ -3,11 +3,13 @@ import { StatusCodes } from "http-status-codes";
 import { createHandler, jsonBodyParser } from "../../utils/middleware";
 import { parseRequestBody } from "../../utils/parsing";
 import { loginSchema } from "../../utils/schemas";
-import { loginUser } from "../../usecases/auth/login-user";
+import { createAuthUsecase } from "../../usecases/auth-usecase";
+
+const usecase = createAuthUsecase();
 
 export const handler = createHandler(async (event) => {
   const input = parseRequestBody(event.body as unknown, loginSchema);
-  const result = await loginUser(input.email, input.password);
+  const result = await usecase.login(input.email, input.password);
   if (result.success) {
     return { statusCode: StatusCodes.OK, body: result.body };
   }

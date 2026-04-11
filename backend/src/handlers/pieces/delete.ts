@@ -1,10 +1,12 @@
 import { StatusCodes } from "http-status-codes";
 import { createHandler } from "../../utils/middleware";
 import { getIdParam } from "../../utils/path-params";
-import { deletePiece } from "../../usecases/piece/delete-piece";
+import { createPieceUsecase } from "../../usecases/piece-usecase";
+
+const usecase = createPieceUsecase();
 
 export const handler = createHandler(async (event) => {
   const id = getIdParam(event);
-  await deletePiece(id);
+  await usecase.delete(id);
   return { statusCode: StatusCodes.NO_CONTENT, body: "" };
 });

@@ -2,11 +2,22 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./resend-verification-code";
-import * as cognitoAuthRepository from "../../repositories/cognito-auth-repository";
 import { makeEvent } from "../../test/fixtures";
 
-vi.mock("../../repositories/cognito-auth-repository", () => ({
+const mockRepo = vi.hoisted(() => ({
+  signUp: vi.fn(),
+  initiateAuth: vi.fn(),
+  confirmSignUp: vi.fn(),
   resendConfirmationCode: vi.fn(),
+  refreshToken: vi.fn(),
+  listUsersByEmail: vi.fn(),
+  linkProviderForUser: vi.fn(),
+}));
+
+vi.mock("../../repositories/cognito-auth-repository", () => ({
+  CognitoAuthRepository: vi.fn().mockImplementation(function () {
+    return mockRepo;
+  }),
 }));
 
 const mockContext = {} as Context;
@@ -69,7 +80,7 @@ describe("POST /auth/resend-verification-code", () => {
 
   describe("成功系", () => {
     it("有効な email で再送信に成功し、200 を返す", async () => {
-      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockResolvedValueOnce();
+      mockRepo.resendConfirmationCode.mockResolvedValueOnce();
 
       const result = await handler(
         makeEvent({
@@ -84,7 +95,7 @@ describe("POST /auth/resend-verification-code", () => {
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}");
       expect(body.message).toBeDefined();
-      expect(cognitoAuthRepository.resendConfirmationCode).toHaveBeenCalledWith(validInput.email);
+      expect(mockRepo.resendConfirmationCode).toHaveBeenCalledWith(validInput.email);
     });
   });
 
@@ -93,7 +104,7 @@ describe("POST /auth/resend-verification-code", () => {
       const error = Object.assign(new Error("User is already confirmed"), {
         name: "InvalidParameterException",
       });
-      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockRejectedValueOnce(error);
+      mockRepo.resendConfirmationCode.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -113,7 +124,7 @@ describe("POST /auth/resend-verification-code", () => {
       const error = Object.assign(new Error("User does not exist"), {
         name: "UserNotFoundException",
       });
-      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockRejectedValueOnce(error);
+      mockRepo.resendConfirmationCode.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -132,7 +143,7 @@ describe("POST /auth/resend-verification-code", () => {
       const error = Object.assign(new Error("Too many requests"), {
         name: "TooManyRequestsException",
       });
-      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockRejectedValueOnce(error);
+      mockRepo.resendConfirmationCode.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -151,7 +162,7 @@ describe("POST /auth/resend-verification-code", () => {
       const error = Object.assign(new Error("Service unavailable"), {
         name: "ServiceUnavailableException",
       });
-      vi.mocked(cognitoAuthRepository.resendConfirmationCode).mockRejectedValueOnce(error);
+      mockRepo.resendConfirmationCode.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({

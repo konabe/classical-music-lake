@@ -3,11 +3,13 @@ import { parseRequestBody } from "../../utils/parsing";
 import { updatePieceSchema } from "../../utils/schemas";
 import { getIdParam } from "../../utils/path-params";
 import { ok } from "../../utils/response";
-import { updatePiece } from "../../usecases/piece/update-piece";
+import { createPieceUsecase } from "../../usecases/piece-usecase";
+
+const usecase = createPieceUsecase();
 
 export const handler = createHandler(async (event) => {
   const id = getIdParam(event);
   const input = parseRequestBody(event.body as unknown, updatePieceSchema);
-  const piece = await updatePiece(id, input);
+  const piece = await usecase.update(id, input);
   return ok(piece);
 }).use(jsonBodyParser);

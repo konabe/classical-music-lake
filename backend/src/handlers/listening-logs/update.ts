@@ -4,13 +4,15 @@ import { updateListeningLogSchema } from "../../utils/schemas";
 import { getIdParam } from "../../utils/path-params";
 import { getUserId } from "../../utils/auth";
 import { ok } from "../../utils/response";
-import { updateListeningLog } from "../../usecases/listening-log/update-listening-log";
+import { createListeningLogUsecase } from "../../usecases/listening-log-usecase";
 import type { ListeningLog } from "../../types";
+
+const usecase = createListeningLogUsecase();
 
 export const handler = createHandler(async (event) => {
   const id = getIdParam(event);
   const input = parseRequestBody(event.body as unknown, updateListeningLogSchema);
   const userId = getUserId(event);
-  const updated = await updateListeningLog(id, input as Partial<ListeningLog>, userId);
+  const updated = await usecase.update(id, input as Partial<ListeningLog>, userId);
   return ok(updated);
 }).use(jsonBodyParser);

@@ -2,11 +2,22 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
 import { handler } from "./login";
-import * as cognitoAuthRepository from "../../repositories/cognito-auth-repository";
 import { makeEvent } from "../../test/fixtures";
 
-vi.mock("../../repositories/cognito-auth-repository", () => ({
+const mockRepo = vi.hoisted(() => ({
+  signUp: vi.fn(),
   initiateAuth: vi.fn(),
+  confirmSignUp: vi.fn(),
+  resendConfirmationCode: vi.fn(),
+  refreshToken: vi.fn(),
+  listUsersByEmail: vi.fn(),
+  linkProviderForUser: vi.fn(),
+}));
+
+vi.mock("../../repositories/cognito-auth-repository", () => ({
+  CognitoAuthRepository: vi.fn().mockImplementation(function () {
+    return mockRepo;
+  }),
 }));
 
 const mockContext = {} as Context;
@@ -114,7 +125,7 @@ describe("POST /auth/login", () => {
 
   describe("成功系", () => {
     it("有効な認証情報でログインに成功し、200 と accessToken・idToken・refreshToken を返す", async () => {
-      vi.mocked(cognitoAuthRepository.initiateAuth).mockResolvedValueOnce({
+      mockRepo.initiateAuth.mockResolvedValueOnce({
         accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
         idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
         refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
@@ -139,10 +150,7 @@ describe("POST /auth/login", () => {
       expect(body.refreshToken).toBe("eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...");
       expect(body.tokenType).toBe("Bearer");
       expect(body.expiresIn).toBe(3600);
-      expect(cognitoAuthRepository.initiateAuth).toHaveBeenCalledWith(
-        validInput.email,
-        validInput.password
-      );
+      expect(mockRepo.initiateAuth).toHaveBeenCalledWith(validInput.email, validInput.password);
     });
   });
 
@@ -151,7 +159,7 @@ describe("POST /auth/login", () => {
       const error = Object.assign(new Error("Incorrect username or password."), {
         name: "NotAuthorizedException",
       });
-      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
+      mockRepo.initiateAuth.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -172,7 +180,7 @@ describe("POST /auth/login", () => {
       const error = Object.assign(new Error("User does not exist."), {
         name: "UserNotFoundException",
       });
-      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
+      mockRepo.initiateAuth.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -193,7 +201,7 @@ describe("POST /auth/login", () => {
       const error = Object.assign(new Error("User is not confirmed."), {
         name: "UserNotConfirmedException",
       });
-      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
+      mockRepo.initiateAuth.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -214,7 +222,7 @@ describe("POST /auth/login", () => {
       const error = Object.assign(new Error("Too many requests."), {
         name: "TooManyRequestsException",
       });
-      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
+      mockRepo.initiateAuth.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({
@@ -235,7 +243,7 @@ describe("POST /auth/login", () => {
       const error = Object.assign(new Error("Service unavailable."), {
         name: "ServiceUnavailableException",
       });
-      vi.mocked(cognitoAuthRepository.initiateAuth).mockRejectedValueOnce(error);
+      mockRepo.initiateAuth.mockRejectedValueOnce(error);
 
       const result = await handler(
         makeEvent({

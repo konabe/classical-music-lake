@@ -1,10 +1,12 @@
 import { createHandler } from "../../utils/middleware";
 import { getUserId } from "../../utils/auth";
 import { ok } from "../../utils/response";
-import { listListeningLogs } from "../../usecases/listening-log/list-listening-logs";
+import { createListeningLogUsecase } from "../../usecases/listening-log-usecase";
+
+const usecase = createListeningLogUsecase();
 
 export const handler = createHandler(async (event) => {
   const userId = getUserId(event);
-  const logs = await listListeningLogs(userId);
+  const logs = await usecase.list(userId);
   return ok(logs);
 });
