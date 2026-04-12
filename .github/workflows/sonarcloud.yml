@@ -35,7 +35,7 @@ jobs:
       - name: Run backend coverage
         run: pnpm -C backend run test:coverage
 
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@ba3875ecf642b2129de2b589510c81a8b53dbf4e # v5.0.0
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
