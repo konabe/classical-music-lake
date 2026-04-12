@@ -15,6 +15,8 @@ export default defineVitestConfig({
       provider: "v8",
       include: ["app/composables/**/*.ts", "app/components/**/*.vue", "app/types/**/*.ts"],
       exclude: ["node_modules", ".nuxt"],
+      reporter: ["text", "lcov"],
+      reportsDirectory: "./coverage",
     },
   },
 });

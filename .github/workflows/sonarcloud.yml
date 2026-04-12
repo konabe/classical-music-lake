@@ -19,6 +19,22 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run frontend coverage
+        run: pnpm run test:coverage
+
+      - name: Run backend coverage
+        run: pnpm -C backend run test:coverage
+
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@ba3875ecf642b2129de2b589510c81a8b53dbf4e # v5.0.0
         env:
