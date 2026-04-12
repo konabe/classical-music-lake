@@ -1,0 +1,150 @@
+name: Deploy DNS Stack
+
+# -----------------------------------------------------------------------
+# NocturneAppDnsStack（us-east-1）を手動でデプロイするためのワークフロー。
+# DnsStack の cross-region SSM エクスポートは Consumer スタックごとに
+# 作成されるため、app.ts で Consumer を追加・変更した後に一度だけ
+# 手動実行して us-east-1 の SSM パラメータを更新する用途で使う。
+#
+# deploy.yml とは異なり、DnsStack のみを対象に --exclusively なしで
+# デプロイする。ACM 証明書の DNS 検証が未完了の場合は CloudFormation が
+# ペンディングするため、初回デプロイ時はお名前.comで NS レコードを
+# 設定しておくこと。
+# -----------------------------------------------------------------------
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dns
+  cancel-in-progress: false
+
+jobs:
+  deploy-dns:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install all dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate required secrets
+        env:
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          if [ -z "$AWS_ROLE_TO_ASSUME" ]; then
+            echo "::error::AWS_ROLE_TO_ASSUME secret is not set."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ap-northeast-1
+
+      - name: Ensure ECR repository for CDK bootstrap (us-east-1)
+        run: |
+          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+          REPO="cdk-hnb659fds-container-assets-${ACCOUNT}-us-east-1"
+          aws ecr describe-repositories --repository-names "$REPO" --region us-east-1 2>/dev/null \
+            || aws ecr create-repository --repository-name "$REPO" --region us-east-1 2>/dev/null \
+            || true
+
+      - name: CDK Bootstrap (us-east-1)
+        run: |
+          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+          npx cdk bootstrap "aws://${ACCOUNT}/us-east-1"
+        working-directory: cdk
+
+      # ----------------------------------------
+      # 診断: スタックの現在状態と直近のイベントを出力する
+      # UPDATE_ROLLBACK_FAILED で詰まっている場合、どのリソースが
+      # 原因かをログから特定できるようにする
+      # ----------------------------------------
+      - name: Show CFN stack status and recent events
+        run: |
+          STATUS=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].StackStatus' \
+            --output text 2>/dev/null || echo "NOT_FOUND")
+          echo "NocturneAppDnsStack status: $STATUS"
+          echo "Recent stack events:"
+          aws cloudformation describe-stack-events \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --max-items 30 \
+            --query 'StackEvents[].[Timestamp,ResourceStatus,ResourceType,LogicalResourceId,ResourceStatusReason]' \
+            --output table || true
+
+      # ----------------------------------------
+      # UPDATE_ROLLBACK_FAILED からの自動復旧
+      # DnsStack 更新時に ExportsWriter（Custom::CrossRegionExportWriter）が
+      # 他のステージで現在も参照中の SSM エクスポートを削除しようとして失敗し、
+      # ロールバックも失敗して固着する既知の問題がある
+      # UPDATE_FAILED 状態のリソースを --resources-to-skip に渡して
+      # continue-update-rollback を発行する
+      # ----------------------------------------
+      - name: Continue rollback if stuck
+        run: |
+          STATUS=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].StackStatus' \
+            --output text 2>/dev/null || echo "NOT_FOUND")
+          if [ "$STATUS" != "UPDATE_ROLLBACK_FAILED" ]; then
+            echo "Stack status is $STATUS. Skipping recovery."
+            exit 0
+          fi
+
+          echo "Stack is UPDATE_ROLLBACK_FAILED. Resolving failed resources..."
+          SKIP=$(aws cloudformation describe-stack-resources \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'StackResources[?ResourceStatus==`UPDATE_FAILED`].LogicalResourceId' \
+            --output text)
+          echo "Resources to skip: ${SKIP:-<none>}"
+
+          if [ -n "$SKIP" ]; then
+            aws cloudformation continue-update-rollback \
+              --stack-name NocturneAppDnsStack \
+              --region us-east-1 \
+              --resources-to-skip $SKIP
+          else
+            aws cloudformation continue-update-rollback \
+              --stack-name NocturneAppDnsStack \
+              --region us-east-1
+          fi
+
+          echo "Waiting for rollback to complete..."
+          aws cloudformation wait stack-rollback-complete \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1
+          FINAL_STATUS=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].StackStatus' \
+            --output text)
+          echo "Rollback completed. Final status: $FINAL_STATUS"
+
+      # ----------------------------------------
+      # DnsStack をデプロイして us-east-1 の
+      # /cdk/exports/<ConsumerStackName>/... SSM パラメータを更新する。
+      # app.ts で全 3 ステージの Consumer を instantiate しているため、
+      # このデプロイで 3 環境分の SSM エクスポートが作成される。
+      # ----------------------------------------
+      - name: CDK Deploy (NocturneAppDnsStack)
+        run: npx cdk deploy NocturneAppDnsStack --require-approval never --exclusively
+        working-directory: cdk
