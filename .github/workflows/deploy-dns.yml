@@ -95,9 +95,11 @@ jobs:
 
       # ----------------------------------------
       # UPDATE_ROLLBACK_FAILED からの自動復旧
-      # 過去の DnsStack 更新時にロールバックも失敗して固着した場合、
-      # cdk deploy はそのままでは動かないので continue-update-rollback
-      # を発行してロールバックを完了させる
+      # DnsStack 更新時に ExportsWriter（Custom::CrossRegionExportWriter）が
+      # 他のステージで現在も参照中の SSM エクスポートを削除しようとして失敗し、
+      # ロールバックも失敗して固着する既知の問題がある
+      # UPDATE_FAILED 状態のリソースを --resources-to-skip に渡して
+      # continue-update-rollback を発行する
       # ----------------------------------------
       - name: Continue rollback if stuck
         run: |
@@ -106,24 +108,40 @@ jobs:
             --region us-east-1 \
             --query 'Stacks[0].StackStatus' \
             --output text 2>/dev/null || echo "NOT_FOUND")
-          if [ "$STATUS" = "UPDATE_ROLLBACK_FAILED" ]; then
-            echo "Stack is UPDATE_ROLLBACK_FAILED. Attempting continue-update-rollback..."
+          if [ "$STATUS" != "UPDATE_ROLLBACK_FAILED" ]; then
+            echo "Stack status is $STATUS. Skipping recovery."
+            exit 0
+          fi
+
+          echo "Stack is UPDATE_ROLLBACK_FAILED. Resolving failed resources..."
+          SKIP=$(aws cloudformation describe-stack-resources \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'StackResources[?ResourceStatus==`UPDATE_FAILED`].LogicalResourceId' \
+            --output text)
+          echo "Resources to skip: ${SKIP:-<none>}"
+
+          if [ -n "$SKIP" ]; then
+            aws cloudformation continue-update-rollback \
+              --stack-name NocturneAppDnsStack \
+              --region us-east-1 \
+              --resources-to-skip $SKIP
+          else
             aws cloudformation continue-update-rollback \
               --stack-name NocturneAppDnsStack \
               --region us-east-1
-            echo "Waiting for rollback to complete..."
-            aws cloudformation wait stack-rollback-complete \
-              --stack-name NocturneAppDnsStack \
-              --region us-east-1
-            FINAL_STATUS=$(aws cloudformation describe-stacks \
-              --stack-name NocturneAppDnsStack \
-              --region us-east-1 \
-              --query 'Stacks[0].StackStatus' \
-              --output text)
-            echo "Rollback completed. Final status: $FINAL_STATUS"
-          else
-            echo "Stack is not in UPDATE_ROLLBACK_FAILED state. Skipping recovery."
           fi
+
+          echo "Waiting for rollback to complete..."
+          aws cloudformation wait stack-rollback-complete \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1
+          FINAL_STATUS=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].StackStatus' \
+            --output text)
+          echo "Rollback completed. Final status: $FINAL_STATUS"
 
       # ----------------------------------------
       # DnsStack をデプロイして us-east-1 の
