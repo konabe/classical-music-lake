@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.11.0...classical-music-lake-v1.11.1) (2026-04-12)
+
+
+### Bug Fixes
+
+* カバレッジ不足による SonarCloud Quality Gate 失敗を修正 ([#469](https://github.com/konabe/classical-music-lake/issues/469)) ([6d776c1](https://github.com/konabe/classical-music-lake/commit/6d776c11503b6cfcee473a5686a11cc9d471e963))
+
 ## [1.11.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.10.0...classical-music-lake-v1.11.0) (2026-04-12)
 
 
