@@ -16,7 +16,8 @@ export const usePieces = () => {
     return result;
   };
 
-  return { ...list, createPiece, updatePiece };
+  const { data, pending, error, refresh, execute, status } = list;
+  return { data, pending, error, refresh, execute, status, createPiece, updatePiece };
 };
 
 export const usePiece = (id: () => string) => {

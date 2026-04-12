@@ -58,7 +58,18 @@ export const useListeningLogs = () => {
     clearNuxtData();
   };
 
-  return { ...list, create, update, deleteLog };
+  const { data, pending, error, refresh, execute, status } = list;
+  return {
+    data,
+    pending,
+    error,
+    refresh,
+    execute,
+    status,
+    create,
+    update,
+    deleteLog,
+  };
 };
 
 export const useListeningLog = (id: () => string) => {

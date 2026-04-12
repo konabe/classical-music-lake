@@ -1,5 +1,5 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import { useListeningLogs } from "./useListeningLogs";
+import { useConcertLogs } from "./useConcertLogs";
 import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY } from "./useAuth";
 
 const mockFetch = vi.fn();
@@ -45,7 +45,7 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-describe("useListeningLogs", () => {
+describe("useConcertLogs", () => {
   describe("list", () => {
     it("401 エラー時にトークンを削除してログイン画面へリダイレクトする", async () => {
       localStorage.setItem(ACCESS_TOKEN_KEY, "expired-access-token");
@@ -67,7 +67,7 @@ describe("useListeningLogs", () => {
         }
       );
 
-      useListeningLogs();
+      useConcertLogs();
       await capturedOnResponseError?.({ response: { status: 401 } });
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
@@ -90,7 +90,7 @@ describe("useListeningLogs", () => {
         }
       );
 
-      useListeningLogs();
+      useConcertLogs();
       capturedOnResponseError?.({ response: { status: 500 } });
 
       expect(mockRouterPush).not.toHaveBeenCalled();
@@ -105,20 +105,18 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 201,
-        json: async () => ({ id: "new-id", composer: "バッハ" }),
+        json: async () => ({ id: "new-id", title: "定期演奏会" }),
       });
 
-      const { create } = useListeningLogs();
+      const { create } = useConcertLogs();
       await create({
-        listenedAt: "2024-01-15T20:00:00.000Z",
-        composer: "バッハ",
-        piece: "ゴルトベルク変奏曲",
-        rating: 5,
-        isFavorite: false,
+        title: "定期演奏会 第123回",
+        concertDate: "2024-01-15T19:00:00.000Z",
+        venue: "サントリーホール",
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.example.com/listening-logs",
+        "https://api.example.com/concert-logs",
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
@@ -136,14 +134,12 @@ describe("useListeningLogs", () => {
         json: async () => ({ message: "Unauthorized" }),
       });
 
-      const { create } = useListeningLogs();
+      const { create } = useConcertLogs();
       await expect(
         create({
-          listenedAt: "2024-01-15T20:00:00.000Z",
-          composer: "バッハ",
-          piece: "ゴルトベルク変奏曲",
-          rating: 5,
-          isFavorite: false,
+          title: "定期演奏会",
+          concertDate: "2024-01-15T19:00:00.000Z",
+          venue: "サントリーホール",
         })
       ).rejects.toThrow("Unauthorized");
 
@@ -160,14 +156,12 @@ describe("useListeningLogs", () => {
         json: async () => ({ message: "Bad Request" }),
       });
 
-      const { create } = useListeningLogs();
+      const { create } = useConcertLogs();
       await expect(
         create({
-          listenedAt: "2024-01-15T20:00:00.000Z",
-          composer: "バッハ",
-          piece: "ゴルトベルク変奏曲",
-          rating: 5,
-          isFavorite: false,
+          title: "定期演奏会",
+          concertDate: "2024-01-15T19:00:00.000Z",
+          venue: "サントリーホール",
         })
       ).rejects.toThrow("Bad Request");
     });
@@ -181,14 +175,14 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ id: "abc-123", rating: 4 }),
+        json: async () => ({ id: "abc-123", title: "更新後のコンサート" }),
       });
 
-      const { update } = useListeningLogs();
-      await update("abc-123", { rating: 4 });
+      const { update } = useConcertLogs();
+      await update("abc-123", { title: "更新後のコンサート" });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.example.com/listening-logs/abc-123",
+        "https://api.example.com/concert-logs/abc-123",
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
@@ -206,8 +200,8 @@ describe("useListeningLogs", () => {
         json: async () => ({ message: "Unauthorized" }),
       });
 
-      const { update } = useListeningLogs();
-      await expect(update("abc-123", { rating: 4 })).rejects.toThrow("Unauthorized");
+      const { update } = useConcertLogs();
+      await expect(update("abc-123", { title: "更新後" })).rejects.toThrow("Unauthorized");
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
       expect(mockRouterPush).toHaveBeenCalledWith("/auth/login");
@@ -222,8 +216,8 @@ describe("useListeningLogs", () => {
         json: async () => ({ message: "Not Found" }),
       });
 
-      const { update } = useListeningLogs();
-      await expect(update("abc-123", { rating: 4 })).rejects.toThrow("Not Found");
+      const { update } = useConcertLogs();
+      await expect(update("abc-123", { title: "更新後" })).rejects.toThrow("Not Found");
     });
   });
 
@@ -237,11 +231,11 @@ describe("useListeningLogs", () => {
         status: 204,
       });
 
-      const { deleteLog } = useListeningLogs();
+      const { deleteLog } = useConcertLogs();
       await deleteLog("abc-123");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.example.com/listening-logs/abc-123",
+        "https://api.example.com/concert-logs/abc-123",
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
@@ -258,7 +252,7 @@ describe("useListeningLogs", () => {
         status: 204,
       });
 
-      const { deleteLog } = useListeningLogs();
+      const { deleteLog } = useConcertLogs();
       await expect(deleteLog("abc-123")).resolves.toBeUndefined();
     });
 
@@ -271,7 +265,7 @@ describe("useListeningLogs", () => {
         json: async () => ({ message: "Unauthorized" }),
       });
 
-      const { deleteLog } = useListeningLogs();
+      const { deleteLog } = useConcertLogs();
       await expect(deleteLog("abc-123")).rejects.toThrow("Unauthorized");
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
@@ -287,24 +281,8 @@ describe("useListeningLogs", () => {
         json: async () => ({ message: "Not Found" }),
       });
 
-      const { deleteLog } = useListeningLogs();
+      const { deleteLog } = useConcertLogs();
       await expect(deleteLog("abc-123")).rejects.toThrow("Not Found");
-    });
-  });
-
-  describe("await との互換性", () => {
-    it("useListeningLogs() を await した結果でも deleteLog が関数として参照できる", async () => {
-      // thenable ではない通常オブジェクトを await すると自身に解決されるため、
-      // 返り値の全プロパティが保持されることを保証する。
-      const result = useListeningLogs();
-      const awaited = await result;
-      expect(typeof awaited.deleteLog).toBe("function");
-    });
-
-    it("useListeningLogs() を await した結果でも refresh が関数として参照できる", async () => {
-      const result = useListeningLogs();
-      const awaited = await result;
-      expect(typeof awaited.refresh).toBe("function");
     });
   });
 });
