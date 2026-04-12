@@ -13,7 +13,7 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
-import type * as acm from "aws-cdk-lib/aws-certificatemanager";
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import type { Construct } from "constructs";
 import * as path from "node:path";
 
@@ -21,8 +21,8 @@ export type StageName = "dev" | "stg" | "prod";
 
 export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
   stageName: StageName;
-  hostedZone: route53.IHostedZone;
-  certificate: acm.ICertificate;
+  hostedZoneId: string;
+  certificateArn: string;
 }
 
 export class ClassicalMusicLakeStack extends cdk.Stack {
@@ -32,7 +32,13 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
 
-    const { stageName, hostedZone, certificate } = props;
+    const { stageName, hostedZoneId, certificateArn } = props;
+
+    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
+      hostedZoneId,
+      zoneName: "nocturne-app.com",
+    });
+    const certificate = acm.Certificate.fromCertificateArn(this, "Certificate", certificateArn);
     const isProd = stageName === "prod";
     const domainName = isProd ? "nocturne-app.com" : `${stageName}.nocturne-app.com`;
 

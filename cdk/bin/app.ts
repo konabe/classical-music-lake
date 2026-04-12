@@ -25,23 +25,28 @@ const stackName =
 //    先にこのスタックだけデプロイし、お名前.comで NS レコードを設定してから
 //    メインスタックをデプロイすること
 // -------------------------
-const dnsStack = new DnsStack(app, "NocturneAppDnsStack", {
+new DnsStack(app, "NocturneAppDnsStack", {
+  // NOSONAR
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: "us-east-1",
   },
-  crossRegionReferences: true,
 });
+
+// CERTIFICATE_ARN / HOSTED_ZONE_ID は CI/CD で NocturneAppDnsStack の
+// CloudFormation outputs から取得して環境変数として渡す
+// ローカルで cdk synth/diff するときは環境変数を手動でセットすること
+const certificateArn = process.env.CERTIFICATE_ARN ?? "";
+const hostedZoneId = process.env.HOSTED_ZONE_ID ?? "";
 
 // prettier-ignore
 new ClassicalMusicLakeStack(app, stackName, { // NOSONAR: CDK はスタックのインスタンス化時に app へ自動登録されるため戻り値は不要
   stageName,
-  hostedZone: dnsStack.hostedZone,
-  certificate: dnsStack.certificate,
+  certificateArn,
+  hostedZoneId,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION ?? "ap-northeast-1",
   },
-  crossRegionReferences: true,
   terminationProtection: stageName === "prod",
 });

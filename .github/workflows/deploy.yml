@@ -134,33 +134,53 @@ jobs:
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
 
-      # DnsStack（ACM 証明書）が us-east-1 にあるため、crossRegionReferences 用にブートストラップ
-      - name: CDK Bootstrap (us-east-1)
+      # ----------------------------------------
+      # NocturneAppDnsStack（us-east-1）から証明書 ARN と Hosted Zone ID を取得
+      # NocturneAppDnsStack は初回のみ手動デプロイ。CI/CD では読み取りのみ行う
+      # ----------------------------------------
+      - name: Get DNS stack outputs
+        id: dns
         run: |
-          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-          npx cdk bootstrap "aws://${ACCOUNT}/us-east-1"
-        working-directory: cdk
-        env:
-          STAGE_NAME: ${{ env.STAGE_NAME }}
+          CERT_ARN=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].Outputs[?OutputKey==`CertificateArn`].OutputValue' \
+            --output text)
+          HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].Outputs[?OutputKey==`HostedZoneId`].OutputValue' \
+            --output text)
+          if [ -z "$CERT_ARN" ] || [ "$CERT_ARN" = "None" ]; then
+            echo "::error::CertificateArn not found in NocturneAppDnsStack outputs"
+            exit 1
+          fi
+          if [ -z "$HOSTED_ZONE_ID" ] || [ "$HOSTED_ZONE_ID" = "None" ]; then
+            echo "::error::HostedZoneId not found in NocturneAppDnsStack outputs"
+            exit 1
+          fi
+          echo "cert_arn=$CERT_ARN" >> "$GITHUB_OUTPUT"
+          echo "hosted_zone_id=$HOSTED_ZONE_ID" >> "$GITHUB_OUTPUT"
 
       # ----------------------------------------
       # CDK デプロイ（インフラのみ）
       # フロントエンドの S3 アップロードはこの後のステップで行う
       # dev/stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
       # prod: 安全のためフル CloudFormation デプロイ
-      # NOTE: DnsStack は ACM 証明書の DNS 検証完了まで CloudFormation がペンディングするため
-      #       CI/CD では対象外。初回は手動で `npx cdk deploy NocturneAppDnsStack` を実行すること
+      # NOTE: NocturneAppDnsStack は初回のみ手動でデプロイする。CI/CD では outputs を読むのみ
       # ----------------------------------------
       - name: CDK Deploy
         run: |
           if [ "$STAGE_NAME" = "prod" ]; then
-            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --exclusively
+            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never
           else
-            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --hotswap-fallback --exclusively
+            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --hotswap-fallback
           fi
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
+          CERTIFICATE_ARN: ${{ steps.dns.outputs.cert_arn }}
+          HOSTED_ZONE_ID: ${{ steps.dns.outputs.hosted_zone_id }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
