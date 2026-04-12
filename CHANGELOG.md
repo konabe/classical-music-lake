@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.13.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.12.0...classical-music-lake-v1.13.0) (2026-04-12)
+
+
+### Features
+
+* **ci:** 手動で DnsStack をデプロイするワークフローを追加 ([84690d8](https://github.com/konabe/classical-music-lake/commit/84690d8b8211ecb0d42a5556ebac113c6f8876fd))
+
+
+### Bug Fixes
+
+* **cdk:** 全ステージの Consumer スタックを常に synth する ([a490066](https://github.com/konabe/classical-music-lake/commit/a490066e67c9f9ebebfe93d0559e2a86e15fcd53))
+* **ci:** continue-update-rollback で失敗リソースをスキップするように修正 ([eba0f58](https://github.com/konabe/classical-music-lake/commit/eba0f58ced043af6fc850b1318d0935ca40c599c))
+* **ci:** deploy-dns に UPDATE_ROLLBACK_FAILED からの自動復旧ステップを追加 ([84e829b](https://github.com/konabe/classical-music-lake/commit/84e829b2b84575eba67908848718b5f07f805d12))
+
 ## [1.12.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.11.1...classical-music-lake-v1.12.0) (2026-04-12)
 
 
