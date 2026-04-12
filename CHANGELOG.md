@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.11.1...classical-music-lake-v1.12.0) (2026-04-12)
+
+
+### Features
+
+* **pieces:** 楽曲一覧のサムネイルから遷移時に動画を自動再生する ([#471](https://github.com/konabe/classical-music-lake/issues/471)) ([0cab6d5](https://github.com/konabe/classical-music-lake/commit/0cab6d594f4f26e00360031a0b5fd33dbeb03a3f))
+
 ## [1.11.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.11.0...classical-music-lake-v1.11.1) (2026-04-12)
 
 

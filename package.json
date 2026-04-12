@@ -1,6 +1,6 @@
 {
   "name": "classical-music-lake",
-  "version": "1.11.1",
+  "version": "1.12.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.12.1",
