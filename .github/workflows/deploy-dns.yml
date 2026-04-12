@@ -14,6 +14,10 @@ name: Deploy DNS Stack
 
 on:
   workflow_dispatch:
+  # TODO: マージ前に必ずこの push トリガーを削除すること（PR ブランチでの検証用）
+  push:
+    branches:
+      - claude/fix-deploy-action-NT9Vc
 
 concurrency:
   group: deploy-dns
