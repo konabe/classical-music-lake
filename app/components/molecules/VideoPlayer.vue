@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { isYouTubeUrl, toYouTubeEmbedUrl } from "~/utils/video";
 
-const props = defineProps<{
-  videoUrl: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    videoUrl: string;
+    autoplay?: boolean;
+  }>(),
+  { autoplay: false }
+);
 
 const emit = defineEmits<{
   play: [];
 }>();
 
 const isYouTube = computed(() => isYouTubeUrl(props.videoUrl));
-const embedUrl = computed(() => toYouTubeEmbedUrl(props.videoUrl));
+const embedUrl = computed(() => {
+  const base = toYouTubeEmbedUrl(props.videoUrl);
+  return props.autoplay ? `${base}&autoplay=1` : base;
+});
 
 type YTPlayer = { destroy: () => void };
 

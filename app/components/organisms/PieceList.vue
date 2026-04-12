@@ -29,6 +29,7 @@ const router = useRouter();
         <PieceItem
           :piece="piece"
           @detail="router.push(`/pieces/${piece.id}`)"
+          @play="router.push(`/pieces/${piece.id}?autoplay=1`)"
           @edit="router.push(`/pieces/${piece.id}/edit`)"
           @delete="emit('delete', piece)"
         />

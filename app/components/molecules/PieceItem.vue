@@ -10,6 +10,7 @@ const emit = defineEmits<{
   edit: [];
   delete: [];
   detail: [];
+  play: [];
 }>();
 
 const hasYouTubeThumbnail = computed(
@@ -25,8 +26,8 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
       v-if="hasYouTubeThumbnail"
       type="button"
       class="piece-thumbnail"
-      :aria-label="`${piece.title} の詳細を開く`"
-      @click="emit('detail')"
+      :aria-label="`${piece.title} の動画を再生`"
+      @click="emit('play')"
     >
       <YouTubeThumbnail :video-url="piece.videoUrl" :alt="thumbnailAlt" />
     </button>
