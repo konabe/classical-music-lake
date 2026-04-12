@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 
-import { queryItemsByUserId, scanAllItems, updateItem } from "./dynamodb";
+import { queryItemsByUserId, scanAllItems, scanPage, updateItem } from "./dynamodb";
 
 const { mockSend } = vi.hoisted(() => ({
   mockSend: vi.fn(),
@@ -108,6 +108,61 @@ describe("scanAllItems", () => {
     const result = await scanAllItems("test-table");
 
     expect(result).toEqual([]);
+  });
+});
+
+describe("scanPage", () => {
+  it("limit で指定した件数を要求する単発の Scan を実行する", async () => {
+    const items = [{ id: "1" }, { id: "2" }];
+    mockSend.mockResolvedValueOnce({ Items: items, LastEvaluatedKey: undefined });
+
+    const result = await scanPage<{ id: string }>("test-table", { limit: 2 });
+
+    expect(result.items).toEqual(items);
+    expect(result.lastEvaluatedKey).toBeUndefined();
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    const command = mockSend.mock.calls[0]?.[0] as { input: { Limit?: number } };
+    expect(command.input.Limit).toBe(2);
+  });
+
+  it("exclusiveStartKey を Scan コマンドに引き渡す", async () => {
+    mockSend.mockResolvedValueOnce({ Items: [], LastEvaluatedKey: undefined });
+    const cursor = { id: "prev-id" };
+
+    await scanPage("test-table", { limit: 50, exclusiveStartKey: cursor });
+
+    const command = mockSend.mock.calls[0]?.[0] as {
+      input: { ExclusiveStartKey?: Record<string, unknown> };
+    };
+    expect(command.input.ExclusiveStartKey).toEqual(cursor);
+  });
+
+  it("LastEvaluatedKey がある場合はそのまま返す", async () => {
+    const key = { id: "next-id" };
+    mockSend.mockResolvedValueOnce({ Items: [{ id: "1" }], LastEvaluatedKey: key });
+
+    const result = await scanPage<{ id: string }>("test-table", { limit: 1 });
+
+    expect(result.lastEvaluatedKey).toEqual(key);
+  });
+
+  it("Items が undefined の場合は空配列を返す", async () => {
+    mockSend.mockResolvedValueOnce({ Items: undefined, LastEvaluatedKey: undefined });
+
+    const result = await scanPage("test-table", { limit: 10 });
+
+    expect(result.items).toEqual([]);
+  });
+
+  it("exclusiveStartKey が未指定でも動作する", async () => {
+    mockSend.mockResolvedValueOnce({ Items: [], LastEvaluatedKey: undefined });
+
+    await scanPage("test-table", { limit: 10 });
+
+    const command = mockSend.mock.calls[0]?.[0] as {
+      input: { ExclusiveStartKey?: Record<string, unknown> };
+    };
+    expect(command.input.ExclusiveStartKey).toBeUndefined();
   });
 });
 

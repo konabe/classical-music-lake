@@ -5,8 +5,14 @@ export {
   PIECE_ERAS,
   PIECE_FORMATIONS,
   PIECE_REGIONS,
+  PIECES_PAGE_SIZE_MIN,
+  PIECES_PAGE_SIZE_MAX,
+  PIECES_PAGE_SIZE_DEFAULT,
+  PIECES_ALL_MAX_TOTAL,
+  PIECES_ALL_MAX_EMPTY_PAGES,
 } from "../../../shared/constants";
 export type { PieceGenre, PieceEra, PieceFormation, PieceRegion } from "../../../shared/constants";
+export type { Paginated } from "../../../shared/constants";
 
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
