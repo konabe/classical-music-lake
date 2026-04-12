@@ -28,12 +28,12 @@
 
 #### repositories/piece-repository.ts
 
-- 既存 `findAll` は**廃止せず残し**、`usePiecesAll` 側から使える全件集約用途として保持する（`scanAllItems` を内部利用）。
+- 既存 `findAll` は**廃止せず残す**が、`usePiecesAll`（後述の「互換ヘルパー」）が不要になった時点で削除する前提のため、**JSDoc の `@deprecated` タグを付与**する。コメントには「新規コードでは `findPage` を使うこと」「視聴ログ・コンサート記録への本 Work のページング展開が完了したら削除予定」を明記する。
 - 新たに `findPage({ limit, exclusiveStartKey }): Promise<{ items: Piece[]; lastEvaluatedKey?: Record<string, unknown> }>` を追加。
 
 #### utils/dynamodb.ts
 
-- 既存 `scanAllItems` は保持（副作用回避）。
+- 既存 `scanAllItems` は保持（副作用回避）するが、**`@deprecated` タグ**を付与する（新規コードでは `scanPage` を使う方針を明示）。将来的に `piece-repository.findAll` が削除された時点で合わせて削除予定。
 - 新規 `scanPage<T>(tableName, { limit, exclusiveStartKey })` を追加。単発の `Scan` 結果（`Items` と `LastEvaluatedKey`）をそのまま返すシンプルな薄いラッパ。
 - 将来の再利用向けに、`scanAllItems` の実装を `scanPage` に内部委譲する形にリファクタしても良いが、今回の Work のスコープ外とし現行挙動を維持する。
 
@@ -48,8 +48,11 @@
 #### utils/schemas.ts
 
 - `listPiecesQuerySchema` を追加する。
-  - `limit`: `z.coerce.number().int().min(1).max(100).default(50)`。
-  - `cursor`: `z.string().min(1).optional()`（不正 Base64 の検出はデコード層で行う）。
+  - `limit`: `z.coerce.number().int()` に `min` / `max` / `default` を付与。**数値リテラルはハードコードせず `shared/constants.ts` の `PIECES_PAGE_SIZE_MIN` / `PIECES_PAGE_SIZE_MAX` / `PIECES_PAGE_SIZE_DEFAULT` を import して適用する**（フロントと閾値を単一ソース化する）。
+  - `cursor`: 任意の文字列。**フォーマット検証には Zod v4 の `z.base64url()` を利用する**（本プロジェクトは `zod@^4.3.6` を採用。`z.base64url()` は URL セーフ Base64 の形式を文字レベルで検証する）。
+    - これで「そもそも Base64URL として不正な文字列」はハンドラー層で 400 にできる。
+    - 形式は正しいがデコード後の JSON が壊れている / 未知の `v`（バージョン）/ 想定しないキー構造、といった**意味的な不正**は `decodeCursor`（ユーティリティ層）で検出し、同じく 400 に変換する。
+    - Zod v4 以前に慣れた読者向けの補足: `z.string().base64()` 系の API ではなく Zod v4 のトップレベル `z.base64url()` を使う。
 
 #### 影響範囲
 
@@ -74,10 +77,11 @@
   - 公開 I/F（抽象レベル）: リアクティブな `items`・`nextCursor`・`pending`・`error`・`hasMore` と、`loadMore()` / `reset()` / `retry()` の操作。
   - 挙動: 呼び出しごとに 1 ページ単位で API を叩き、`items` に追記。`nextCursor === null` で `hasMore` が false になる。
   - 作成・更新・削除は同 composable 内に統合し、成功時に `reset()` → 1 ページ目からの再取得を保証する。
-- **`usePiecesAll()`**: 互換ヘルパー（全件集約）
+- **`usePiecesAll()`**: 互換ヘルパー（全件集約）※**`@deprecated` 付きで導入**
   - 内部で `nextCursor` を辿って全件を集約し、既存の `Ref<Piece[] | null>` 類似の I/F を提供。
   - 対象呼び出し元: `/concert-logs/new`（楽曲選択ドロップダウン）など「全件前提」の画面。
-  - 無限取得のハードガード: 合計件数上限（例: 5000 件）・連続 0 件応答の上限（例: 3 回）を超えた場合は中断してエラー化する。
+  - **位置づけ**: 既存画面を破壊しないための暫定ヘルパーであり、将来的には呼び出し元を検索 / 絞り込み前提の UI に作り替え、この関数自体を削除する予定。そのため `@deprecated` JSDoc を付与し、コメントに「新規コードでは `usePiecesPaginated` を使うこと」「呼び出し元移行完了後に削除予定」を明記する。
+  - 無限取得のハードガード: 合計件数上限・連続 0 件応答の上限を設け、越えたら中断してエラー化する。上限値は `shared/constants.ts` にまとめる（例: `PIECES_ALL_MAX_TOTAL`, `PIECES_ALL_MAX_EMPTY_PAGES`）。
 - `/pieces/[id]`・`/pieces/[id]/edit` などの**単体取得**は既存の `usePiece(id)`（GET /pieces/{id}）をそのまま使う（一覧側の変更の影響なし）。
 
 #### pages/pieces/index.vue
@@ -192,10 +196,20 @@
 > - 実装ステップの依存順
 > - テスト観点の網羅性
 
-### 指摘事項
+### 指摘事項（Round 1 / PR #478）
 
-- （未記入：レビュー時に追記する）
+| #    | 箇所                                                       | 指摘                                                                                            |
+| ---- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| R1-1 | `piece-repository.ts` の `findAll` 存置                    | `@deprecated` JSDoc を付与して方針を明示してほしい                                              |
+| R1-2 | `utils/schemas.ts` の `limit` の `min` / `max` / `default` | ハードコードせず `constants.ts` から引用するべき                                                |
+| R1-3 | `utils/schemas.ts` の `cursor` のフォーマット検証          | Zod に Base64 を検証する機能はないか（`z.string().min(1).optional()` だけでは不十分ではないか） |
+| R1-4 | `usePiecesAll()`                                           | これも `@deprecated` 扱いにしてよいか                                                           |
 
-### 対応方針
+### 対応方針（Round 1）
 
-- （未記入：レビュー後に追記する）
+| #    | 対応                                                                                                                                                                                                                                                                                                                          |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1-1 | `piece-repository.findAll` に `@deprecated` を付与する旨を「レイヤー別変更方針」セクションに追記。将来の削除条件（Piece 以外への Work 展開完了時）も記載                                                                                                                                                                      |
+| R1-2 | `shared/constants.ts` に `PIECES_PAGE_SIZE_MIN` / `PIECES_PAGE_SIZE_MAX` / `PIECES_PAGE_SIZE_DEFAULT` を置き、Zod スキーマから import して適用する方針を明記。フロントと同じ定数を共有することで閾値の単一ソース化を担保                                                                                                      |
+| R1-3 | 本プロジェクトは `zod@^4.3.6` を採用しており、Zod v4 にはトップレベル `z.base64url()` が存在する。これを利用して「文字レベルの Base64URL 形式」をスキーマで検証。形式 OK だが意味的に不正（壊れた JSON、未知の `v`、想定外のキー構造）は `decodeCursor` 側で検出し 400 に変換する二段構え。スキーマ定義と落とし穴の補足を追記 |
+| R1-4 | `usePiecesAll` も「既存画面互換のための暫定ヘルパー」と位置づけ、`@deprecated` JSDoc を付けて「呼び出し元の UI 改修完了後に削除予定」と明記。ハードガード値（件数上限・連続 0 件上限）も `shared/constants.ts` へ寄せる方針とした                                                                                             |
