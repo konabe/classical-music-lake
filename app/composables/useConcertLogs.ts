@@ -58,7 +58,19 @@ export const useConcertLogs = () => {
     clearNuxtData();
   };
 
-  return { ...list, create, update, deleteLog };
+  const { data, pending, error, refresh, execute, status, then: thenFn } = list;
+  return {
+    data,
+    pending,
+    error,
+    refresh,
+    execute,
+    status,
+    then: thenFn,
+    create,
+    update,
+    deleteLog,
+  };
 };
 
 export const useConcertLog = (id: () => string) => {

@@ -1,6 +1,6 @@
 ---
 name: sonarqube-issues
-description: SonarQube CloudからIssue・Security Hotspot・コード重複（Duplications）を取得して一覧表示する。コード品質・セキュリティの確認やIssue対応時に使う。
+description: SonarQube CloudからIssue・Security Hotspot・コード重複（Duplications）・カバレッジを取得して一覧表示する。コード品質・セキュリティの確認やIssue対応時に使う。
 disable-model-invocation: true
 allowed-tools: WebFetch
 argument-hint: "[severities|types|statuses|hotspots] (例: severities:CRITICAL,MAJOR types:BUG hotspots:TO_REVIEW)"
@@ -73,6 +73,28 @@ https://sonarcloud.io/api/measures/component?component=konabe_classical-music-la
 | `duplicated_blocks` | 重複ブロック数 |
 | `duplicated_files` | 重複を含むファイル数 |
 
+### 2b. Coverage サマリーの取得
+
+Issue サマリーと**同時に**以下の URL を WebFetch で呼び出す：
+
+```text
+https://sonarcloud.io/api/measures/component?component=konabe_classical-music-lake&metricKeys=coverage,line_coverage,branch_coverage,lines_to_cover,uncovered_lines,conditions_to_cover,uncovered_conditions
+```
+
+レスポンスの `component.measures` 配列から以下を抽出する：
+
+| metricKey | 意味 |
+|-----------|------|
+| `coverage` | 総合カバレッジ（%） |
+| `line_coverage` | ライン カバレッジ（%） |
+| `branch_coverage` | ブランチ カバレッジ（%） |
+| `lines_to_cover` | カバレッジ対象の総行数 |
+| `uncovered_lines` | カバーされていない行数 |
+| `conditions_to_cover` | カバレッジ対象の総条件数 |
+| `uncovered_conditions` | カバーされていない条件数 |
+
+値が存在しない場合は "N/A" と表示する。
+
 ### 3. サマリーの表示
 
 以下のフォーマットで表示する：
@@ -122,6 +144,18 @@ https://sonarcloud.io/api/measures/component?component=konabe_classical-music-la
 | 重複行数 | N 行 |
 | 重複ブロック数 | N |
 | 重複を含むファイル数 | N |
+
+## Coverage サマリー
+
+| 指標 | 値 |
+|------|----|
+| 総合カバレッジ | N.N% |
+| ライン カバレッジ | N.N% |
+| ブランチ カバレッジ | N.N% |
+| カバレッジ対象行数 | N 行 |
+| 未カバー行数 | N 行 |
+| カバレッジ対象条件数 | N |
+| 未カバー条件数 | N |
 ```
 
 ### 4. 詳細 Issue 一覧の取得
