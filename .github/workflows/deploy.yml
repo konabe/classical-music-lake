@@ -154,9 +154,9 @@ jobs:
       - name: CDK Deploy
         run: |
           if [ "$STAGE_NAME" = "prod" ]; then
-            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never
+            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --exclusively
           else
-            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --hotswap-fallback
+            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --hotswap-fallback --exclusively
           fi
         working-directory: cdk
         env:
