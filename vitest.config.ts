@@ -13,7 +13,17 @@ export default defineVitestConfig({
     exclude: ["**/node_modules/**", "tests/e2e/**", "backend/**", ".claude/**"],
     coverage: {
       provider: "v8",
-      include: ["app/composables/**/*.ts", "app/components/**/*.vue", "app/types/**/*.ts"],
+      include: [
+        "app/composables/**/*.ts",
+        "app/components/**/*.vue",
+        "app/types/**/*.ts",
+        "app/pages/**/*.vue",
+        "app/middleware/**/*.ts",
+        "app/utils/**/*.ts",
+        "app/layouts/**/*.vue",
+        "app/error.vue",
+        "shared/**/*.ts",
+      ],
       exclude: ["node_modules", ".nuxt"],
       reporter: ["text", "lcov"],
       reportsDirectory: "./coverage",
