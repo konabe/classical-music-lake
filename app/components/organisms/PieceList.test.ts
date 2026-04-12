@@ -7,6 +7,7 @@ const makePieces = (): Piece[] => [
     id: "piece-1",
     title: "交響曲第9番",
     composer: "ベートーヴェン",
+    videoUrl: "https://www.youtube.com/watch?v=abc123",
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
@@ -91,6 +92,24 @@ describe("PieceList", () => {
       await wrapper.findAll(".btn-danger")[0].trigger("click");
       const emitted = wrapper.emitted("delete") as [Piece][];
       expect(emitted[0][0].id).toBe("piece-1");
+    });
+
+    it("詳細ボタンクリックで autoplay なしの詳細ページへ遷移する", async () => {
+      const wrapper = await mountSuspended(PieceList, {
+        props: { pieces: makePieces(), error: null },
+      });
+      const routerPushSpy = vi.spyOn(wrapper.vm.$router, "push");
+      await wrapper.findAll(".btn-detail")[0].trigger("click");
+      expect(routerPushSpy).toHaveBeenCalledWith("/pieces/piece-1");
+    });
+
+    it("サムネイルクリックで autoplay=1 付きの詳細ページへ遷移する", async () => {
+      const wrapper = await mountSuspended(PieceList, {
+        props: { pieces: makePieces(), error: null },
+      });
+      const routerPushSpy = vi.spyOn(wrapper.vm.$router, "push");
+      await wrapper.find(".piece-thumbnail").trigger("click");
+      expect(routerPushSpy).toHaveBeenCalledWith("/pieces/piece-1?autoplay=1");
     });
   });
 });

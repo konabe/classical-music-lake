@@ -200,18 +200,27 @@ describe("PieceItem", () => {
         props: { piece: samplePieceWithYouTubeUrl },
       });
       expect(wrapper.find(".piece-thumbnail").attributes("aria-label")).toBe(
-        "交響曲第9番 ニ短調 Op.125 の詳細を開く"
+        "交響曲第9番 ニ短調 Op.125 の動画を再生"
       );
     });
 
-    it("サムネイル領域クリックで detail イベントが emit される", async () => {
+    it("サムネイル領域クリックで play イベントが emit される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePieceWithYouTubeUrl },
         ...globalComponents,
       });
       await wrapper.find(".piece-thumbnail").trigger("click");
-      expect(wrapper.emitted("detail")).toBeDefined();
-      expect(wrapper.emitted("detail")?.length).toBe(1);
+      expect(wrapper.emitted("play")).toBeDefined();
+      expect(wrapper.emitted("play")?.length).toBe(1);
+    });
+
+    it("サムネイル領域クリックでは detail イベントが emit されない", async () => {
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece: samplePieceWithYouTubeUrl },
+        ...globalComponents,
+      });
+      await wrapper.find(".piece-thumbnail").trigger("click");
+      expect(wrapper.emitted("detail")).toBeUndefined();
     });
   });
 });
