@@ -100,6 +100,34 @@ jobs:
           fi
 
       # ----------------------------------------
+      # NocturneAppDnsStack（us-east-1）から証明書 ARN と Hosted Zone ID を取得
+      # NocturneAppDnsStack は初回のみ手動デプロイ。CI/CD では読み取りのみ行う
+      # CDK synth（bootstrap 含む）より先に取得して GITHUB_ENV に書き込む
+      # ----------------------------------------
+      - name: Get DNS stack outputs
+        run: |
+          CERT_ARN=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].Outputs[?OutputKey==`CertificateArn`].OutputValue' \
+            --output text)
+          HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].Outputs[?OutputKey==`HostedZoneId`].OutputValue' \
+            --output text)
+          if [ -z "$CERT_ARN" ] || [ "$CERT_ARN" = "None" ]; then
+            echo "::error::CertificateArn not found in NocturneAppDnsStack outputs"
+            exit 1
+          fi
+          if [ -z "$HOSTED_ZONE_ID" ] || [ "$HOSTED_ZONE_ID" = "None" ]; then
+            echo "::error::HostedZoneId not found in NocturneAppDnsStack outputs"
+            exit 1
+          fi
+          echo "CERTIFICATE_ARN=$CERT_ARN" >> "$GITHUB_ENV"
+          echo "HOSTED_ZONE_ID=$HOSTED_ZONE_ID" >> "$GITHUB_ENV"
+
+      # ----------------------------------------
       # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
       # CDKToolkit が参照する ECR リポジトリが削除されていると bootstrap が
       # 失敗するため、事前に存在確認・作成する
@@ -135,34 +163,6 @@ jobs:
           STAGE_NAME: ${{ env.STAGE_NAME }}
 
       # ----------------------------------------
-      # NocturneAppDnsStack（us-east-1）から証明書 ARN と Hosted Zone ID を取得
-      # NocturneAppDnsStack は初回のみ手動デプロイ。CI/CD では読み取りのみ行う
-      # ----------------------------------------
-      - name: Get DNS stack outputs
-        id: dns
-        run: |
-          CERT_ARN=$(aws cloudformation describe-stacks \
-            --stack-name NocturneAppDnsStack \
-            --region us-east-1 \
-            --query 'Stacks[0].Outputs[?OutputKey==`CertificateArn`].OutputValue' \
-            --output text)
-          HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
-            --stack-name NocturneAppDnsStack \
-            --region us-east-1 \
-            --query 'Stacks[0].Outputs[?OutputKey==`HostedZoneId`].OutputValue' \
-            --output text)
-          if [ -z "$CERT_ARN" ] || [ "$CERT_ARN" = "None" ]; then
-            echo "::error::CertificateArn not found in NocturneAppDnsStack outputs"
-            exit 1
-          fi
-          if [ -z "$HOSTED_ZONE_ID" ] || [ "$HOSTED_ZONE_ID" = "None" ]; then
-            echo "::error::HostedZoneId not found in NocturneAppDnsStack outputs"
-            exit 1
-          fi
-          echo "cert_arn=$CERT_ARN" >> "$GITHUB_OUTPUT"
-          echo "hosted_zone_id=$HOSTED_ZONE_ID" >> "$GITHUB_OUTPUT"
-
-      # ----------------------------------------
       # CDK デプロイ（インフラのみ）
       # フロントエンドの S3 アップロードはこの後のステップで行う
       # dev/stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
@@ -179,8 +179,6 @@ jobs:
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
-          CERTIFICATE_ARN: ${{ steps.dns.outputs.cert_arn }}
-          HOSTED_ZONE_ID: ${{ steps.dns.outputs.hosted_zone_id }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
