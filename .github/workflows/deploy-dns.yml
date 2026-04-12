@@ -73,6 +73,59 @@ jobs:
         working-directory: cdk
 
       # ----------------------------------------
+      # 診断: スタックの現在状態と直近のイベントを出力する
+      # UPDATE_ROLLBACK_FAILED で詰まっている場合、どのリソースが
+      # 原因かをログから特定できるようにする
+      # ----------------------------------------
+      - name: Show CFN stack status and recent events
+        run: |
+          STATUS=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].StackStatus' \
+            --output text 2>/dev/null || echo "NOT_FOUND")
+          echo "NocturneAppDnsStack status: $STATUS"
+          echo "Recent stack events:"
+          aws cloudformation describe-stack-events \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --max-items 30 \
+            --query 'StackEvents[].[Timestamp,ResourceStatus,ResourceType,LogicalResourceId,ResourceStatusReason]' \
+            --output table || true
+
+      # ----------------------------------------
+      # UPDATE_ROLLBACK_FAILED からの自動復旧
+      # 過去の DnsStack 更新時にロールバックも失敗して固着した場合、
+      # cdk deploy はそのままでは動かないので continue-update-rollback
+      # を発行してロールバックを完了させる
+      # ----------------------------------------
+      - name: Continue rollback if stuck
+        run: |
+          STATUS=$(aws cloudformation describe-stacks \
+            --stack-name NocturneAppDnsStack \
+            --region us-east-1 \
+            --query 'Stacks[0].StackStatus' \
+            --output text 2>/dev/null || echo "NOT_FOUND")
+          if [ "$STATUS" = "UPDATE_ROLLBACK_FAILED" ]; then
+            echo "Stack is UPDATE_ROLLBACK_FAILED. Attempting continue-update-rollback..."
+            aws cloudformation continue-update-rollback \
+              --stack-name NocturneAppDnsStack \
+              --region us-east-1
+            echo "Waiting for rollback to complete..."
+            aws cloudformation wait stack-rollback-complete \
+              --stack-name NocturneAppDnsStack \
+              --region us-east-1
+            FINAL_STATUS=$(aws cloudformation describe-stacks \
+              --stack-name NocturneAppDnsStack \
+              --region us-east-1 \
+              --query 'Stacks[0].StackStatus' \
+              --output text)
+            echo "Rollback completed. Final status: $FINAL_STATUS"
+          else
+            echo "Stack is not in UPDATE_ROLLBACK_FAILED state. Skipping recovery."
+          fi
+
+      # ----------------------------------------
       # DnsStack をデプロイして us-east-1 の
       # /cdk/exports/<ConsumerStackName>/... SSM パラメータを更新する。
       # app.ts で全 3 ステージの Consumer を instantiate しているため、
