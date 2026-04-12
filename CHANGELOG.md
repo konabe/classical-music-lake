@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.11.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.10.0...classical-music-lake-v1.11.0) (2026-04-12)
+
+
+### Features
+
+* **ci:** カバレッジレポートを SonarCloud にアップロード ([639edab](https://github.com/konabe/classical-music-lake/commit/639edab0d1a9ef1861dfc169a899ef2ae6dfd8c3))
+
+
+### Bug Fixes
+
+* cdk bin/app.ts の未使用変数 _stack を削除し NOSONAR を付与 ([#462](https://github.com/konabe/classical-music-lake/issues/462)) ([f81e285](https://github.com/konabe/classical-music-lake/commit/f81e2850875c7dd4f090678d22aeeeded9e0d502))
+* **ci:** cdk deploy に --exclusively を再追加して NocturneAppDnsStack の自動更新を防ぐ ([#468](https://github.com/konabe/classical-music-lake/issues/468)) ([1d05e5d](https://github.com/konabe/classical-music-lake/commit/1d05e5dfdd92f838e544a5f023f4d412bc7f7231))
+* **ci:** cdk deploy に --exclusively を追加して NocturneAppDnsStack の自動更新を防ぐ ([6f7e2fe](https://github.com/konabe/classical-music-lake/commit/6f7e2fe0a4d5aba1f8ff7c2eb4d8c1965db61f1b))
+* generate-mock-data の Security Hotspot を修正 ([#461](https://github.com/konabe/classical-music-lake/issues/461)) ([8eee0cc](https://github.com/konabe/classical-music-lake/commit/8eee0cc874ddfa75a7421af9053e203f78d525a8))
+* SonarCloud で検出された issue を修正 ([#467](https://github.com/konabe/classical-music-lake/issues/467)) ([09332cd](https://github.com/konabe/classical-music-lake/commit/09332cdf19f9f6b40ecc14401682e53c55121f07))
+* sonarqube AvoidCommentedOutCodeCheck コメントアウトコードを削除 ([#447](https://github.com/konabe/classical-music-lake/issues/447)) ([988a4ec](https://github.com/konabe/classical-music-lake/commit/988a4ecb7a9e5b386a45a105b21a8b9f65f5dad7))
+* sonarqube FrameWithoutTitleCheck iframe に title 属性を追加 ([#450](https://github.com/konabe/classical-music-lake/issues/450)) ([119c39a](https://github.com/konabe/classical-music-lake/commit/119c39a9939acb782f041411d6f21654239bd9e8))
+* sonarqube ItemTagNotWithinContainerTagCheck ConcertLogForm.vue を除外 ([#448](https://github.com/konabe/classical-music-lake/issues/448)) ([37f5b92](https://github.com/konabe/classical-music-lake/commit/37f5b927940d9a87e7e2629d39cc32c1f16dafd9))
+* sonarqube S1848 CDK スタックインスタンス化の結果を変数に代入 ([#453](https://github.com/konabe/classical-music-lake/issues/453)) ([38d0810](https://github.com/konabe/classical-music-lake/commit/38d08104ec6d289737beee6abb52a2f1b5bcf448))
+* sonarqube S2068 ハードコードパスワード誤検知を NOSONAR で抑制 ([#442](https://github.com/konabe/classical-music-lake/issues/442)) ([648050e](https://github.com/konabe/classical-music-lake/commit/648050e129a553e59b64278438d98a91cff8f03a))
+* sonarqube S2137 PieceDetailTemplate.stories の Error を WithError に改名 ([#451](https://github.com/konabe/classical-music-lake/issues/451)) ([bdaaa7f](https://github.com/konabe/classical-music-lake/commit/bdaaa7f7306d19f280f92e547010023f8f0f512e))
+* sonarqube S2933/S6660/S6594 readonly・else if・RegExp.exec に書き換え ([#444](https://github.com/konabe/classical-music-lake/issues/444)) ([8ef5173](https://github.com/konabe/classical-music-lake/commit/8ef5173b50f1444f817c0c450725503d8df66526))
+* sonarqube S6582 optional chain 式に書き換え ([#441](https://github.com/konabe/classical-music-lake/issues/441)) ([18e15da](https://github.com/konabe/classical-music-lake/commit/18e15dae98e29b5471509bdc8a408c4d2d3a8454))
+* sonarqube S7735 否定条件を正条件に書き換え ([#437](https://github.com/konabe/classical-music-lake/issues/437)) ([be5e889](https://github.com/konabe/classical-music-lake/commit/be5e889a2b4ff4c0d191df3e4202fb14d6cff18d))
+* sonarqube S7763 export...from 構文に書き換え ([#440](https://github.com/konabe/classical-music-lake/issues/440)) ([ab21cc0](https://github.com/konabe/classical-music-lake/commit/ab21cc03d63e3adb6b1d994d093c89a64f357dc1))
+* sonarqube S7764 window を globalThis に書き換え ([#439](https://github.com/konabe/classical-music-lake/issues/439)) ([e156f77](https://github.com/konabe/classical-music-lake/commit/e156f77ce8b0c922a1c5a9d260c9c1af197593ab))
+* sonarqube S7772 node: プレフィックスを付与 ([#443](https://github.com/konabe/classical-music-lake/issues/443)) ([3c9d941](https://github.com/konabe/classical-music-lake/commit/3c9d941ac6a43fe0b3cc18d22e39907e69c1520c))
+* sonarqube S7773 parseInt を Number.parseInt に書き換え ([#452](https://github.com/konabe/classical-music-lake/issues/452)) ([21071e7](https://github.com/konabe/classical-music-lake/commit/21071e78e3ef7e4b74be7ba8b19170190d601c6d))
+* sonarqube S7785 Promise チェーンを top-level await に書き換え ([#454](https://github.com/konabe/classical-music-lake/issues/454)) ([770f532](https://github.com/konabe/classical-music-lake/commit/770f5328ef4ed08d5e4d3255e9623de9969644fb))
+* sonarqube S7924 ホバー時の削除ボタン背景色をコントラスト比 AA 準拠に変更 ([#449](https://github.com/konabe/classical-music-lake/issues/449)) ([99cad9a](https://github.com/konabe/classical-music-lake/commit/99cad9a4377dc74202f3e2096890edd88223d71c))
+* SonarQube で検出された Issue・Security Hotspot を修正 ([#457](https://github.com/konabe/classical-music-lake/issues/457)) ([f8adf1a](https://github.com/konabe/classical-music-lake/commit/f8adf1a1658d2d4aa3ccbe8f1d0c197aae3843ae))
+* SonarQube の残存 Issue・Security Hotspot を修正 ([#460](https://github.com/konabe/classical-music-lake/issues/460)) ([12f6d40](https://github.com/konabe/classical-music-lake/commit/12f6d40524c9fc144e6c0c3666e6794f749e6997))
+* 残存する sonarqube ホットスポットに NOSONAR コメントを追加 ([#459](https://github.com/konabe/classical-music-lake/issues/459)) ([ce1881b](https://github.com/konabe/classical-music-lake/commit/ce1881b619172117c825f41eee53f6f75b683623))
+
+
+### Reverts
+
+* **ci:** --exclusively を削除して依存スタックのデプロイを再有効化 ([d02c8ad](https://github.com/konabe/classical-music-lake/commit/d02c8ad9c66cc978b79dee0fd37273a6164710cf))
+
 ## [1.10.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.9.1...classical-music-lake-v1.10.0) (2026-04-11)
 
 
