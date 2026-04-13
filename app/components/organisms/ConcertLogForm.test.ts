@@ -20,7 +20,7 @@ const mockPieces: Piece[] = [
 ];
 
 vi.mock("~/composables/usePieces", () => ({
-  usePieces: () => ({
+  usePiecesAll: () => ({
     data: ref(mockPieces),
     pending: ref(false),
     error: ref(null),

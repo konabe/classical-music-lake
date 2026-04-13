@@ -2,8 +2,10 @@ import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import ListeningLogEditTemplate from "./ListeningLogEditTemplate.vue";
 import type { ListeningLog } from "~/types";
 
-mockNuxtImport("usePieces", () =>
-  vi.fn().mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false) })
+mockNuxtImport("usePiecesAll", () =>
+  vi
+    .fn()
+    .mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false), refresh: vi.fn() })
 );
 
 const sampleLog: ListeningLog = {

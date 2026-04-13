@@ -7,7 +7,9 @@ const props = defineProps<{
 
 const router = useRouter();
 const { deleteLog } = useConcertLogs();
-const { data: pieces } = usePieces();
+
+const { data: pieces, refresh: refreshPieces } = usePiecesAll();
+void refreshPieces();
 
 const handleDelete = async () => {
   if (!confirm("このコンサート記録を削除しますか？")) {

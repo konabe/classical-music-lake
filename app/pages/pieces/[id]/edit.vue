@@ -5,7 +5,7 @@ const route = useRoute();
 const id = computed(() => route.params.id as string);
 
 const { data: piece, error } = await usePiece(() => id.value);
-const { updatePiece } = usePieces();
+const { updatePiece } = usePiecesPaginated();
 const errorMessage = ref("");
 
 async function handleSubmit(values: UpdatePieceInput) {

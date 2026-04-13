@@ -12,7 +12,8 @@ const emit = defineEmits<{
   submit: [values: CreateConcertLogInput];
 }>();
 
-const { data: pieces, pending: piecesPending } = usePieces();
+const { data: pieces, pending: piecesPending, refresh: refreshPieces } = usePiecesAll();
+void refreshPieces();
 
 const form = reactive({
   title: props.initialValues?.title ?? "",

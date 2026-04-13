@@ -31,7 +31,26 @@ vi.mock("~/composables/useListeningLogs", () => ({
 }));
 
 vi.mock("~/composables/usePieces", () => ({
-  usePieces: () => ({ data: [], error: null, pending: false }),
+  usePiecesPaginated: () => ({
+    items: ref([]),
+    nextCursor: ref(null),
+    pending: ref(false),
+    error: ref(null),
+    hasMore: ref(true),
+    loadMore: vi.fn(),
+    reset: vi.fn(),
+    retry: vi.fn(),
+    createPiece: vi.fn(),
+    updatePiece: vi.fn(),
+  }),
+  usePiecesAll: () => ({
+    data: ref([]),
+    error: ref(null),
+    pending: ref(false),
+    refresh: vi.fn(),
+    createPiece: vi.fn(),
+    updatePiece: vi.fn(),
+  }),
   usePiece: () => ({ data: null, error: null }),
 }));
 

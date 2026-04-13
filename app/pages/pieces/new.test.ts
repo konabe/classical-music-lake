@@ -6,11 +6,24 @@ import type { CreatePieceInput } from "~/types";
 const mockCreatePiece = vi.fn();
 
 vi.mock("~/composables/usePieces", () => ({
-  usePieces: () => ({
+  usePiecesPaginated: () => ({
+    items: ref([]),
+    nextCursor: ref(null),
+    pending: ref(false),
+    error: ref(null),
+    hasMore: ref(true),
+    loadMore: vi.fn(),
+    reset: vi.fn(),
+    retry: vi.fn(),
+    createPiece: mockCreatePiece,
+    updatePiece: vi.fn(),
+  }),
+  usePiecesAll: () => ({
     data: ref([]),
     error: ref(null),
+    pending: ref(false),
     refresh: vi.fn(),
-    createPiece: mockCreatePiece,
+    createPiece: vi.fn(),
     updatePiece: vi.fn(),
   }),
   usePiece: () => ({ data: ref(null), error: ref(null) }),

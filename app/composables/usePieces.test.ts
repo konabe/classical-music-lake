@@ -1,48 +1,254 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import { usePieces, usePiece } from "./usePieces";
+import { usePiecesPaginated, usePiecesAll, usePiece, type PaginatedResponse } from "./usePieces";
+import type { Piece } from "~/types";
+import {
+  PIECES_PAGE_SIZE_DEFAULT,
+  PIECES_ALL_MAX_EMPTY_PAGES,
+  PIECES_ALL_MAX_TOTAL,
+} from "~/types";
 
 const { mockUseFetch } = vi.hoisted(() => ({
   mockUseFetch: vi.fn(),
 }));
 
-mockUseFetch.mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false) });
+mockUseFetch.mockReturnValue({ data: ref(null), error: ref(null), pending: ref(false) });
 
 mockNuxtImport("useApiBase", () => () => "/api");
 mockNuxtImport("useFetch", () => mockUseFetch);
 
-const mockFetch = vi.fn().mockResolvedValue({});
+const mockFetch = vi.fn();
+
+const makePiece = (id: string, title = `title-${id}`): Piece => ({
+  id,
+  title,
+  composer: "composer",
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
+});
+
+const flush = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+};
 
 beforeEach(() => {
   vi.stubGlobal("$fetch", mockFetch);
-  mockFetch.mockClear();
+  mockFetch.mockReset();
   mockUseFetch.mockClear();
-  mockUseFetch.mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false) });
+  mockUseFetch.mockReturnValue({ data: ref(null), error: ref(null), pending: ref(false) });
 });
 
-describe("usePieces", () => {
-  it("正しい URL で useFetch を呼び出し、data と error を返す", () => {
-    const result = usePieces();
-    expect(mockUseFetch).toHaveBeenCalledWith("/api/pieces", expect.anything());
-    expect(result).toHaveProperty("data");
-    expect(result).toHaveProperty("error");
-  });
+describe("usePiecesPaginated", () => {
+  describe("初期状態と loadMore", () => {
+    it("初期状態は items 空・hasMore=true・pending=false", () => {
+      const p = usePiecesPaginated();
+      expect(p.items.value).toEqual([]);
+      expect(p.hasMore.value).toBe(true);
+      expect(p.pending.value).toBe(false);
+      expect(p.error.value).toBeNull();
+    });
 
-  it("createPiece が正しい URL と body で POST リクエストを送信する", async () => {
-    const { createPiece } = usePieces();
-    await createPiece({ title: "交響曲第9番", composer: "ベートーヴェン" });
-    expect(mockFetch).toHaveBeenCalledWith("/api/pieces", {
-      method: "POST",
-      body: { title: "交響曲第9番", composer: "ベートーヴェン" },
+    it("loadMore で既定の limit を付けて /api/pieces を呼ぶ", async () => {
+      mockFetch.mockResolvedValueOnce({
+        items: [],
+        nextCursor: null,
+      } satisfies PaginatedResponse<Piece>);
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      expect(mockFetch).toHaveBeenCalledWith("/api/pieces", {
+        query: { limit: PIECES_PAGE_SIZE_DEFAULT },
+      });
+    });
+
+    it("取得した items を反映し、nextCursor が null なら hasMore=false になる", async () => {
+      const pieces = [makePiece("1"), makePiece("2")];
+      mockFetch.mockResolvedValueOnce({ items: pieces, nextCursor: null });
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      expect(p.items.value).toEqual(pieces);
+      expect(p.hasMore.value).toBe(false);
+    });
+
+    it("複数回の loadMore で items を追記する", async () => {
+      const page1 = [makePiece("1")];
+      const page2 = [makePiece("2")];
+      mockFetch
+        .mockResolvedValueOnce({ items: page1, nextCursor: "cursor-1" })
+        .mockResolvedValueOnce({ items: page2, nextCursor: null });
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      await p.loadMore();
+      expect(p.items.value).toEqual([...page1, ...page2]);
+      expect(mockFetch).toHaveBeenNthCalledWith(2, "/api/pieces", {
+        query: { limit: PIECES_PAGE_SIZE_DEFAULT, cursor: "cursor-1" },
+      });
+    });
+
+    it("hasMore=false になったら loadMore を呼んでもリクエストを発行しない", async () => {
+      mockFetch.mockResolvedValueOnce({ items: [], nextCursor: null });
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      expect(p.hasMore.value).toBe(false);
+      await p.loadMore();
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("pending 中に loadMore を呼んでも二重発行しない", async () => {
+      let resolvePage: ((value: PaginatedResponse<Piece>) => void) | undefined;
+      mockFetch.mockReturnValueOnce(
+        new Promise<PaginatedResponse<Piece>>((resolve) => {
+          resolvePage = resolve;
+        })
+      );
+      const p = usePiecesPaginated();
+      const first = p.loadMore();
+      const second = p.loadMore();
+      expect(p.pending.value).toBe(true);
+      resolvePage?.({ items: [makePiece("1")], nextCursor: null });
+      await first;
+      await second;
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
   });
 
-  it("updatePiece が正しい URL と body で PUT リクエストを送信する", async () => {
-    const { updatePiece } = usePieces();
-    await updatePiece("piece-123", { title: "更新後の曲名" });
-    expect(mockFetch).toHaveBeenCalledWith("/api/pieces/piece-123", {
-      method: "PUT",
-      body: { title: "更新後の曲名" },
+  describe("エラーと retry", () => {
+    it("fetch が失敗すると error に反映される", async () => {
+      mockFetch.mockRejectedValueOnce(new Error("network"));
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      expect(p.error.value).toBeInstanceOf(Error);
+      expect(p.pending.value).toBe(false);
     });
+
+    it("retry 後に再度成功すれば items に反映される", async () => {
+      mockFetch
+        .mockRejectedValueOnce(new Error("network"))
+        .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null });
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      expect(p.error.value).not.toBeNull();
+      await p.retry();
+      expect(p.error.value).toBeNull();
+      expect(p.items.value).toHaveLength(1);
+    });
+  });
+
+  describe("reset と mutation", () => {
+    it("reset を呼ぶと items・nextCursor・error がリセットされる", async () => {
+      mockFetch.mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: "c1" });
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      expect(p.items.value).toHaveLength(1);
+      p.reset();
+      expect(p.items.value).toEqual([]);
+      expect(p.hasMore.value).toBe(true);
+      expect(p.error.value).toBeNull();
+    });
+
+    it("createPiece 成功後に items が空にリセットされる", async () => {
+      mockFetch
+        .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null })
+        .mockResolvedValueOnce(makePiece("2"));
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      expect(p.items.value).toHaveLength(1);
+      await p.createPiece({ title: "x", composer: "c" });
+      expect(p.items.value).toEqual([]);
+      expect(p.hasMore.value).toBe(true);
+    });
+
+    it("updatePiece 成功後に items が空にリセットされる", async () => {
+      mockFetch
+        .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null })
+        .mockResolvedValueOnce(makePiece("1", "updated"));
+      const p = usePiecesPaginated();
+      await p.loadMore();
+      await p.updatePiece("1", { title: "updated" });
+      expect(p.items.value).toEqual([]);
+    });
+
+    it("createPiece が正しい URL と body で POST する", async () => {
+      mockFetch.mockResolvedValueOnce(makePiece("new"));
+      const p = usePiecesPaginated();
+      await p.createPiece({ title: "new", composer: "c" });
+      expect(mockFetch).toHaveBeenCalledWith("/api/pieces", {
+        method: "POST",
+        body: { title: "new", composer: "c" },
+      });
+    });
+
+    it("updatePiece が正しい URL と body で PUT する", async () => {
+      mockFetch.mockResolvedValueOnce(makePiece("123", "updated"));
+      const p = usePiecesPaginated();
+      await p.updatePiece("123", { title: "updated" });
+      expect(mockFetch).toHaveBeenCalledWith("/api/pieces/123", {
+        method: "PUT",
+        body: { title: "updated" },
+      });
+    });
+  });
+});
+
+describe("usePiecesAll", () => {
+  it("auto-paginate で全ページを取得し data に集約する", async () => {
+    mockFetch
+      .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: "c1" })
+      .mockResolvedValueOnce({ items: [makePiece("2"), makePiece("3")], nextCursor: null });
+    const p = usePiecesAll();
+    await p.refresh();
+    expect(p.data.value).toHaveLength(3);
+    expect(p.pending.value).toBe(false);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("nextCursor を次回リクエストに引き継ぐ", async () => {
+    mockFetch
+      .mockResolvedValueOnce({ items: [], nextCursor: "c1" })
+      .mockResolvedValueOnce({ items: [], nextCursor: null });
+    const p = usePiecesAll();
+    await p.refresh();
+    expect(mockFetch).toHaveBeenNthCalledWith(2, "/api/pieces", {
+      query: { limit: PIECES_PAGE_SIZE_DEFAULT, cursor: "c1" },
+    });
+  });
+
+  it(`連続 ${PIECES_ALL_MAX_EMPTY_PAGES + 1} 回の空応答が続くと error にする`, async () => {
+    for (let i = 0; i <= PIECES_ALL_MAX_EMPTY_PAGES; i += 1) {
+      mockFetch.mockResolvedValueOnce({ items: [], nextCursor: `c${i}` });
+    }
+    const p = usePiecesAll();
+    await p.refresh();
+    expect(p.error.value).toBeInstanceOf(Error);
+  });
+
+  it(`総件数が上限 ${PIECES_ALL_MAX_TOTAL} を超えると error にする`, async () => {
+    const bigPage = Array.from({ length: 2500 }, (_, i) => makePiece(String(i)));
+    mockFetch
+      .mockResolvedValueOnce({ items: bigPage, nextCursor: "c1" })
+      .mockResolvedValueOnce({ items: bigPage, nextCursor: "c2" })
+      .mockResolvedValueOnce({ items: bigPage, nextCursor: "c3" });
+    const p = usePiecesAll();
+    await p.refresh();
+    expect(p.error.value).toBeInstanceOf(Error);
+  });
+
+  it("fetch 失敗時に error が設定される", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("boom"));
+    const p = usePiecesAll();
+    await p.refresh();
+    expect(p.error.value).toBeInstanceOf(Error);
+  });
+
+  it("createPiece が refresh を引き起こす", async () => {
+    mockFetch
+      .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null })
+      .mockResolvedValueOnce(makePiece("2"))
+      .mockResolvedValueOnce({ items: [makePiece("1"), makePiece("2")], nextCursor: null });
+    const p = usePiecesAll();
+    await p.refresh();
+    expect(p.data.value).toHaveLength(1);
+    await p.createPiece({ title: "x", composer: "c" });
+    await flush();
+    expect(p.data.value).toHaveLength(2);
   });
 });
 
