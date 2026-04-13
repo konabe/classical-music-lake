@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.0.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.13.0...classical-music-lake-v2.0.0) (2026-04-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **frontend:** usePieces を usePiecesPaginated と usePiecesAll (@deprecated) に分離。既存呼び出し元は各用途に応じて移行済み。
+* **backend:** GET /pieces のレスポンスを配列から { items: Piece[]; nextCursor: string | null } に変更。
+
+### Features
+
+* **backend:** カーソル型ページングの共通ユーティリティを追加 ([88bce06](https://github.com/konabe/classical-music-lake/commit/88bce06610c6d9e8b7613a1445ee65170738e217)), closes [#295](https://github.com/konabe/classical-music-lake/issues/295)
+* **backend:** 楽曲マスタ一覧 API をカーソル型ページングに変更 ([e82e871](https://github.com/konabe/classical-music-lake/commit/e82e8714ac4c734fa7d072e27d85ae70690cbdcb)), closes [#295](https://github.com/konabe/classical-music-lake/issues/295)
+* **frontend:** 楽曲マスタ一覧を無限スクロール化し SPEC を更新 ([fd3c0fe](https://github.com/konabe/classical-music-lake/commit/fd3c0fefa15093cd07a313a7fcb1dd4471294ada)), closes [#295](https://github.com/konabe/classical-music-lake/issues/295)
+* **frontend:** 楽曲マスタ用 composable を 2 本構成に再編 ([d540a00](https://github.com/konabe/classical-music-lake/commit/d540a00891e179a9994371962cd06b31cb6b7b8b)), closes [#295](https://github.com/konabe/classical-music-lake/issues/295)
+
+
+### Bug Fixes
+
+* **ci:** sonar-scanner に接続先ホスト URL を明示的に設定 ([9927deb](https://github.com/konabe/classical-music-lake/commit/9927deb93d365a44aafbc4597522fae4e9b7c257))
+* **ci:** sonarqube-scan-action を drop-in 置換である v5.3.2 に固定 ([bb0fb25](https://github.com/konabe/classical-music-lake/commit/bb0fb2580dcccc681e0bc928c3132aedcb72563b))
+
 ## [1.13.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.12.0...classical-music-lake-v1.13.0) (2026-04-12)
 
 
