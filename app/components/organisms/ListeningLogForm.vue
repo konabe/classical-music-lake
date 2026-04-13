@@ -11,7 +11,8 @@ const emit = defineEmits<{
   submit: [values: CreateListeningLogInput];
 }>();
 
-const { data: pieces, pending: piecesPending } = usePieces();
+const { data: pieces, pending: piecesPending, refresh: refreshPieces } = usePiecesAll();
+void refreshPieces();
 
 const form = reactive<CreateListeningLogInput>({
   listenedAt:

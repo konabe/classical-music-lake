@@ -3,7 +3,8 @@ import createError from "http-errors";
 import { PieceEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
 import { DynamoDBPieceRepository } from "../repositories/piece-repository";
-import type { CreatePieceInput, Piece, UpdatePieceInput } from "../types";
+import type { CreatePieceInput, Paginated, Piece, UpdatePieceInput } from "../types";
+import { encodeCursor } from "../utils/cursor";
 
 export class PieceUsecase {
   constructor(private readonly repo: PieceRepository) {}
@@ -15,10 +16,15 @@ export class PieceUsecase {
     return plain;
   }
 
-  async list(): Promise<Piece[]> {
-    const items = await this.repo.findAll();
-    const entities = items.map((item) => PieceEntity.reconstruct(item));
-    return PieceEntity.sortByTitleJa(entities).map((e) => e.toPlain());
+  async list(options: {
+    limit: number;
+    exclusiveStartKey?: Record<string, unknown>;
+  }): Promise<Paginated<Piece>> {
+    const { items, lastEvaluatedKey } = await this.repo.findPage(options);
+    return {
+      items,
+      nextCursor: lastEvaluatedKey === undefined ? null : encodeCursor(lastEvaluatedKey),
+    };
   }
 
   async get(id: string): Promise<Piece> {

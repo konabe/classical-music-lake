@@ -31,3 +31,18 @@ export const PIECE_REGIONS = [
   "その他",
 ] as const;
 export type PieceRegion = (typeof PIECE_REGIONS)[number];
+
+// ページネーション設定（楽曲マスタ一覧）
+export const PIECES_PAGE_SIZE_MIN = 1;
+export const PIECES_PAGE_SIZE_MAX = 100;
+export const PIECES_PAGE_SIZE_DEFAULT = 50;
+
+// usePiecesAll（全件集約ヘルパー）のハードガード
+export const PIECES_ALL_MAX_TOTAL = 5000;
+export const PIECES_ALL_MAX_EMPTY_PAGES = 3;
+
+// カーソル型ページング結果
+export interface Paginated<T> {
+  items: T[];
+  nextCursor: string | null;
+}

@@ -6,7 +6,15 @@ const CLEARABLE_FIELDS = ["videoUrl", "genre", "era", "formation", "region"] as 
 
 export type PieceRepository = {
   findById(id: string): Promise<Piece | undefined>;
+  /**
+   * @deprecated 新規コードでは {@link findPage} を使うこと。
+   * 本関数は `usePiecesAll`（フロントの全件集約互換ヘルパー）の削除後に併せて廃止予定。
+   */
   findAll(): Promise<Piece[]>;
+  findPage(options: {
+    limit: number;
+    exclusiveStartKey?: Record<string, unknown>;
+  }): Promise<{ items: Piece[]; lastEvaluatedKey?: Record<string, unknown> }>;
   save(item: Piece): Promise<void>;
   saveWithOptimisticLock(item: Piece, prevUpdatedAt: string): Promise<void>;
   remove(id: string): Promise<void>;
@@ -22,10 +30,6 @@ export class PieceEntity {
 
   static reconstruct(data: Piece): PieceEntity {
     return new PieceEntity(data);
-  }
-
-  static sortByTitleJa(entities: PieceEntity[]): PieceEntity[] {
-    return [...entities].sort((a, b) => a.props.title.localeCompare(b.props.title, "ja"));
   }
 
   get updatedAt(): string {

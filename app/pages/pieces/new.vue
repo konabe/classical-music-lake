@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CreatePieceInput } from "~/types";
 
-const { createPiece } = usePieces();
+const { createPiece } = usePiecesPaginated();
 const errorMessage = ref("");
 
 async function handleSubmit(values: CreatePieceInput) {

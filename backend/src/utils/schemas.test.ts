@@ -9,7 +9,13 @@ import {
   loginSchema,
   verifyEmailSchema,
   resendVerificationCodeSchema,
+  listPiecesQuerySchema,
 } from "./schemas";
+import {
+  PIECES_PAGE_SIZE_DEFAULT,
+  PIECES_PAGE_SIZE_MAX,
+  PIECES_PAGE_SIZE_MIN,
+} from "../types/index.js";
 
 const fails = (result: { success: boolean }): boolean => !result.success;
 const succeeds = (result: { success: boolean }): boolean => result.success;
@@ -317,5 +323,117 @@ describe("resendVerificationCodeSchema", () => {
   it("email が未設定の場合はエラー", () => {
     const result = resendVerificationCodeSchema.safeParse({});
     expect(result.success).toBe(false);
+  });
+});
+
+describe("listPiecesQuerySchema", () => {
+  describe("limit", () => {
+    it("未指定の場合は既定値 PIECES_PAGE_SIZE_DEFAULT になる", () => {
+      const result = listPiecesQuerySchema.safeParse({});
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.limit).toBe(PIECES_PAGE_SIZE_DEFAULT);
+      }
+    });
+
+    it("文字列の数値を受け付けて数値に変換する（クエリパラメータ由来）", () => {
+      const result = listPiecesQuerySchema.safeParse({ limit: "30" });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.limit).toBe(30);
+      }
+    });
+
+    it(`最小値 ${PIECES_PAGE_SIZE_MIN} を受け付ける`, () => {
+      const result = listPiecesQuerySchema.safeParse({ limit: PIECES_PAGE_SIZE_MIN });
+      expect(result.success).toBe(true);
+    });
+
+    it(`最大値 ${PIECES_PAGE_SIZE_MAX} を受け付ける`, () => {
+      const result = listPiecesQuerySchema.safeParse({ limit: PIECES_PAGE_SIZE_MAX });
+      expect(result.success).toBe(true);
+    });
+
+    it("0 は拒否する", () => {
+      const result = listPiecesQuerySchema.safeParse({ limit: 0 });
+      expect(result.success).toBe(false);
+    });
+
+    it("負数は拒否する", () => {
+      const result = listPiecesQuerySchema.safeParse({ limit: -1 });
+      expect(result.success).toBe(false);
+    });
+
+    it(`上限 ${PIECES_PAGE_SIZE_MAX} を超える値は拒否する（クランプしない）`, () => {
+      const result = listPiecesQuerySchema.safeParse({ limit: PIECES_PAGE_SIZE_MAX + 1 });
+      expect(result.success).toBe(false);
+    });
+
+    it("整数以外（小数）は拒否する", () => {
+      const result = listPiecesQuerySchema.safeParse({ limit: 10.5 });
+      expect(result.success).toBe(false);
+    });
+
+    it("数値に変換できない文字列は拒否する", () => {
+      const result = listPiecesQuerySchema.safeParse({ limit: "abc" });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("cursor", () => {
+    it("未指定の場合は undefined で成功する", () => {
+      const result = listPiecesQuerySchema.safeParse({});
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.cursor).toBeUndefined();
+      }
+    });
+
+    it("有効な base64url 文字列を受け付ける", () => {
+      const validBase64Url = Buffer.from('{"v":1,"k":{"id":"1"}}', "utf8").toString("base64url");
+      const result = listPiecesQuerySchema.safeParse({ cursor: validBase64Url });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.cursor).toBe(validBase64Url);
+      }
+    });
+
+    it("base64url として不正な文字（+, /, =, !）を含む文字列は拒否する", () => {
+      fc.assert(
+        fc.property(fc.constantFrom("abc+", "abc/", "abc=", "abc!"), (invalid) => {
+          const result = listPiecesQuerySchema.safeParse({ cursor: invalid });
+          return fails(result);
+        })
+      );
+    });
+
+    it("空文字は拒否する", () => {
+      const result = listPiecesQuerySchema.safeParse({ cursor: "" });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("組み合わせ", () => {
+    it("limit と cursor の両方を指定できる", () => {
+      const cursor = Buffer.from('{"v":1,"k":{"id":"1"}}', "utf8").toString("base64url");
+      const result = listPiecesQuerySchema.safeParse({ limit: 20, cursor });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.limit).toBe(20);
+        expect(result.data.cursor).toBe(cursor);
+      }
+    });
+
+    it("有効な入力のプロパティベーステスト", () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: PIECES_PAGE_SIZE_MIN, max: PIECES_PAGE_SIZE_MAX }),
+          (limit) => {
+            const result = listPiecesQuerySchema.safeParse({ limit });
+            return succeeds(result);
+          }
+        )
+      );
+    });
   });
 });

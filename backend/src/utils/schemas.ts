@@ -1,5 +1,13 @@
 import { z } from "zod";
-import { PIECE_ERAS, PIECE_FORMATIONS, PIECE_GENRES, PIECE_REGIONS } from "../types/index.js";
+import {
+  PIECE_ERAS,
+  PIECE_FORMATIONS,
+  PIECE_GENRES,
+  PIECE_REGIONS,
+  PIECES_PAGE_SIZE_DEFAULT,
+  PIECES_PAGE_SIZE_MAX,
+  PIECES_PAGE_SIZE_MIN,
+} from "../types/index.js";
 
 const ratingSchema = z
   .number({ error: () => "rating must be between 1 and 5" })
@@ -131,3 +139,23 @@ export const createConcertLogSchema = z.object({
 });
 
 export const updateConcertLogSchema = createConcertLogSchema.partial();
+
+/**
+ * GET /pieces のクエリパラメータを検証するスキーマ。
+ * - `limit`: 省略時は {@link PIECES_PAGE_SIZE_DEFAULT}。範囲は {@link PIECES_PAGE_SIZE_MIN} 〜 {@link PIECES_PAGE_SIZE_MAX}。
+ *   API Gateway からは文字列で到達するが、`z.coerce.number()` で数値に変換する。
+ * - `cursor`: 省略可。指定時は base64url 形式の文字列。実体のスキーマ不正は `decodeCursor` 側で検出する。
+ */
+export const listPiecesQuerySchema = z.object({
+  limit: z.coerce
+    .number({ error: () => "limit must be a number" })
+    .int({ message: "limit must be an integer" })
+    .min(PIECES_PAGE_SIZE_MIN, {
+      message: `limit must be at least ${PIECES_PAGE_SIZE_MIN}`,
+    })
+    .max(PIECES_PAGE_SIZE_MAX, {
+      message: `limit must be at most ${PIECES_PAGE_SIZE_MAX}`,
+    })
+    .default(PIECES_PAGE_SIZE_DEFAULT),
+  cursor: z.base64url({ message: "cursor must be a base64url string" }).min(1).optional(),
+});

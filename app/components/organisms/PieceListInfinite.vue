@@ -1,0 +1,117 @@
+<script setup lang="ts">
+import type { Piece } from "~/types";
+
+const props = defineProps<{
+  pieces: Piece[];
+  error: Error | null;
+  pending: boolean;
+  hasMore: boolean;
+}>();
+
+const emit = defineEmits<{
+  delete: [piece: Piece];
+  loadMore: [];
+  retry: [];
+}>();
+
+// 無限スクロール: センチネル要素の可視化で次ページ取得を親に通知する
+const sentinel = ref<HTMLElement | null>(null);
+let observer: IntersectionObserver | null = null;
+
+const startObserving = (el: HTMLElement) => {
+  if (typeof IntersectionObserver === "undefined") {
+    return;
+  }
+  observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        emit("loadMore");
+      }
+    }
+  });
+  observer.observe(el);
+};
+
+onMounted(() => {
+  if (sentinel.value !== null) {
+    startObserving(sentinel.value);
+  }
+});
+
+onUnmounted(() => {
+  observer?.disconnect();
+  observer = null;
+});
+
+watch(sentinel, (el, _prev, onCleanup) => {
+  if (el === null) {
+    return;
+  }
+  if (observer === null) {
+    startObserving(el);
+  } else {
+    observer.observe(el);
+  }
+  onCleanup(() => {
+    observer?.unobserve(el);
+  });
+});
+</script>
+
+<template>
+  <div>
+    <PieceList :pieces="props.pieces" :error="props.error" @delete="emit('delete', $event)" />
+    <div class="list-status" role="status" aria-live="polite">
+      <p v-if="props.pending" class="status-text">読み込み中…</p>
+      <div v-else-if="props.error" class="status-error">
+        <p>取得に失敗しました。</p>
+        <button type="button" class="btn-retry" @click="emit('retry')">再試行</button>
+      </div>
+      <p v-else-if="!props.hasMore && props.pieces.length > 0" class="status-text">
+        これ以上ありません
+      </p>
+      <div
+        v-if="props.hasMore && !props.error"
+        ref="sentinel"
+        class="sentinel"
+        aria-hidden="true"
+      ></div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.list-status {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.status-text {
+  color: #666;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
+.status-error {
+  padding: 1rem 0;
+  color: #c33;
+}
+
+.btn-retry {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #c33;
+  background: #fff;
+  color: #c33;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-retry:hover {
+  background: #fee;
+}
+
+.sentinel {
+  height: 1px;
+}
+</style>
