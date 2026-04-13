@@ -678,6 +678,7 @@ GET /pieces?limit=50&cursor={opaque}
 **レスポンス**
 
 - 成功: `200 OK`
+
   ```json
   {
     "items": [
@@ -700,6 +701,7 @@ GET /pieces?limit=50&cursor={opaque}
 
   - `items`: 最大 `limit` 件の Piece オブジェクト配列
   - `nextCursor`: 次ページ取得用の不透明カーソル。次ページが無い場合は `null`
+
 - バリデーションエラー: `400 Bad Request`
 
 **ソート順**: DynamoDB Scan の戻り順（順不同）。`title` 等の特定順序は保証しない。
