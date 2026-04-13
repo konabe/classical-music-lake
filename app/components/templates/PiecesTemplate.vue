@@ -1,19 +1,31 @@
 <script setup lang="ts">
 import type { Piece } from "~/types";
 
-defineProps<{
+const props = defineProps<{
   pieces: Piece[];
   error: Error | null;
+  pending: boolean;
+  hasMore: boolean;
 }>();
 
 const emit = defineEmits<{
   delete: [piece: Piece];
+  loadMore: [];
+  retry: [];
 }>();
 </script>
 
 <template>
   <div>
     <PageHeader title="楽曲マスタ" new-page-path="/pieces/new">+ 新しい楽曲</PageHeader>
-    <PieceList :pieces="pieces" :error="error" @delete="emit('delete', $event)" />
+    <PieceListInfinite
+      :pieces="props.pieces"
+      :error="props.error"
+      :pending="props.pending"
+      :has-more="props.hasMore"
+      @delete="emit('delete', $event)"
+      @load-more="emit('loadMore')"
+      @retry="emit('retry')"
+    />
   </div>
 </template>
