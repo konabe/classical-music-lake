@@ -44,3 +44,6 @@ reports/mutation/
 
 # Temporary local output
 tmp/
+
+# Playwright MCP local snapshots
+.playwright-mcp/

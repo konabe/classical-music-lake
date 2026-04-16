@@ -8,5 +8,6 @@ cdk/node_modules/
 package-lock.json
 pnpm-lock.yaml
 .claude/
+.playwright-mcp/
 # release-please が自動生成するため除外
 CHANGELOG.md
