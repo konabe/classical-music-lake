@@ -3,14 +3,11 @@ name: SonarCloud
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   sonarcloud:
     name: SonarCloud Scan
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     permissions:
       contents: read
 
