@@ -135,24 +135,42 @@ watch(
 
 @media (max-width: 600px) {
   .app-header {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0.75rem;
   }
 
   .app-header nav {
-    gap: 1rem;
+    gap: 0.5rem;
     flex-wrap: nowrap;
   }
 
+  .logo {
+    gap: 0.4rem;
+  }
+
+  .logo-img {
+    height: 26px;
+  }
+
   .logo-text {
-    font-size: 1.1rem;
+    display: none;
   }
 
   .nav-links {
-    gap: 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .nav-links a,
+  .auth-links a {
+    font-size: 0.85rem;
   }
 
   .auth-links {
-    gap: 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .logout-button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
   }
 
   .app-main {

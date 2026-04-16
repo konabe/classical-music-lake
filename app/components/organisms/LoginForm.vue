@@ -93,7 +93,9 @@ form {
   align-items: center;
   text-align: center;
   color: #7a5c38;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  font-size: 0.85rem;
 }
 
 .divider::before,
