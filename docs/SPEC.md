@@ -807,6 +807,10 @@ GET /pieces?limit=50&cursor={opaque}
 - **パスワードポリシー**: 8文字以上、大文字・小文字・数字を必須
 - **App Client**: SRP 認証フロー（シークレットなし）
 - **CDK Output**: `CognitoUserPoolId`, `CognitoClientId`, `CognitoUserPoolArn`
+- **グループ**:
+  - `admin`: 管理者グループ。CDK（`CfnUserPoolGroup`）で全環境に定義される
+  - `admin` グループに所属するユーザーの ID Token には `cognito:groups: ["admin"]` クレームが付与される
+  - グループの付与・剥奪は AWS CLI/コンソールによる手動運用（手順は `docs/OPERATIONS.md` 参照）
 
 #### Route53
 

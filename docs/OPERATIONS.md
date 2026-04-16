@@ -215,3 +215,60 @@ aws cognito-idp admin-update-user-attributes \
 - 大文字・小文字・数字を必須
 - アカウントロックアウト: 5 回失敗で 15 分ロック
 - メール確認: 必須
+
+---
+
+## 管理者ロール管理
+
+Cognito User Pool には `admin` グループが存在する。グループへの追加・削除は AWS CLI またはコンソールで手動操作する。
+
+### User Pool ID の取得
+
+```bash
+# <stage> には dev, stg または prod を指定
+STAGE=<stage>
+STACK_NAME=$([ "$STAGE" = "prod" ] && echo "ClassicalMusicLakeStack" || echo "ClassicalMusicLakeStack-${STAGE}")
+
+aws cloudformation describe-stacks \
+  --stack-name "$STACK_NAME" \
+  --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue' \
+  --output text
+```
+
+### 管理者の付与
+
+```bash
+aws cognito-idp admin-add-user-to-group \
+  --user-pool-id <pool-id> \
+  --username <email> \
+  --group-name admin
+```
+
+### 管理者の剥奪
+
+```bash
+aws cognito-idp admin-remove-user-from-group \
+  --user-pool-id <pool-id> \
+  --username <email> \
+  --group-name admin
+```
+
+### 特定ユーザーのグループ所属確認
+
+```bash
+aws cognito-idp admin-list-groups-for-user \
+  --user-pool-id <pool-id> \
+  --username <email>
+```
+
+### `admin` グループのメンバー一覧確認
+
+```bash
+aws cognito-idp list-users-in-group \
+  --user-pool-id <pool-id> \
+  --group-name admin
+```
+
+### トークンへの反映タイミング
+
+グループの変更（付与・剥奪）は **再ログイン後** に ID Token の `cognito:groups` クレームへ反映される。変更直後の既存トークンには反映されない。

@@ -110,6 +110,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       signInCaseSensitive: false,
     });
 
+    new cognito.CfnUserPoolGroup(this, "AdminGroup", {
+      userPoolId: userPool.userPoolId,
+      groupName: "admin",
+      description: "管理者グループ",
+    });
+
     // -------------------------
     // S3 + CloudFront (SPA ホスティング)
     // App Client の callback URL に CloudFront ドメインが必要なため先に作成する
