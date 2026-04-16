@@ -287,11 +287,18 @@ defineProps<{
 /* ── Menu cards ── */
 .menu-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  max-width: 760px;
+  max-width: 960px;
   margin: 2rem auto 0;
   padding: 0 2rem;
+}
+
+@media (max-width: 900px) {
+  .menu-cards {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
 }
 
 .card {
