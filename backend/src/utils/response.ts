@@ -10,6 +10,11 @@ export const created = (body: unknown) => ({
   body,
 });
 
+export const noContent = () => ({
+  statusCode: StatusCodes.NO_CONTENT,
+  body: "",
+});
+
 export const badRequest = (error: string, message: string) => ({
   statusCode: StatusCodes.BAD_REQUEST,
   body: { error, message },
