@@ -5,7 +5,7 @@ name: Cleanup Unclaimed Listening Logs
 #
 # トリガー:
 #   - push: claude/resolve-issue-297-dfrUk ブランチに対象ファイルが push されたら
-#           dev / stg の両環境へ DRY RUN で自動実行（動作確認用）
+#           dev / stg / prod の全環境へ DRY RUN で自動実行（動作確認用）
 #   - workflow_dispatch: 任意の環境・dry_run 指定で手動実行
 
 on:
@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         stage: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]',
-          github.event.inputs.environment)) || fromJSON('["dev","stg"]') }}
+          github.event.inputs.environment)) || fromJSON('["dev","stg","prod"]') }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
