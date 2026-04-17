@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { Context } from "aws-lambda";
 
 import { handler } from "./create";
-import { makeEvent } from "../../test/fixtures";
+import {
+  makeAdminEvent,
+  makeAuthEvent,
+  makeEvent,
+  mockCallback,
+  mockContext,
+  TEST_USER_ID,
+} from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
@@ -17,9 +23,6 @@ vi.mock("../../repositories/piece-repository", () => ({
     return mockRepo;
   }),
 }));
-
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
 
 const validInput = {
   title: "交響曲第9番",
@@ -43,7 +46,7 @@ describe("POST /pieces (create)", () => {
       ["invalid json", 422, "Invalid or malformed JSON was provided"],
     ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
       const result = await handler(
-        makeEvent({ body, httpMethod: "POST", path: "/pieces" }),
+        makeAdminEvent(TEST_USER_ID, { body, httpMethod: "POST", path: "/pieces" }),
         mockContext,
         mockCallback
       );
@@ -54,7 +57,7 @@ describe("POST /pieces (create)", () => {
 
   it("title がない場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent({
+      makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify({ composer: "ベートーヴェン" }),
         httpMethod: "POST",
         path: "/pieces",
@@ -70,7 +73,7 @@ describe("POST /pieces (create)", () => {
     "title が空白のみ（%j）の場合は 400 を返す",
     async (whitespaceTitle) => {
       const result = await handler(
-        makeEvent({
+        makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, title: whitespaceTitle }),
           httpMethod: "POST",
           path: "/pieces",
@@ -85,7 +88,7 @@ describe("POST /pieces (create)", () => {
 
   it("title が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent({
+      makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify({ ...validInput, title: "あ".repeat(201) }),
         httpMethod: "POST",
         path: "/pieces",
@@ -99,7 +102,7 @@ describe("POST /pieces (create)", () => {
 
   it("composer がない場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent({
+      makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify({ title: "交響曲第9番" }),
         httpMethod: "POST",
         path: "/pieces",
@@ -115,7 +118,7 @@ describe("POST /pieces (create)", () => {
     "composer が空白のみ（%j）の場合は 400 を返す",
     async (whitespaceComposer) => {
       const result = await handler(
-        makeEvent({
+        makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, composer: whitespaceComposer }),
           httpMethod: "POST",
           path: "/pieces",
@@ -130,7 +133,7 @@ describe("POST /pieces (create)", () => {
 
   it("composer が 100 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent({
+      makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify({ ...validInput, composer: "あ".repeat(101) }),
         httpMethod: "POST",
         path: "/pieces",
@@ -146,7 +149,7 @@ describe("POST /pieces (create)", () => {
 
   it("videoUrl が不正な URL の場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent({
+      makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify({ ...validInput, videoUrl: "not-a-url" }),
         httpMethod: "POST",
         path: "/pieces",
@@ -161,7 +164,11 @@ describe("POST /pieces (create)", () => {
   it("videoUrl なしで正常に作成して 201 を返す", async () => {
     mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
-      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+      makeAdminEvent(TEST_USER_ID, {
+        body: JSON.stringify(validInput),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
       mockContext,
       mockCallback
     );
@@ -179,7 +186,7 @@ describe("POST /pieces (create)", () => {
   it("有効な videoUrl を指定して作成できる", async () => {
     mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
-      makeEvent({
+      makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify({ ...validInput, videoUrl: "https://www.youtube.com/watch?v=abc123" }),
         httpMethod: "POST",
         path: "/pieces",
@@ -195,7 +202,11 @@ describe("POST /pieces (create)", () => {
   it("作成アイテムに UUID が付与される", async () => {
     mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
-      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+      makeAdminEvent(TEST_USER_ID, {
+        body: JSON.stringify(validInput),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
       mockContext,
       mockCallback
     );
@@ -210,7 +221,11 @@ describe("POST /pieces (create)", () => {
 
     mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
-      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+      makeAdminEvent(TEST_USER_ID, {
+        body: JSON.stringify(validInput),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
       mockContext,
       mockCallback
     );
@@ -224,7 +239,7 @@ describe("POST /pieces (create)", () => {
     it("全カテゴリを指定して作成できる", async () => {
       mockRepo.save.mockResolvedValueOnce();
       const result = await handler(
-        makeEvent({
+        makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({
             ...validInput,
             genre: "交響曲",
@@ -249,7 +264,11 @@ describe("POST /pieces (create)", () => {
     it("カテゴリなしで作成できる（後方互換性）", async () => {
       mockRepo.save.mockResolvedValueOnce();
       const result = await handler(
-        makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify(validInput),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
         mockContext,
         mockCallback
       );
@@ -264,7 +283,7 @@ describe("POST /pieces (create)", () => {
     it("一部のカテゴリのみ指定して作成できる", async () => {
       mockRepo.save.mockResolvedValueOnce();
       const result = await handler(
-        makeEvent({
+        makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, genre: "協奏曲", era: "ロマン派" }),
           httpMethod: "POST",
           path: "/pieces",
@@ -282,7 +301,7 @@ describe("POST /pieces (create)", () => {
 
     it("genre に不正な値を指定すると 400 を返す", async () => {
       const result = await handler(
-        makeEvent({
+        makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, genre: "不正な値" }),
           httpMethod: "POST",
           path: "/pieces",
@@ -295,7 +314,7 @@ describe("POST /pieces (create)", () => {
 
     it("era に不正な値を指定すると 400 を返す", async () => {
       const result = await handler(
-        makeEvent({
+        makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, era: "不正な値" }),
           httpMethod: "POST",
           path: "/pieces",
@@ -308,7 +327,7 @@ describe("POST /pieces (create)", () => {
 
     it("formation に不正な値を指定すると 400 を返す", async () => {
       const result = await handler(
-        makeEvent({
+        makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, formation: "不正な値" }),
           httpMethod: "POST",
           path: "/pieces",
@@ -321,7 +340,7 @@ describe("POST /pieces (create)", () => {
 
     it("region に不正な値を指定すると 400 を返す", async () => {
       const result = await handler(
-        makeEvent({
+        makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, region: "不正な値" }),
           httpMethod: "POST",
           path: "/pieces",
@@ -336,10 +355,70 @@ describe("POST /pieces (create)", () => {
   it("Repository エラー時に 500 を返す", async () => {
     mockRepo.save.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
-      makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+      makeAdminEvent(TEST_USER_ID, {
+        body: JSON.stringify(validInput),
+        httpMethod: "POST",
+        path: "/pieces",
+      }),
       mockContext,
       mockCallback
     );
     expect(result?.statusCode).toBe(500);
+  });
+
+  describe("認可", () => {
+    it("admin グループに属さないユーザーは 403 を返し、データを保存しない", async () => {
+      const result = await handler(
+        makeAuthEvent(TEST_USER_ID, {
+          body: JSON.stringify(validInput),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(403);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
+      expect(mockRepo.save).not.toHaveBeenCalled();
+    });
+
+    it("認証クレームがない場合は 403 を返し、データを保存しない", async () => {
+      const result = await handler(
+        makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(403);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
+      expect(mockRepo.save).not.toHaveBeenCalled();
+    });
+
+    it("cognito:groups がカンマ区切り文字列で admin を含まない場合は 403", async () => {
+      const result = await handler(
+        makeAuthEvent(
+          TEST_USER_ID,
+          { body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" },
+          "viewer,editor"
+        ),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(403);
+      expect(mockRepo.save).not.toHaveBeenCalled();
+    });
+
+    it("cognito:groups がカンマ区切り文字列で admin を含む場合は 201", async () => {
+      mockRepo.save.mockResolvedValueOnce();
+      const result = await handler(
+        makeAuthEvent(
+          TEST_USER_ID,
+          { body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" },
+          "admin,editor"
+        ),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(201);
+    });
   });
 });

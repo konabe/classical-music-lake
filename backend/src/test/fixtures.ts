@@ -45,15 +45,25 @@ export const makeEvent = (overrides?: Partial<APIGatewayProxyEvent>): APIGateway
 
 export const makeAuthEvent = (
   userId: string,
+  overrides?: Partial<APIGatewayProxyEvent>,
+  groups?: string[] | string
+): APIGatewayProxyEvent => {
+  const claims: Record<string, unknown> = { sub: userId };
+  if (groups !== undefined) {
+    claims["cognito:groups"] = groups;
+  }
+  return {
+    ...makeEvent(overrides),
+    requestContext: {
+      authorizer: { claims },
+    } as unknown as APIGatewayProxyEvent["requestContext"],
+  };
+};
+
+export const makeAdminEvent = (
+  userId: string,
   overrides?: Partial<APIGatewayProxyEvent>
-): APIGatewayProxyEvent => ({
-  ...makeEvent(overrides),
-  requestContext: {
-    authorizer: {
-      claims: { sub: userId },
-    },
-  } as unknown as APIGatewayProxyEvent["requestContext"],
-});
+): APIGatewayProxyEvent => makeAuthEvent(userId, overrides, ["admin"]);
 
 export const mockContext: Context = {} as Context;
 export const mockCallback = { signal: new AbortController().signal };

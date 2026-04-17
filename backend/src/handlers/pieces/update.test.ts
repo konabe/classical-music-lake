@@ -1,9 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+import type { APIGatewayProxyEvent } from "aws-lambda";
 import createError from "http-errors";
 import type { Piece } from "../../types";
 
 import { handler } from "./update";
+import {
+  makeAdminEvent,
+  makeAuthEvent,
+  makeEvent as makeBaseEvent,
+  mockCallback,
+  mockContext,
+  TEST_USER_ID,
+} from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
@@ -19,24 +27,26 @@ vi.mock("../../repositories/piece-repository", () => ({
   }),
 }));
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
+type AuthMode = "admin" | "non-admin" | "none";
 
-function makeEvent(id?: string, body?: string | null): APIGatewayProxyEvent {
-  return {
+function makeEvent(
+  id?: string,
+  body?: string | null,
+  auth: AuthMode = "admin"
+): APIGatewayProxyEvent {
+  const overrides: Partial<APIGatewayProxyEvent> = {
     body: body === undefined ? null : body,
-    headers: {},
-    multiValueHeaders: {},
     httpMethod: "PUT",
-    isBase64Encoded: false,
     path: `/pieces/${id ?? ""}`,
     pathParameters: id === undefined ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
-    resource: "",
   };
+  if (auth === "admin") {
+    return makeAdminEvent(TEST_USER_ID, overrides);
+  }
+  if (auth === "non-admin") {
+    return makeAuthEvent(TEST_USER_ID, overrides);
+  }
+  return makeBaseEvent(overrides);
 }
 
 const existingPiece: Piece = {
@@ -390,5 +400,30 @@ describe("PUT /pieces/{id} (update)", () => {
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrl must be a valid URL");
+  });
+
+  describe("認可", () => {
+    it("admin グループに属さないユーザーは 403 を返し、データを更新しない", async () => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ title: "新タイトル" }), "non-admin"),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(403);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
+      expect(mockRepo.findById).not.toHaveBeenCalled();
+      expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+    });
+
+    it("認証クレームがない場合は 403 を返し、データを更新しない", async () => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ title: "新タイトル" }), "none"),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(403);
+      expect(mockRepo.findById).not.toHaveBeenCalled();
+      expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,7 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+import type { APIGatewayProxyEvent } from "aws-lambda";
 
 import { handler } from "./delete";
+import {
+  makeAdminEvent,
+  makeAuthEvent,
+  makeEvent as makeBaseEvent,
+  mockCallback,
+  mockContext,
+  TEST_USER_ID,
+} from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
@@ -17,24 +25,21 @@ vi.mock("../../repositories/piece-repository", () => ({
   }),
 }));
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
+type AuthMode = "admin" | "non-admin" | "none";
 
-function makeEvent(id: string | null): APIGatewayProxyEvent {
-  return {
-    body: null,
-    headers: {},
-    multiValueHeaders: {},
+function makeEvent(id: string | null, auth: AuthMode = "admin"): APIGatewayProxyEvent {
+  const overrides: Partial<APIGatewayProxyEvent> = {
     httpMethod: "DELETE",
-    isBase64Encoded: false,
     path: `/pieces/${id ?? ""}`,
     pathParameters: id === null ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
-    resource: "",
   };
+  if (auth === "admin") {
+    return makeAdminEvent(TEST_USER_ID, overrides);
+  }
+  if (auth === "non-admin") {
+    return makeAuthEvent(TEST_USER_ID, overrides);
+  }
+  return makeBaseEvent(overrides);
 }
 
 describe("DELETE /pieces/{id} (delete)", () => {
@@ -66,5 +71,24 @@ describe("DELETE /pieces/{id} (delete)", () => {
     mockRepo.remove.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
+  });
+
+  describe("認可", () => {
+    it("admin グループに属さないユーザーは 403 を返し、削除しない", async () => {
+      const result = await handler(
+        makeEvent("test-id-123", "non-admin"),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(403);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
+      expect(mockRepo.remove).not.toHaveBeenCalled();
+    });
+
+    it("認証クレームがない場合は 403 を返し、削除しない", async () => {
+      const result = await handler(makeEvent("test-id-123", "none"), mockContext, mockCallback);
+      expect(result?.statusCode).toBe(403);
+      expect(mockRepo.remove).not.toHaveBeenCalled();
+    });
   });
 });
