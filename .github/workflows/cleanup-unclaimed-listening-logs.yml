@@ -1,9 +1,20 @@
 name: Cleanup Unclaimed Listening Logs
 
-# 未帰属視聴ログ（userId が存在しない / null）の削除スクリプトを手動実行する。
+# 未帰属視聴ログ（userId が存在しない / null）の削除スクリプトを実行する。
 # Issue #297: 認証導入前に作成された未帰属データをクリーンアップする。
+#
+# トリガー:
+#   - push: claude/resolve-issue-297-dfrUk ブランチに対象ファイルが push されたら
+#           dev 環境へ DRY RUN で自動実行（動作確認用）
+#   - workflow_dispatch: 任意の環境・dry_run 指定で手動実行
 
 on:
+  push:
+    branches:
+      - claude/resolve-issue-297-dfrUk
+    paths:
+      - .github/workflows/cleanup-unclaimed-listening-logs.yml
+      - backend/scripts/cleanup-unclaimed-listening-logs.mjs
   workflow_dispatch:
     inputs:
       environment:
@@ -22,7 +33,7 @@ on:
         type: boolean
 
 concurrency:
-  group: cleanup-unclaimed-listening-logs-${{ github.event.inputs.environment }}
+  group: cleanup-unclaimed-listening-logs-${{ github.event.inputs.environment || 'dev' }}
   cancel-in-progress: false
 
 jobs:
@@ -41,6 +52,17 @@ jobs:
         with:
           node-version: "24"
           cache: "pnpm"
+
+      - name: Resolve parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "stage=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+            echo "dry_run=${{ github.event.inputs.dry_run }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "stage=dev" >> "$GITHUB_OUTPUT"
+            echo "dry_run=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Validate required secrets
         env:
@@ -62,6 +84,6 @@ jobs:
 
       - name: Cleanup unclaimed listening logs
         env:
-          STAGE_NAME: ${{ github.event.inputs.environment }}
-          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          STAGE_NAME: ${{ steps.params.outputs.stage }}
+          DRY_RUN: ${{ steps.params.outputs.dry_run }}
         run: node backend/scripts/cleanup-unclaimed-listening-logs.mjs
