@@ -61,40 +61,47 @@ watch(sentinel, (el, _prev, onCleanup) => {
 <template>
   <div>
     <PieceList :pieces="props.pieces" :error="props.error" @delete="emit('delete', $event)" />
-    <div class="list-status" role="status" aria-live="polite">
-      <p v-if="props.pending" class="status-text">読み込み中…</p>
-      <div v-else-if="props.error" class="status-error">
-        <p>取得に失敗しました。</p>
+    <output class="list-status" aria-live="polite">
+      <span v-if="props.pending" class="status-text">読み込み中…</span>
+      <span v-else-if="props.error" class="status-error">
+        <span class="status-error-message">取得に失敗しました。</span>
         <button type="button" class="btn-retry" @click="emit('retry')">再試行</button>
-      </div>
-      <p v-else-if="!props.hasMore && props.pieces.length > 0" class="status-text">
+      </span>
+      <span v-else-if="!props.hasMore && props.pieces.length > 0" class="status-text">
         これ以上ありません
-      </p>
-      <div
+      </span>
+      <span
         v-if="props.hasMore && !props.error"
         ref="sentinel"
         class="sentinel"
         aria-hidden="true"
-      ></div>
-    </div>
+      ></span>
+    </output>
   </div>
 </template>
 
 <style scoped>
 .list-status {
+  display: block;
   margin-top: 1rem;
   text-align: center;
 }
 
 .status-text {
+  display: block;
   color: #666;
   font-size: 0.9rem;
   padding: 1rem 0;
 }
 
 .status-error {
+  display: block;
   padding: 1rem 0;
   color: #c33;
+}
+
+.status-error-message {
+  display: block;
 }
 
 .btn-retry {
@@ -112,6 +119,7 @@ watch(sentinel, (el, _prev, onCleanup) => {
 }
 
 .sentinel {
+  display: block;
   height: 1px;
 }
 </style>
