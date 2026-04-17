@@ -222,6 +222,8 @@ aws cognito-idp admin-update-user-attributes \
 
 Cognito User Pool には `admin` グループが存在する。グループへの追加・削除は AWS CLI またはコンソールで手動操作する。
 
+> **重要**: 楽曲マスタ書き込み API（`POST /pieces` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`）は `admin` グループ限定のため、グループが空のままでは誰も楽曲マスタを編集できない。新規環境へのデプロイ直後は、下記手順で初期管理者を付与すること（参照 API `GET /pieces` / `GET /pieces/{id}` は従来どおり公開で利用可）。
+
 ### User Pool ID の取得
 
 ```bash
