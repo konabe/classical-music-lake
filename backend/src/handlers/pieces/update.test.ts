@@ -4,6 +4,7 @@ import createError from "http-errors";
 import type { Piece } from "../../types";
 
 import { handler } from "./update";
+import { TEST_USER_ID } from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
@@ -22,7 +23,25 @@ vi.mock("../../repositories/piece-repository", () => ({
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
 
-function makeEvent(id?: string, body?: string | null): APIGatewayProxyEvent {
+type AuthMode = "admin" | "non-admin" | "none";
+
+function makeEvent(
+  id?: string,
+  body?: string | null,
+  auth: AuthMode = "admin"
+): APIGatewayProxyEvent {
+  let requestContext: APIGatewayProxyEvent["requestContext"];
+  if (auth === "none") {
+    requestContext = {} as APIGatewayProxyEvent["requestContext"];
+  } else {
+    const claims: Record<string, unknown> = { sub: TEST_USER_ID };
+    if (auth === "admin") {
+      claims["cognito:groups"] = ["admin"];
+    }
+    requestContext = {
+      authorizer: { claims },
+    } as unknown as APIGatewayProxyEvent["requestContext"];
+  }
   return {
     body: body === undefined ? null : body,
     headers: {},
@@ -34,7 +53,7 @@ function makeEvent(id?: string, body?: string | null): APIGatewayProxyEvent {
     queryStringParameters: null,
     multiValueQueryStringParameters: null,
     stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
+    requestContext,
     resource: "",
   };
 }
@@ -390,5 +409,30 @@ describe("PUT /pieces/{id} (update)", () => {
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrl must be a valid URL");
+  });
+
+  describe("認可", () => {
+    it("admin グループに属さないユーザーは 403 を返し、データを更新しない", async () => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ title: "新タイトル" }), "non-admin"),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(403);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
+      expect(mockRepo.findById).not.toHaveBeenCalled();
+      expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+    });
+
+    it("認証クレームがない場合は 403 を返し、データを更新しない", async () => {
+      const result = await handler(
+        makeEvent("abc-123", JSON.stringify({ title: "新タイトル" }), "none"),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(403);
+      expect(mockRepo.findById).not.toHaveBeenCalled();
+      expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+    });
   });
 });

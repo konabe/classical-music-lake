@@ -552,18 +552,20 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogResource.addMethod("DELETE", integ(listeningLogsDelete), withAuth);
 
     // 認証不要エンドポイント用オプション
-    const withoutAuth = { authorizationType: apigateway.AuthorizationType.NONE }; // NOSONAR: /pieces/* と /auth/* は意図的に公開エンドポイントとして設計
+    const withoutAuth = { authorizationType: apigateway.AuthorizationType.NONE }; // NOSONAR: /pieces の参照系と /auth/* は意図的に公開エンドポイントとして設計
 
     // /pieces
+    // 参照系（GET）は公開。書き込み系（POST/PUT/DELETE）は withAuth でトークン検証し、
+    // ハンドラ側で admin グループ判定を実施する
     const piecesResource = api.root.addResource("pieces");
     piecesResource.addMethod("GET", integ(listPieces), withoutAuth);
-    piecesResource.addMethod("POST", integ(createPiece), withoutAuth);
+    piecesResource.addMethod("POST", integ(createPiece), withAuth);
 
     // /pieces/{id}
     const pieceResource = piecesResource.addResource("{id}");
     pieceResource.addMethod("GET", integ(getPiece), withoutAuth);
-    pieceResource.addMethod("PUT", integ(updatePiece), withoutAuth);
-    pieceResource.addMethod("DELETE", integ(deletePiece), withoutAuth);
+    pieceResource.addMethod("PUT", integ(updatePiece), withAuth);
+    pieceResource.addMethod("DELETE", integ(deletePiece), withAuth);
 
     // /auth
     const authResource = api.root.addResource("auth");
@@ -644,8 +646,13 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       ["GET", "PUT", "DELETE", "OPTIONS"],
       ["Content-Type", "Authorization"]
     );
-    this.addCors(piecesResource, ["GET", "POST", "OPTIONS"]);
-    this.addCors(pieceResource, ["GET", "PUT", "DELETE", "OPTIONS"]);
+    // 書き込み系（POST/PUT/DELETE）は Authorization ヘッダーが必要
+    this.addCors(piecesResource, ["GET", "POST", "OPTIONS"], ["Content-Type", "Authorization"]);
+    this.addCors(
+      pieceResource,
+      ["GET", "PUT", "DELETE", "OPTIONS"],
+      ["Content-Type", "Authorization"]
+    );
     this.addCors(authRegisterResource, ["POST", "OPTIONS"]);
     this.addCors(authLoginResource, ["POST", "OPTIONS"]);
     this.addCors(authVerifyEmailResource, ["POST", "OPTIONS"]);

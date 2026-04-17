@@ -231,8 +231,8 @@ interface ConcertLog {
 
 - **ベースURL**: `https://{api-gateway-url}/prod`
 - **認証**: AWS Cognito User Pool (Bearer Token)
-  - 認証が必要なエンドポイント: `/listening-logs/*`、`/concert-logs/*`（読み取り・書き込み）
-  - 公開エンドポイント: `/auth/*`、`/pieces/*`
+  - 認証が必要なエンドポイント: `/listening-logs/*`、`/concert-logs/*`（読み取り・書き込み）、`/pieces` の書き込み系（`POST` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`）。書き込み系はさらに `admin` グループ必須
+  - 公開エンドポイント: `/auth/*`、`/pieces` の参照系（`GET /pieces` / `GET /pieces/{id}`）
 - **CORS**: CloudFront URL のみ許可（プリフライト・GatewayResponse の両方で設定）
 
 ### 4.2 認証API
@@ -658,7 +658,7 @@ Authorization: Bearer {accessToken}
 
 ### 4.5 楽曲マスタAPI
 
-> **認証不要**: 楽曲マスタは全ユーザ共通のマスタデータのため、公開エンドポイント。
+> **認可ルール**: 参照系（`GET /pieces` / `GET /pieces/{id}`）は認証不要で公開。書き込み系（`POST /pieces` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`）は `admin` グループに所属する認証済みユーザーのみ実行可能。
 
 #### `GET /pieces`
 
@@ -713,9 +713,24 @@ GET /pieces?limit=50&cursor={opaque}
 - 形式（文字レベル）は Zod の `z.base64url()` で検証し、デコード後の JSON 不正・未知バージョンは `decodeCursor` で検出して 400 を返す。
 - 改ざん検出（HMAC）は行わない。楽曲マスタは全ユーザ共通のためテナント境界を越えるリスクが無いため。
 
-#### `POST /pieces` / `PUT /pieces/{id}` / `DELETE /pieces/{id}` / `GET /pieces/{id}`
+#### `GET /pieces/{id}`
 
-従来どおり（Piece オブジェクトの単件操作）。本仕様書ではデータ構造（3.2 節）とバリデーション（本節）を参照。
+従来どおり（Piece オブジェクトの単件取得）。認証不要。データ構造は 3.2 節を参照。
+
+#### `POST /pieces` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`
+
+楽曲マスタの単件作成・更新・削除（Piece オブジェクト）。データ構造とバリデーションは 3.2 節と本節 4.7 を参照。
+
+**認可ルール**
+
+- `Authorization: Bearer {idToken}` ヘッダーが必須（API Gateway Cognito Authorizer で検証）
+- ID Token の `cognito:groups` クレームに `admin` が含まれていること
+- 認可は Cognito Authorizer（トークン検証）と Lambda ハンドラ（グループ判定）の二段構えで強制する
+
+**エラーレスポンス**
+
+- 認証ヘッダーなし・無効/期限切れトークン: `401 Unauthorized`（API Gateway Authorizer が返却）
+- 認証済みだが `admin` 非所属: `403 Forbidden` + `{ "message": "Admin privilege required" }`
 
 ### 4.6 エラーレスポンス一覧
 
@@ -727,11 +742,13 @@ GET /pieces?limit=50&cursor={opaque}
 }
 ```
 
-| ステータスコード            | 意味               | 発生条件                                       |
-| --------------------------- | ------------------ | ---------------------------------------------- |
-| `400 Bad Request`           | リクエスト不正     | リクエストボディが空、またはパスパラメータ不正 |
-| `404 Not Found`             | リソース未存在     | 指定IDの視聴ログが存在しない                   |
-| `500 Internal Server Error` | サーバー内部エラー | DynamoDB接続エラーなど予期しないエラー         |
+| ステータスコード            | 意味               | 発生条件                                                                               |
+| --------------------------- | ------------------ | -------------------------------------------------------------------------------------- |
+| `400 Bad Request`           | リクエスト不正     | リクエストボディが空、またはパスパラメータ不正                                         |
+| `401 Unauthorized`          | 未認証             | 認証必須エンドポイントで認証ヘッダー・トークンが不正（API Gateway Authorizer）         |
+| `403 Forbidden`             | 権限不足           | 認証済みだが権限不足（例: 楽曲マスタ書き込み API への `admin` 非所属ユーザーアクセス） |
+| `404 Not Found`             | リソース未存在     | 指定IDの視聴ログが存在しない                                                           |
+| `500 Internal Server Error` | サーバー内部エラー | DynamoDB接続エラーなど予期しないエラー                                                 |
 
 ### 4.7 データバリデーションルール
 
@@ -831,6 +848,10 @@ GET /pieces?limit=50&cursor={opaque}
 - **名前**: `classical-music-lake`
 - **ステージ**: `prod`
 - **CORS**: カスタムドメイン URL を許可（プリフライト・GatewayResponse の両方で設定）
+- **Cognito Authorizer 適用範囲**:
+  - 認証必須: `/listening-logs/*`、`/concert-logs/*`、`/pieces` の書き込み系（`POST` / `PUT` / `DELETE`）
+  - 認証不要: `/pieces` の参照系（`GET`）と `/auth/*`
+  - 楽曲マスタの書き込み系はさらに Lambda ハンドラ内で `admin` グループ判定を行い、非管理者には `403 Forbidden` を返す
 
 #### S3
 
