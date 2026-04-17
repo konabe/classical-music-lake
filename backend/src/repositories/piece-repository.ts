@@ -2,7 +2,8 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { DeleteCommand, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 
-import { dynamo, scanAllItems, scanPage, TABLE_PIECES } from "../utils/dynamodb";
+// `scanAllItems` は `findAll`（deprecated・互換用）のみで使用する。`usePiecesAll` 廃止後に一括削除する。
+import { dynamo, scanAllItems, scanPage, TABLE_PIECES } from "../utils/dynamodb"; // NOSONAR: typescript:S1874
 import type { Piece } from "../types";
 import type { PieceRepository } from "../domain/piece";
 
@@ -16,7 +17,7 @@ export class DynamoDBPieceRepository implements PieceRepository {
    * @deprecated {@link findPage} を使うこと。`usePiecesAll` 廃止後に削除予定。
    */
   async findAll(): Promise<Piece[]> {
-    return scanAllItems<Piece>(TABLE_PIECES);
+    return scanAllItems<Piece>(TABLE_PIECES); // NOSONAR: typescript:S1874 — 互換維持のため deprecated API を意図的に使用
   }
 
   async findPage(options: {
