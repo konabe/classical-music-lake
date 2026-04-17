@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { Context } from "aws-lambda";
 
 import { handler } from "./create";
-import { makeEvent, makeAuthEvent, makeAdminEvent, TEST_USER_ID } from "../../test/fixtures";
+import {
+  makeAdminEvent,
+  makeAuthEvent,
+  makeEvent,
+  mockCallback,
+  mockContext,
+  TEST_USER_ID,
+} from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
@@ -17,9 +23,6 @@ vi.mock("../../repositories/piece-repository", () => ({
     return mockRepo;
   }),
 }));
-
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
 
 const validInput = {
   title: "交響曲第9番",

@@ -1,8 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+import type { APIGatewayProxyEvent } from "aws-lambda";
 
 import { handler } from "./delete";
-import { TEST_USER_ID } from "../../test/fixtures";
+import {
+  makeAdminEvent,
+  makeAuthEvent,
+  makeEvent as makeBaseEvent,
+  mockCallback,
+  mockContext,
+  TEST_USER_ID,
+} from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
@@ -18,38 +25,21 @@ vi.mock("../../repositories/piece-repository", () => ({
   }),
 }));
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
-
 type AuthMode = "admin" | "non-admin" | "none";
 
 function makeEvent(id: string | null, auth: AuthMode = "admin"): APIGatewayProxyEvent {
-  let requestContext: APIGatewayProxyEvent["requestContext"];
-  if (auth === "none") {
-    requestContext = {} as APIGatewayProxyEvent["requestContext"];
-  } else {
-    const claims: Record<string, unknown> = { sub: TEST_USER_ID };
-    if (auth === "admin") {
-      claims["cognito:groups"] = ["admin"];
-    }
-    requestContext = {
-      authorizer: { claims },
-    } as unknown as APIGatewayProxyEvent["requestContext"];
-  }
-  return {
-    body: null,
-    headers: {},
-    multiValueHeaders: {},
+  const overrides: Partial<APIGatewayProxyEvent> = {
     httpMethod: "DELETE",
-    isBase64Encoded: false,
     path: `/pieces/${id ?? ""}`,
     pathParameters: id === null ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext,
-    resource: "",
   };
+  if (auth === "admin") {
+    return makeAdminEvent(TEST_USER_ID, overrides);
+  }
+  if (auth === "non-admin") {
+    return makeAuthEvent(TEST_USER_ID, overrides);
+  }
+  return makeBaseEvent(overrides);
 }
 
 describe("DELETE /pieces/{id} (delete)", () => {
