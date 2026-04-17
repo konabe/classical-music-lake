@@ -359,6 +359,57 @@ describe("useAuth", () => {
     });
   });
 
+  describe("isAdmin", () => {
+    const makeIdToken = (payload: Record<string, unknown>): string => {
+      const encoded = btoa(JSON.stringify(payload))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=/g, "");
+      return `header.${encoded}.signature`;
+    };
+
+    it("idToken がないとき false を返す", () => {
+      const { isAdmin } = useAuth();
+      expect(isAdmin()).toBe(false);
+    });
+
+    it("cognito:groups が配列で admin を含むとき true を返す", () => {
+      localStorage.setItem(ID_TOKEN_KEY, makeIdToken({ "cognito:groups": ["admin"] }));
+      const { isAdmin } = useAuth();
+      expect(isAdmin()).toBe(true);
+    });
+
+    it("cognito:groups が配列で admin を含まないとき false を返す", () => {
+      localStorage.setItem(ID_TOKEN_KEY, makeIdToken({ "cognito:groups": ["viewer"] }));
+      const { isAdmin } = useAuth();
+      expect(isAdmin()).toBe(false);
+    });
+
+    it("cognito:groups がカンマ区切り文字列で admin を含むとき true を返す", () => {
+      localStorage.setItem(ID_TOKEN_KEY, makeIdToken({ "cognito:groups": "admin,viewer" }));
+      const { isAdmin } = useAuth();
+      expect(isAdmin()).toBe(true);
+    });
+
+    it("cognito:groups がカンマ区切り文字列で admin を含まないとき false を返す", () => {
+      localStorage.setItem(ID_TOKEN_KEY, makeIdToken({ "cognito:groups": "viewer,editor" }));
+      const { isAdmin } = useAuth();
+      expect(isAdmin()).toBe(false);
+    });
+
+    it("cognito:groups クレームがないとき false を返す", () => {
+      localStorage.setItem(ID_TOKEN_KEY, makeIdToken({ sub: "user-id" }));
+      const { isAdmin } = useAuth();
+      expect(isAdmin()).toBe(false);
+    });
+
+    it("idToken が不正な形式のとき false を返す", () => {
+      localStorage.setItem(ID_TOKEN_KEY, "invalid-token");
+      const { isAdmin } = useAuth();
+      expect(isAdmin()).toBe(false);
+    });
+  });
+
   describe("isAuthenticated", () => {
     it("localStorage に accessToken があるとき true を返す", () => {
       localStorage.setItem("accessToken", "token123");

@@ -6,12 +6,14 @@ withDefaults(
     piece: Piece | null;
     error: Error | null;
     autoplay?: boolean;
+    isAdmin: boolean;
   }>(),
   { autoplay: false }
 );
 
 const emit = defineEmits<{
   save: [values: { rating: Rating; isFavorite: boolean; memo: string }];
+  delete: [piece: Piece];
 }>();
 
 const hasStartedPlaying = ref(false);
@@ -33,6 +35,10 @@ const hasStartedPlaying = ref(false);
         <div class="piece-composer">{{ piece.composer }}</div>
         <div class="piece-category-wrapper">
           <PieceCategoryList :piece="piece" />
+        </div>
+        <div v-if="isAdmin" class="admin-actions">
+          <NuxtLink :to="`/pieces/${piece.id}/edit`" class="btn-secondary">編集</NuxtLink>
+          <button class="btn-danger" @click="emit('delete', piece)">削除</button>
         </div>
       </div>
 
@@ -85,5 +91,49 @@ const hasStartedPlaying = ref(false);
 
 .piece-category-wrapper {
   margin-top: 0.5rem;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  background: #fff;
+  border: 1px solid #1e2d5a;
+  color: #1e2d5a;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #1e2d5a;
+  color: #fff;
+}
+
+.btn-danger {
+  padding: 0.4rem 1rem;
+  background: #fff;
+  border: 1px solid #c0392b;
+  color: #c0392b;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+  color: #fff;
 }
 </style>

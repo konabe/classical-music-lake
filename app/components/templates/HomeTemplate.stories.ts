@@ -9,4 +9,18 @@ const meta: Meta<typeof HomeTemplate> = {
 export default meta;
 type Story = StoryObj<typeof HomeTemplate>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  args: {
+    pieces: [],
+    loading: false,
+    isAdmin: false,
+  },
+};
+
+export const Admin: Story = {
+  args: {
+    pieces: [],
+    loading: false,
+    isAdmin: true,
+  },
+};

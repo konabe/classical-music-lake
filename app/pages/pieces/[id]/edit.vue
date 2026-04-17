@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { UpdatePieceInput } from "~/types";
 
+definePageMeta({ middleware: ["admin"] });
+
 const route = useRoute();
 const id = computed(() => route.params.id as string);
 

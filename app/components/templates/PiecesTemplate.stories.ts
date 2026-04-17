@@ -31,6 +31,15 @@ export const WithPieces: Story = {
   args: {
     pieces: samplePieces,
     error: null,
+    isAdmin: false,
+  },
+};
+
+export const WithPiecesAdmin: Story = {
+  args: {
+    pieces: samplePieces,
+    error: null,
+    isAdmin: true,
   },
 };
 
@@ -38,6 +47,7 @@ export const EmptyState: Story = {
   args: {
     pieces: [],
     error: null,
+    isAdmin: false,
   },
 };
 
@@ -45,5 +55,6 @@ export const WithError: Story = {
   args: {
     pieces: [],
     error: new Error("取得失敗"),
+    isAdmin: false,
   },
 };

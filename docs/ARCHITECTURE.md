@@ -295,7 +295,7 @@ classical-music-lake/
 
 ### 認可（実装済み）
 
-- **状態**: Cognito グループによるロールベースアクセス制御を実装済み（ワーク015-02）
+- **状態**: Cognito グループによるロールベースアクセス制御を実装済み（ワーク015-02 / 015-03）
 - **実装内容**:
   - `admin` Cognito グループを CDK で全環境に定義（`CfnUserPoolGroup`）。グループ所属ユーザーの ID/Access Token には `cognito:groups: ["admin"]` クレームが付与される
   - 楽曲マスタ書き込み API（`POST /pieces` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`）は `admin` グループのみ実行可能
@@ -304,6 +304,19 @@ classical-music-lake/
   - 楽曲マスタ参照 API（`GET /pieces` / `GET /pieces/{id}`）は認証不要で公開のまま
 - **設計上の判断**: Cognito Authorizer にはグループ強制機能が無いため、Authorizer（トークン署名検証）と Lambda 内判定（グループ検査）の二段構えとする
 - **運用**: `admin` グループの付与・剥奪は AWS CLI／コンソールによる手動運用。グループ変更は再ログイン後に ID Token に反映される（`docs/OPERATIONS.md` 参照）
+
+### 管理者ロールによる UI 差分（実装済み）
+
+- **状態**: フロントエンド側でも管理者ロールに応じた表示切り替えを実装済み（ワーク015-03）
+- **実装内容**:
+  - `useAuth` composable の `isAdmin()` 関数が localStorage に保存された ID Token の `cognito:groups` クレームを読み取り、`admin` グループ所属かどうかを返す（JWT の base64url デコードのみ行い、署名検証は行わない）
+  - `middleware/admin.ts`: `isAdmin()` が false のとき、保護対象ページ（楽曲マスタ新規作成・編集ページ）にアクセスしようとすると TOP（`/`）へリダイレクトする
+  - **TOP ページ**: 管理者のみ「管理者メニュー」セクション（楽曲マスタ追加リンクを含む）を表示する
+  - **楽曲マスタ一覧ページ**: 管理者のみ「新しい楽曲」ボタンを表示する
+  - **楽曲マスタ詳細ページ**: 管理者のみ「編集」「削除」ボタンを表示する
+- **設計上の判断**:
+  - クライアント側 UI ガードはあくまで UX 向上のためであり、セキュリティ境界はサーバー側（API の 403 レスポンス）で担保する
+  - `isAdmin()` は呼び出し時点の localStorage を読み取るスナップショット関数。ページコンポーネントは各レンダリング時に評価されるため、ログアウト後の再訪問時には正しく false が返る
 
 ### DynamoDB Scan による全件取得
 

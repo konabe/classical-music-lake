@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   title: string;
-  newPagePath: string;
+  newPagePath?: string;
 }>();
 
 const router = useRouter();
@@ -10,7 +10,7 @@ const router = useRouter();
 <template>
   <div class="page-header">
     <h1>{{ title }}</h1>
-    <ButtonPrimary @click="router.push(newPagePath)"><slot /></ButtonPrimary>
+    <ButtonPrimary v-if="newPagePath" @click="router.push(newPagePath!)"><slot /></ButtonPrimary>
   </div>
 </template>
 

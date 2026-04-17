@@ -2,6 +2,22 @@ import { useRouter } from "#app";
 import { useApiBase } from "./useApiBase";
 import { useCognitoConfig } from "./useCognitoConfig";
 
+const ADMIN_GROUP_NAME = "admin";
+
+const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      return null;
+    }
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padding = (4 - (base64.length % 4)) % 4;
+    return JSON.parse(atob(base64 + "=".repeat(padding))) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+};
+
 export const ACCESS_TOKEN_KEY = "accessToken";
 export const ID_TOKEN_KEY = "idToken";
 export const REFRESH_TOKEN_KEY = "refreshToken";
@@ -376,6 +392,28 @@ export const useAuth = () => {
     return localStorage.getItem(ACCESS_TOKEN_KEY) !== null;
   };
 
+  const isAdmin = (): boolean => {
+    const idToken = localStorage.getItem(ID_TOKEN_KEY);
+    if (idToken === null) {
+      return false;
+    }
+    const payload = decodeJwtPayload(idToken);
+    if (payload === null) {
+      return false;
+    }
+    const groups = payload["cognito:groups"];
+    if (Array.isArray(groups)) {
+      return groups.includes(ADMIN_GROUP_NAME);
+    }
+    if (typeof groups === "string" && groups !== "") {
+      return groups
+        .split(",")
+        .map((g) => g.trim())
+        .includes(ADMIN_GROUP_NAME);
+    }
+    return false;
+  };
+
   const clearTokens = (): void => {
     refreshGeneration++;
     localStorage.removeItem(ACCESS_TOKEN_KEY);
@@ -440,6 +478,7 @@ export const useAuth = () => {
     verifyEmail,
     resendVerificationCode,
     isAuthenticated,
+    isAdmin,
     isTokenExpired,
     refreshTokens,
     clearTokens,

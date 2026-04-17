@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { CreatePieceInput } from "~/types";
 
+definePageMeta({ middleware: ["admin"] });
+
 const { createPiece } = usePiecesPaginated();
 const errorMessage = ref("");
 

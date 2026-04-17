@@ -6,6 +6,7 @@ const props = defineProps<{
   error: Error | null;
   pending: boolean;
   hasMore: boolean;
+  isAdmin: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -17,7 +18,9 @@ const emit = defineEmits<{
 
 <template>
   <div>
-    <PageHeader title="楽曲マスタ" new-page-path="/pieces/new">+ 新しい楽曲</PageHeader>
+    <PageHeader title="楽曲マスタ" :new-page-path="props.isAdmin ? '/pieces/new' : undefined"
+      >+ 新しい楽曲</PageHeader
+    >
     <PieceListInfinite
       :pieces="props.pieces"
       :error="props.error"

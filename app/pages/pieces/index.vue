@@ -3,6 +3,8 @@ import type { Piece } from "~/types";
 
 const apiBase = useApiBase();
 const { items, pending, error, hasMore, loadMore, reset, retry } = usePiecesPaginated();
+const { isAdmin } = useAuth();
+const isAdminUser = isAdmin();
 
 // 初回ロード
 void loadMore();
@@ -29,6 +31,7 @@ async function handleDelete(piece: Piece) {
     :error="error"
     :pending="pending"
     :has-more="hasMore"
+    :is-admin="isAdminUser"
     @delete="handleDelete"
     @load-more="loadMore"
     @retry="retry"
