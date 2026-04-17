@@ -291,7 +291,19 @@ classical-music-lake/
   - ログイン時にメール未確認エラー（`UserNotConfirmed`）が返された場合、パスワードを `sessionStorage.pendingPassword` に保存して `/auth/verify-email` へリダイレクト
   - ログアウト: クライアント側のみ（localStorage からトークン削除 + `/auth/login` へリダイレクト）
   - `middleware/auth.ts`: `/listening-logs/**` への未認証アクセスを制限
-- **残タスク**: JWT 検証による API 保護（Cognito Authorizer）は将来フェーズで実装予定
+  - API Gateway Cognito Authorizer による JWT 検証: `/listening-logs/*`・`/concert-logs/*`・`/pieces` の書き込み系（POST/PUT/DELETE）に適用
+
+### 認可（実装済み）
+
+- **状態**: Cognito グループによるロールベースアクセス制御を実装済み（ワーク015-02）
+- **実装内容**:
+  - `admin` Cognito グループを CDK で全環境に定義（`CfnUserPoolGroup`）。グループ所属ユーザーの ID/Access Token には `cognito:groups: ["admin"]` クレームが付与される
+  - 楽曲マスタ書き込み API（`POST /pieces` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`）は `admin` グループのみ実行可能
+    - API Gateway の Cognito Authorizer で認証を強制（未認証は 401 Unauthorized）
+    - Lambda ハンドラ内の `requireAdmin(event)`（`backend/src/utils/auth.ts`）で `cognito:groups` を検査し、非管理者には 403 Forbidden を返す
+  - 楽曲マスタ参照 API（`GET /pieces` / `GET /pieces/{id}`）は認証不要で公開のまま
+- **設計上の判断**: Cognito Authorizer にはグループ強制機能が無いため、Authorizer（トークン署名検証）と Lambda 内判定（グループ検査）の二段構えとする
+- **運用**: `admin` グループの付与・剥奪は AWS CLI／コンソールによる手動運用。グループ変更は再ログイン後に ID Token に反映される（`docs/OPERATIONS.md` 参照）
 
 ### DynamoDB Scan による全件取得
 
