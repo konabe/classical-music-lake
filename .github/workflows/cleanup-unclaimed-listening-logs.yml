@@ -1,0 +1,67 @@
+name: Cleanup Unclaimed Listening Logs
+
+# 未帰属視聴ログ（userId が存在しない / null）の削除スクリプトを手動実行する。
+# Issue #297: 認証導入前に作成された未帰属データをクリーンアップする。
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "対象環境"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+      dry_run:
+        description: "ドライランで実行するか（false 指定時のみ実削除）"
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: cleanup-unclaimed-listening-logs-${{ github.event.inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Validate required secrets
+        env:
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          if [ -z "$AWS_ROLE_TO_ASSUME" ]; then
+            echo "::error::AWS_ROLE_TO_ASSUME secret is not set."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ap-northeast-1
+
+      - name: Install backend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cleanup unclaimed listening logs
+        env:
+          STAGE_NAME: ${{ github.event.inputs.environment }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: node backend/scripts/cleanup-unclaimed-listening-logs.mjs
