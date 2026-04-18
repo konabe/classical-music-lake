@@ -60,6 +60,7 @@
 | `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                                            |
 | `useConcertLogs`   | コンサート記録の一覧取得（`list`）・作成（`create`）・更新（`update`）・削除（`deleteLog`）を行う。401 時にトークンリフレッシュを自動試行する |
 | `useConcertLog`    | 特定のコンサート記録を id で取得する（詳細ページ用）                                                                                          |
+| `useSubmitHandler` | フォーム送信時の `try/catch` とエラーメッセージ設定・成功後の `navigateTo` 遷移を共通化する。new/edit 系ページで使用                          |
 
 #### フロントエンド レイアウト
 

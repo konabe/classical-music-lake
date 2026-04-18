@@ -4,19 +4,14 @@ import type { UpdateConcertLogInput } from "~/types";
 definePageMeta({ middleware: "auth" });
 
 const route = useRoute();
-const { data: log } = await useConcertLog(() => route.params.id as string);
+const id = route.params.id as string;
+const { data: log } = await useConcertLog(() => id);
 const { update } = useConcertLogs();
-const error = ref<string | null>(null);
-
-async function handleSubmit(values: UpdateConcertLogInput) {
-  error.value = null;
-  try {
-    await update(route.params.id as string, values);
-    await navigateTo(`/concert-logs/${route.params.id}`);
-  } catch {
-    error.value = "記録の更新に失敗しました。";
-  }
-}
+const { error, handleSubmit } = useSubmitHandler<UpdateConcertLogInput>({
+  submit: (values) => update(id, values),
+  redirectTo: `/concert-logs/${id}`,
+  errorMessage: "記録の更新に失敗しました。",
+});
 </script>
 
 <template>
