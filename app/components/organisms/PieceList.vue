@@ -41,8 +41,14 @@ const router = useRouter();
 <style scoped>
 .piece-list {
   list-style: none;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .piece-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>

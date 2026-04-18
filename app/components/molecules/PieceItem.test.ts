@@ -118,48 +118,45 @@ describe("PieceItem", () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePieceWithCategories },
       });
-      expect(wrapper.text()).toContain("ジャンル: 交響曲");
+      expect(wrapper.find(".kind-genre").text()).toBe("交響曲");
     });
 
     it("genre が未設定の場合、ジャンルバッジが表示されない", async () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePiece },
       });
-      expect(wrapper.text()).not.toContain("ジャンル:");
+      expect(wrapper.find(".kind-genre").exists()).toBe(false);
     });
 
     it("era が設定されている場合、時代バッジが表示される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePieceWithCategories },
       });
-      expect(wrapper.text()).toContain("時代: ロマン派");
+      expect(wrapper.find(".kind-era").text()).toBe("ロマン派");
     });
 
     it("era が未設定の場合、時代バッジが表示されない", async () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePiece },
       });
-      expect(wrapper.text()).not.toContain("時代:");
+      expect(wrapper.find(".kind-era").exists()).toBe(false);
     });
 
     it("4軸すべて設定されている場合、すべてのバッジが表示される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePieceWithCategories },
       });
-      expect(wrapper.text()).toContain("ジャンル: 交響曲");
-      expect(wrapper.text()).toContain("時代: ロマン派");
-      expect(wrapper.text()).toContain("編成: 管弦楽");
-      expect(wrapper.text()).toContain("地域: ドイツ・オーストリア");
+      expect(wrapper.find(".kind-genre").text()).toBe("交響曲");
+      expect(wrapper.find(".kind-era").text()).toBe("ロマン派");
+      expect(wrapper.find(".kind-formation").text()).toBe("管弦楽");
+      expect(wrapper.find(".kind-region").text()).toBe("ドイツ・オーストリア");
     });
 
     it("全カテゴリが未設定の場合、バッジが一切表示されない", async () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePiece },
       });
-      expect(wrapper.text()).not.toContain("ジャンル:");
-      expect(wrapper.text()).not.toContain("時代:");
-      expect(wrapper.text()).not.toContain("編成:");
-      expect(wrapper.text()).not.toContain("地域:");
+      expect(wrapper.find(".piece-category-list").exists()).toBe(false);
     });
   });
 
