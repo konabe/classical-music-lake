@@ -10,6 +10,8 @@
 
 - **視聴ログ管理**: CD・配信サービス等で聴いた録音の記録
 - **コンサート記録管理**: 実際に聴いたコンサートの記録（会場・指揮者・オーケストラ・ソリスト）
+- **楽曲マスタ管理**: 楽曲の登録・編集・削除（管理者のみ）
+- **作曲家マスタ管理**: 作曲家の登録・編集・削除（管理者のみ）
 - **ユーザー登録**: メールアドレスとパスワードによるアカウント作成（メール確認付き）
 
 ### 1.3 スコープ
@@ -51,23 +53,25 @@
 
 #### フロントエンド Composables
 
-| Composable         | 役割                                                                                                                                          |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useApiBase`       | API Gateway のベース URL を返す                                                                                                               |
-| `useCognitoConfig` | Cognito Hosted UI のドメインとクライアント ID を返す                                                                                          |
-| `useAuth`          | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback）                     |
-| `usePieces`        | 曲一覧を取得する                                                                                                                              |
-| `useRatingDisplay` | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                                            |
-| `useConcertLogs`   | コンサート記録の一覧取得（`list`）・作成（`create`）・更新（`update`）・削除（`deleteLog`）を行う。401 時にトークンリフレッシュを自動試行する |
-| `useConcertLog`    | 特定のコンサート記録を id で取得する（詳細ページ用）                                                                                          |
-| `useSubmitHandler` | フォーム送信時の `try/catch` とエラーメッセージ設定・成功後の `navigateTo` 遷移を共通化する。new/edit 系ページで使用                          |
+| Composable              | 役割                                                                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useApiBase`            | API Gateway のベース URL を返す                                                                                                               |
+| `useCognitoConfig`      | Cognito Hosted UI のドメインとクライアント ID を返す                                                                                          |
+| `useAuth`               | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback）                     |
+| `usePieces`             | 曲一覧を取得する                                                                                                                              |
+| `useRatingDisplay`      | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                                            |
+| `useConcertLogs`        | コンサート記録の一覧取得（`list`）・作成（`create`）・更新（`update`）・削除（`deleteLog`）を行う。401 時にトークンリフレッシュを自動試行する |
+| `useConcertLog`         | 特定のコンサート記録を id で取得する（詳細ページ用）                                                                                          |
+| `useComposersPaginated` | 作曲家マスタ一覧のカーソル型ページング / 無限スクロール取得・作成（`createComposer`）・更新（`updateComposer`）                               |
+| `useComposer`           | 特定の作曲家を id で取得する（詳細ページ用）                                                                                                  |
+| `useSubmitHandler`      | フォーム送信時の `try/catch` とエラーメッセージ設定・成功後の `navigateTo` 遷移を共通化する。new/edit 系ページで使用                          |
 
 #### フロントエンド レイアウト
 
-| レイアウト         | 役割                                                                                                                                                                                                                                    |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `default` (layout) | グローバルヘッダーを含む基本レイアウト。ナビゲーションリンクは「鑑賞記録」「楽曲マスタ」「コンサート記録」。認証状態に応じて右側リンクを切り替える（未ログイン時: 新規登録・ログインリンク表示 / ログイン済み時: ログアウトボタン表示） |
-| `auth` (layout)    | 認証ページ（`/auth/login`・`/auth/user-register`・`/auth/verify-email`）用レイアウト。ホームへ戻れるロゴ付きの最小ヘッダーとフォーム用の中央寄せメイン領域を提供                                                                        |
+| レイアウト         | 役割                                                                                                                                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `default` (layout) | グローバルヘッダーを含む基本レイアウト。ナビゲーションリンクは「鑑賞記録」「楽曲マスタ」「作曲家マスタ」「コンサート記録」。認証状態に応じて右側リンクを切り替える（未ログイン時: 新規登録・ログインリンク表示 / ログイン済み時: ログアウトボタン表示） |
+| `auth` (layout)    | 認証ページ（`/auth/login`・`/auth/user-register`・`/auth/verify-email`）用レイアウト。ホームへ戻れるロゴ付きの最小ヘッダーとフォーム用の中央寄せメイン領域を提供                                                                                        |
 
 #### フロントエンド ユーティリティ
 
@@ -185,7 +189,38 @@ interface Piece {
 
 ---
 
-### 3.3 コンサート記録 (ConcertLog)
+### 3.3 作曲家マスタ (Composer)
+
+#### DynamoDBテーブル
+
+- **テーブル名**: `classical-music-composers`
+- **パーティションキー**: `id` (String)
+- **課金モード**: オンデマンド
+
+#### データ構造
+
+```typescript
+interface Composer {
+  id: string; // UUID (自動生成)
+  name: string; // 作曲家名
+  era?: PieceEra; // 時代（任意、楽曲マスタと共通の定数を流用）
+  region?: PieceRegion; // 地域（任意、楽曲マスタと共通の定数を流用）
+  createdAt: string; // 作成日時 (ISO 8601形式)
+  updatedAt: string; // 更新日時 (ISO 8601形式)
+}
+```
+
+#### バリデーション
+
+- `name`: 空文字・空白のみ不可、最大100文字
+- `era`: 任意項目。指定する場合は固定の選択肢から選択。更新時に空文字を送信するとフィールドが削除される
+- `region`: 任意項目。指定する場合は固定の選択肢から選択。更新時に空文字を送信するとフィールドが削除される
+
+> バリデーションは `utils/schemas.ts` に定義した Zod スキーマで実施する。
+
+---
+
+### 3.4 コンサート記録 (ConcertLog)
 
 #### DynamoDBテーブル
 
@@ -233,8 +268,8 @@ interface ConcertLog {
 
 - **ベースURL**: `https://{api-gateway-url}/prod`
 - **認証**: AWS Cognito User Pool (Bearer Token)
-  - 認証が必要なエンドポイント: `/listening-logs/*`、`/concert-logs/*`（読み取り・書き込み）、`/pieces` の書き込み系（`POST` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`）。書き込み系はさらに `admin` グループ必須
-  - 公開エンドポイント: `/auth/*`、`/pieces` の参照系（`GET /pieces` / `GET /pieces/{id}`）
+  - 認証が必要なエンドポイント: `/listening-logs/*`、`/concert-logs/*`（読み取り・書き込み）、`/pieces` と `/composers` の書き込み系（`POST` / `PUT /{id}` / `DELETE /{id}`）。書き込み系はさらに `admin` グループ必須
+  - 公開エンドポイント: `/auth/*`、`/pieces` と `/composers` の参照系（`GET` / `GET /{id}`）
 - **CORS**: CloudFront URL のみ許可（プリフライト・GatewayResponse の両方で設定）
 
 ### 4.2 認証API
@@ -734,7 +769,75 @@ GET /pieces?limit=50&cursor={opaque}
 - 認証ヘッダーなし・無効/期限切れトークン: `401 Unauthorized`（API Gateway Authorizer が返却）
 - 認証済みだが `admin` 非所属: `403 Forbidden` + `{ "message": "Admin privilege required" }`
 
-### 4.6 エラーレスポンス一覧
+### 4.6 作曲家マスタAPI
+
+> **認可ルール**: 参照系（`GET /composers` / `GET /composers/{id}`）は認証不要で公開。書き込み系（`POST /composers` / `PUT /composers/{id}` / `DELETE /composers/{id}`）は `admin` グループに所属する認証済みユーザーのみ実行可能。
+
+#### `GET /composers`
+
+作曲家マスタ一覧をカーソル型ページングで取得する。
+
+**リクエスト**
+
+```http
+GET /composers?limit=50&cursor={opaque}
+```
+
+| クエリパラメータ | 型     | 必須 | 既定 | 説明                                                                         |
+| ---------------- | ------ | ---- | ---- | ---------------------------------------------------------------------------- |
+| `limit`          | number | -    | 50   | 1 ページあたりの件数。最小 1、最大 100。範囲外は `400 Bad Request`           |
+| `cursor`         | string | -    | なし | 前回レスポンスで返却された `nextCursor` を指定して続きを取得。不正値は `400` |
+
+**レスポンス**
+
+- 成功: `200 OK`
+
+  ```json
+  {
+    "items": [
+      {
+        "id": "composer-uuid",
+        "name": "ベートーヴェン",
+        "era": "古典派",
+        "region": "ドイツ・オーストリア",
+        "createdAt": "2024-01-15T20:00:00.000Z",
+        "updatedAt": "2024-01-15T20:00:00.000Z"
+      }
+    ],
+    "nextCursor": "opaque-base64url-string"
+  }
+  ```
+
+- バリデーションエラー: `400 Bad Request`
+
+**ソート順**: DynamoDB Scan の戻り順（順不同）。
+
+#### `GET /composers/{id}`
+
+特定の作曲家を取得。認証不要。データ構造は 3.3 節を参照。
+
+**レスポンス**
+
+- 成功: `200 OK` + Composer オブジェクト
+- 未存在: `404 Not Found`
+
+#### `POST /composers` / `PUT /composers/{id}` / `DELETE /composers/{id}`
+
+作曲家マスタの単件作成・更新・削除。データ構造とバリデーションは 3.3 節を参照。
+
+**認可ルール**
+
+- `Authorization: Bearer {idToken}` ヘッダーが必須（API Gateway Cognito Authorizer で検証）
+- ID Token の `cognito:groups` クレームに `admin` が含まれていること
+- 認可は Cognito Authorizer（トークン検証）と Lambda ハンドラ（グループ判定）の二段構えで強制する
+
+**エラーレスポンス**
+
+- 認証ヘッダーなし・無効/期限切れトークン: `401 Unauthorized`（API Gateway Authorizer が返却）
+- 認証済みだが `admin` 非所属: `403 Forbidden` + `{ "message": "Admin privilege required" }`
+- 更新時に楽観的ロックが失敗: `409 Conflict` + `{ "message": "Composer was updated by another request" }`
+
+### 4.7 エラーレスポンス一覧
 
 全エラーレスポンスは以下の形式で返される：
 
@@ -752,7 +855,7 @@ GET /pieces?limit=50&cursor={opaque}
 | `404 Not Found`             | リソース未存在     | 指定IDの視聴ログが存在しない                                                           |
 | `500 Internal Server Error` | サーバー内部エラー | DynamoDB接続エラーなど予期しないエラー                                                 |
 
-### 4.7 データバリデーションルール
+### 4.8 データバリデーションルール
 
 #### 視聴ログ（ListeningLog）
 
@@ -779,6 +882,16 @@ GET /pieces?limit=50&cursor={opaque}
 
 > 更新時（`PUT /concert-logs/{id}`）はすべてのフィールドが任意となる（`updateConcertLogSchema` は `createConcertLogSchema.partial()` で導出）。
 
+#### 作曲家マスタ（Composer）
+
+| フィールド | 型                 | 必須 | バリデーション                    |
+| ---------- | ------------------ | ---- | --------------------------------- |
+| `name`     | string             | ✅   | 空文字・空白のみ不可、最大100文字 |
+| `era`      | PieceEra (enum)    | -    | 指定する場合は固定の選択肢から    |
+| `region`   | PieceRegion (enum) | -    | 指定する場合は固定の選択肢から    |
+
+> 更新時（`PUT /composers/{id}`）はすべてのフィールドが任意となる（`updateComposerSchema`）。`era` / `region` は空文字を送信するとフィールドが削除される。
+
 #### 自動生成フィールド（入力不可）
 
 | フィールド  | 内容                           |
@@ -801,13 +914,16 @@ GET /pieces?limit=50&cursor={opaque}
   - 削除ポリシー: RETAIN（データ保持）
 - **ConcertLogs**: `classical-music-concert-logs`
   - 削除ポリシー: prod は RETAIN、stg/dev は DESTROY
+- **Composers**: `classical-music-composers`
+  - 削除ポリシー: RETAIN（データ保持）
 
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 21個
+- **関数数**: 26個
   - 視聴ログ用 CRUD 操作 × 5
   - 楽曲マスタ用 CRUD 操作 × 5
+  - 作曲家マスタ用 CRUD 操作 × 5
   - 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）
   - PreSignUp トリガー × 1
   - コンサート記録 × 5（list・create・get・update・delete）
@@ -815,6 +931,7 @@ GET /pieces?limit=50&cursor={opaque}
   - `DYNAMO_TABLE_LISTENING_LOGS`
   - `DYNAMO_TABLE_PIECES`
   - `DYNAMO_TABLE_CONCERT_LOGS`
+  - `DYNAMO_TABLE_COMPOSERS`
   - `COGNITO_USER_POOL_ID`（認証系 Lambda で使用）
   - `COGNITO_CLIENT_ID`（認証系 Lambda で使用）
 
@@ -851,9 +968,9 @@ GET /pieces?limit=50&cursor={opaque}
 - **ステージ**: `prod`
 - **CORS**: カスタムドメイン URL を許可（プリフライト・GatewayResponse の両方で設定）
 - **Cognito Authorizer 適用範囲**:
-  - 認証必須: `/listening-logs/*`、`/concert-logs/*`、`/pieces` の書き込み系（`POST` / `PUT` / `DELETE`）
-  - 認証不要: `/pieces` の参照系（`GET`）と `/auth/*`
-  - 楽曲マスタの書き込み系はさらに Lambda ハンドラ内で `admin` グループ判定を行い、非管理者には `403 Forbidden` を返す
+  - 認証必須: `/listening-logs/*`、`/concert-logs/*`、`/pieces` と `/composers` の書き込み系（`POST` / `PUT` / `DELETE`）
+  - 認証不要: `/pieces` と `/composers` の参照系（`GET`）と `/auth/*`
+  - 楽曲マスタ・作曲家マスタの書き込み系はさらに Lambda ハンドラ内で `admin` グループ判定を行い、非管理者には `403 Forbidden` を返す
 
 #### S3
 
@@ -879,6 +996,7 @@ GET /pieces?limit=50&cursor={opaque}
 - `DYNAMO_TABLE_LISTENING_LOGS`: 視聴ログテーブル名（CDK が自動設定）
 - `DYNAMO_TABLE_PIECES`: 楽曲マスタテーブル名（CDK が自動設定）
 - `DYNAMO_TABLE_CONCERT_LOGS`: コンサート記録テーブル名（CDK が自動設定）
+- `DYNAMO_TABLE_COMPOSERS`: 作曲家マスタテーブル名（CDK が自動設定）
 - `CORS_ALLOW_ORIGIN`: 許可する CORS オリジン（CDK がカスタムドメイン URL + CloudFront URL を自動設定。未設定時は `"*"` にフォールバックするが、本番・stg は CDK が必ず設定するため未設定にはならない）
 
 #### CI/CD（GitHub Secrets）
@@ -1075,6 +1193,9 @@ cdk deploy
 | `ConcertLog`              | コンサート記録（`title` は必須フィールド）                 |
 | `CreateConcertLogInput`   | コンサート記録作成入力                                     |
 | `UpdateConcertLogInput`   | コンサート記録更新入力（`Partial<CreateConcertLogInput>`） |
+| `Composer`                | 作曲家マスタ                                               |
+| `CreateComposerInput`     | 作曲家マスタ作成入力                                       |
+| `UpdateComposerInput`     | 作曲家マスタ更新入力（`Partial<CreateComposerInput>`）     |
 
 #### バックエンド固有（`backend/src/types/index.ts` にのみ存在）
 

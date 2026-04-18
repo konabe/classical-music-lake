@@ -81,6 +81,20 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
 
     // -------------------------
+    // DynamoDB テーブル（作曲家マスタ）
+    // -------------------------
+    const composersTableName = isProd
+      ? "classical-music-composers"
+      : `classical-music-composers-${stageName}`;
+
+    const composersTable = new dynamodb.Table(this, "ComposersTable", {
+      tableName: composersTableName,
+      partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    // -------------------------
     // AWS Cognito User Pool
     // -------------------------
     const userPoolName = isProd ? "classical-music-lake" : `classical-music-lake-${stageName}`;
@@ -333,6 +347,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       DYNAMO_TABLE_LISTENING_LOGS: listeningLogsTable.tableName,
       DYNAMO_TABLE_PIECES: piecesTable.tableName,
       DYNAMO_TABLE_CONCERT_LOGS: concertLogsTable.tableName,
+      DYNAMO_TABLE_COMPOSERS: composersTable.tableName,
     };
 
     const commonFnProps: Omit<lambdaNodejs.NodejsFunctionProps, "entry" | "logGroup"> = {
@@ -394,6 +409,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const concertLogsGet = fn("ConcertLogsGet", "handlers/concert-logs/get.ts");
     const concertLogsUpdate = fn("ConcertLogsUpdate", "handlers/concert-logs/update.ts");
     const concertLogsDelete = fn("ConcertLogsDelete", "handlers/concert-logs/delete.ts");
+
+    const listComposers = fn("ListComposers", "handlers/composers/list.ts");
+    const createComposer = fn("CreateComposer", "handlers/composers/create.ts");
+    const getComposer = fn("GetComposer", "handlers/composers/get.ts");
+    const updateComposer = fn("UpdateComposer", "handlers/composers/update.ts");
+    const deleteComposer = fn("DeleteComposer", "handlers/composers/delete.ts");
 
     // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
     // いる場合に自動でアカウントリンクを行う
@@ -470,6 +491,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     concertLogsTable.grantReadData(concertLogsGet);
     concertLogsTable.grantReadWriteData(concertLogsUpdate);
     concertLogsTable.grantReadWriteData(concertLogsDelete);
+    composersTable.grantReadData(listComposers);
+    composersTable.grantWriteData(createComposer);
+    composersTable.grantReadData(getComposer);
+    composersTable.grantReadWriteData(updateComposer);
+    composersTable.grantWriteData(deleteComposer);
 
     // -------------------------
     // API Gateway
@@ -567,6 +593,19 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     pieceResource.addMethod("PUT", integ(updatePiece), withAuth);
     pieceResource.addMethod("DELETE", integ(deletePiece), withAuth);
 
+    // /composers
+    // 参照系（GET）は公開。書き込み系（POST/PUT/DELETE）は withAuth でトークン検証し、
+    // ハンドラ側で admin グループ判定を実施する
+    const composersResource = api.root.addResource("composers");
+    composersResource.addMethod("GET", integ(listComposers), withoutAuth);
+    composersResource.addMethod("POST", integ(createComposer), withAuth);
+
+    // /composers/{id}
+    const composerResource = composersResource.addResource("{id}");
+    composerResource.addMethod("GET", integ(getComposer), withoutAuth);
+    composerResource.addMethod("PUT", integ(updateComposer), withAuth);
+    composerResource.addMethod("DELETE", integ(deleteComposer), withAuth);
+
     // /auth
     const authResource = api.root.addResource("auth");
 
@@ -611,6 +650,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       concertLogsGet,
       concertLogsUpdate,
       concertLogsDelete,
+      listComposers,
+      createComposer,
+      getComposer,
+      updateComposer,
+      deleteComposer,
     ];
 
     authExcludedFunctions.forEach((fn) => {
@@ -650,6 +694,12 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     this.addCors(piecesResource, ["GET", "POST", "OPTIONS"], ["Content-Type", "Authorization"]);
     this.addCors(
       pieceResource,
+      ["GET", "PUT", "DELETE", "OPTIONS"],
+      ["Content-Type", "Authorization"]
+    );
+    this.addCors(composersResource, ["GET", "POST", "OPTIONS"], ["Content-Type", "Authorization"]);
+    this.addCors(
+      composerResource,
       ["GET", "PUT", "DELETE", "OPTIONS"],
       ["Content-Type", "Authorization"]
     );
@@ -754,6 +804,11 @@ function handler(event) {
       concertLogsGet,
       concertLogsUpdate,
       concertLogsDelete,
+      listComposers,
+      createComposer,
+      getComposer,
+      updateComposer,
+      deleteComposer,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成

@@ -41,6 +41,11 @@ export const PIECES_PAGE_SIZE_DEFAULT = 50;
 export const PIECES_ALL_MAX_TOTAL = 5000;
 export const PIECES_ALL_MAX_EMPTY_PAGES = 3;
 
+// ページネーション設定（作曲家マスタ一覧）
+export const COMPOSERS_PAGE_SIZE_MIN = 1;
+export const COMPOSERS_PAGE_SIZE_MAX = 100;
+export const COMPOSERS_PAGE_SIZE_DEFAULT = 50;
+
 // カーソル型ページング結果
 export interface Paginated<T> {
   items: T[];

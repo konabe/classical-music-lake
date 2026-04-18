@@ -7,6 +7,9 @@ import {
   PIECES_PAGE_SIZE_DEFAULT,
   PIECES_PAGE_SIZE_MAX,
   PIECES_PAGE_SIZE_MIN,
+  COMPOSERS_PAGE_SIZE_DEFAULT,
+  COMPOSERS_PAGE_SIZE_MAX,
+  COMPOSERS_PAGE_SIZE_MIN,
 } from "../types/index.js";
 
 const ratingSchema = z
@@ -139,6 +142,46 @@ export const createConcertLogSchema = z.object({
 });
 
 export const updateConcertLogSchema = createConcertLogSchema.partial();
+
+export const createComposerSchema = z.object({
+  name: z
+    .string({ error: () => "name is required" })
+    .trim()
+    .min(1, "name is required")
+    .max(100, "name must be 100 characters or less"),
+  era: pieceEraSchema.optional(),
+  region: pieceRegionSchema.optional(),
+});
+
+export const updateComposerSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "name must be a non-empty string")
+    .max(100, "name must be 100 characters or less")
+    .optional(),
+  era: z.union([pieceEraSchema, z.literal("")]).optional(),
+  region: z.union([pieceRegionSchema, z.literal("")]).optional(),
+});
+
+/**
+ * GET /composers のクエリパラメータを検証するスキーマ。
+ * - `limit`: 省略時は {@link COMPOSERS_PAGE_SIZE_DEFAULT}。範囲は {@link COMPOSERS_PAGE_SIZE_MIN} 〜 {@link COMPOSERS_PAGE_SIZE_MAX}。
+ * - `cursor`: 省略可。指定時は base64url 形式の文字列。
+ */
+export const listComposersQuerySchema = z.object({
+  limit: z.coerce
+    .number({ error: () => "limit must be a number" })
+    .int({ message: "limit must be an integer" })
+    .min(COMPOSERS_PAGE_SIZE_MIN, {
+      message: `limit must be at least ${COMPOSERS_PAGE_SIZE_MIN}`,
+    })
+    .max(COMPOSERS_PAGE_SIZE_MAX, {
+      message: `limit must be at most ${COMPOSERS_PAGE_SIZE_MAX}`,
+    })
+    .default(COMPOSERS_PAGE_SIZE_DEFAULT),
+  cursor: z.base64url({ message: "cursor must be a base64url string" }).min(1).optional(),
+});
 
 /**
  * GET /pieces のクエリパラメータを検証するスキーマ。
