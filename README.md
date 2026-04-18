@@ -1,7 +1,6 @@
 # Classical Music Lake
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=konabe_classical-music-lake&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=konabe_classical-music-lake)
-[![Known Vulnerabilities](https://snyk.io/test/github/konabe/classical-music-lake/badge.svg)](https://snyk.io/test/github/konabe/classical-music-lake)
 [![codecov](https://codecov.io/gh/konabe/classical-music-lake/graph/badge.svg?token=Q5QFLF326W)](https://codecov.io/gh/konabe/classical-music-lake)
 [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fkonabe%2Fclassical-music-lake%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/konabe/classical-music-lake/main)
 
