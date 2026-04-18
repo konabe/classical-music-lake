@@ -8,7 +8,7 @@
 | ------ | ------------------------------------------------------------------------- | ---- | ------------ | ---- | -------- |
 | 015-01 | [admin-group-provisioning](./015-01-admin-group-provisioning/work.md)     | ✅   | ✅           | ✅   | ✅       |
 | 015-02 | [piece-write-admin-only-api](./015-02-piece-write-admin-only-api/work.md) | ✅   | ✅           | ✅   | ✅       |
-| 015-03 | [admin-ui-gating](./015-03-admin-ui-gating/work.md)                       | ☐    | ☐            | ☐    | ☐        |
+| 015-03 | [admin-ui-gating](./015-03-admin-ui-gating/work.md)                       | ✅   | ☐            | ✅   | ☐        |
 
 ## 凡例
 
