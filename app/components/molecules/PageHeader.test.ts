@@ -45,4 +45,11 @@ describe("PageHeader", () => {
     await wrapper.find("button").trigger("click");
     expect(pushSpy).toHaveBeenCalledWith("/listening-logs/new");
   });
+
+  it("newPagePath が未指定のときボタンが表示されない", async () => {
+    const wrapper = await mountSuspended(PageHeader, {
+      props: { title: "楽曲マスタ" },
+    });
+    expect(wrapper.find("button").exists()).toBe(false);
+  });
 });

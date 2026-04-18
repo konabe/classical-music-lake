@@ -5,6 +5,7 @@ import FeaturedPiece from "~/components/organisms/FeaturedPiece.vue";
 defineProps<{
   pieces: Piece[];
   loading: boolean;
+  isAdmin: boolean;
 }>();
 </script>
 
@@ -119,6 +120,16 @@ defineProps<{
         <h2>コンサート記録</h2>
         <p>実際に聴いたコンサートの記録を残す</p>
       </NuxtLink>
+    </section>
+
+    <section v-if="isAdmin" class="admin-section">
+      <h2 class="admin-section-title">管理者メニュー</h2>
+      <div class="admin-cards">
+        <NuxtLink to="/pieces/new" class="admin-card">
+          <h3>楽曲マスタ追加</h3>
+          <p>新しい楽曲を登録する</p>
+        </NuxtLink>
+      </div>
     </section>
   </div>
 </template>
@@ -345,5 +356,54 @@ defineProps<{
   .hero {
     min-height: 300px;
   }
+}
+
+/* ── Admin section ── */
+.admin-section {
+  max-width: 960px;
+  margin: 2rem auto 0;
+  padding: 0 2rem;
+}
+
+.admin-section-title {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-cards {
+  display: flex;
+  gap: 1rem;
+}
+
+.admin-card {
+  display: block;
+  background: #f5f0fa;
+  border: 1px solid #c4a8e0;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.admin-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.admin-card h3 {
+  font-size: 1rem;
+  color: #5a3a8a;
+  margin-bottom: 0.25rem;
+}
+
+.admin-card p {
+  color: #888;
+  font-size: 0.85rem;
 }
 </style>

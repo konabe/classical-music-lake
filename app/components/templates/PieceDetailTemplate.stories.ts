@@ -31,6 +31,15 @@ export const WithVideo: Story = {
   args: {
     piece: pieceWithVideo,
     error: null,
+    isAdmin: false,
+  },
+};
+
+export const WithVideoAdmin: Story = {
+  args: {
+    piece: pieceWithVideo,
+    error: null,
+    isAdmin: true,
   },
 };
 
@@ -38,6 +47,7 @@ export const WithoutVideo: Story = {
   args: {
     piece: pieceWithoutVideo,
     error: null,
+    isAdmin: false,
   },
 };
 
@@ -45,6 +55,7 @@ export const WithError: Story = {
   args: {
     piece: null,
     error: new globalThis.Error("取得失敗"),
+    isAdmin: false,
   },
 };
 
