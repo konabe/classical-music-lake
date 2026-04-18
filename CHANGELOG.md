@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.0.0...classical-music-lake-v2.1.0) (2026-04-18)
+
+
+### Features
+
+* **015-01:** adminグループのCognitoプロビジョニングと運用手順を追加 ([#499](https://github.com/konabe/classical-music-lake/issues/499)) ([cfd2311](https://github.com/konabe/classical-music-lake/commit/cfd23111971c2419ba594c680b6cd205e76b3c28))
+* **015-02:** 楽曲マスタ書き込み API を管理者限定にする ([#506](https://github.com/konabe/classical-music-lake/issues/506)) ([3b13718](https://github.com/konabe/classical-music-lake/commit/3b13718c7c45b195e0c26b98f2b999ff8280c782))
+* **ui:** ワーク015-03 管理者向けUIのロール判定ガードを実装 ([#515](https://github.com/konabe/classical-music-lake/issues/515)) ([fa61e00](https://github.com/konabe/classical-music-lake/commit/fa61e0094064902749007ea21c7d952b3a5832ad))
+
+
+### Bug Fixes
+
+* **sonarqube:** 未解決のSonarCloud指摘3件を修正 ([#510](https://github.com/konabe/classical-music-lake/issues/510)) ([7cc6bdd](https://github.com/konabe/classical-music-lake/commit/7cc6bdd1376c44e1ff002f4eb7f99d1b430aee12))
+* **ui:** カードグリッド・モバイルヘッダー・ログイン UI の体裁修正 ([#500](https://github.com/konabe/classical-music-lake/issues/500)) ([13e8eb8](https://github.com/konabe/classical-music-lake/commit/13e8eb8fd5215a69079198d49e0fb048479e475c))
+* **ui:** トップの「今日の一曲」修正とナビ・レイアウト・カテゴリ表示の改善 ([#516](https://github.com/konabe/classical-music-lake/issues/516)) ([5e51ba4](https://github.com/konabe/classical-music-lake/commit/5e51ba4ffa8ba030ad246f86a7015cd05ba66f3c))
+
 ## [2.0.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v1.13.0...classical-music-lake-v2.0.0) (2026-04-13)
 
 
