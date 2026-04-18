@@ -7,6 +7,14 @@
 
 クラシック音楽の鑑賞体験を記録・管理するWebアプリケーション。
 
+## 環境
+
+| 環境 | URL                                                  |
+| ---- | ---------------------------------------------------- |
+| prod | [nocturne-app.com](https://nocturne-app.com)         |
+| stg  | [stg.nocturne-app.com](https://stg.nocturne-app.com) |
+| dev  | [dev.nocturne-app.com](https://dev.nocturne-app.com) |
+
 ## 機能一覧
 
 - **視聴ログ記録** - CD・配信で聴いた演奏（作曲家・曲名・演奏家・指揮者）を記録
