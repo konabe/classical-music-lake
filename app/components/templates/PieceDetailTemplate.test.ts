@@ -113,24 +113,21 @@ describe("PieceDetailTemplate", () => {
       const wrapper = await mountSuspended(PieceDetailTemplate, {
         props: { piece: pieceWithCategories, error: null, isAdmin: false },
       });
-      expect(wrapper.text()).toContain("ジャンル: その他");
+      expect(wrapper.find(".kind-genre").text()).toBe("その他");
     });
 
     it("genre が未設定の場合、ジャンルバッジが表示されない", async () => {
       const wrapper = await mountSuspended(PieceDetailTemplate, {
         props: { piece: pieceWithoutVideo, error: null, isAdmin: false },
       });
-      expect(wrapper.text()).not.toContain("ジャンル:");
+      expect(wrapper.find(".kind-genre").exists()).toBe(false);
     });
 
     it("全カテゴリが未設定の場合、バッジが一切表示されない", async () => {
       const wrapper = await mountSuspended(PieceDetailTemplate, {
         props: { piece: pieceWithoutVideo, error: null, isAdmin: false },
       });
-      expect(wrapper.text()).not.toContain("ジャンル:");
-      expect(wrapper.text()).not.toContain("時代:");
-      expect(wrapper.text()).not.toContain("編成:");
-      expect(wrapper.text()).not.toContain("地域:");
+      expect(wrapper.find(".piece-category-list").exists()).toBe(false);
     });
   });
 

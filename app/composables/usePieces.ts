@@ -21,6 +21,12 @@ const fetchPage = async (
   return $fetch<PaginatedResponse<Piece>>(`${apiBase}/pieces`, { query });
 };
 
+const postPiece = (apiBase: string, input: CreatePieceInput): Promise<Piece> =>
+  $fetch<Piece>(`${apiBase}/pieces`, { method: "POST", body: input });
+
+const putPiece = (apiBase: string, id: string, input: UpdatePieceInput): Promise<Piece> =>
+  $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
+
 /**
  * 楽曲マスタ一覧の無限スクロール / カーソル型ページング用 composable。
  * - items / nextCursor / pending / error / hasMore をリアクティブに公開
@@ -73,13 +79,13 @@ export const usePiecesPaginated = () => {
   };
 
   const createPiece = async (input: CreatePieceInput) => {
-    const result = await $fetch<Piece>(`${apiBase}/pieces`, { method: "POST", body: input });
+    const result = await postPiece(apiBase, input);
     reset();
     return result;
   };
 
   const updatePiece = async (id: string, input: UpdatePieceInput) => {
-    const result = await $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
+    const result = await putPiece(apiBase, id, input);
     reset();
     return result;
   };
@@ -152,13 +158,13 @@ export const usePiecesAll = () => {
   };
 
   const createPiece = async (input: CreatePieceInput) => {
-    const result = await $fetch<Piece>(`${apiBase}/pieces`, { method: "POST", body: input });
+    const result = await postPiece(apiBase, input);
     await refresh();
     return result;
   };
 
   const updatePiece = async (id: string, input: UpdatePieceInput) => {
-    const result = await $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
+    const result = await putPiece(apiBase, id, input);
     await refresh();
     return result;
   };

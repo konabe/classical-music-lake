@@ -4,19 +4,14 @@ import type { UpdateListeningLogInput } from "~/types";
 definePageMeta({ middleware: "auth" });
 
 const route = useRoute();
-const { data: log } = await useListeningLog(() => route.params.id as string);
+const id = route.params.id as string;
+const { data: log } = await useListeningLog(() => id);
 const { update } = useListeningLogs();
-const error = ref<string | null>(null);
-
-async function handleSubmit(values: UpdateListeningLogInput) {
-  error.value = null;
-  try {
-    await update(route.params.id as string, values);
-    await navigateTo(`/listening-logs/${route.params.id}`);
-  } catch {
-    error.value = "記録の更新に失敗しました。";
-  }
-}
+const { error, handleSubmit } = useSubmitHandler<UpdateListeningLogInput>({
+  submit: (values) => update(id, values),
+  redirectTo: `/listening-logs/${id}`,
+  errorMessage: "記録の更新に失敗しました。",
+});
 </script>
 
 <template>
