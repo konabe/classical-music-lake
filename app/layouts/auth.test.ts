@@ -10,10 +10,19 @@ describe("AuthLayout", () => {
     expect(wrapper.find("p.test-content").text()).toBe("テストコンテンツ");
   });
 
-  it("div でラップされている", async () => {
+  it("ヘッダーにホームへのロゴリンクが表示される", async () => {
     const wrapper = await mountSuspended(AuthLayout, {
       slots: { default: "内容" },
     });
-    expect(wrapper.find("div").exists()).toBe(true);
+    const logo = wrapper.find("a.logo");
+    expect(logo.exists()).toBe(true);
+    expect(logo.attributes("href")).toBe("/");
+  });
+
+  it("ロゴのアクセシブル名が設定されている", async () => {
+    const wrapper = await mountSuspended(AuthLayout, {
+      slots: { default: "内容" },
+    });
+    expect(wrapper.find("a.logo").attributes("aria-label")).toBe("ホームに戻る");
   });
 });

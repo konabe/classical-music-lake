@@ -41,6 +41,33 @@ describe("DefaultLayout - 未ログイン時", () => {
   });
 });
 
+describe("DefaultLayout - ナビゲーションリンク", () => {
+  beforeEach(() => {
+    mockIsAuthenticated.mockReturnValue(false);
+  });
+
+  it("「鑑賞記録」リンクが表示される", async () => {
+    const wrapper = await mountSuspended(DefaultLayout);
+    const link = wrapper.find('a[href="/listening-logs"]');
+    expect(link.exists()).toBe(true);
+    expect(link.text()).toBe("鑑賞記録");
+  });
+
+  it("「楽曲マスタ」リンクが表示される", async () => {
+    const wrapper = await mountSuspended(DefaultLayout);
+    const link = wrapper.find('a[href="/pieces"]');
+    expect(link.exists()).toBe(true);
+    expect(link.text()).toBe("楽曲マスタ");
+  });
+
+  it("「コンサート記録」リンクが表示される", async () => {
+    const wrapper = await mountSuspended(DefaultLayout);
+    const link = wrapper.find('a[href="/concert-logs"]');
+    expect(link.exists()).toBe(true);
+    expect(link.text()).toBe("コンサート記録");
+  });
+});
+
 describe("DefaultLayout - ログイン済み時", () => {
   beforeEach(() => {
     mockIsAuthenticated.mockReturnValue(true);
