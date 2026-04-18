@@ -20,6 +20,8 @@ watch(
         </NuxtLink>
         <ul class="nav-links">
           <li><NuxtLink to="/listening-logs">鑑賞記録</NuxtLink></li>
+          <li><NuxtLink to="/pieces">楽曲マスタ</NuxtLink></li>
+          <li><NuxtLink to="/concert-logs">コンサート記録</NuxtLink></li>
         </ul>
         <ul v-if="!isLoggedIn" class="auth-links">
           <li><NuxtLink to="/auth/user-register">新規登録</NuxtLink></li>
