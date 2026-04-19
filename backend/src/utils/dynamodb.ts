@@ -22,6 +22,8 @@ export const TABLE_PIECES = getEnv().dynamoTablePieces;
 
 export const TABLE_CONCERT_LOGS = getEnv().dynamoTableConcertLogs;
 
+export const TABLE_COMPOSERS = getEnv().dynamoTableComposers;
+
 export async function queryItemsByUserId<T>(tableName: string, userId: string): Promise<T[]> {
   const items: T[] = [];
   let lastEvaluatedKey: Record<string, unknown> | undefined;

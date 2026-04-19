@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import type { CreatePieceInput } from "~/types";
 import { PIECE_ERAS, PIECE_FORMATIONS, PIECE_GENRES, PIECE_REGIONS } from "~/types";
+import { toSelectOptions } from "~/utils/select-options";
 
-function toOptions<T extends string>(values: readonly T[]): { value: T; label: string }[] {
-  return values.map((v) => ({ value: v, label: v }));
-}
+const genreOptions = toSelectOptions(PIECE_GENRES);
 
-const genreOptions = toOptions(PIECE_GENRES);
+const eraOptions = toSelectOptions(PIECE_ERAS);
 
-const eraOptions = toOptions(PIECE_ERAS);
+const formationOptions = toSelectOptions(PIECE_FORMATIONS);
 
-const formationOptions = toOptions(PIECE_FORMATIONS);
-
-const regionOptions = toOptions(PIECE_REGIONS);
+const regionOptions = toSelectOptions(PIECE_REGIONS);
 
 const props = defineProps<{
   initialValues?: Partial<CreatePieceInput>;

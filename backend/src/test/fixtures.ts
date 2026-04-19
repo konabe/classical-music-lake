@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { ListeningLog, Piece } from "../types";
+import type { Composer, ListeningLog, Piece } from "../types";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 export const makeLog = (
@@ -23,6 +23,13 @@ export const makePiece = (id: string, title: string): Piece => ({
   id,
   title,
   composer: "モーツァルト",
+  createdAt: "2024-06-01T09:00:00.000Z",
+  updatedAt: "2024-06-01T09:00:00.000Z",
+});
+
+export const makeComposer = (id: string, name: string): Composer => ({
+  id,
+  name,
   createdAt: "2024-06-01T09:00:00.000Z",
   updatedAt: "2024-06-01T09:00:00.000Z",
 });

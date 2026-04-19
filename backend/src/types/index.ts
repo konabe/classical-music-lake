@@ -10,6 +10,9 @@ export {
   PIECES_PAGE_SIZE_DEFAULT,
   PIECES_ALL_MAX_TOTAL,
   PIECES_ALL_MAX_EMPTY_PAGES,
+  COMPOSERS_PAGE_SIZE_MIN,
+  COMPOSERS_PAGE_SIZE_MAX,
+  COMPOSERS_PAGE_SIZE_DEFAULT,
 } from "../../../shared/constants";
 export type { PieceGenre, PieceEra, PieceFormation, PieceRegion } from "../../../shared/constants";
 export type { Paginated } from "../../../shared/constants";
@@ -82,3 +85,16 @@ export interface ConcertLog {
 
 export type CreateConcertLogInput = Omit<ConcertLog, "id" | "userId" | "createdAt" | "updatedAt">;
 export type UpdateConcertLogInput = Partial<CreateConcertLogInput>;
+
+// 作曲家マスタ
+export interface Composer {
+  id: string;
+  name: string; // 作曲家名（例: ベートーヴェン）
+  era?: PieceEra; // 時代（楽曲マスタと共通の定数を流用）
+  region?: PieceRegion; // 地域（楽曲マスタと共通の定数を流用）
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateComposerInput = Omit<Composer, "id" | "createdAt" | "updatedAt">;
+export type UpdateComposerInput = Partial<CreateComposerInput>;

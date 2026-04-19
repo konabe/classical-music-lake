@@ -5,6 +5,7 @@ export class AppEnv {
   readonly dynamoTableListeningLogs: string;
   readonly dynamoTablePieces: string;
   readonly dynamoTableConcertLogs: string;
+  readonly dynamoTableComposers: string;
 
   constructor() {
     const cognitoClientId = process.env.COGNITO_CLIENT_ID;
@@ -19,6 +20,7 @@ export class AppEnv {
     this.dynamoTablePieces = process.env.DYNAMO_TABLE_PIECES ?? "classical-music-pieces";
     this.dynamoTableConcertLogs =
       process.env.DYNAMO_TABLE_CONCERT_LOGS ?? "classical-music-concert-logs";
+    this.dynamoTableComposers = process.env.DYNAMO_TABLE_COMPOSERS ?? "classical-music-composers";
   }
 }
 

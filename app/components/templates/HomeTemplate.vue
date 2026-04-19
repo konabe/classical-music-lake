@@ -129,6 +129,10 @@ defineProps<{
           <h3>楽曲マスタ追加</h3>
           <p>新しい楽曲を登録する</p>
         </NuxtLink>
+        <NuxtLink to="/composers/new" class="admin-card">
+          <h3>作曲家マスタ追加</h3>
+          <p>新しい作曲家を登録する</p>
+        </NuxtLink>
       </div>
     </section>
   </div>

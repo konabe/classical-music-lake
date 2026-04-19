@@ -54,11 +54,17 @@ classical-music-lake/
 │   │   │   └── [id]/
 │   │   │       ├── index.vue     # 詳細
 │   │   │       └── edit.vue      # 編集
-│   │   └── pieces/               # 楽曲マスタ関連ページ
+│   │   ├── pieces/               # 楽曲マスタ関連ページ
+│   │   │   ├── index.vue         # 一覧
+│   │   │   ├── new.vue           # 新規作成
+│   │   │   └── [id]/
+│   │   │       ├── index.vue     # 詳細（動画再生 + クイックログ記録）
+│   │   │       └── edit.vue      # 編集
+│   │   └── composers/            # 作曲家マスタ関連ページ
 │   │       ├── index.vue         # 一覧
 │   │       ├── new.vue           # 新規作成
 │   │       └── [id]/
-│   │           ├── index.vue     # 詳細（動画再生 + クイックログ記録）
+│   │           ├── index.vue     # 詳細
 │   │           └── edit.vue      # 編集
 │   ├── components/               # 共通UIコンポーネント（Atomic Design: atoms / molecules / organisms / templates）
 │   ├── composables/              # Vue Composables（共通ロジック）
@@ -87,6 +93,12 @@ classical-music-lake/
 │       │   ├── update.ts
 │       │   └── delete.ts
 │       ├── pieces/               # 楽曲マスタ Lambda 関数
+│       │   ├── create.ts
+│       │   ├── list.ts
+│       │   ├── get.ts
+│       │   ├── update.ts
+│       │   └── delete.ts
+│       ├── composers/             # 作曲家マスタ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts
 │       │   ├── get.ts
