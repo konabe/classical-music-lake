@@ -9,6 +9,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  detail: [composer: Composer];
+  edit: [composer: Composer];
   delete: [composer: Composer];
   loadMore: [];
   retry: [];
@@ -62,6 +64,8 @@ watch(sentinel, (el, _prev, onCleanup) => {
     <ComposerList
       :composers="props.composers"
       :error="props.error"
+      @detail="emit('detail', $event)"
+      @edit="emit('edit', $event)"
       @delete="emit('delete', $event)"
     />
     <output class="list-status" aria-live="polite">

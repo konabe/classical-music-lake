@@ -10,6 +10,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  detail: [composer: Composer];
+  edit: [composer: Composer];
   delete: [composer: Composer];
   loadMore: [];
   retry: [];
@@ -26,6 +28,8 @@ const emit = defineEmits<{
       :error="props.error"
       :pending="props.pending"
       :has-more="props.hasMore"
+      @detail="emit('detail', $event)"
+      @edit="emit('edit', $event)"
       @delete="emit('delete', $event)"
       @load-more="emit('loadMore')"
       @retry="emit('retry')"

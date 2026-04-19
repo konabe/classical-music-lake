@@ -2,11 +2,20 @@
 import type { Composer } from "~/types";
 
 const apiBase = useApiBase();
+const router = useRouter();
 const { items, pending, error, hasMore, loadMore, reset, retry } = useComposersPaginated();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
 void loadMore();
+
+function handleDetail(composer: Composer) {
+  router.push(`/composers/${composer.id}`);
+}
+
+function handleEdit(composer: Composer) {
+  router.push(`/composers/${composer.id}/edit`);
+}
 
 async function handleDelete(composer: Composer) {
   if (!confirm(`「${composer.name}」を削除しますか？`)) {
@@ -31,6 +40,8 @@ async function handleDelete(composer: Composer) {
     :pending="pending"
     :has-more="hasMore"
     :is-admin="isAdminUser"
+    @detail="handleDetail"
+    @edit="handleEdit"
     @delete="handleDelete"
     @load-more="loadMore"
     @retry="retry"

@@ -7,10 +7,10 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
+  detail: [composer: Composer];
+  edit: [composer: Composer];
   delete: [composer: Composer];
 }>();
-
-const router = useRouter();
 </script>
 
 <template>
@@ -28,8 +28,8 @@ const router = useRouter();
       <li v-for="composer in composers" :key="composer.id">
         <ComposerItem
           :composer="composer"
-          @detail="router.push(`/composers/${composer.id}`)"
-          @edit="router.push(`/composers/${composer.id}/edit`)"
+          @detail="emit('detail', composer)"
+          @edit="emit('edit', composer)"
           @delete="emit('delete', composer)"
         />
       </li>
