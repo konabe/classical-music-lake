@@ -1,6 +1,7 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { usePiecesPaginated, usePiecesAll, usePiece, type PaginatedResponse } from "./usePieces";
 import type { Piece } from "~/types";
+import { ID_TOKEN_KEY } from "./useAuth";
 import {
   PIECES_PAGE_SIZE_DEFAULT,
   PIECES_ALL_MAX_EMPTY_PAGES,
@@ -16,7 +17,30 @@ mockUseFetch.mockReturnValue({ data: ref(null), error: ref(null), pending: ref(f
 mockNuxtImport("useApiBase", () => () => "/api");
 mockNuxtImport("useFetch", () => mockUseFetch);
 
+const mockDollarFetch = vi.fn();
 const mockFetch = vi.fn();
+const mockRouterPush = vi.fn();
+const mockRefreshTokens = vi.fn();
+
+vi.mock("#app", () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+}));
+
+vi.mock("./useAuth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./useAuth")>();
+  return {
+    ...actual,
+    useAuth: () => ({
+      refreshTokens: mockRefreshTokens,
+      clearTokens: () => {
+        localStorage.removeItem(actual.ACCESS_TOKEN_KEY);
+        localStorage.removeItem(actual.ID_TOKEN_KEY);
+        localStorage.removeItem(actual.REFRESH_TOKEN_KEY);
+        localStorage.removeItem(actual.TOKEN_EXPIRES_AT_KEY);
+      },
+    }),
+  };
+});
 
 const makePiece = (id: string, title = `title-${id}`): Piece => ({
   id,
@@ -26,15 +50,27 @@ const makePiece = (id: string, title = `title-${id}`): Piece => ({
   updatedAt: "2024-01-01T00:00:00.000Z",
 });
 
+const jsonResponse = <T>(body: T, status = 200): Response =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+
 const flush = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0));
 };
 
 beforeEach(() => {
-  vi.stubGlobal("$fetch", mockFetch);
+  vi.stubGlobal("$fetch", mockDollarFetch);
+  vi.stubGlobal("fetch", mockFetch);
+  mockDollarFetch.mockReset();
   mockFetch.mockReset();
+  mockRouterPush.mockClear();
+  mockRefreshTokens.mockClear();
+  mockRefreshTokens.mockResolvedValue(false);
   mockUseFetch.mockClear();
   mockUseFetch.mockReturnValue({ data: ref(null), error: ref(null), pending: ref(false) });
+  localStorage.clear();
 });
 
 describe("usePiecesPaginated", () => {
@@ -48,20 +84,20 @@ describe("usePiecesPaginated", () => {
     });
 
     it("loadMore で既定の limit を付けて /api/pieces を呼ぶ", async () => {
-      mockFetch.mockResolvedValueOnce({
+      mockDollarFetch.mockResolvedValueOnce({
         items: [],
         nextCursor: null,
       } satisfies PaginatedResponse<Piece>);
       const p = usePiecesPaginated();
       await p.loadMore();
-      expect(mockFetch).toHaveBeenCalledWith("/api/pieces", {
+      expect(mockDollarFetch).toHaveBeenCalledWith("/api/pieces", {
         query: { limit: PIECES_PAGE_SIZE_DEFAULT },
       });
     });
 
     it("取得した items を反映し、nextCursor が null なら hasMore=false になる", async () => {
       const pieces = [makePiece("1"), makePiece("2")];
-      mockFetch.mockResolvedValueOnce({ items: pieces, nextCursor: null });
+      mockDollarFetch.mockResolvedValueOnce({ items: pieces, nextCursor: null });
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(p.items.value).toEqual(pieces);
@@ -71,30 +107,30 @@ describe("usePiecesPaginated", () => {
     it("複数回の loadMore で items を追記する", async () => {
       const page1 = [makePiece("1")];
       const page2 = [makePiece("2")];
-      mockFetch
+      mockDollarFetch
         .mockResolvedValueOnce({ items: page1, nextCursor: "cursor-1" })
         .mockResolvedValueOnce({ items: page2, nextCursor: null });
       const p = usePiecesPaginated();
       await p.loadMore();
       await p.loadMore();
       expect(p.items.value).toEqual([...page1, ...page2]);
-      expect(mockFetch).toHaveBeenNthCalledWith(2, "/api/pieces", {
+      expect(mockDollarFetch).toHaveBeenNthCalledWith(2, "/api/pieces", {
         query: { limit: PIECES_PAGE_SIZE_DEFAULT, cursor: "cursor-1" },
       });
     });
 
     it("hasMore=false になったら loadMore を呼んでもリクエストを発行しない", async () => {
-      mockFetch.mockResolvedValueOnce({ items: [], nextCursor: null });
+      mockDollarFetch.mockResolvedValueOnce({ items: [], nextCursor: null });
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(p.hasMore.value).toBe(false);
       await p.loadMore();
-      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockDollarFetch).toHaveBeenCalledTimes(1);
     });
 
     it("pending 中に loadMore を呼んでも二重発行しない", async () => {
       let resolvePage: ((value: PaginatedResponse<Piece>) => void) | undefined;
-      mockFetch.mockReturnValueOnce(
+      mockDollarFetch.mockReturnValueOnce(
         new Promise<PaginatedResponse<Piece>>((resolve) => {
           resolvePage = resolve;
         })
@@ -106,13 +142,13 @@ describe("usePiecesPaginated", () => {
       resolvePage?.({ items: [makePiece("1")], nextCursor: null });
       await first;
       await second;
-      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockDollarFetch).toHaveBeenCalledTimes(1);
     });
   });
 
   describe("エラーと retry", () => {
     it("fetch が失敗すると error に反映される", async () => {
-      mockFetch.mockRejectedValueOnce(new Error("network"));
+      mockDollarFetch.mockRejectedValueOnce(new Error("network"));
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(p.error.value).toBeInstanceOf(Error);
@@ -120,7 +156,7 @@ describe("usePiecesPaginated", () => {
     });
 
     it("retry 後に再度成功すれば items に反映される", async () => {
-      mockFetch
+      mockDollarFetch
         .mockRejectedValueOnce(new Error("network"))
         .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null });
       const p = usePiecesPaginated();
@@ -134,7 +170,7 @@ describe("usePiecesPaginated", () => {
 
   describe("reset と mutation", () => {
     it("reset を呼ぶと items・nextCursor・error がリセットされる", async () => {
-      mockFetch.mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: "c1" });
+      mockDollarFetch.mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: "c1" });
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(p.items.value).toHaveLength(1);
@@ -145,9 +181,8 @@ describe("usePiecesPaginated", () => {
     });
 
     it("createPiece 成功後に items が空にリセットされる", async () => {
-      mockFetch
-        .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null })
-        .mockResolvedValueOnce(makePiece("2"));
+      mockDollarFetch.mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null });
+      mockFetch.mockResolvedValueOnce(jsonResponse(makePiece("2"), 201));
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(p.items.value).toHaveLength(1);
@@ -157,63 +192,86 @@ describe("usePiecesPaginated", () => {
     });
 
     it("updatePiece 成功後に items が空にリセットされる", async () => {
-      mockFetch
-        .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null })
-        .mockResolvedValueOnce(makePiece("1", "updated"));
+      mockDollarFetch.mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null });
+      mockFetch.mockResolvedValueOnce(jsonResponse(makePiece("1", "updated")));
       const p = usePiecesPaginated();
       await p.loadMore();
       await p.updatePiece("1", { title: "updated" });
       expect(p.items.value).toEqual([]);
     });
 
-    it("createPiece が正しい URL と body で POST する", async () => {
-      mockFetch.mockResolvedValueOnce(makePiece("new"));
+    it("createPiece が正しい URL と body で POST し、Authorization ヘッダを付与する", async () => {
+      localStorage.setItem(ID_TOKEN_KEY, "test-id-token");
+      mockFetch.mockResolvedValueOnce(jsonResponse(makePiece("new"), 201));
       const p = usePiecesPaginated();
       await p.createPiece({ title: "new", composer: "c" });
-      expect(mockFetch).toHaveBeenCalledWith("/api/pieces", {
-        method: "POST",
-        body: { title: "new", composer: "c" },
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/pieces",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ title: "new", composer: "c" }),
+          headers: expect.objectContaining({
+            Authorization: "Bearer test-id-token",
+            "Content-Type": "application/json",
+          }),
+        })
+      );
     });
 
-    it("updatePiece が正しい URL と body で PUT する", async () => {
-      mockFetch.mockResolvedValueOnce(makePiece("123", "updated"));
+    it("updatePiece が正しい URL と body で PUT し、Authorization ヘッダを付与する", async () => {
+      localStorage.setItem(ID_TOKEN_KEY, "test-id-token");
+      mockFetch.mockResolvedValueOnce(jsonResponse(makePiece("123", "updated")));
       const p = usePiecesPaginated();
       await p.updatePiece("123", { title: "updated" });
-      expect(mockFetch).toHaveBeenCalledWith("/api/pieces/123", {
-        method: "PUT",
-        body: { title: "updated" },
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/pieces/123",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({ title: "updated" }),
+          headers: expect.objectContaining({
+            Authorization: "Bearer test-id-token",
+            "Content-Type": "application/json",
+          }),
+        })
+      );
+    });
+
+    it("createPiece が 401 を返したら throwResponseError がエラーにする", async () => {
+      mockFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 })
+      );
+      const p = usePiecesPaginated();
+      await expect(p.createPiece({ title: "x", composer: "c" })).rejects.toThrow();
     });
   });
 });
 
 describe("usePiecesAll", () => {
   it("auto-paginate で全ページを取得し data に集約する", async () => {
-    mockFetch
+    mockDollarFetch
       .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: "c1" })
       .mockResolvedValueOnce({ items: [makePiece("2"), makePiece("3")], nextCursor: null });
     const p = usePiecesAll();
     await p.refresh();
     expect(p.data.value).toHaveLength(3);
     expect(p.pending.value).toBe(false);
-    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockDollarFetch).toHaveBeenCalledTimes(2);
   });
 
   it("nextCursor を次回リクエストに引き継ぐ", async () => {
-    mockFetch
+    mockDollarFetch
       .mockResolvedValueOnce({ items: [], nextCursor: "c1" })
       .mockResolvedValueOnce({ items: [], nextCursor: null });
     const p = usePiecesAll();
     await p.refresh();
-    expect(mockFetch).toHaveBeenNthCalledWith(2, "/api/pieces", {
+    expect(mockDollarFetch).toHaveBeenNthCalledWith(2, "/api/pieces", {
       query: { limit: PIECES_PAGE_SIZE_DEFAULT, cursor: "c1" },
     });
   });
 
   it(`連続 ${PIECES_ALL_MAX_EMPTY_PAGES + 1} 回の空応答が続くと error にする`, async () => {
     for (let i = 0; i <= PIECES_ALL_MAX_EMPTY_PAGES; i += 1) {
-      mockFetch.mockResolvedValueOnce({ items: [], nextCursor: `c${i}` });
+      mockDollarFetch.mockResolvedValueOnce({ items: [], nextCursor: `c${i}` });
     }
     const p = usePiecesAll();
     await p.refresh();
@@ -222,7 +280,7 @@ describe("usePiecesAll", () => {
 
   it(`総件数が上限 ${PIECES_ALL_MAX_TOTAL} を超えると error にする`, async () => {
     const bigPage = Array.from({ length: 2500 }, (_, i) => makePiece(String(i)));
-    mockFetch
+    mockDollarFetch
       .mockResolvedValueOnce({ items: bigPage, nextCursor: "c1" })
       .mockResolvedValueOnce({ items: bigPage, nextCursor: "c2" })
       .mockResolvedValueOnce({ items: bigPage, nextCursor: "c3" });
@@ -232,17 +290,17 @@ describe("usePiecesAll", () => {
   });
 
   it("fetch 失敗時に error が設定される", async () => {
-    mockFetch.mockRejectedValueOnce(new Error("boom"));
+    mockDollarFetch.mockRejectedValueOnce(new Error("boom"));
     const p = usePiecesAll();
     await p.refresh();
     expect(p.error.value).toBeInstanceOf(Error);
   });
 
   it("createPiece が refresh を引き起こす", async () => {
-    mockFetch
+    mockDollarFetch
       .mockResolvedValueOnce({ items: [makePiece("1")], nextCursor: null })
-      .mockResolvedValueOnce(makePiece("2"))
       .mockResolvedValueOnce({ items: [makePiece("1"), makePiece("2")], nextCursor: null });
+    mockFetch.mockResolvedValueOnce(jsonResponse(makePiece("2"), 201));
     const p = usePiecesAll();
     await p.refresh();
     expect(p.data.value).toHaveLength(1);

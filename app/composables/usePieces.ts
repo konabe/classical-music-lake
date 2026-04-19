@@ -4,6 +4,7 @@ import {
   PIECES_PAGE_SIZE_DEFAULT,
 } from "~/types";
 import type { CreatePieceInput, Piece, UpdatePieceInput } from "~/types";
+import { useAuthenticatedApi } from "./useAuthenticatedApi";
 
 /**
  * GET /pieces のレスポンス形式。
@@ -21,11 +22,36 @@ const fetchPage = async (
   return $fetch<PaginatedResponse<Piece>>(`${apiBase}/pieces`, { query });
 };
 
-const postPiece = (apiBase: string, input: CreatePieceInput): Promise<Piece> =>
-  $fetch<Piece>(`${apiBase}/pieces`, { method: "POST", body: input });
+const usePieceMutations = () => {
+  const apiBase = useApiBase();
+  const { authenticatedFetch, throwResponseError, parseJsonResponse } = useAuthenticatedApi();
 
-const putPiece = (apiBase: string, id: string, input: UpdatePieceInput): Promise<Piece> =>
-  $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
+  const postPiece = async (input: CreatePieceInput): Promise<Piece> => {
+    const response = await authenticatedFetch(`${apiBase}/pieces`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+    return parseJsonResponse<Piece>(response);
+  };
+
+  const putPiece = async (id: string, input: UpdatePieceInput): Promise<Piece> => {
+    const response = await authenticatedFetch(`${apiBase}/pieces/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+    return parseJsonResponse<Piece>(response);
+  };
+
+  return { postPiece, putPiece };
+};
 
 /**
  * 楽曲マスタ一覧の無限スクロール / カーソル型ページング用 composable。
@@ -36,6 +62,7 @@ const putPiece = (apiBase: string, id: string, input: UpdatePieceInput): Promise
  */
 export const usePiecesPaginated = () => {
   const apiBase = useApiBase();
+  const { postPiece, putPiece } = usePieceMutations();
   const items = ref<Piece[]>([]);
   const nextCursor = ref<string | null>(null);
   const pending = ref<boolean>(false);
@@ -79,13 +106,13 @@ export const usePiecesPaginated = () => {
   };
 
   const createPiece = async (input: CreatePieceInput) => {
-    const result = await postPiece(apiBase, input);
+    const result = await postPiece(input);
     reset();
     return result;
   };
 
   const updatePiece = async (id: string, input: UpdatePieceInput) => {
-    const result = await putPiece(apiBase, id, input);
+    const result = await putPiece(id, input);
     reset();
     return result;
   };
@@ -117,6 +144,7 @@ export const usePiecesPaginated = () => {
  */
 export const usePiecesAll = () => {
   const apiBase = useApiBase();
+  const { postPiece, putPiece } = usePieceMutations();
   const data = ref<Piece[] | null>(null);
   const pending = ref<boolean>(false);
   const error = ref<Error | null>(null);
@@ -158,13 +186,13 @@ export const usePiecesAll = () => {
   };
 
   const createPiece = async (input: CreatePieceInput) => {
-    const result = await postPiece(apiBase, input);
+    const result = await postPiece(input);
     await refresh();
     return result;
   };
 
   const updatePiece = async (id: string, input: UpdatePieceInput) => {
-    const result = await putPiece(apiBase, id, input);
+    const result = await putPiece(id, input);
     await refresh();
     return result;
   };
