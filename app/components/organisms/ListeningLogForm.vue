@@ -12,7 +12,17 @@ const emit = defineEmits<{
 }>();
 
 const { data: pieces, pending: piecesPending, refresh: refreshPieces } = usePiecesAll();
+const { data: composers, refresh: refreshComposers } = useComposersAll();
 void refreshPieces();
+void refreshComposers();
+
+const composerNameById = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {};
+  for (const c of composers.value ?? []) {
+    map[c.id] = c.name;
+  }
+  return map;
+});
 
 const form = reactive<CreateListeningLogInput>({
   listenedAt:
@@ -32,7 +42,8 @@ function handlePieceSelect(e: Event) {
   const id = (e.target as HTMLSelectElement).value;
   const found = pieces.value?.find((p) => p.id === id);
   form.piece = found?.title ?? "";
-  form.composer = found?.composer ?? "";
+  form.composer =
+    found?.composerId !== undefined ? (composerNameById.value[found.composerId] ?? "") : "";
   selectedVideoUrl.value = found?.videoUrl;
 }
 
@@ -56,7 +67,7 @@ function handleSubmit() {
       >
         <option value="">{{ piecesPending ? "読み込み中..." : "選択しない" }}</option>
         <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
-          {{ piece.title }} / {{ piece.composer }}
+          {{ piece.title }} / {{ composerNameById[piece.composerId] ?? "(不明)" }}
         </option>
       </select>
     </FormGroup>

@@ -101,6 +101,9 @@ classical-music-lake/
 │       │   ├── get.ts
 │       │   ├── update.ts
 │       │   └── delete.ts
+│       ├── migrations/           # 一時的なデータ移行スクリプト（レイヤードアーキテクチャから独立）
+│       │   └── piece-composer-id/
+│       │       └── index.ts      # composer(string) → composerId 移行（手動 invoke 専用）
 │       ├── composers/             # 作曲家マスタ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts
@@ -111,7 +114,9 @@ classical-music-lake/
 │       └── utils/                # DynamoDB クライアント、レスポンスヘルパーなど
 ├── cdk/
 │   └── lib/
-│       └── classical-music-lake-stack.ts  # AWSインフラ定義
+│       ├── classical-music-lake-stack.ts  # AWSインフラ定義（本番ランタイム）
+│       ├── dns-stack.ts                   # Route53 / ACM 証明書（us-east-1）
+│       └── migrations-stack.ts            # 一時的な移行 Lambda を集約（本番スタックから分離）
 ├── docs/
 │   ├── SPEC.md                   # システム仕様書
 │   ├── ARCHITECTURE.md           # 本ドキュメント

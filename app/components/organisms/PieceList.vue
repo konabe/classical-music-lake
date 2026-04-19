@@ -4,6 +4,7 @@ import type { Piece } from "~/types";
 defineProps<{
   pieces: Piece[];
   error: Error | null;
+  composerNameById: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -28,6 +29,7 @@ const router = useRouter();
       <li v-for="piece in pieces" :key="piece.id">
         <PieceItem
           :piece="piece"
+          :composer-name="composerNameById[piece.composerId] ?? '(不明な作曲家)'"
           @detail="router.push(`/pieces/${piece.id}`)"
           @play="router.push(`/pieces/${piece.id}?autoplay=1`)"
           @edit="router.push(`/pieces/${piece.id}/edit`)"

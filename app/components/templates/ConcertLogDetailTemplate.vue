@@ -9,7 +9,17 @@ const router = useRouter();
 const { deleteLog } = useConcertLogs();
 
 const { data: pieces, refresh: refreshPieces } = usePiecesAll();
+const { data: composers, refresh: refreshComposers } = useComposersAll();
 void refreshPieces();
+void refreshComposers();
+
+const composerNameById = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {};
+  for (const c of composers.value ?? []) {
+    map[c.id] = c.name;
+  }
+  return map;
+});
 
 const handleDelete = async () => {
   if (!confirm("このコンサート記録を削除しますか？")) {
@@ -30,7 +40,7 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <ConcertLogDetail :log="log" :pieces="pieces ?? []" />
+    <ConcertLogDetail :log="log" :pieces="pieces ?? []" :composer-name-by-id="composerNameById" />
   </div>
 </template>
 

@@ -274,3 +274,106 @@ aws cognito-idp list-users-in-group \
 ### トークンへの反映タイミング
 
 グループの変更（付与・剥奪）は **再ログイン後** に ID Token の `cognito:groups` クレームへ反映される。変更直後の既存トークンには反映されない。
+
+---
+
+## Piece の composer 文字列 → composerId 移行手順
+
+`Piece` の `composer: string`（自由入力）を `composerId: string`（Composer マスタへの UUID 参照）に置換する移行作業。既存データに対してのみ必要で、新規データは API 経由で直接 `composerId` 付きで作成される。
+
+### 前提
+
+- 移行 Lambda は**本番スタックから分離された `MigrationsStack[-<stage>]`** に所属する。ソースは `backend/src/migrations/piece-composer-id/index.ts`
+- `MigrationsStack[-<stage>]` をデプロイすると `MigratePieceComposer` Lambda が作成される（API Gateway には接続されない）
+- 対象テーブル: `classical-music-pieces[-<stage>]` / `classical-music-composers[-<stage>]`（`ClassicalMusicLakeStack[-<stage>]` 側で作成済みのものをテーブル名で参照）
+- Lambda 名: `MigratePieceComposer`（CloudFormation リソース名。物理名は環境ごとに自動採番）
+- 同時実行は `reservedConcurrentExecutions: 1` で 1 に制限されている
+- 移行が完了したら `cdk destroy MigrationsStack[-<stage>]` でスタックごと破棄できる
+
+### 実行手順（環境ごとに `dev → stg → prod` の順で実施）
+
+#### 1. オンデマンドバックアップの取得（必須）
+
+移行前にテーブルの現状を保存する：
+
+```bash
+STAGE=dev  # stg / prod
+aws dynamodb create-backup \
+  --table-name classical-music-pieces-${STAGE} \
+  --backup-name "pre-composer-migration-$(date +%Y%m%d)"
+
+aws dynamodb create-backup \
+  --table-name classical-music-composers-${STAGE} \
+  --backup-name "pre-composer-migration-$(date +%Y%m%d)"
+```
+
+> prod は `-<stage>` サフィックスなし（`classical-music-pieces` / `classical-music-composers`）。
+
+#### 2. dry-run でログ確認
+
+```bash
+FUNC=$(aws lambda list-functions \
+  --query "Functions[?contains(FunctionName, 'MigratePieceComposer')].FunctionName | [0]" \
+  --output text)
+
+aws lambda invoke \
+  --function-name $FUNC \
+  --payload '{"dryRun": true}' \
+  --cli-binary-format raw-in-base64-out \
+  /tmp/migrate-dry-run.json
+
+cat /tmp/migrate-dry-run.json
+```
+
+CloudWatch Logs から:
+
+- `migrated` / `createdComposers` / `skippedAlreadyMigrated` / `skippedNoComposer` のサマリを確認
+- `would-create-composer` / `would-migrate` の各行を目視レビュー
+- **表記揺れ**（例: 「ベートーヴェン」と「ベートーベン」）が検出された場合は、先に DynamoDB を手動で正規化してから本番実行に進む
+
+#### 3. 本番モードで invoke
+
+```bash
+aws lambda invoke \
+  --function-name $FUNC \
+  --payload '{"dryRun": false}' \
+  --cli-binary-format raw-in-base64-out \
+  /tmp/migrate-run.json
+
+cat /tmp/migrate-run.json
+```
+
+レスポンスの `migrated` 件数と期待値を突き合わせる。
+
+#### 4. 再実行（べき等）
+
+途中で失敗した場合は再度 `{"dryRun": false}` で invoke する。既に `composerId` を持つ Piece は自動 skip される（べき等）。
+
+#### 5. 確認
+
+- フロントエンド（各環境のドメイン）で楽曲一覧・詳細・編集画面を開き、作曲家名が正しく表示されることを確認
+- DynamoDB 側で `composer` フィールドが残っていない（`composerId` のみになっている）ことを確認
+
+### ロールバック
+
+移行スクリプトに起因する問題があれば、手順 1 で取得したオンデマンドバックアップからテーブルを復元する：
+
+```bash
+aws dynamodb restore-table-from-backup \
+  --target-table-name classical-music-pieces-${STAGE}-restored \
+  --backup-arn <backup-arn>
+```
+
+復元は新しいテーブル名で行い、差分確認後に本番テーブル名へ差し替える（削除は慎重に）。
+
+### デプロイとの順序関係
+
+「本番スタックのデプロイで API が先に新スキーマ化される」→「移行 Lambda が走る前の旧データは composerId が無い」という窓が存在する。この窓では GET /pieces のレスポンスから `composer` が消える一方 `composerId` は空文字になるため、フロントエンドは `(不明な作曲家)` を表示する。窓を短くするため次の順で実施する：
+
+1. `cdk deploy ClassicalMusicLakeStack[-<stage>]`（新 API スキーマを適用）
+2. `cdk deploy MigrationsStack[-<stage>]`（移行 Lambda を作成）
+3. オンデマンドバックアップ取得
+4. 移行 Lambda を dry-run → 本番 invoke
+5. S3 同期（フロント差し替え）
+6. CloudFront invalidation
+7. 移行完了確認後、任意のタイミングで `cdk destroy MigrationsStack[-<stage>]` でスタック破棄

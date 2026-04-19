@@ -6,6 +6,7 @@ defineProps<{
   pieces: Piece[];
   loading: boolean;
   isAdmin: boolean;
+  composerNameById: Record<string, string>;
 }>();
 </script>
 
@@ -101,7 +102,7 @@ defineProps<{
     </section>
 
     <section class="featured-section">
-      <FeaturedPiece :pieces="pieces" :loading="loading" />
+      <FeaturedPiece :pieces="pieces" :loading="loading" :composer-name-by-id="composerNameById" />
     </section>
 
     <section class="menu-cards">

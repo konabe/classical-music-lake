@@ -2,10 +2,20 @@ import { mountSuspended } from "@nuxt/test-utils/runtime";
 import FeaturedPiece from "./FeaturedPiece.vue";
 import type { Piece } from "~/types";
 
+const COMPOSER_ID_TCHAIKOVSKY = "00000000-0000-4000-8000-000000000001";
+const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000002";
+const COMPOSER_ID_BRAHMS = "00000000-0000-4000-8000-000000000003";
+
+const composerNameById = {
+  [COMPOSER_ID_TCHAIKOVSKY]: "チャイコフスキー",
+  [COMPOSER_ID_BEETHOVEN]: "ベートーヴェン",
+  [COMPOSER_ID_BRAHMS]: "ブラームス",
+};
+
 const makePiece = (overrides: Partial<Piece> = {}): Piece => ({
   id: "piece-1",
   title: "ピアノ協奏曲第1番 変ロ短調 Op.23",
-  composer: "チャイコフスキー",
+  composerId: COMPOSER_ID_TCHAIKOVSKY,
   videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   createdAt: "2024-01-01T00:00:00Z",
   updatedAt: "2024-01-01T00:00:00Z",
@@ -18,7 +28,7 @@ describe("FeaturedPiece", () => {
   describe("表示", () => {
     it("ローディング中はパルスアニメーションを表示する", async () => {
       const wrapper = await mountSuspended(FeaturedPiece, {
-        props: { pieces: [], loading: true },
+        props: { pieces: [], loading: true, composerNameById },
         global: { stubs },
       });
       expect(wrapper.find(".loading-pulse").exists()).toBe(true);
@@ -26,7 +36,11 @@ describe("FeaturedPiece", () => {
 
     it("動画付き楽曲がないとき空状態メッセージを表示する", async () => {
       const wrapper = await mountSuspended(FeaturedPiece, {
-        props: { pieces: [makePiece({ videoUrl: undefined })], loading: false },
+        props: {
+          pieces: [makePiece({ videoUrl: undefined })],
+          loading: false,
+          composerNameById,
+        },
         global: { stubs },
       });
       expect(wrapper.find(".featured-empty").exists()).toBe(true);
@@ -34,7 +48,7 @@ describe("FeaturedPiece", () => {
 
     it("動画付き楽曲があるとき曲名と作曲家を表示する", async () => {
       const wrapper = await mountSuspended(FeaturedPiece, {
-        props: { pieces: [makePiece()], loading: false },
+        props: { pieces: [makePiece()], loading: false, composerNameById },
         global: { stubs },
       });
       expect(wrapper.find(".piece-title").text()).toContain("ピアノ協奏曲第1番 変ロ短調 Op.23");
@@ -43,7 +57,7 @@ describe("FeaturedPiece", () => {
 
     it("楽曲が1件のとき別の曲を見るボタンを表示しない", async () => {
       const wrapper = await mountSuspended(FeaturedPiece, {
-        props: { pieces: [makePiece()], loading: false },
+        props: { pieces: [makePiece()], loading: false, composerNameById },
         global: { stubs },
       });
       expect(wrapper.find(".shuffle-btn").exists()).toBe(false);
@@ -54,9 +68,14 @@ describe("FeaturedPiece", () => {
         props: {
           pieces: [
             makePiece({ id: "1" }),
-            makePiece({ id: "2", title: "交響曲第5番 ハ短調 Op.67", composer: "ベートーヴェン" }),
+            makePiece({
+              id: "2",
+              title: "交響曲第5番 ハ短調 Op.67",
+              composerId: COMPOSER_ID_BEETHOVEN,
+            }),
           ],
           loading: false,
+          composerNameById,
         },
         global: { stubs },
       });
@@ -68,11 +87,11 @@ describe("FeaturedPiece", () => {
     it("別の曲を見るボタンをクリックすると別の楽曲が表示される", async () => {
       const pieces = [
         makePiece({ id: "1", title: "ピアノ協奏曲第1番" }),
-        makePiece({ id: "2", title: "交響曲第5番", composer: "ベートーヴェン" }),
-        makePiece({ id: "3", title: "バイオリン協奏曲", composer: "ブラームス" }),
+        makePiece({ id: "2", title: "交響曲第5番", composerId: COMPOSER_ID_BEETHOVEN }),
+        makePiece({ id: "3", title: "バイオリン協奏曲", composerId: COMPOSER_ID_BRAHMS }),
       ];
       const wrapper = await mountSuspended(FeaturedPiece, {
-        props: { pieces, loading: false },
+        props: { pieces, loading: false, composerNameById },
         global: { stubs },
       });
       const before = wrapper.find(".piece-title").text();

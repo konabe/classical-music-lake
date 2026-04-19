@@ -3,11 +3,14 @@ import { flushPromises } from "@vue/test-utils";
 import PieceListInfinite from "./PieceListInfinite.vue";
 import type { Piece } from "~/types";
 
+const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
+const composerNameById = { [COMPOSER_ID]: "ベートーヴェン" };
+
 const samplePieces: Piece[] = [
   {
     id: "piece-1",
     title: "交響曲第9番",
-    composer: "ベートーヴェン",
+    composerId: COMPOSER_ID,
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
@@ -41,21 +44,39 @@ describe("PieceListInfinite", () => {
   describe("表示", () => {
     it("楽曲一覧が表示される", async () => {
       const wrapper = await mountSuspended(PieceListInfinite, {
-        props: { pieces: samplePieces, error: null, pending: false, hasMore: true },
+        props: {
+          pieces: samplePieces,
+          error: null,
+          pending: false,
+          hasMore: true,
+          composerNameById,
+        },
       });
       expect(wrapper.findAllComponents({ name: "PieceItem" })).toHaveLength(1);
     });
 
     it("pending=true 時はローディングが表示される", async () => {
       const wrapper = await mountSuspended(PieceListInfinite, {
-        props: { pieces: samplePieces, error: null, pending: true, hasMore: true },
+        props: {
+          pieces: samplePieces,
+          error: null,
+          pending: true,
+          hasMore: true,
+          composerNameById,
+        },
       });
       expect(wrapper.text()).toContain("読み込み中");
     });
 
     it("hasMore=false かつ件数あり時は末尾到達メッセージが表示される", async () => {
       const wrapper = await mountSuspended(PieceListInfinite, {
-        props: { pieces: samplePieces, error: null, pending: false, hasMore: false },
+        props: {
+          pieces: samplePieces,
+          error: null,
+          pending: false,
+          hasMore: false,
+          composerNameById,
+        },
       });
       expect(wrapper.text()).toContain("これ以上ありません");
     });
@@ -67,6 +88,7 @@ describe("PieceListInfinite", () => {
           error: new Error("network"),
           pending: false,
           hasMore: true,
+          composerNameById,
         },
       });
       expect(wrapper.text()).toMatch(/取得に失敗/);
@@ -75,7 +97,13 @@ describe("PieceListInfinite", () => {
 
     it("hasMore=false のときセンチネルはレンダリングされない", async () => {
       const wrapper = await mountSuspended(PieceListInfinite, {
-        props: { pieces: samplePieces, error: null, pending: false, hasMore: false },
+        props: {
+          pieces: samplePieces,
+          error: null,
+          pending: false,
+          hasMore: false,
+          composerNameById,
+        },
       });
       expect(wrapper.find(".sentinel").exists()).toBe(false);
     });
@@ -87,6 +115,7 @@ describe("PieceListInfinite", () => {
           error: new Error("network"),
           pending: false,
           hasMore: true,
+          composerNameById,
         },
       });
       expect(wrapper.find(".sentinel").exists()).toBe(false);
@@ -96,7 +125,13 @@ describe("PieceListInfinite", () => {
   describe("イベント", () => {
     it("センチネル可視化で loadMore を emit する", async () => {
       const wrapper = await mountSuspended(PieceListInfinite, {
-        props: { pieces: samplePieces, error: null, pending: false, hasMore: true },
+        props: {
+          pieces: samplePieces,
+          error: null,
+          pending: false,
+          hasMore: true,
+          composerNameById,
+        },
       });
       await flushPromises();
       triggerIntersect();
@@ -110,6 +145,7 @@ describe("PieceListInfinite", () => {
           error: new Error("network"),
           pending: false,
           hasMore: true,
+          composerNameById,
         },
       });
       await wrapper.find(".btn-retry").trigger("click");
@@ -118,7 +154,13 @@ describe("PieceListInfinite", () => {
 
     it("子の PieceList からの delete を再 emit する", async () => {
       const wrapper = await mountSuspended(PieceListInfinite, {
-        props: { pieces: samplePieces, error: null, pending: false, hasMore: true },
+        props: {
+          pieces: samplePieces,
+          error: null,
+          pending: false,
+          hasMore: true,
+          composerNameById,
+        },
       });
       await wrapper.find(".btn-danger").trigger("click");
       expect(wrapper.emitted("delete")).toBeDefined();

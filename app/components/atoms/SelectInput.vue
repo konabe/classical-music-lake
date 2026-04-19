@@ -3,6 +3,8 @@ defineProps<{
   modelValue: string;
   options: { value: string; label: string }[];
   placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
 }>();
 
 defineEmits<{
@@ -14,6 +16,8 @@ defineEmits<{
   <select
     class="select-input"
     :value="modelValue"
+    :required="required"
+    :disabled="disabled"
     @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
   >
     <option value="">{{ placeholder ?? "---" }}</option>

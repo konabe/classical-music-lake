@@ -7,6 +7,7 @@ import {
   makeEvent,
   mockCallback,
   mockContext,
+  TEST_COMPOSER_ID,
   TEST_USER_ID,
 } from "../../test/fixtures";
 
@@ -26,7 +27,7 @@ vi.mock("../../repositories/piece-repository", () => ({
 
 const validInput = {
   title: "交響曲第9番",
-  composer: "ベートーヴェン",
+  composerId: TEST_COMPOSER_ID,
 };
 
 describe("POST /pieces (create)", () => {
@@ -100,7 +101,7 @@ describe("POST /pieces (create)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be 200 characters or less");
   });
 
-  it("composer がない場合は 400 を返す", async () => {
+  it("composerId がない場合は 400 を返す", async () => {
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify({ title: "交響曲第9番" }),
@@ -111,15 +112,15 @@ describe("POST /pieces (create)", () => {
       mockCallback
     );
     expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("composer is required");
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("composerId must be a valid UUID");
   });
 
-  it.each(["   ", "\t", "\n"])(
-    "composer が空白のみ（%j）の場合は 400 を返す",
-    async (whitespaceComposer) => {
+  it.each(["", "not-a-uuid", "   "])(
+    "composerId が UUID 形式でない（%j）場合は 400 を返す",
+    async (invalidComposerId) => {
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, {
-          body: JSON.stringify({ ...validInput, composer: whitespaceComposer }),
+          body: JSON.stringify({ ...validInput, composerId: invalidComposerId }),
           httpMethod: "POST",
           path: "/pieces",
         }),
@@ -127,25 +128,9 @@ describe("POST /pieces (create)", () => {
         mockCallback
       );
       expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe("composer is required");
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("composerId must be a valid UUID");
     }
   );
-
-  it("composer が 100 文字を超える場合は 400 を返す", async () => {
-    const result = await handler(
-      makeAdminEvent(TEST_USER_ID, {
-        body: JSON.stringify({ ...validInput, composer: "あ".repeat(101) }),
-        httpMethod: "POST",
-        path: "/pieces",
-      }),
-      mockContext,
-      mockCallback
-    );
-    expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe(
-      "composer must be 100 characters or less"
-    );
-  });
 
   it("videoUrl が不正な URL の場合は 400 を返す", async () => {
     const result = await handler(
@@ -177,7 +162,7 @@ describe("POST /pieces (create)", () => {
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBeDefined();
     expect(body.title).toBe("交響曲第9番");
-    expect(body.composer).toBe("ベートーヴェン");
+    expect(body.composerId).toBe(TEST_COMPOSER_ID);
     expect(body.createdAt).toBeDefined();
     expect(body.updatedAt).toBeDefined();
     expect(body.videoUrl).toBeUndefined();

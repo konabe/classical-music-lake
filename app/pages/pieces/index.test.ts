@@ -3,18 +3,28 @@ import { flushPromises } from "@vue/test-utils";
 import PiecesPage from "./index.vue";
 import type { Piece } from "~/types";
 
-const { samplePieces, mockLoadMore, mockReset, mockRetry } = vi.hoisted(() => {
+const { samplePieces, sampleComposers, mockLoadMore, mockReset, mockRetry } = vi.hoisted(() => {
+  const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
   const samplePieces: Piece[] = [
     {
       id: "piece-1",
       title: "交響曲第9番",
-      composer: "ベートーヴェン",
+      composerId: COMPOSER_ID,
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+  ];
+  const sampleComposers = [
+    {
+      id: COMPOSER_ID,
+      name: "ベートーヴェン",
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
   ];
   return {
     samplePieces,
+    sampleComposers,
     mockLoadMore: vi.fn(),
     mockReset: vi.fn(),
     mockRetry: vi.fn(),
@@ -38,6 +48,15 @@ mockNuxtImport("usePiecesPaginated", () =>
     retry: mockRetry,
     createPiece: vi.fn(),
     updatePiece: vi.fn(),
+  }))
+);
+
+mockNuxtImport("useComposersAll", () =>
+  vi.fn(() => ({
+    data: ref(sampleComposers),
+    pending: ref(false),
+    error: ref(null),
+    refresh: vi.fn().mockResolvedValue(undefined),
   }))
 );
 

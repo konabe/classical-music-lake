@@ -7,6 +7,7 @@ const props = defineProps<{
   pending: boolean;
   hasMore: boolean;
   isAdmin: boolean;
+  composerNameById: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -26,6 +27,7 @@ const emit = defineEmits<{
       :error="props.error"
       :pending="props.pending"
       :has-more="props.hasMore"
+      :composer-name-by-id="props.composerNameById"
       @delete="emit('delete', $event)"
       @load-more="emit('loadMore')"
       @retry="emit('retry')"

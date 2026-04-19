@@ -10,6 +10,7 @@ import {
   makeEvent as makeBaseEvent,
   mockCallback,
   mockContext,
+  TEST_COMPOSER_ID,
   TEST_USER_ID,
 } from "../../test/fixtures";
 
@@ -52,10 +53,12 @@ function makeEvent(
 const existingPiece: Piece = {
   id: "abc-123",
   title: "交響曲第9番",
-  composer: "ベートーヴェン",
+  composerId: TEST_COMPOSER_ID,
   createdAt: "2024-01-15T21:00:00.000Z",
   updatedAt: "2024-01-15T21:00:00.000Z",
 };
+
+const OTHER_COMPOSER_ID = "00000000-0000-4000-8000-000000000002";
 
 const existingPieceWithVideoUrl: Piece = {
   ...existingPiece,
@@ -113,37 +116,25 @@ describe("PUT /pieces/{id} (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be 200 characters or less");
   });
 
-  it.each(["", "   ", "\t", "\n"])(
-    "composer が空または空白のみ（%j）の場合は 400 を返す",
-    async (invalidComposer) => {
+  it.each(["", "not-a-uuid", "   "])(
+    "composerId が UUID 形式でない（%j）場合は 400 を返す",
+    async (invalidComposerId) => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ composer: invalidComposer })),
+        makeEvent("abc-123", JSON.stringify({ composerId: invalidComposerId })),
         mockContext,
         mockCallback
       );
       expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be a non-empty string");
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("composerId must be a valid UUID");
     }
   );
-
-  it("composer が 100 文字を超える場合は 400 を返す", async () => {
-    const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ composer: "あ".repeat(101) })),
-      mockContext,
-      mockCallback
-    );
-    expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe(
-      "composer must be 100 characters or less"
-    );
-  });
 
   it("title を含まない更新は title のバリデーションをスキップする", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ composer: "モーツァルト" })),
+      makeEvent("abc-123", JSON.stringify({ composerId: OTHER_COMPOSER_ID })),
       mockContext,
       mockCallback
     );
@@ -165,7 +156,7 @@ describe("PUT /pieces/{id} (update)", () => {
     mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番", composer: "ベートーヴェン" })),
+      makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番", composerId: OTHER_COMPOSER_ID })),
       mockContext,
       mockCallback
     );
@@ -174,7 +165,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const body = JSON.parse(result?.body ?? "{}") as Piece;
     expect(body.id).toBe("abc-123");
     expect(body.title).toBe("交響曲第5番");
-    expect(body.composer).toBe("ベートーヴェン");
+    expect(body.composerId).toBe(OTHER_COMPOSER_ID);
   });
 
   it("updatedAt が更新されること", async () => {

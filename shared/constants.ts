@@ -42,8 +42,10 @@ export const PIECES_ALL_MAX_TOTAL = 5000;
 export const PIECES_ALL_MAX_EMPTY_PAGES = 3;
 
 // ページネーション設定（作曲家マスタ一覧）
+// MAX=1000 は `useComposersAll` が 1 回の Scan で全件取りに行く前提で余裕を持たせた値。
+// DynamoDB Scan の 1MB/回 ハード上限（Composer ~200B/件 で約 5000 件）の内側に収まる。
 export const COMPOSERS_PAGE_SIZE_MIN = 1;
-export const COMPOSERS_PAGE_SIZE_MAX = 100;
+export const COMPOSERS_PAGE_SIZE_MAX = 1000;
 export const COMPOSERS_PAGE_SIZE_DEFAULT = 50;
 
 // カーソル型ページング結果

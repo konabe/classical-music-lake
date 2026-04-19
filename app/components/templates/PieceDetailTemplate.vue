@@ -7,6 +7,7 @@ withDefaults(
     error: Error | null;
     autoplay?: boolean;
     isAdmin: boolean;
+    composerName: string;
   }>(),
   { autoplay: false }
 );
@@ -32,7 +33,7 @@ const hasStartedPlaying = ref(false);
     <template v-else-if="piece">
       <div class="piece-header">
         <div class="piece-title">{{ piece.title }}</div>
-        <div class="piece-composer">{{ piece.composer }}</div>
+        <div class="piece-composer">{{ composerName }}</div>
         <div class="piece-category-wrapper">
           <PieceCategoryList :piece="piece" />
         </div>
@@ -51,7 +52,7 @@ const hasStartedPlaying = ref(false);
 
         <QuickLogForm
           v-if="hasStartedPlaying"
-          :composer="piece.composer"
+          :composer="composerName"
           :piece="piece.title"
           @submit="emit('save', $event)"
         />

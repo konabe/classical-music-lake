@@ -1,23 +1,45 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
 import PieceDetailPage from "./index.vue";
-import type { Piece, Rating } from "~/types";
+import type { Composer, Piece, Rating } from "~/types";
 
 const mockCreate = vi.fn();
+
+const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 
 const samplePiece: Piece = {
   id: "piece-1",
   title: "交響曲第9番",
-  composer: "ベートーヴェン",
+  composerId: COMPOSER_ID,
   videoUrl: "https://www.youtube.com/watch?v=abc123",
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
+const sampleComposers: Composer[] = [
+  {
+    id: COMPOSER_ID,
+    name: "ベートーヴェン",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+];
+
 vi.mock("~/composables/usePieces", () => ({
   usePiecesPaginated: vi.fn(),
   usePiecesAll: vi.fn(),
   usePiece: () => ({ data: ref(samplePiece), error: ref(null) }),
+}));
+
+vi.mock("~/composables/useComposers", () => ({
+  useComposersPaginated: vi.fn(),
+  useComposer: vi.fn(),
+  useComposersAll: () => ({
+    data: ref(sampleComposers),
+    error: ref(null),
+    pending: ref(false),
+    refresh: vi.fn().mockResolvedValue(undefined),
+  }),
 }));
 
 vi.mock("~/composables/useListeningLogs", () => ({

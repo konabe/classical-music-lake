@@ -19,10 +19,12 @@ export const makeLog = (
   updatedAt: "2024-06-01T09:00:00.000Z",
 });
 
-export const makePiece = (id: string, title: string): Piece => ({
+export const TEST_COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
+
+export const makePiece = (id: string, title: string, composerId?: string): Piece => ({
   id,
   title,
-  composer: "モーツァルト",
+  composerId: composerId ?? TEST_COMPOSER_ID,
   createdAt: "2024-06-01T09:00:00.000Z",
   updatedAt: "2024-06-01T09:00:00.000Z",
 });

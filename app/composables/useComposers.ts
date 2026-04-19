@@ -1,4 +1,4 @@
-import { COMPOSERS_PAGE_SIZE_DEFAULT } from "~/types";
+import { COMPOSERS_PAGE_SIZE_DEFAULT, COMPOSERS_PAGE_SIZE_MAX } from "~/types";
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
 
@@ -135,4 +135,37 @@ export const useComposersPaginated = () => {
 export const useComposer = (id: () => string) => {
   const apiBase = useApiBase();
   return useFetch<Composer>(() => `${apiBase}/composers/${id()}`);
+};
+
+/**
+ * 作曲家マスタを 1 回の Scan（limit={@link COMPOSERS_PAGE_SIZE_MAX}）で取得するヘルパー。
+ * Composer は数十件規模の小さいマスタであることを前提とし、ページングは行わない。
+ * 1 ページに収まらなかった場合（`nextCursor !== null`）は想定を超えたデータ量としてエラーを投げ、
+ * 呼び出し元に検索 UI への切り替えを促す。
+ */
+export const useComposersAll = () => {
+  const apiBase = useApiBase();
+  const data = ref<Composer[] | null>(null);
+  const pending = ref<boolean>(false);
+  const error = ref<Error | null>(null);
+
+  const refresh = async () => {
+    pending.value = true;
+    error.value = null;
+    try {
+      const res = await fetchPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_MAX });
+      if (res.nextCursor !== null) {
+        throw new Error(
+          `useComposersAll: composers exceed single-scan limit (${COMPOSERS_PAGE_SIZE_MAX}). Switch to paginated/search UI.`
+        );
+      }
+      data.value = res.items;
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+      pending.value = false;
+    }
+  };
+
+  return { data, pending, error, refresh };
 };

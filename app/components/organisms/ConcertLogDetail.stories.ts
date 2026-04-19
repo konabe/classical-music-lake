@@ -10,6 +10,14 @@ const meta: Meta<typeof ConcertLogDetail> = {
 export default meta;
 type Story = StoryObj<typeof ConcertLogDetail>;
 
+const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
+const COMPOSER_ID_TCHAIKOVSKY = "00000000-0000-4000-8000-000000000002";
+
+const composerNameById = {
+  [COMPOSER_ID_BEETHOVEN]: "ベートーヴェン",
+  [COMPOSER_ID_TCHAIKOVSKY]: "チャイコフスキー",
+};
+
 const baseLog: ConcertLog = {
   id: "log-1",
   userId: "user-1",
@@ -27,54 +35,43 @@ const samplePieces: Piece[] = [
   {
     id: "piece-1",
     title: "交響曲第9番",
-    composer: "ベートーヴェン",
+    composerId: COMPOSER_ID_BEETHOVEN,
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "piece-2",
     title: "ピアノ協奏曲第1番",
-    composer: "チャイコフスキー",
+    composerId: COMPOSER_ID_TCHAIKOVSKY,
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
 ];
 
 export const Default: Story = {
-  args: {
-    log: baseLog,
-    pieces: [],
-  },
+  args: { log: baseLog, pieces: [], composerNameById },
 };
 
 export const Minimal: Story = {
   args: {
-    log: {
-      ...baseLog,
-      conductor: undefined,
-      orchestra: undefined,
-      soloist: undefined,
-    },
+    log: { ...baseLog, conductor: undefined, orchestra: undefined, soloist: undefined },
     pieces: [],
+    composerNameById,
   },
 };
 
 export const WithoutSoloist: Story = {
   args: {
-    log: {
-      ...baseLog,
-      soloist: undefined,
-    },
+    log: { ...baseLog, soloist: undefined },
     pieces: [],
+    composerNameById,
   },
 };
 
 export const WithProgram: Story = {
   args: {
-    log: {
-      ...baseLog,
-      pieceIds: ["piece-1", "piece-2"],
-    },
+    log: { ...baseLog, pieceIds: ["piece-1", "piece-2"] },
     pieces: samplePieces,
+    composerNameById,
   },
 };
