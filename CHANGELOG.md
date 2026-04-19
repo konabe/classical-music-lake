@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.1.0...classical-music-lake-v2.2.0) (2026-04-19)
+
+
+### Features
+
+* **composer:** 作曲家マスタの追加 ([75f0420](https://github.com/konabe/classical-music-lake/commit/75f042063102def122700085e2139f4a79476623)), closes [#477](https://github.com/konabe/classical-music-lake/issues/477)
+
 ## [2.1.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.0.0...classical-music-lake-v2.1.0) (2026-04-18)
 
 
