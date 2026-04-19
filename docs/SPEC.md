@@ -188,7 +188,7 @@ interface Piece {
 }
 ```
 
-> `composer`（自由入力文字列）は 2026-04 に `composerId`（Composer マスタへの参照）へ置換された。旧データは `backend/src/handlers/pieces/migrate-composer.ts` の移行 Lambda で一括変換する（詳細は `docs/OPERATIONS.md` 参照）。
+> `composer`（自由入力文字列）は 2026-04 に `composerId`（Composer マスタへの参照）へ置換された。旧データは `backend/src/migrations/piece-composer-id/index.ts` の移行 Lambda で一括変換する（本番スタックから分離した `MigrationsStack` に所属。詳細は `docs/OPERATIONS.md` 参照）。
 
 #### バリデーション
 
@@ -935,14 +935,13 @@ GET /composers?limit=50&cursor={opaque}
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 27個
+- **関数数**: 26個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
   - 視聴ログ用 CRUD 操作 × 5
   - 楽曲マスタ用 CRUD 操作 × 5
   - 作曲家マスタ用 CRUD 操作 × 5
   - 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）
   - PreSignUp トリガー × 1
   - コンサート記録 × 5（list・create・get・update・delete）
-  - 楽曲マスタ composer 移行 × 1（`migrate-composer`、API Gateway 非公開・手動 invoke 専用）
 - **環境変数**:
   - `DYNAMO_TABLE_LISTENING_LOGS`
   - `DYNAMO_TABLE_PIECES`

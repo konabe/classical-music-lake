@@ -283,10 +283,12 @@ aws cognito-idp list-users-in-group \
 
 ### 前提
 
-- CDK デプロイにより `MigratePieceComposer` Lambda が作成されている（API Gateway には接続されない）
-- 対象テーブル: `classical-music-pieces[-<stage>]` / `classical-music-composers[-<stage>]`
+- 移行 Lambda は**本番スタックから分離された `MigrationsStack[-<stage>]`** に所属する。ソースは `backend/src/migrations/piece-composer-id/index.ts`
+- `MigrationsStack[-<stage>]` をデプロイすると `MigratePieceComposer` Lambda が作成される（API Gateway には接続されない）
+- 対象テーブル: `classical-music-pieces[-<stage>]` / `classical-music-composers[-<stage>]`（`ClassicalMusicLakeStack[-<stage>]` 側で作成済みのものをテーブル名で参照）
 - Lambda 名: `MigratePieceComposer`（CloudFormation リソース名。物理名は環境ごとに自動採番）
 - 同時実行は `reservedConcurrentExecutions: 1` で 1 に制限されている
+- 移行が完了したら `cdk destroy MigrationsStack[-<stage>]` でスタックごと破棄できる
 
 ### 実行手順（環境ごとに `dev → stg → prod` の順で実施）
 
@@ -366,10 +368,12 @@ aws dynamodb restore-table-from-backup \
 
 ### デプロイとの順序関係
 
-「CDK デプロイで API が先に新スキーマ化される」→「移行 Lambda が走る前の旧データは composerId が無い」という窓が存在する。この窓では GET /pieces のレスポンスから `composer` が消える一方 `composerId` は空文字になるため、フロントエンドは `(不明な作曲家)` を表示する。窓を短くするため次の順で実施する：
+「本番スタックのデプロイで API が先に新スキーマ化される」→「移行 Lambda が走る前の旧データは composerId が無い」という窓が存在する。この窓では GET /pieces のレスポンスから `composer` が消える一方 `composerId` は空文字になるため、フロントエンドは `(不明な作曲家)` を表示する。窓を短くするため次の順で実施する：
 
-1. CDK デプロイ（新 API スキーマを適用、`MigratePieceComposer` Lambda も作成）
-2. オンデマンドバックアップ取得
-3. 移行 Lambda を dry-run → 本番 invoke
-4. S3 同期（フロント差し替え）
-5. CloudFront invalidation
+1. `cdk deploy ClassicalMusicLakeStack[-<stage>]`（新 API スキーマを適用）
+2. `cdk deploy MigrationsStack[-<stage>]`（移行 Lambda を作成）
+3. オンデマンドバックアップ取得
+4. 移行 Lambda を dry-run → 本番 invoke
+5. S3 同期（フロント差し替え）
+6. CloudFront invalidation
+7. 移行完了確認後、任意のタイミングで `cdk destroy MigrationsStack[-<stage>]` でスタック破棄

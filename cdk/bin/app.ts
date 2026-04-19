@@ -3,6 +3,7 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { ClassicalMusicLakeStack, type StageName } from "../lib/classical-music-lake-stack";
 import { DnsStack } from "../lib/dns-stack";
+import { MigrationsStack } from "../lib/migrations-stack";
 
 const app = new cdk.App();
 
@@ -16,6 +17,9 @@ if (!validStages.includes(rawStageName as StageName)) {
 
 const stackNameFor = (stage: StageName): string =>
   stage === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stage}`;
+
+const migrationsStackNameFor = (stage: StageName): string =>
+  stage === "prod" ? "MigrationsStack" : `MigrationsStack-${stage}`;
 
 // -------------------------
 // DNS スタック（us-east-1）
@@ -44,16 +48,27 @@ const dnsStack = new DnsStack(app, "NocturneAppDnsStack", {
 // で対象のみデプロイする運用とする。
 // -------------------------
 for (const stage of validStages) {
+  const env = {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION ?? "ap-northeast-1",
+  };
   // prettier-ignore
   new ClassicalMusicLakeStack(app, stackNameFor(stage), { // NOSONAR: CDK はスタックのインスタンス化時に app へ自動登録されるため戻り値は不要
     stageName: stage,
     hostedZone: dnsStack.hostedZone,
     certificate: dnsStack.certificate,
-    env: {
-      account: process.env.CDK_DEFAULT_ACCOUNT,
-      region: process.env.CDK_DEFAULT_REGION ?? "ap-northeast-1",
-    },
+    env,
     crossRegionReferences: true,
+    terminationProtection: stage === "prod",
+  });
+
+  // 移行 Lambda は専用スタックに分離。本番スタックのデプロイ後に
+  // `cdk deploy MigrationsStack[-<stage>]` で個別にデプロイする運用。
+  // 移行完了後はスタックごと破棄できる。
+  // prettier-ignore
+  new MigrationsStack(app, migrationsStackNameFor(stage), { // NOSONAR
+    stageName: stage,
+    env,
     terminationProtection: stage === "prod",
   });
 }

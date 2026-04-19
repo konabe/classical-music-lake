@@ -1,7 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MigrateComposerUsecase, type LegacyPiece } from "./migrate-composer-usecase";
-import type { Composer, Piece } from "../types";
+import { runMigration } from "./index";
+
+type Composer = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type LegacyPiece = {
+  id: string;
+  title: string;
+  composer?: string;
+  composerId?: string;
+  videoUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 const makeLegacyPiece = (
   id: string,
@@ -23,40 +39,24 @@ const makeComposer = (id: string, name: string): Composer => ({
   updatedAt: "2024-06-01T09:00:00.000Z",
 });
 
-describe("MigrateComposerUsecase", () => {
-  const pieceRepo = {
-    save: vi.fn(),
-    findById: vi.fn(),
-    findAll: vi.fn(),
-    findPage: vi.fn(),
-    saveWithOptimisticLock: vi.fn(),
-    remove: vi.fn(),
-  };
-  const composerRepo = {
-    save: vi.fn(),
-    findById: vi.fn(),
-    findPage: vi.fn(),
-    saveWithOptimisticLock: vi.fn(),
-    remove: vi.fn(),
-  };
+describe("runMigration", () => {
+  const savePiece = vi.fn();
+  const saveComposer = vi.fn();
 
-  const mockComposers = (items: Composer[]) => {
-    composerRepo.findPage.mockResolvedValue({ items, lastEvaluatedKey: undefined });
-  };
-  const mockPieces = (items: LegacyPiece[]) => {
-    pieceRepo.findAll.mockResolvedValue(items);
-  };
-
-  const runWithFixtures = async (
+  const runWithFixtures = (
     pieces: LegacyPiece[],
     composers: Composer[],
     options: { dryRun?: boolean } = {}
-  ) => {
-    mockPieces(pieces);
-    mockComposers(composers);
-    const usecase = new MigrateComposerUsecase(pieceRepo, composerRepo);
-    return usecase.run(options);
-  };
+  ) =>
+    runMigration(
+      {
+        scanAllPieces: async () => pieces,
+        scanAllComposers: async () => composers,
+        savePiece,
+        saveComposer,
+      },
+      options
+    );
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,8 +70,8 @@ describe("MigrateComposerUsecase", () => {
     expect(summary.migrated).toBe(2);
     expect(summary.createdComposers).toBe(2);
     expect(summary.skippedAlreadyMigrated).toBe(0);
-    expect(composerRepo.save).toHaveBeenCalledTimes(2);
-    expect(pieceRepo.save).toHaveBeenCalledTimes(2);
+    expect(saveComposer).toHaveBeenCalledTimes(2);
+    expect(savePiece).toHaveBeenCalledTimes(2);
   });
 
   it("既に composerId を持つ Piece は skip する（べき等性）", async () => {
@@ -83,7 +83,7 @@ describe("MigrateComposerUsecase", () => {
 
     expect(summary.migrated).toBe(1);
     expect(summary.skippedAlreadyMigrated).toBe(1);
-    expect(pieceRepo.save).toHaveBeenCalledTimes(1);
+    expect(savePiece).toHaveBeenCalledTimes(1);
   });
 
   it("同じ composer 名の Piece が複数あっても Composer は 1 件だけ作られる", async () => {
@@ -96,9 +96,9 @@ describe("MigrateComposerUsecase", () => {
 
     expect(summary.migrated).toBe(3);
     expect(summary.createdComposers).toBe(1);
-    expect(composerRepo.save).toHaveBeenCalledTimes(1);
-    expect(pieceRepo.save).toHaveBeenCalledTimes(3);
-    const savedPieces = pieceRepo.save.mock.calls.map((call) => call[0] as Piece);
+    expect(saveComposer).toHaveBeenCalledTimes(1);
+    expect(savePiece).toHaveBeenCalledTimes(3);
+    const savedPieces = savePiece.mock.calls.map((call) => call[0] as { composerId: string });
     expect(savedPieces[0].composerId).toBe(savedPieces[1].composerId);
     expect(savedPieces[1].composerId).toBe(savedPieces[2].composerId);
   });
@@ -113,8 +113,8 @@ describe("MigrateComposerUsecase", () => {
 
     expect(summary.skippedNoComposer).toBe(3);
     expect(summary.migrated).toBe(0);
-    expect(pieceRepo.save).not.toHaveBeenCalled();
-    expect(composerRepo.save).not.toHaveBeenCalled();
+    expect(savePiece).not.toHaveBeenCalled();
+    expect(saveComposer).not.toHaveBeenCalled();
   });
 
   it("Composer マスタに既存名があれば新規作成しない", async () => {
@@ -124,8 +124,8 @@ describe("MigrateComposerUsecase", () => {
 
     expect(summary.createdComposers).toBe(0);
     expect(summary.migrated).toBe(1);
-    expect(composerRepo.save).not.toHaveBeenCalled();
-    const savedPiece = pieceRepo.save.mock.calls[0][0] as Piece;
+    expect(saveComposer).not.toHaveBeenCalled();
+    const savedPiece = savePiece.mock.calls[0][0] as { composerId: string };
     expect(savedPiece.composerId).toBe("existing-composer-id");
   });
 
@@ -136,7 +136,7 @@ describe("MigrateComposerUsecase", () => {
 
     expect(summary.createdComposers).toBe(0);
     expect(summary.migrated).toBe(1);
-    const savedPiece = pieceRepo.save.mock.calls[0][0] as Piece;
+    const savedPiece = savePiece.mock.calls[0][0] as { composerId: string };
     expect(savedPiece.composerId).toBe("existing-id");
   });
 
@@ -147,15 +147,19 @@ describe("MigrateComposerUsecase", () => {
     expect(summary.dryRun).toBe(true);
     expect(summary.migrated).toBe(1);
     expect(summary.createdComposers).toBe(1);
-    expect(pieceRepo.save).not.toHaveBeenCalled();
-    expect(composerRepo.save).not.toHaveBeenCalled();
+    expect(savePiece).not.toHaveBeenCalled();
+    expect(saveComposer).not.toHaveBeenCalled();
   });
 
   it("migrate 後の Piece には composer フィールドが残らない", async () => {
     const pieces = [makeLegacyPiece("p1", "ベートーヴェン", { videoUrl: "https://y.tube/v" })];
     await runWithFixtures(pieces, []);
 
-    const savedPiece = pieceRepo.save.mock.calls[0][0] as Piece & { composer?: string };
+    const savedPiece = savePiece.mock.calls[0][0] as {
+      composer?: string;
+      composerId?: string;
+      videoUrl?: string;
+    };
     expect(savedPiece.composer).toBeUndefined();
     expect(savedPiece.composerId).toBeDefined();
     expect(savedPiece.videoUrl).toBe("https://y.tube/v");
