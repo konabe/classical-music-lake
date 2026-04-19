@@ -1,5 +1,6 @@
 import { COMPOSERS_PAGE_SIZE_DEFAULT } from "~/types";
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "~/types";
+import { useAuthenticatedApi } from "./useAuthenticatedApi";
 
 /**
  * GET /composers のレスポンス形式。
@@ -17,20 +18,46 @@ const fetchPage = async (
   return $fetch<PaginatedComposersResponse>(`${apiBase}/composers`, { query });
 };
 
-const postComposer = (apiBase: string, input: CreateComposerInput): Promise<Composer> =>
-  $fetch<Composer>(`${apiBase}/composers`, { method: "POST", body: input });
-
-const putComposer = (apiBase: string, id: string, input: UpdateComposerInput): Promise<Composer> =>
-  $fetch<Composer>(`${apiBase}/composers/${id}`, { method: "PUT", body: input });
-
-const deleteComposerRequest = (apiBase: string, id: string): Promise<void> =>
-  $fetch(`${apiBase}/composers/${id}`, { method: "DELETE" });
-
 /**
  * 作曲家マスタ一覧の無限スクロール / カーソル型ページング用 composable。
  */
 export const useComposersPaginated = () => {
   const apiBase = useApiBase();
+  const { authenticatedFetch, throwResponseError, parseJsonResponse } = useAuthenticatedApi();
+
+  const postComposer = async (input: CreateComposerInput): Promise<Composer> => {
+    const response = await authenticatedFetch(`${apiBase}/composers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+    return parseJsonResponse<Composer>(response);
+  };
+
+  const putComposer = async (id: string, input: UpdateComposerInput): Promise<Composer> => {
+    const response = await authenticatedFetch(`${apiBase}/composers/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+    return parseJsonResponse<Composer>(response);
+  };
+
+  const deleteComposerRequest = async (id: string): Promise<void> => {
+    const response = await authenticatedFetch(`${apiBase}/composers/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+  };
+
   const items = ref<Composer[]>([]);
   const nextCursor = ref<string | null>(null);
   const pending = ref<boolean>(false);
@@ -74,19 +101,19 @@ export const useComposersPaginated = () => {
   };
 
   const createComposer = async (input: CreateComposerInput) => {
-    const result = await postComposer(apiBase, input);
+    const result = await postComposer(input);
     reset();
     return result;
   };
 
   const updateComposer = async (id: string, input: UpdateComposerInput) => {
-    const result = await putComposer(apiBase, id, input);
+    const result = await putComposer(id, input);
     reset();
     return result;
   };
 
   const deleteComposer = async (id: string) => {
-    await deleteComposerRequest(apiBase, id);
+    await deleteComposerRequest(id);
     reset();
   };
 
