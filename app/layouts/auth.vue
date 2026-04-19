@@ -1,10 +1,13 @@
 <template>
   <div class="auth-layout">
     <header class="auth-header">
-      <NuxtLink to="/" class="logo" aria-label="ホームに戻る">
-        <img src="/logo.svg" alt="Nocturne" class="logo-img" />
-        <span class="logo-text">Nocturne</span>
-      </NuxtLink>
+      <div class="auth-header-inner">
+        <NuxtLink to="/" class="logo" aria-label="ホームに戻る">
+          <img src="/logo.svg" alt="Nocturne" class="logo-img" />
+          <span class="logo-text">Nocturne</span>
+        </NuxtLink>
+        <ThemeToggle />
+      </div>
     </header>
     <main class="auth-main">
       <slot />
@@ -20,9 +23,17 @@
 }
 
 .auth-header {
-  background-color: #1e2d5a;
-  color: #fff;
+  background-color: var(--color-header-bg);
+  color: var(--color-header-text);
   padding: 1rem 2rem;
+}
+
+.auth-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .logo {
@@ -30,20 +41,18 @@
   align-items: center;
   gap: 0.6rem;
   text-decoration: none;
-  max-width: 1200px;
-  margin: 0 auto;
 }
 
 .logo-img {
   height: 32px;
   width: auto;
-  filter: brightness(0) invert(1);
+  filter: var(--logo-filter);
 }
 
 .logo-text {
   font-size: 1.3rem;
   font-weight: bold;
-  color: #fff;
+  color: var(--color-header-text);
   letter-spacing: 0.08em;
   font-style: italic;
 }

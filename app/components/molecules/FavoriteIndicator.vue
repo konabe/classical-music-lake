@@ -10,7 +10,7 @@ defineProps<{
 
 <style scoped>
 .favorite-indicator {
-  color: #e05a5a;
+  color: var(--color-danger-hover);
   margin-right: 0.3rem;
 }
 </style>

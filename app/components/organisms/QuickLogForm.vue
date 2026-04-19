@@ -61,8 +61,8 @@ function handleSubmit() {
 
 <style scoped>
 .quick-log-form {
-  background: #eaeef4;
-  border: 1px solid #9aa5b4;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
   padding: 2rem;
   display: flex;
@@ -78,13 +78,13 @@ function handleSubmit() {
 
 .piece-info-label {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--color-text-muted);
   min-width: 4rem;
 }
 
 .piece-info-value {
   font-size: 1rem;
-  color: #1e2d5a;
+  color: var(--color-text);
   font-weight: bold;
 }
 
@@ -103,22 +103,22 @@ function handleSubmit() {
 }
 
 textarea {
-  border: 1px solid #9aa5b4;
+  border: 1px solid var(--color-secondary);
   border-radius: 6px;
   padding: 0.6rem 0.8rem;
   font-size: 0.95rem;
   font-family: inherit;
-  background: #faf3e0;
+  background: var(--color-bg-input);
   transition: border-color 0.2s;
 }
 
 textarea:focus {
   outline: none;
-  border-color: #1e2d5a;
+  border-color: var(--color-primary);
 }
 
 .success-message {
-  color: #2a7a2a;
+  color: var(--color-success);
   font-size: 0.95rem;
   font-weight: bold;
 }

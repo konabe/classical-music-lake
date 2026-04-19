@@ -9,7 +9,13 @@ export default defineNuxtConfig({
   devServer: {
     port: 3010,
   },
-  modules: ["@nuxt/eslint", "@nuxtjs/storybook"],
+  modules: ["@nuxt/eslint", "@nuxtjs/storybook", "@nuxtjs/color-mode"],
+  colorMode: {
+    preference: "system",
+    fallback: "light",
+    classSuffix: "",
+    storageKey: "nocturne-color-mode",
+  },
   components: [{ path: "~/components", pathPrefix: false }],
   typescript: {
     strict: true,

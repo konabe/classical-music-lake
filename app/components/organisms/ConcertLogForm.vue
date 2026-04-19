@@ -185,7 +185,7 @@ function handleSubmit() {
 .btn-add-piece {
   padding: 0.4rem 1rem;
   background: #4a6fa5;
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -209,15 +209,15 @@ function handleSubmit() {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: #f5f7fa;
-  border: 1px solid #d1d5db;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
 }
 
 .drag-handle {
   cursor: grab;
   user-select: none;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .piece-info {
@@ -228,15 +228,23 @@ function handleSubmit() {
 .btn-remove-piece {
   padding: 0.2rem 0.6rem;
   background: none;
-  color: #e53e3e;
-  border: 1px solid #e53e3e;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.85rem;
 }
 
 .btn-remove-piece:hover {
-  background: #c0392b;
-  color: #fff;
+  background: var(--color-danger);
+  color: var(--color-on-primary);
+}
+
+:global(.dark) .btn-add-piece {
+  background: #6a8fc5;
+}
+
+:global(.dark) .btn-add-piece:hover {
+  background: #7a9fd5;
 }
 </style>

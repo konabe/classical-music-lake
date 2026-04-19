@@ -36,7 +36,7 @@ const emit = defineEmits<{
 <style scoped>
 .page-title {
   font-size: 1.6rem;
-  color: #1e2d5a;
+  color: var(--color-text);
   margin-bottom: 1.5rem;
 }
 </style>

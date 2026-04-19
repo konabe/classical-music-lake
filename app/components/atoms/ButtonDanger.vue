@@ -14,9 +14,9 @@ const emit = defineEmits<{
 
 <style scoped>
 .btn-danger {
-  background: #fff0f0;
-  color: #c0392b;
-  border: 1px solid #f5c6c6;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-border);
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -25,6 +25,6 @@ const emit = defineEmits<{
 }
 
 .btn-danger:hover {
-  background: #ffe0e0;
+  background: var(--color-danger-bg-strong);
 }
 </style>

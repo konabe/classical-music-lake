@@ -80,7 +80,7 @@ form {
 }
 
 .register-link a {
-  color: #2d2d50;
+  color: var(--color-primary-soft);
   text-decoration: none;
 }
 
@@ -110,14 +110,31 @@ form {
   padding: 0.75rem 1rem;
   border: 1px solid #d4c5b0;
   border-radius: 4px;
-  background-color: #ffffff;
-  color: #2d2d50;
+  background-color: var(--color-bg-surface);
+  color: var(--color-primary-soft);
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .btn-google-login:hover {
-  background-color: #f0ebe3;
+  background-color: var(--color-bg-elevated);
+}
+
+:global(.dark) .register-link {
+  color: #c8a878;
+}
+
+:global(.dark) .divider {
+  color: #c8a878;
+}
+
+:global(.dark) .divider::before,
+:global(.dark) .divider::after {
+  border-bottom-color: #6e5435;
+}
+
+:global(.dark) .btn-google-login {
+  border-color: #6e5435;
 }
 </style>

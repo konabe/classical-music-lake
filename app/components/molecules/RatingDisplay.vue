@@ -12,7 +12,7 @@ const { ratingStars } = useRatingDisplay();
 
 <style scoped>
 .rating {
-  color: #c9a227;
+  color: var(--color-warning);
   font-size: 1.1rem;
   letter-spacing: 2px;
 }

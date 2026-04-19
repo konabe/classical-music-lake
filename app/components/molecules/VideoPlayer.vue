@@ -110,7 +110,7 @@ onUnmounted(() => {
 
 .external-link {
   display: inline-block;
-  color: #1e2d5a;
+  color: var(--color-text);
   text-decoration: underline;
   font-size: 0.95rem;
 }

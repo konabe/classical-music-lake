@@ -43,13 +43,13 @@ const handleDelete = async () => {
 }
 
 .back-link {
-  color: #666;
+  color: var(--color-text-muted);
   text-decoration: none;
   font-size: 0.9rem;
 }
 
 .back-link:hover {
-  color: #333;
+  color: var(--color-text-secondary);
 }
 
 .actions {

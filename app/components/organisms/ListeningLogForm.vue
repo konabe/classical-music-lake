@@ -103,8 +103,8 @@ function handleSubmit() {
 
 <style scoped>
 .log-form {
-  background: #eaeef4;
-  border: 1px solid #9aa5b4;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
   padding: 2rem;
   max-width: 720px;
@@ -128,19 +128,19 @@ function handleSubmit() {
 input[type="datetime-local"],
 textarea,
 select {
-  border: 1px solid #9aa5b4;
+  border: 1px solid var(--color-secondary);
   border-radius: 6px;
   padding: 0.6rem 0.8rem;
   font-size: 0.95rem;
   font-family: inherit;
-  background: #faf3e0;
+  background: var(--color-bg-input);
   transition: border-color 0.2s;
 }
 
 input:focus,
 textarea:focus {
   outline: none;
-  border-color: #1e2d5a;
+  border-color: var(--color-primary);
 }
 
 .checkbox-label {

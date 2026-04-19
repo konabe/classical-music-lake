@@ -25,11 +25,12 @@ defineEmits<{
 
 <style scoped>
 .select-input {
-  border: 1px solid #9aa5b4;
+  border: 1px solid var(--color-secondary);
   border-radius: 6px;
   padding: 0.6rem 0.8rem;
   font-size: 0.95rem;
-  background: #faf3e0;
+  background: var(--color-bg-input);
+  color: var(--color-text);
   transition: border-color 0.2s;
   width: 100%;
   box-sizing: border-box;
@@ -38,6 +39,6 @@ defineEmits<{
 
 .select-input:focus {
   outline: none;
-  border-color: #1e2d5a;
+  border-color: var(--color-primary);
 }
 </style>
