@@ -13,8 +13,8 @@ defineProps<{
 
 <style scoped>
 .btn-primary {
-  background: #1e2d5a;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   padding: 0.6rem 1.4rem;
   border: none;
   border-radius: 6px;
@@ -25,6 +25,6 @@ defineProps<{
 }
 
 .btn-primary:hover {
-  background: #2b3f7e;
+  background: var(--color-primary-hover);
 }
 </style>

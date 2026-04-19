@@ -1,4 +1,4 @@
-import { mountSuspended } from "@nuxt/test-utils/runtime";
+import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import DefaultLayout from "./default.vue";
 
 const mockLogout = vi.fn();
@@ -10,6 +10,14 @@ vi.mock("~/composables/useAuth", () => ({
     logout: mockLogout,
   }),
 }));
+
+const colorModeState = reactive({
+  preference: "light",
+  value: "light",
+  unknown: false,
+});
+
+mockNuxtImport("useColorMode", () => () => colorModeState);
 
 beforeEach(() => {
   mockLogout.mockClear();

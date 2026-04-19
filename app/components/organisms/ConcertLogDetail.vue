@@ -61,8 +61,8 @@ const programPieces = computed(() => {
 
 <style scoped>
 .log-detail {
-  background: #eaeef4;
-  border: 1px solid #9aa5b4;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
   padding: 2rem;
   max-width: 720px;
@@ -71,12 +71,12 @@ const programPieces = computed(() => {
 .log-detail header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #9aa5b4;
+  border-bottom: 1px solid var(--color-secondary);
 }
 
 .log-detail h1 {
   font-size: 1.8rem;
-  color: #1e2d5a;
+  color: var(--color-text);
 }
 
 .detail-list {
@@ -87,7 +87,7 @@ const programPieces = computed(() => {
 
 dt {
   font-weight: bold;
-  color: #888;
+  color: var(--color-text-faint);
   font-size: 0.9rem;
 }
 
@@ -101,6 +101,6 @@ dt {
 }
 
 .no-program {
-  color: #666;
+  color: var(--color-text-muted);
 }
 </style>

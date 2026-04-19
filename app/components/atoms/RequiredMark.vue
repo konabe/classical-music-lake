@@ -4,6 +4,6 @@
 
 <style scoped>
 .required {
-  color: #e05a5a;
+  color: var(--color-danger-hover);
 }
 </style>

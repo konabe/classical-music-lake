@@ -28,6 +28,6 @@ defineProps<{
 
 label {
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-secondary);
 }
 </style>

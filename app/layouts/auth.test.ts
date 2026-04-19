@@ -1,5 +1,13 @@
-import { mountSuspended } from "@nuxt/test-utils/runtime";
+import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import AuthLayout from "./auth.vue";
+
+const colorModeState = reactive({
+  preference: "light",
+  value: "light",
+  unknown: false,
+});
+
+mockNuxtImport("useColorMode", () => () => colorModeState);
 
 describe("AuthLayout", () => {
   it("スロットコンテンツが描画される", async () => {

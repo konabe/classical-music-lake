@@ -13,18 +13,18 @@ defineProps<{
 
 <style scoped>
 .auth-form-container {
-  background: #eaeef4;
+  background: var(--color-bg-subtle);
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(61, 36, 9, 0.15);
   width: 100%;
   max-width: 400px;
-  border: 1px solid #9aa5b4;
+  border: 1px solid var(--color-secondary);
 }
 
 h1 {
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #1e2d5a;
+  color: var(--color-text);
 }
 </style>

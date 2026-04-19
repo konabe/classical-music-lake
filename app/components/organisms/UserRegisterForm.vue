@@ -99,11 +99,28 @@ form {
 }
 
 .login-link a {
-  color: #2d2d50;
+  color: var(--color-primary-soft);
   text-decoration: none;
 }
 
 .login-link a:hover {
   text-decoration: underline;
+}
+
+:global(.dark) .password-requirements {
+  color: #c8a878;
+}
+
+:global(.dark) .success-message {
+  background-color: #2a5218;
+  color: #d8e8c0;
+}
+
+:global(.dark) .success-message a {
+  color: #d8e8c0;
+}
+
+:global(.dark) .login-link {
+  color: #c8a878;
 }
 </style>

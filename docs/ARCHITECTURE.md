@@ -32,8 +32,11 @@
 ```text
 classical-music-lake/
 ├── app/                          # Nuxt アプリケーションディレクトリ
+│   ├── assets/
+│   │   └── css/
+│   │       └── theme.css         # ライト/ダークモードの CSS 変数定義（@nuxtjs/color-mode と連動）
 │   ├── layouts/                  # Nuxt レイアウト
-│   │   └── default.vue           # グローバルヘッダー（認証状態に応じたナビゲーション）
+│   │   └── default.vue           # グローバルヘッダー（認証状態に応じたナビゲーション + テーマ切替）
 │   ├── middleware/               # Nuxt ルートミドルウェア
 │   │   └── auth.ts               # 認証チェック（未ログイン時に /auth/login へリダイレクト）
 │   ├── pages/                    # Nuxt ページ（ルーティング）

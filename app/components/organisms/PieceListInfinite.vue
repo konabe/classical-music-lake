@@ -95,7 +95,7 @@ watch(sentinel, (el, _prev, onCleanup) => {
 
 .status-text {
   display: block;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   padding: 1rem 0;
 }
@@ -103,7 +103,7 @@ watch(sentinel, (el, _prev, onCleanup) => {
 .status-error {
   display: block;
   padding: 1rem 0;
-  color: #c33;
+  color: var(--color-danger);
 }
 
 .status-error-message {
@@ -113,15 +113,15 @@ watch(sentinel, (el, _prev, onCleanup) => {
 .btn-retry {
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
-  border: 1px solid #c33;
-  background: #fff;
-  color: #c33;
+  border: 1px solid var(--color-danger);
+  background: var(--color-bg-surface);
+  color: var(--color-danger);
   border-radius: 4px;
   cursor: pointer;
 }
 
 .btn-retry:hover {
-  background: #fee;
+  background: var(--color-danger-bg);
 }
 
 .sentinel {

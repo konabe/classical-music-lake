@@ -1,0 +1,146 @@
+/* ============================================================
+ * テーマカラー定義
+ * @nuxtjs/color-mode により <html> に "light" / "dark" クラスが付与される
+ * ============================================================ */
+
+:root,
+:root.light {
+  /* 背景 */
+  --color-bg-base: #f8f4ed;
+  --color-bg-surface: #fff;
+  --color-bg-elevated: #f5f0e8;
+  --color-bg-input: #faf3e0;
+  --color-bg-subtle: #eaeef4;
+
+  /* テキスト */
+  --color-text: #1e2d5a;
+  --color-text-secondary: #333;
+  --color-text-muted: #666;
+  --color-text-faint: #888;
+  --color-text-disabled: #999;
+
+  /* プライマリ（ネイビー） */
+  --color-primary: #1e2d5a;
+  --color-primary-hover: #2a3f7e;
+  --color-primary-active: #152040;
+  --color-primary-soft: #2d2d50;
+  --color-on-primary: #fff;
+
+  /* セカンダリ（補助グレー） */
+  --color-secondary: #9aa5b4;
+  --color-secondary-hover: #6b7a99;
+
+  /* ボーダー */
+  --color-border: #e0d8cc;
+  --color-border-strong: #d4d9e3;
+  --color-border-subtle: #eaeef4;
+
+  /* リンク */
+  --color-link: #1e2d5a;
+  --color-link-hover: #2a3f7e;
+
+  /* ステータス: エラー / 危険 */
+  --color-danger: #c0392b;
+  --color-danger-hover: #e05a5a;
+  --color-danger-bg: #fff0f0;
+  --color-danger-bg-strong: #f8ecec;
+  --color-danger-border: #f5c6c6;
+  --color-danger-text: #7b3a3a;
+
+  /* ステータス: 成功 */
+  --color-success: #2a7a2a;
+  --color-success-bg: #eaf2ec;
+  --color-success-border: #c3d9c9;
+
+  /* ステータス: 警告 */
+  --color-warning: #c9a227;
+  --color-warning-soft: #6a5424;
+
+  /* ヘッダー */
+  --color-header-bg: #1e2d5a;
+  --color-header-text: #fff;
+  --color-header-text-muted: #9aa5b4;
+
+  /* 影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  /* ロゴフィルタ（白抜き） */
+  --logo-filter: brightness(0) invert(1);
+}
+
+:root.dark {
+  /* 背景: ネイビー寄りのダークパレット */
+  --color-bg-base: #0f1729;
+  --color-bg-surface: #1a2547;
+  --color-bg-elevated: #243160;
+  --color-bg-input: #1a2547;
+  --color-bg-subtle: #243160;
+
+  /* テキスト */
+  --color-text: #e3e8f1;
+  --color-text-secondary: #c5cce0;
+  --color-text-muted: #8b95a8;
+  --color-text-faint: #6b7593;
+  --color-text-disabled: #555f7a;
+
+  /* プライマリ（明るめのネイビーブルー） */
+  --color-primary: #4a6ba8;
+  --color-primary-hover: #5d80c0;
+  --color-primary-active: #3a5790;
+  --color-primary-soft: #2c3e6b;
+  --color-on-primary: #fff;
+
+  /* セカンダリ */
+  --color-secondary: #6b7593;
+  --color-secondary-hover: #8b95a8;
+
+  /* ボーダー */
+  --color-border: #2c3e6b;
+  --color-border-strong: #3d5285;
+  --color-border-subtle: #243160;
+
+  /* リンク */
+  --color-link: #7da0d9;
+  --color-link-hover: #a3bce6;
+
+  /* ステータス: エラー / 危険 */
+  --color-danger: #e57373;
+  --color-danger-hover: #ef9a9a;
+  --color-danger-bg: #3a1f1f;
+  --color-danger-bg-strong: #4a2727;
+  --color-danger-border: #6b3535;
+  --color-danger-text: #f5c6c6;
+
+  /* ステータス: 成功 */
+  --color-success: #7fc081;
+  --color-success-bg: #1f3322;
+  --color-success-border: #355a3a;
+
+  /* ステータス: 警告 */
+  --color-warning: #e5c054;
+  --color-warning-soft: #d9b74a;
+
+  /* ヘッダー */
+  --color-header-bg: #0a1020;
+  --color-header-text: #f0f3f9;
+  --color-header-text-muted: #8b95a8;
+
+  /* 影（ダーク用、より深く） */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+  /* ロゴフィルタ（ダークでも白抜きのまま） */
+  --logo-filter: brightness(0) invert(1);
+}
+
+/* color-scheme でブラウザ提供のフォーム色等も追従 */
+:root.light {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
