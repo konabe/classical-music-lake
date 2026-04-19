@@ -23,6 +23,9 @@ const postComposer = (apiBase: string, input: CreateComposerInput): Promise<Comp
 const putComposer = (apiBase: string, id: string, input: UpdateComposerInput): Promise<Composer> =>
   $fetch<Composer>(`${apiBase}/composers/${id}`, { method: "PUT", body: input });
 
+const deleteComposerRequest = (apiBase: string, id: string): Promise<void> =>
+  $fetch(`${apiBase}/composers/${id}`, { method: "DELETE" });
+
 /**
  * 作曲家マスタ一覧の無限スクロール / カーソル型ページング用 composable。
  */
@@ -82,6 +85,11 @@ export const useComposersPaginated = () => {
     return result;
   };
 
+  const deleteComposer = async (id: string) => {
+    await deleteComposerRequest(apiBase, id);
+    reset();
+  };
+
   return {
     items,
     nextCursor,
@@ -93,6 +101,7 @@ export const useComposersPaginated = () => {
     retry,
     createComposer,
     updateComposer,
+    deleteComposer,
   };
 };
 

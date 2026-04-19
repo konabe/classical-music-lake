@@ -3,22 +3,25 @@ import { flushPromises } from "@vue/test-utils";
 import ComposersPage from "./index.vue";
 import type { Composer } from "~/types";
 
-const { sampleComposers, mockLoadMore, mockReset, mockRetry } = vi.hoisted(() => {
-  const sampleComposers: Composer[] = [
-    {
-      id: "composer-1",
-      name: "ベートーヴェン",
-      createdAt: "2024-01-01T00:00:00.000Z",
-      updatedAt: "2024-01-01T00:00:00.000Z",
-    },
-  ];
-  return {
-    sampleComposers,
-    mockLoadMore: vi.fn(),
-    mockReset: vi.fn(),
-    mockRetry: vi.fn(),
-  };
-});
+const { sampleComposers, mockLoadMore, mockReset, mockRetry, mockDeleteComposer } = vi.hoisted(
+  () => {
+    const sampleComposers: Composer[] = [
+      {
+        id: "composer-1",
+        name: "ベートーヴェン",
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
+      },
+    ];
+    return {
+      sampleComposers,
+      mockLoadMore: vi.fn(),
+      mockReset: vi.fn(),
+      mockRetry: vi.fn(),
+      mockDeleteComposer: vi.fn(),
+    };
+  }
+);
 
 const composersItems = ref<Composer[]>([]);
 const composersPending = ref<boolean>(false);
@@ -37,6 +40,7 @@ mockNuxtImport("useComposersPaginated", () =>
     retry: mockRetry,
     createComposer: vi.fn(),
     updateComposer: vi.fn(),
+    deleteComposer: mockDeleteComposer,
   }))
 );
 
@@ -58,6 +62,7 @@ beforeEach(() => {
   mockLoadMore.mockClear();
   mockReset.mockClear();
   mockRetry.mockClear();
+  mockDeleteComposer.mockClear();
   mockFetch.mockClear();
   composersItems.value = [...sampleComposers];
   composersPending.value = false;
@@ -103,16 +108,16 @@ describe("ComposersPage", () => {
   });
 
   describe("削除", () => {
-    it("削除確認で OK を選ぶと $fetch が呼ばれる", async () => {
-      mockFetch.mockResolvedValue(undefined);
+    it("削除確認で OK を選ぶと deleteComposer が呼ばれる", async () => {
+      mockDeleteComposer.mockResolvedValue(undefined);
       const wrapper = await mountSuspended(ComposersPage);
       await flushPromises();
       await wrapper.find(".btn-danger").trigger("click");
       await flushPromises();
-      expect(mockFetch).toHaveBeenCalled();
+      expect(mockDeleteComposer).toHaveBeenCalledWith("composer-1");
     });
 
-    it("削除キャンセル時は $fetch が呼ばれない", async () => {
+    it("削除キャンセル時は deleteComposer が呼ばれない", async () => {
       vi.stubGlobal(
         "confirm",
         vi.fn(() => false)
@@ -120,7 +125,7 @@ describe("ComposersPage", () => {
       const wrapper = await mountSuspended(ComposersPage);
       await flushPromises();
       await wrapper.find(".btn-danger").trigger("click");
-      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockDeleteComposer).not.toHaveBeenCalled();
     });
   });
 });

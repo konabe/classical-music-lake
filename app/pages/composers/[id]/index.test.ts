@@ -11,7 +11,19 @@ const sampleComposer: Composer = {
 };
 
 vi.mock("~/composables/useComposers", () => ({
-  useComposersPaginated: vi.fn(),
+  useComposersPaginated: () => ({
+    items: ref([]),
+    nextCursor: ref(null),
+    pending: ref(false),
+    error: ref(null),
+    hasMore: ref(true),
+    loadMore: vi.fn(),
+    reset: vi.fn(),
+    retry: vi.fn(),
+    createComposer: vi.fn(),
+    updateComposer: vi.fn(),
+    deleteComposer: vi.fn(),
+  }),
   useComposer: () => ({ data: ref(sampleComposer), error: ref(null) }),
 }));
 

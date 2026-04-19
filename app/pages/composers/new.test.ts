@@ -17,6 +17,7 @@ vi.mock("~/composables/useComposers", () => ({
     retry: vi.fn(),
     createComposer: mockCreateComposer,
     updateComposer: vi.fn(),
+    deleteComposer: vi.fn(),
   }),
   useComposer: () => ({ data: ref(null), error: ref(null) }),
 }));

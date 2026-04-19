@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { Composer } from "~/types";
 
-const apiBase = useApiBase();
 const router = useRouter();
-const { items, pending, error, hasMore, loadMore, reset, retry } = useComposersPaginated();
+const { items, pending, error, hasMore, loadMore, retry, deleteComposer } = useComposersPaginated();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
@@ -22,8 +21,7 @@ async function handleDelete(composer: Composer) {
     return;
   }
   try {
-    await $fetch(`${apiBase}/composers/${composer.id}`, { method: "DELETE" });
-    reset();
+    await deleteComposer(composer.id);
     await loadMore();
   } catch (err) {
     const message =
