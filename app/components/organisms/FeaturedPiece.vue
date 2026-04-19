@@ -65,8 +65,8 @@ const shuffle = () => {
 
 <style scoped>
 .featured {
-  background: #fff;
-  border: 1px solid #d4d9e3;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
   border-radius: 16px;
   padding: 1.75rem;
 }
@@ -80,18 +80,18 @@ const shuffle = () => {
 
 .featured-heading {
   font-size: 1.1rem;
-  color: #1e2d5a;
+  color: var(--color-text);
   font-weight: 600;
   letter-spacing: 0.04em;
 }
 
 .shuffle-btn {
   background: none;
-  border: 1px solid #9aa5b4;
+  border: 1px solid var(--color-secondary);
   border-radius: 6px;
   padding: 0.4rem 0.9rem;
   font-size: 0.85rem;
-  color: #6b7a99;
+  color: var(--color-secondary-hover);
   cursor: pointer;
   transition:
     border-color 0.2s,
@@ -99,8 +99,8 @@ const shuffle = () => {
 }
 
 .shuffle-btn:hover {
-  border-color: #1e2d5a;
-  color: #1e2d5a;
+  border-color: var(--color-text);
+  color: var(--color-text);
 }
 
 .featured-loading {
@@ -110,7 +110,12 @@ const shuffle = () => {
 .loading-pulse {
   width: 100%;
   height: 200px;
-  background: linear-gradient(90deg, #eaeef4 25%, #d4d9e3 50%, #eaeef4 75%);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-subtle) 25%,
+    var(--color-border-strong) 50%,
+    var(--color-bg-subtle) 75%
+  );
   background-size: 200% 100%;
   border-radius: 8px;
   animation: pulse 1.5s infinite;
@@ -128,7 +133,7 @@ const shuffle = () => {
 .featured-empty {
   padding: 3rem;
   text-align: center;
-  color: #888;
+  color: var(--color-text-faint);
   font-size: 0.95rem;
 }
 
@@ -145,14 +150,14 @@ const shuffle = () => {
 .piece-title {
   font-size: 1.15rem;
   font-weight: 600;
-  color: #1e2d5a;
+  color: var(--color-text);
   font-style: italic;
   letter-spacing: 0.04em;
 }
 
 .piece-composer {
   font-size: 0.9rem;
-  color: #6b7a99;
+  color: var(--color-secondary-hover);
   margin-top: 0.25rem;
 }
 </style>

@@ -261,8 +261,8 @@ defineProps<{
 .cta-primary {
   display: inline-block;
   padding: 0.75rem 2rem;
-  background: #fff;
-  color: #1e2d5a;
+  background: var(--color-bg-surface);
+  color: var(--color-primary);
   border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
@@ -288,8 +288,8 @@ defineProps<{
 }
 
 .cta-ghost:hover {
-  border-color: #fff;
-  color: #fff;
+  border-color: var(--color-on-primary);
+  color: var(--color-on-primary);
 }
 
 /* ── Featured ── */
@@ -318,8 +318,8 @@ defineProps<{
 
 .card {
   display: block;
-  background: #eaeef4;
-  border: 1px solid #9aa5b4;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
   padding: 2rem;
   text-decoration: none;
@@ -343,12 +343,12 @@ defineProps<{
 
 .card h2 {
   font-size: 1.25rem;
-  color: #1e2d5a;
+  color: var(--color-text);
   margin-bottom: 0.5rem;
 }
 
 .card p {
-  color: #888;
+  color: var(--color-text-faint);
   font-size: 0.9rem;
 }
 
@@ -371,7 +371,7 @@ defineProps<{
 
 .admin-section-title {
   font-size: 1rem;
-  color: #666;
+  color: var(--color-text-muted);
   margin-bottom: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -407,7 +407,17 @@ defineProps<{
 }
 
 .admin-card p {
-  color: #888;
+  color: var(--color-text-faint);
   font-size: 0.85rem;
+}
+
+/* ── Dark mode overrides for purple-themed admin cards ── */
+:global(.dark) .admin-card {
+  background: #2a1f3a;
+  border-color: #6e4ea8;
+}
+
+:global(.dark) .admin-card h3 {
+  color: #c4a8e0;
 }
 </style>

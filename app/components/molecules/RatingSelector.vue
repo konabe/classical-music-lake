@@ -43,6 +43,10 @@ const emit = defineEmits<{
 }
 
 .star-btn.active {
-  color: #c9a227;
+  color: var(--color-warning);
+}
+
+:global(.dark) .star-btn {
+  color: #6e5a3d;
 }
 </style>

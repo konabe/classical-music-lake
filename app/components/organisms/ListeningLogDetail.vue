@@ -36,8 +36,8 @@ defineProps<{
 
 <style scoped>
 .log-detail {
-  background: #eaeef4;
-  border: 1px solid #9aa5b4;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
   padding: 2rem;
   max-width: 720px;
@@ -46,12 +46,12 @@ defineProps<{
 .log-detail header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #9aa5b4;
+  border-bottom: 1px solid var(--color-secondary);
 }
 
 .log-detail h1 {
   font-size: 1.8rem;
-  color: #1e2d5a;
+  color: var(--color-text);
 }
 
 .detail-list {
@@ -63,18 +63,18 @@ defineProps<{
 
 dt {
   font-weight: bold;
-  color: #888;
+  color: var(--color-text-faint);
   font-size: 0.9rem;
 }
 
 .memo h2 {
   font-size: 1rem;
-  color: #888;
+  color: var(--color-text-faint);
   margin-bottom: 0.5rem;
 }
 
 .memo p {
   line-height: 1.7;
-  color: #444;
+  color: var(--color-text-secondary);
 }
 </style>

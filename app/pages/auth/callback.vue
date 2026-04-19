@@ -46,16 +46,20 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f8f4ed;
+  background-color: var(--color-bg-base);
 }
 
 .error-message {
-  color: #c0392b;
+  color: var(--color-danger);
   font-size: 1rem;
 }
 
 .loading-message {
   color: #7a5c38;
   font-size: 1rem;
+}
+
+:global(.dark) .loading-message {
+  color: #d4c5b0;
 }
 </style>

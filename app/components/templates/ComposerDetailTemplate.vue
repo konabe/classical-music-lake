@@ -40,14 +40,14 @@ const emit = defineEmits<{
 <style scoped>
 .back-link {
   display: inline-block;
-  color: #666;
+  color: var(--color-text-muted);
   text-decoration: none;
   font-size: 0.9rem;
   margin-bottom: 1.5rem;
 }
 
 .back-link:hover {
-  color: #333;
+  color: var(--color-text-secondary);
 }
 
 .composer-header {
@@ -57,7 +57,7 @@ const emit = defineEmits<{
 .composer-name {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #1e2d5a;
+  color: var(--color-text);
   margin-bottom: 0.3rem;
 }
 
@@ -74,9 +74,9 @@ const emit = defineEmits<{
 .btn-secondary {
   display: inline-block;
   padding: 0.4rem 1rem;
-  background: #fff;
-  border: 1px solid #1e2d5a;
-  color: #1e2d5a;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
   border-radius: 4px;
   font-size: 0.9rem;
   text-decoration: none;
@@ -87,15 +87,15 @@ const emit = defineEmits<{
 }
 
 .btn-secondary:hover {
-  background: #1e2d5a;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .btn-danger {
   padding: 0.4rem 1rem;
-  background: #fff;
-  border: 1px solid #c0392b;
-  color: #c0392b;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
   border-radius: 4px;
   font-size: 0.9rem;
   cursor: pointer;
@@ -105,7 +105,7 @@ const emit = defineEmits<{
 }
 
 .btn-danger:hover {
-  background: #c0392b;
-  color: #fff;
+  background: var(--color-danger);
+  color: var(--color-on-primary);
 }
 </style>

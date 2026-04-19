@@ -86,21 +86,21 @@ form {
 
 label {
   font-weight: 500;
-  color: #1e2d5a;
+  color: var(--color-text);
 }
 
 input[type="text"] {
   padding: 0.75rem;
-  border: 1px solid #9aa5b4;
+  border: 1px solid var(--color-secondary);
   border-radius: 4px;
   font-size: 1rem;
-  background: #faf3e0;
+  background: var(--color-bg-input);
   transition: border-color 0.2s;
 }
 
 input[type="text"]:focus {
   outline: none;
-  border-color: #1e2d5a;
+  border-color: var(--color-primary);
 }
 
 .info-message {
@@ -126,7 +126,7 @@ input[type="text"]:focus {
 .resend-button {
   background: none;
   border: none;
-  color: #2d2d50;
+  color: var(--color-primary-soft);
   font-size: 0.9rem;
   text-decoration: underline;
   cursor: pointer;
@@ -134,12 +134,29 @@ input[type="text"]:focus {
 }
 
 .resend-button:hover:not(:disabled) {
-  color: #1e2d5a;
+  color: var(--color-text);
 }
 
 .resend-button:disabled {
   color: #a89070;
   cursor: not-allowed;
   text-decoration: none;
+}
+
+:global(.dark) .description {
+  color: #c8a878;
+}
+
+:global(.dark) .info-message {
+  color: #d8e8c0;
+  background-color: #2a5218;
+}
+
+:global(.dark) .resend-section {
+  color: #c8a878;
+}
+
+:global(.dark) .resend-button:disabled {
+  color: #6e5435;
 }
 </style>

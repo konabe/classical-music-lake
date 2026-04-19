@@ -48,8 +48,8 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
 
 <style scoped>
 .piece-item {
-  background: #fff;
-  border: 1px solid #e0d8cc;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 1.2rem 1.5rem;
   display: flex;
@@ -91,12 +91,12 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
   font-size: 1.1rem;
   font-weight: bold;
   margin-bottom: 0.3rem;
-  color: #1e2d5a;
+  color: var(--color-text);
 }
 
 .piece-composer {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .piece-category-wrapper {
@@ -110,8 +110,8 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
 }
 
 .btn-detail {
-  background: #f0ebe0;
-  color: #1e2d5a;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
   padding: 0.6rem 1.2rem;
   border: 1px solid #c2a878;
   border-radius: 6px;
@@ -121,7 +121,15 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
 }
 
 .btn-detail:hover {
-  background: #e0d8cc;
+  background: var(--color-border);
+}
+
+:global(.dark) .piece-thumbnail:focus-visible {
+  outline-color: #6e5a3d;
+}
+
+:global(.dark) .btn-detail {
+  border-color: #6e5a3d;
 }
 
 @media (max-width: 600px) {

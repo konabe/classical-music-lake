@@ -5,6 +5,8 @@
 </template>
 
 <style>
+@import "~/assets/css/theme.css";
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -13,7 +15,10 @@
 
 body {
   font-family: "Georgia", serif;
-  background-color: #f8f4ed;
-  color: #1e2d5a;
+  background-color: var(--color-bg-base);
+  color: var(--color-text);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 </style>

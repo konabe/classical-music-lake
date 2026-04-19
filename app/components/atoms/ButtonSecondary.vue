@@ -14,8 +14,8 @@ const emit = defineEmits<{
 
 <style scoped>
 .btn-secondary {
-  background: #e8edf3;
-  color: #1e2d5a;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 6px;
@@ -26,6 +26,6 @@ const emit = defineEmits<{
 }
 
 .btn-secondary:hover {
-  background: #d4dbe8;
+  background: var(--color-border-strong);
 }
 </style>

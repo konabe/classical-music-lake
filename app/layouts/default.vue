@@ -29,6 +29,9 @@ watch(
           <li><NuxtLink to="/auth/login">ログイン</NuxtLink></li>
         </ul>
         <button v-if="isLoggedIn" class="logout-button" @click="logout">ログアウト</button>
+        <div class="theme-toggle-wrapper" :class="{ 'auth-aligned': !isLoggedIn }">
+          <ThemeToggle />
+        </div>
       </nav>
     </header>
     <main class="app-main">
@@ -39,8 +42,8 @@ watch(
 
 <style scoped>
 .app-header {
-  background-color: #1e2d5a;
-  color: #fff;
+  background-color: var(--color-header-bg);
+  color: var(--color-header-text);
   padding: 1rem 2rem;
 }
 
@@ -62,13 +65,13 @@ watch(
 .logo-img {
   height: 32px;
   width: auto;
-  filter: brightness(0) invert(1);
+  filter: var(--logo-filter);
 }
 
 .logo-text {
   font-size: 1.3rem;
   font-weight: bold;
-  color: #fff;
+  color: var(--color-header-text);
   letter-spacing: 0.08em;
   font-style: italic;
 }
@@ -80,7 +83,7 @@ watch(
 }
 
 .nav-links a {
-  color: #9aa5b4;
+  color: var(--color-header-text-muted);
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.2s;
@@ -89,7 +92,7 @@ watch(
 
 .nav-links a:hover,
 .nav-links a.router-link-active {
-  color: #fff;
+  color: var(--color-header-text);
 }
 
 .auth-links {
@@ -100,7 +103,7 @@ watch(
 }
 
 .auth-links a {
-  color: #9aa5b4;
+  color: var(--color-header-text-muted);
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.2s;
@@ -108,14 +111,14 @@ watch(
 }
 
 .auth-links a:hover {
-  color: #fff;
+  color: var(--color-header-text);
 }
 
 .logout-button {
   margin-left: auto;
   background: none;
-  border: 1px solid #9aa5b4;
-  color: #9aa5b4;
+  border: 1px solid var(--color-header-text-muted);
+  color: var(--color-header-text-muted);
   padding: 0.35rem 0.9rem;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -126,8 +129,13 @@ watch(
 }
 
 .logout-button:hover {
-  background-color: #9aa5b4;
-  color: #1e2d5a;
+  background-color: var(--color-header-text-muted);
+  color: var(--color-header-bg);
+}
+
+.theme-toggle-wrapper {
+  display: flex;
+  align-items: center;
 }
 
 .app-main {

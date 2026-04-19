@@ -24,6 +24,6 @@ const router = useRouter();
 
 .page-header h1 {
   font-size: 1.8rem;
-  color: #1e2d5a;
+  color: var(--color-text);
 }
 </style>

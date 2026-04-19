@@ -30,8 +30,8 @@ const emit = defineEmits<{
 
 <style scoped>
 .composer-item {
-  background: #fff;
-  border: 1px solid #e0d8cc;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 1.2rem 1.5rem;
   display: flex;
@@ -49,7 +49,7 @@ const emit = defineEmits<{
   font-size: 1.1rem;
   font-weight: bold;
   margin-bottom: 0.3rem;
-  color: #1e2d5a;
+  color: var(--color-text);
 }
 
 .composer-category-wrapper {
@@ -63,8 +63,8 @@ const emit = defineEmits<{
 }
 
 .btn-detail {
-  background: #f0ebe0;
-  color: #1e2d5a;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
   padding: 0.6rem 1.2rem;
   border: 1px solid #c2a878;
   border-radius: 6px;
@@ -74,7 +74,11 @@ const emit = defineEmits<{
 }
 
 .btn-detail:hover {
-  background: #e0d8cc;
+  background: var(--color-border);
+}
+
+:global(.dark) .btn-detail {
+  border-color: #6e5a3d;
 }
 
 @media (max-width: 600px) {

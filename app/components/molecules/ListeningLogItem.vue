@@ -39,8 +39,8 @@ const emit = defineEmits<{
 
 <style scoped>
 .log-item {
-  background: #eaeef4;
-  border: 1px solid #9aa5b4;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-secondary);
   border-radius: 10px;
   padding: 1.2rem 1.5rem;
   display: flex;
@@ -56,7 +56,7 @@ const emit = defineEmits<{
 }
 
 .log-title a {
-  color: #1e2d5a;
+  color: var(--color-text);
   text-decoration: none;
 }
 
@@ -65,7 +65,7 @@ const emit = defineEmits<{
 }
 
 .log-meta {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   display: flex;
   gap: 1rem;
@@ -80,12 +80,12 @@ const emit = defineEmits<{
 }
 
 .date {
-  color: #999;
+  color: var(--color-text-disabled);
 }
 
 .log-memo {
   font-size: 0.9rem;
-  color: #555;
+  color: var(--color-text-secondary);
   margin-top: 0.5rem;
   font-style: italic;
 }

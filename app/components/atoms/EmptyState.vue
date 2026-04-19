@@ -8,6 +8,6 @@
 .empty-state {
   text-align: center;
   padding: 4rem;
-  color: #888;
+  color: var(--color-text-faint);
 }
 </style>

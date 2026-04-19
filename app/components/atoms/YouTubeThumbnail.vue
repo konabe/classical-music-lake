@@ -51,6 +51,6 @@ const handleError = () => {
   height: 90px;
   object-fit: cover;
   border-radius: 6px;
-  background: #f0ebe0;
+  background: var(--color-bg-elevated);
 }
 </style>

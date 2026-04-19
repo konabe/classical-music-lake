@@ -28,13 +28,13 @@ const handleError = () => clearError({ redirect: "/" });
 <style scoped>
 .error-page {
   min-height: 100vh;
-  background-color: #f5f0e8;
+  background-color: var(--color-bg-elevated);
   display: flex;
   flex-direction: column;
 }
 
 .error-header {
-  background-color: #1e2d5a;
+  background-color: var(--color-header-bg);
   padding: 1rem 2rem;
 }
 
@@ -48,13 +48,13 @@ const handleError = () => clearError({ redirect: "/" });
 .logo-img {
   height: 32px;
   width: auto;
-  filter: brightness(0) invert(1);
+  filter: var(--logo-filter);
 }
 
 .logo-text {
   font-size: 1.3rem;
   font-weight: bold;
-  color: #fff;
+  color: var(--color-header-text);
   letter-spacing: 0.08em;
   font-style: italic;
 }
@@ -74,7 +74,7 @@ const handleError = () => clearError({ redirect: "/" });
 .error-code {
   font-size: 6rem;
   font-weight: bold;
-  color: #1e2d5a;
+  color: var(--color-text);
   line-height: 1;
   margin: 0 0 1rem;
   font-style: italic;
@@ -83,18 +83,18 @@ const handleError = () => clearError({ redirect: "/" });
 
 .error-title {
   font-size: 1.5rem;
-  color: #1e2d5a;
+  color: var(--color-text);
   margin: 0 0 1rem;
 }
 
 .error-message {
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0 0 2rem;
 }
 
 .btn-home {
-  background-color: #1e2d5a;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
   border: none;
   padding: 0.75rem 2rem;
   border-radius: 6px;
@@ -104,6 +104,6 @@ const handleError = () => clearError({ redirect: "/" });
 }
 
 .btn-home:hover {
-  background-color: #2a3f7e;
+  background-color: var(--color-primary-hover);
 }
 </style>
