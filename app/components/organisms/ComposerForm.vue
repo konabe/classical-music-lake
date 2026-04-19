@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import type { CreateComposerInput } from "~/types";
 import { PIECE_ERAS, PIECE_REGIONS } from "~/types";
+import { toSelectOptions } from "~/utils/select-options";
 
-function toOptions<T extends string>(values: readonly T[]): { value: T; label: string }[] {
-  return values.map((v) => ({ value: v, label: v }));
-}
-
-const eraOptions = toOptions(PIECE_ERAS);
-const regionOptions = toOptions(PIECE_REGIONS);
+const eraOptions = toSelectOptions(PIECE_ERAS);
+const regionOptions = toSelectOptions(PIECE_REGIONS);
 
 const props = defineProps<{
   initialValues?: Partial<CreateComposerInput>;
