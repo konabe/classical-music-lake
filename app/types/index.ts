@@ -13,6 +13,8 @@ export {
   COMPOSERS_PAGE_SIZE_MIN,
   COMPOSERS_PAGE_SIZE_MAX,
   COMPOSERS_PAGE_SIZE_DEFAULT,
+  COMPOSERS_ALL_MAX_TOTAL,
+  COMPOSERS_ALL_MAX_EMPTY_PAGES,
 } from "../../shared/constants";
 export type { PieceGenre, PieceEra, PieceFormation, PieceRegion } from "../../shared/constants";
 export type { Paginated } from "../../shared/constants";
@@ -45,7 +47,7 @@ export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "created
 export interface Piece {
   id: string;
   title: string;
-  composer: string;
+  composerId: string; // 作曲家マスタ（Composer）の id 参照
   videoUrl?: string;
   genre?: PieceGenre;
   era?: PieceEra;

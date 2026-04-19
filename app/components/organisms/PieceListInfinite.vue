@@ -6,6 +6,7 @@ const props = defineProps<{
   error: Error | null;
   pending: boolean;
   hasMore: boolean;
+  composerNameById: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -60,7 +61,12 @@ watch(sentinel, (el, _prev, onCleanup) => {
 
 <template>
   <div>
-    <PieceList :pieces="props.pieces" :error="props.error" @delete="emit('delete', $event)" />
+    <PieceList
+      :pieces="props.pieces"
+      :error="props.error"
+      :composer-name-by-id="props.composerNameById"
+      @delete="emit('delete', $event)"
+    />
     <output class="list-status" aria-live="polite">
       <span v-if="props.pending" class="status-text">読み込み中…</span>
       <span v-else-if="props.error" class="status-error">

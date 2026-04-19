@@ -1,4 +1,8 @@
-import { COMPOSERS_PAGE_SIZE_DEFAULT } from "~/types";
+import {
+  COMPOSERS_ALL_MAX_EMPTY_PAGES,
+  COMPOSERS_ALL_MAX_TOTAL,
+  COMPOSERS_PAGE_SIZE_DEFAULT,
+} from "~/types";
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
 
@@ -135,4 +139,62 @@ export const useComposersPaginated = () => {
 export const useComposer = (id: () => string) => {
   const apiBase = useApiBase();
   return useFetch<Composer>(() => `${apiBase}/composers/${id()}`);
+};
+
+/**
+ * 作曲家マスタを全件集約で取得するヘルパー。
+ * 楽曲フォームの Composer セレクトや、一覧画面で composerId → name の解決マップを
+ * 構築するために使う。件数が少ないことが前提（Composer は数十件規模を想定）。
+ *
+ * 暴走防止: 総件数 {@link COMPOSERS_ALL_MAX_TOTAL} / 連続空ページ
+ * {@link COMPOSERS_ALL_MAX_EMPTY_PAGES} を超えたらエラー。
+ */
+export const useComposersAll = () => {
+  const apiBase = useApiBase();
+  const data = ref<Composer[] | null>(null);
+  const pending = ref<boolean>(false);
+  const error = ref<Error | null>(null);
+
+  const refresh = async () => {
+    pending.value = true;
+    error.value = null;
+    const acc: Composer[] = [];
+    let cursor: string | undefined;
+    let consecutiveEmpty = 0;
+    try {
+      while (true) {
+        const res = await fetchPage(apiBase, {
+          limit: COMPOSERS_PAGE_SIZE_DEFAULT,
+          cursor,
+        });
+        acc.push(...res.items);
+        if (acc.length > COMPOSERS_ALL_MAX_TOTAL) {
+          throw new Error(
+            `useComposersAll: exceeded maximum total items (${COMPOSERS_ALL_MAX_TOTAL})`
+          );
+        }
+        if (res.items.length === 0) {
+          consecutiveEmpty += 1;
+          if (consecutiveEmpty > COMPOSERS_ALL_MAX_EMPTY_PAGES) {
+            throw new Error(
+              `useComposersAll: exceeded consecutive empty pages (${COMPOSERS_ALL_MAX_EMPTY_PAGES})`
+            );
+          }
+        } else {
+          consecutiveEmpty = 0;
+        }
+        if (res.nextCursor === null) {
+          break;
+        }
+        cursor = res.nextCursor;
+      }
+      data.value = acc;
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+      pending.value = false;
+    }
+  };
+
+  return { data, pending, error, refresh };
 };

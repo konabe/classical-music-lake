@@ -5,6 +5,7 @@ import type { ConcertLog, Piece } from "~/types";
 const props = defineProps<{
   log: ConcertLog;
   pieces: Piece[];
+  composerNameById: Record<string, string>;
 }>();
 
 const programPieces = computed(() => {
@@ -49,7 +50,7 @@ const programPieces = computed(() => {
       <dd>
         <ol v-if="programPieces.length > 0" class="program-list">
           <li v-for="piece in programPieces" :key="piece.id">
-            {{ piece.title }} / {{ piece.composer }}
+            {{ piece.title }} / {{ props.composerNameById[piece.composerId] ?? "(不明)" }}
           </li>
         </ol>
         <span v-else class="no-program">プログラムなし</span>

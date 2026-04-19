@@ -397,6 +397,22 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const updatePiece = fn("UpdatePiece", "handlers/pieces/update.ts");
     const deletePiece = fn("DeletePiece", "handlers/pieces/delete.ts");
 
+    // 移行専用 Lambda。API Gateway には接続せず、AWS CLI / コンソールから invoke する
+    // 全件 Scan + 新規 Composer 作成を含むため、タイムアウトとメモリを拡張し reservedConcurrency=1 で同時実行禁止
+    const migratePieceComposerLogGroup = new logs.LogGroup(this, "MigratePieceComposerLogGroup", {
+      retention: logs.RetentionDays.THREE_MONTHS,
+      removalPolicy: this.removalPolicy(isProd),
+    });
+    const migratePieceComposer = new lambdaNodejs.NodejsFunction(this, "MigratePieceComposer", {
+      ...commonFnProps,
+      entry: path.join(backendSrcDir, "handlers/pieces/migrate-composer.ts"),
+      handler: "handler",
+      logGroup: migratePieceComposerLogGroup,
+      timeout: cdk.Duration.seconds(60),
+      memorySize: 512,
+      reservedConcurrentExecutions: 1,
+    });
+
     const authRegister = fn("AuthRegister", "handlers/auth/register.ts");
     const authLogin = fn("AuthLogin", "handlers/auth/login.ts");
     const authVerifyEmail = fn("AuthVerifyEmail", "handlers/auth/verify-email.ts");
@@ -486,6 +502,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     piecesTable.grantReadData(getPiece);
     piecesTable.grantReadWriteData(updatePiece);
     piecesTable.grantWriteData(deletePiece);
+    piecesTable.grantReadWriteData(migratePieceComposer);
+    composersTable.grantReadWriteData(migratePieceComposer);
     concertLogsTable.grantReadData(concertLogsList);
     concertLogsTable.grantWriteData(concertLogsCreate);
     concertLogsTable.grantReadData(concertLogsGet);
@@ -809,6 +827,7 @@ function handler(event) {
       getComposer,
       updateComposer,
       deleteComposer,
+      migratePieceComposer,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成

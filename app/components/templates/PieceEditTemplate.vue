@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import type { Piece, UpdatePieceInput } from "~/types";
+import type { Composer, Piece, UpdatePieceInput } from "~/types";
 
 defineProps<{
   piece: Piece | null;
   fetchError: Error | null;
   errorMessage: string;
+  composers: Composer[];
+  composersPending?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -23,9 +25,11 @@ const emit = defineEmits<{
       <PieceForm
         :initial-values="{
           title: piece?.title,
-          composer: piece?.composer,
+          composerId: piece?.composerId,
           videoUrl: piece?.videoUrl,
         }"
+        :composers="composers"
+        :composers-pending="composersPending"
         submit-label="更新する"
         @submit="emit('submit', $event)"
       />

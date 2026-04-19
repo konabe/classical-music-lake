@@ -3,11 +3,21 @@ import type { Piece } from "~/types";
 
 const apiBase = useApiBase();
 const { items, pending, error, hasMore, loadMore, reset, retry } = usePiecesPaginated();
+const { data: composers, refresh: refreshComposers } = useComposersAll();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
 // 初回ロード
 void loadMore();
+void refreshComposers();
+
+const composerNameById = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {};
+  for (const c of composers.value ?? []) {
+    map[c.id] = c.name;
+  }
+  return map;
+});
 
 async function handleDelete(piece: Piece) {
   if (!confirm(`「${piece.title}」を削除しますか？`)) {
@@ -32,6 +42,7 @@ async function handleDelete(piece: Piece) {
     :pending="pending"
     :has-more="hasMore"
     :is-admin="isAdminUser"
+    :composer-name-by-id="composerNameById"
     @delete="handleDelete"
     @load-more="loadMore"
     @retry="retry"

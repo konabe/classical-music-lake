@@ -45,7 +45,7 @@ vi.mock("./useAuth", async (importOriginal) => {
 const makePiece = (id: string, title = `title-${id}`): Piece => ({
   id,
   title,
-  composer: "composer",
+  composerId: "00000000-0000-4000-8000-000000000001",
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 });
@@ -186,7 +186,7 @@ describe("usePiecesPaginated", () => {
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(p.items.value).toHaveLength(1);
-      await p.createPiece({ title: "x", composer: "c" });
+      await p.createPiece({ title: "x", composerId: "00000000-0000-4000-8000-000000000001" });
       expect(p.items.value).toEqual([]);
       expect(p.hasMore.value).toBe(true);
     });
@@ -204,12 +204,15 @@ describe("usePiecesPaginated", () => {
       localStorage.setItem(ID_TOKEN_KEY, "test-id-token");
       mockFetch.mockResolvedValueOnce(jsonResponse(makePiece("new"), 201));
       const p = usePiecesPaginated();
-      await p.createPiece({ title: "new", composer: "c" });
+      await p.createPiece({ title: "new", composerId: "00000000-0000-4000-8000-000000000001" });
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/pieces",
         expect.objectContaining({
           method: "POST",
-          body: JSON.stringify({ title: "new", composer: "c" }),
+          body: JSON.stringify({
+            title: "new",
+            composerId: "00000000-0000-4000-8000-000000000001",
+          }),
           headers: expect.objectContaining({
             Authorization: "Bearer test-id-token",
             "Content-Type": "application/json",
@@ -241,7 +244,9 @@ describe("usePiecesPaginated", () => {
         new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 })
       );
       const p = usePiecesPaginated();
-      await expect(p.createPiece({ title: "x", composer: "c" })).rejects.toThrow();
+      await expect(
+        p.createPiece({ title: "x", composerId: "00000000-0000-4000-8000-000000000001" })
+      ).rejects.toThrow();
     });
   });
 });
@@ -304,7 +309,7 @@ describe("usePiecesAll", () => {
     const p = usePiecesAll();
     await p.refresh();
     expect(p.data.value).toHaveLength(1);
-    await p.createPiece({ title: "x", composer: "c" });
+    await p.createPiece({ title: "x", composerId: "00000000-0000-4000-8000-000000000001" });
     await flush();
     expect(p.data.value).toHaveLength(2);
   });

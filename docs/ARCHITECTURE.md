@@ -97,7 +97,8 @@ classical-music-lake/
 │       │   ├── list.ts
 │       │   ├── get.ts
 │       │   ├── update.ts
-│       │   └── delete.ts
+│       │   ├── delete.ts
+│       │   └── migrate-composer.ts # composer(string) → composerId 移行（手動 invoke 専用）
 │       ├── composers/             # 作曲家マスタ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts

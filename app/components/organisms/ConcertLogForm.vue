@@ -13,7 +13,17 @@ const emit = defineEmits<{
 }>();
 
 const { data: pieces, pending: piecesPending, refresh: refreshPieces } = usePiecesAll();
+const { data: composers, refresh: refreshComposers } = useComposersAll();
 void refreshPieces();
+void refreshComposers();
+
+const composerNameById = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {};
+  for (const c of composers.value ?? []) {
+    map[c.id] = c.name;
+  }
+  return map;
+});
 
 const form = reactive({
   title: props.initialValues?.title ?? "",
@@ -125,7 +135,7 @@ function handleSubmit() {
         >
           <option value="">{{ piecesPending ? "読み込み中..." : "楽曲を選択" }}</option>
           <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
-            {{ piece.title }} / {{ piece.composer }}
+            {{ piece.title }} / {{ composerNameById[piece.composerId] ?? "(不明)" }}
           </option>
         </select>
         <button type="button" data-testid="add-piece" class="btn-add-piece" @click="addPiece">
@@ -144,7 +154,9 @@ function handleSubmit() {
           <li data-testid="program-item" class="program-item">
             <!-- NOSONAR: draggableがolラッパーを生成するためliの親はolになる -->
             <span class="drag-handle" aria-label="ドラッグして並べ替え">☰</span>
-            <span class="piece-info">{{ element.title }} / {{ element.composer }}</span>
+            <span class="piece-info">
+              {{ element.title }} / {{ composerNameById[element.composerId] ?? "(不明)" }}
+            </span>
             <button
               type="button"
               data-testid="remove-piece"

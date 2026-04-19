@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CreatePieceInput } from "~/types";
+import type { Composer, CreatePieceInput } from "~/types";
 import { PIECE_ERAS, PIECE_FORMATIONS, PIECE_GENRES, PIECE_REGIONS } from "~/types";
 import { toSelectOptions } from "~/utils/select-options";
 
@@ -11,18 +11,32 @@ const formationOptions = toSelectOptions(PIECE_FORMATIONS);
 
 const regionOptions = toSelectOptions(PIECE_REGIONS);
 
-const props = defineProps<{
-  initialValues?: Partial<CreatePieceInput>;
-  submitLabel?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    initialValues?: Partial<CreatePieceInput>;
+    submitLabel?: string;
+    composers?: Composer[];
+    composersPending?: boolean;
+  }>(),
+  {
+    initialValues: () => ({}),
+    submitLabel: undefined,
+    composers: () => [],
+    composersPending: false,
+  }
+);
 
 const emit = defineEmits<{
   submit: [values: CreatePieceInput];
 }>();
 
+const composerOptions = computed(() =>
+  props.composers.map((c) => ({ value: c.id, label: c.name }))
+);
+
 const form = reactive({
   title: "",
-  composer: "",
+  composerId: "",
   videoUrl: "",
   genre: "",
   era: "",
@@ -34,7 +48,7 @@ watch(
   () => props.initialValues,
   (initialValues) => {
     form.title = initialValues?.title ?? "";
-    form.composer = initialValues?.composer ?? "";
+    form.composerId = initialValues?.composerId ?? "";
     form.videoUrl = initialValues?.videoUrl ?? "";
     form.genre = initialValues?.genre ?? "";
     form.era = initialValues?.era ?? "";
@@ -47,7 +61,7 @@ watch(
 function handleSubmit() {
   emit("submit", {
     title: form.title,
-    composer: form.composer,
+    composerId: form.composerId,
     videoUrl: form.videoUrl || undefined,
     genre: (form.genre || undefined) as CreatePieceInput["genre"],
     era: (form.era || undefined) as CreatePieceInput["era"],
@@ -63,8 +77,15 @@ function handleSubmit() {
       <TextInput id="title" v-model="form.title" required placeholder="例：交響曲第9番" />
     </FormGroup>
 
-    <FormGroup label="作曲家" input-id="composer" required>
-      <TextInput id="composer" v-model="form.composer" required placeholder="例：ベートーヴェン" />
+    <FormGroup label="作曲家" input-id="composerId" required>
+      <SelectInput
+        id="composerId"
+        v-model="form.composerId"
+        required
+        :options="composerOptions"
+        :disabled="composersPending === true"
+        :placeholder="composersPending === true ? '読み込み中...' : '作曲家を選択'"
+      />
     </FormGroup>
 
     <FormGroup label="動画 URL" input-id="videoUrl">

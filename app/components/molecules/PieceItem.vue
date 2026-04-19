@@ -4,6 +4,7 @@ import { isYouTubeUrl } from "~/utils/video";
 
 const props = defineProps<{
   piece: Piece;
+  composerName: string;
 }>();
 
 const emit = defineEmits<{
@@ -33,7 +34,7 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
     </button>
     <div class="piece-main">
       <div class="piece-title">{{ piece.title }}</div>
-      <div class="piece-composer">{{ piece.composer }}</div>
+      <div class="piece-composer">{{ composerName }}</div>
       <div class="piece-category-wrapper">
         <PieceCategoryList :piece="piece" />
       </div>

@@ -46,6 +46,11 @@ export const COMPOSERS_PAGE_SIZE_MIN = 1;
 export const COMPOSERS_PAGE_SIZE_MAX = 100;
 export const COMPOSERS_PAGE_SIZE_DEFAULT = 50;
 
+// useComposersAll（全件集約ヘルパー）のハードガード。
+// 楽曲フォームの Composer セレクト等で全件を前提とする画面向けの暴走防止値。
+export const COMPOSERS_ALL_MAX_TOTAL = 5000;
+export const COMPOSERS_ALL_MAX_EMPTY_PAGES = 3;
+
 // カーソル型ページング結果
 export interface Paginated<T> {
   items: T[];

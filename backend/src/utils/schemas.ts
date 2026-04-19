@@ -51,11 +51,7 @@ export const createPieceSchema = z.object({
     .trim()
     .min(1, "title is required")
     .max(200, "title must be 200 characters or less"),
-  composer: z
-    .string({ error: () => "composer is required" })
-    .trim()
-    .min(1, "composer is required")
-    .max(100, "composer must be 100 characters or less"),
+  composerId: z.uuid("composerId must be a valid UUID"),
   videoUrl: z.url("videoUrl must be a valid URL").optional(),
   genre: pieceGenreSchema.optional(),
   era: pieceEraSchema.optional(),
@@ -70,12 +66,7 @@ export const updatePieceSchema = z.object({
     .min(1, "title must be a non-empty string")
     .max(200, "title must be 200 characters or less")
     .optional(),
-  composer: z
-    .string()
-    .trim()
-    .min(1, "composer must be a non-empty string")
-    .max(100, "composer must be 100 characters or less")
-    .optional(),
+  composerId: z.uuid("composerId must be a valid UUID").optional(),
   videoUrl: z.union([z.url("videoUrl must be a valid URL"), z.literal("")]).optional(),
   genre: z.union([pieceGenreSchema, z.literal("")]).optional(),
   era: z.union([pieceEraSchema, z.literal("")]).optional(),

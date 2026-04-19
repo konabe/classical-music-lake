@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { CreatePieceInput } from "~/types";
+import type { Composer, CreatePieceInput } from "~/types";
 
 defineProps<{
   errorMessage: string;
+  composers: Composer[];
+  composersPending?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -16,7 +18,12 @@ const emit = defineEmits<{
 
     <ErrorMessage v-if="errorMessage" :message="errorMessage" variant="block" />
 
-    <PieceForm submit-label="登録する" @submit="emit('submit', $event)" />
+    <PieceForm
+      :composers="composers"
+      :composers-pending="composersPending"
+      submit-label="登録する"
+      @submit="emit('submit', $event)"
+    />
   </div>
 </template>
 

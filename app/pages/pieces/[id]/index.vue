@@ -4,11 +4,22 @@ import type { Piece, Rating } from "~/types";
 const route = useRoute();
 const apiBase = useApiBase();
 const { data: piece, error } = await usePiece(() => route.params.id as string);
+const { data: composers, refresh: refreshComposers } = useComposersAll();
+await refreshComposers();
 const { create } = useListeningLogs();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
 const autoplay = computed(() => route.query.autoplay === "1");
+
+const composerName = computed(() => {
+  const id = piece.value?.composerId;
+  if (id === undefined) {
+    return "";
+  }
+  const found = (composers.value ?? []).find((c) => c.id === id);
+  return found?.name ?? "(不明な作曲家)";
+});
 
 async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: string }) {
   if (piece.value === null) {
@@ -16,7 +27,7 @@ async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: s
   }
   await create({
     listenedAt: new Date().toISOString(),
-    composer: piece.value.composer,
+    composer: composerName.value,
     piece: piece.value.title,
     userId: null,
     ...values,
@@ -42,6 +53,7 @@ async function handleDelete(target: Piece) {
     :error="error"
     :autoplay="autoplay"
     :is-admin="isAdminUser"
+    :composer-name="composerName"
     @save="handleSave"
     @delete="handleDelete"
   />

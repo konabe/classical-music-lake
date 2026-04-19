@@ -10,10 +10,13 @@ const meta: Meta<typeof PieceDetailTemplate> = {
 export default meta;
 type Story = StoryObj<typeof PieceDetailTemplate>;
 
+const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
+const COMPOSER_ID_MOZART = "00000000-0000-4000-8000-000000000002";
+
 const pieceWithVideo: Piece = {
   id: "1",
   title: "交響曲第9番 ニ短調 Op.125",
-  composer: "ベートーヴェン",
+  composerId: COMPOSER_ID_BEETHOVEN,
   videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
@@ -22,7 +25,7 @@ const pieceWithVideo: Piece = {
 const pieceWithoutVideo: Piece = {
   id: "2",
   title: "魔笛",
-  composer: "モーツァルト",
+  composerId: COMPOSER_ID_MOZART,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
@@ -32,6 +35,7 @@ export const WithVideo: Story = {
     piece: pieceWithVideo,
     error: null,
     isAdmin: false,
+    composerName: "ベートーヴェン",
   },
 };
 
@@ -40,6 +44,7 @@ export const WithVideoAdmin: Story = {
     piece: pieceWithVideo,
     error: null,
     isAdmin: true,
+    composerName: "ベートーヴェン",
   },
 };
 
@@ -48,6 +53,7 @@ export const WithoutVideo: Story = {
     piece: pieceWithoutVideo,
     error: null,
     isAdmin: false,
+    composerName: "モーツァルト",
   },
 };
 
@@ -56,6 +62,7 @@ export const WithError: Story = {
     piece: null,
     error: new globalThis.Error("取得失敗"),
     isAdmin: false,
+    composerName: "",
   },
 };
 
@@ -70,6 +77,8 @@ export const WithAllCategories: Story = {
       region: "ロシア",
     },
     error: null,
+    isAdmin: false,
+    composerName: "モーツァルト",
   },
 };
 
@@ -82,5 +91,7 @@ export const WithPartialCategories: Story = {
       era: "バロック",
     },
     error: null,
+    isAdmin: false,
+    composerName: "モーツァルト",
   },
 };

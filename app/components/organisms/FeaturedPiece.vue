@@ -4,6 +4,7 @@ import type { Piece } from "~/types";
 const props = defineProps<{
   pieces: Piece[];
   loading: boolean;
+  composerNameById: Record<string, string>;
 }>();
 
 const piecesWithVideo = computed(() => props.pieces.filter((p) => p.videoUrl !== undefined));
@@ -57,7 +58,9 @@ const shuffle = () => {
       <VideoPlayer :key="featured.id" :video-url="featured.videoUrl!" />
       <div class="piece-info">
         <p class="piece-title">《{{ featured.title }}》</p>
-        <p class="piece-composer">{{ featured.composer }}</p>
+        <p class="piece-composer">
+          {{ (props.composerNameById ?? {})[featured.composerId] ?? "(不明な作曲家)" }}
+        </p>
       </div>
     </div>
   </div>

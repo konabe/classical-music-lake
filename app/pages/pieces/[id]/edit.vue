@@ -8,6 +8,8 @@ const id = computed(() => route.params.id as string);
 
 const { data: piece, error } = await usePiece(() => id.value);
 const { updatePiece } = usePiecesPaginated();
+const { data: composers, pending: composersPending, refresh: refreshComposers } = useComposersAll();
+await refreshComposers();
 const errorMessage = ref("");
 
 async function handleSubmit(values: UpdatePieceInput) {
@@ -26,6 +28,8 @@ async function handleSubmit(values: UpdatePieceInput) {
     :piece="piece ?? null"
     :fetch-error="error"
     :error-message="errorMessage"
+    :composers="composers ?? []"
+    :composers-pending="composersPending"
     @submit="handleSubmit"
   />
 </template>

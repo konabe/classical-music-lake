@@ -1,34 +1,71 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceForm from "./PieceForm.vue";
 import ButtonPrimary from "../atoms/ButtonPrimary.vue";
+import type { Composer } from "~/types";
+
+const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
+const COMPOSER_ID_MOZART = "00000000-0000-4000-8000-000000000002";
+
+const mockComposers: Composer[] = [
+  {
+    id: COMPOSER_ID_BEETHOVEN,
+    name: "ベートーヴェン",
+    createdAt: "2024-06-01T09:00:00.000Z",
+    updatedAt: "2024-06-01T09:00:00.000Z",
+  },
+  {
+    id: COMPOSER_ID_MOZART,
+    name: "モーツァルト",
+    createdAt: "2024-06-01T09:00:00.000Z",
+    updatedAt: "2024-06-01T09:00:00.000Z",
+  },
+];
 
 describe("PieceForm", () => {
   describe("デフォルト値でのレンダリング", () => {
     it("フォームが表示される", async () => {
-      const wrapper = await mountSuspended(PieceForm);
+      const wrapper = await mountSuspended(PieceForm, {
+        props: { composers: mockComposers },
+      });
       expect(wrapper.find("form.piece-form").exists()).toBe(true);
     });
 
     it("送信ラベルのデフォルトは「保存する」", async () => {
       const wrapper = await mountSuspended(PieceForm, {
+        props: { composers: mockComposers },
         global: { components: { ButtonPrimary } },
       });
       expect(wrapper.find("button[type='submit']").text()).toBe("保存する");
     });
 
-    it("曲名・作曲家・動画 URL の入力フィールドが空である", async () => {
-      const wrapper = await mountSuspended(PieceForm);
+    it("曲名・作曲家セレクト・動画 URL の入力フィールドが空である", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: { composers: mockComposers },
+      });
       const titleInput = wrapper.find("#title");
-      const composerInput = wrapper.find("#composer");
+      const composerSelect = wrapper.find("#composerId");
       const videoUrlInput = wrapper.find("#videoUrl");
       expect((titleInput.element as HTMLInputElement).value).toBe("");
-      expect((composerInput.element as HTMLInputElement).value).toBe("");
+      expect((composerSelect.element as HTMLSelectElement).value).toBe("");
       expect((videoUrlInput.element as HTMLInputElement).value).toBe("");
     });
 
     it("動画 URL 入力フィールドが表示される", async () => {
-      const wrapper = await mountSuspended(PieceForm);
+      const wrapper = await mountSuspended(PieceForm, {
+        props: { composers: mockComposers },
+      });
       expect(wrapper.find("#videoUrl").exists()).toBe(true);
+    });
+
+    it("composers から作曲家セレクトのオプションが生成される", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: { composers: mockComposers },
+      });
+      const options = wrapper.findAll("#composerId option");
+      // 先頭はプレースホルダ（value=""）
+      expect(options.length).toBe(1 + mockComposers.length);
+      expect(options[1].text()).toBe("ベートーヴェン");
+      expect(options[2].text()).toBe("モーツァルト");
     });
   });
 
@@ -36,19 +73,20 @@ describe("PieceForm", () => {
     it("初期値が入力フィールドに反映される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
+          composers: mockComposers,
           initialValues: {
             title: "交響曲第9番",
-            composer: "ベートーヴェン",
+            composerId: COMPOSER_ID_BEETHOVEN,
             videoUrl: "https://www.youtube.com/watch?v=abc",
           },
         },
       });
 
       const titleInput = wrapper.find("#title");
-      const composerInput = wrapper.find("#composer");
+      const composerSelect = wrapper.find("#composerId");
       const videoUrlInput = wrapper.find("#videoUrl");
       expect((titleInput.element as HTMLInputElement).value).toBe("交響曲第9番");
-      expect((composerInput.element as HTMLInputElement).value).toBe("ベートーヴェン");
+      expect((composerSelect.element as HTMLSelectElement).value).toBe(COMPOSER_ID_BEETHOVEN);
       expect((videoUrlInput.element as HTMLInputElement).value).toBe(
         "https://www.youtube.com/watch?v=abc"
       );
@@ -56,14 +94,14 @@ describe("PieceForm", () => {
 
     it("一部の初期値のみ指定できる", async () => {
       const wrapper = await mountSuspended(PieceForm, {
-        props: { initialValues: { title: "魔笛" } },
+        props: { composers: mockComposers, initialValues: { title: "魔笛" } },
       });
 
       const titleInput = wrapper.find("#title");
-      const composerInput = wrapper.find("#composer");
+      const composerSelect = wrapper.find("#composerId");
       const videoUrlInput = wrapper.find("#videoUrl");
       expect((titleInput.element as HTMLInputElement).value).toBe("魔笛");
-      expect((composerInput.element as HTMLInputElement).value).toBe("");
+      expect((composerSelect.element as HTMLSelectElement).value).toBe("");
       expect((videoUrlInput.element as HTMLInputElement).value).toBe("");
     });
   });
@@ -71,7 +109,7 @@ describe("PieceForm", () => {
   describe("submitLabel prop", () => {
     it("カスタムラベルが反映される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
-        props: { submitLabel: "登録する" },
+        props: { composers: mockComposers, submitLabel: "登録する" },
         global: { components: { ButtonPrimary } },
       });
       expect(wrapper.find("button[type='submit']").text()).toBe("登録する");
@@ -80,7 +118,9 @@ describe("PieceForm", () => {
 
   describe("カテゴリ選択フィールド", () => {
     it("4つのカテゴリ選択フィールドが表示される", async () => {
-      const wrapper = await mountSuspended(PieceForm);
+      const wrapper = await mountSuspended(PieceForm, {
+        props: { composers: mockComposers },
+      });
       expect(wrapper.find("#genre").exists()).toBe(true);
       expect(wrapper.find("#era").exists()).toBe(true);
       expect(wrapper.find("#formation").exists()).toBe(true);
@@ -90,9 +130,10 @@ describe("PieceForm", () => {
     it("カテゴリの初期値が反映される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
+          composers: mockComposers,
           initialValues: {
             title: "交響曲第9番",
-            composer: "ベートーヴェン",
+            composerId: COMPOSER_ID_BEETHOVEN,
             genre: "交響曲",
             era: "古典派",
             formation: "管弦楽",
@@ -111,7 +152,8 @@ describe("PieceForm", () => {
     it("カテゴリ未指定時はデフォルト（空）のまま", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
-          initialValues: { title: "魔笛", composer: "モーツァルト" },
+          composers: mockComposers,
+          initialValues: { title: "魔笛", composerId: COMPOSER_ID_MOZART },
         },
       });
       expect((wrapper.find("#genre").element as HTMLSelectElement).value).toBe("");
@@ -125,7 +167,8 @@ describe("PieceForm", () => {
     it("フォーム送信時に submit イベントが emit される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
-          initialValues: { title: "交響曲第9番", composer: "ベートーヴェン" },
+          composers: mockComposers,
+          initialValues: { title: "交響曲第9番", composerId: COMPOSER_ID_BEETHOVEN },
         },
       });
 
@@ -136,9 +179,10 @@ describe("PieceForm", () => {
     it("submit イベントにフォームデータが含まれる", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
+          composers: mockComposers,
           initialValues: {
             title: "交響曲第9番",
-            composer: "ベートーヴェン",
+            composerId: COMPOSER_ID_BEETHOVEN,
             videoUrl: "https://www.youtube.com/watch?v=abc",
           },
         },
@@ -149,16 +193,17 @@ describe("PieceForm", () => {
       expect(emitted).toBeDefined();
       const emittedData = emitted![0][0] as Record<string, unknown>;
       expect(emittedData.title).toBe("交響曲第9番");
-      expect(emittedData.composer).toBe("ベートーヴェン");
+      expect(emittedData.composerId).toBe(COMPOSER_ID_BEETHOVEN);
       expect(emittedData.videoUrl).toBe("https://www.youtube.com/watch?v=abc");
     });
 
     it("カテゴリ付きのフォームデータが submit イベントに含まれる", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
+          composers: mockComposers,
           initialValues: {
             title: "交響曲第9番",
-            composer: "ベートーヴェン",
+            composerId: COMPOSER_ID_BEETHOVEN,
             genre: "交響曲",
             era: "古典派",
             formation: "管弦楽",
@@ -180,7 +225,8 @@ describe("PieceForm", () => {
     it("未選択のカテゴリは undefined として送信される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
-          initialValues: { title: "魔笛", composer: "モーツァルト" },
+          composers: mockComposers,
+          initialValues: { title: "魔笛", composerId: COMPOSER_ID_MOZART },
         },
       });
 

@@ -1,28 +1,37 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import ListeningLogForm from "./ListeningLogForm.vue";
 import ButtonPrimary from "../atoms/ButtonPrimary.vue";
-import type { Piece } from "~/types";
+import type { Composer, Piece } from "~/types";
 
-const { mockPieces } = vi.hoisted(() => {
+const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
+const COMPOSER_ID_MOZART = "00000000-0000-4000-8000-000000000002";
+const COMPOSER_ID_MUSSORGSKY = "00000000-0000-4000-8000-000000000003";
+const COMPOSER_ID_STRAVINSKY = "00000000-0000-4000-8000-000000000004";
+
+const { mockPieces, mockComposers } = vi.hoisted(() => {
+  const BEETHOVEN = "00000000-0000-4000-8000-000000000001";
+  const MOZART = "00000000-0000-4000-8000-000000000002";
+  const MUSSORGSKY = "00000000-0000-4000-8000-000000000003";
+  const STRAVINSKY = "00000000-0000-4000-8000-000000000004";
   const mockPieces: Piece[] = [
     {
       id: "piece-1",
       title: "交響曲第9番",
-      composer: "ベートーヴェン",
+      composerId: BEETHOVEN,
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
     {
       id: "piece-2",
       title: "魔笛",
-      composer: "モーツァルト",
+      composerId: MOZART,
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
     {
       id: "piece-3",
       title: "展覧会の絵",
-      composer: "ムソルグスキー",
+      composerId: MUSSORGSKY,
       videoUrl: "https://www.youtube.com/watch?v=video123",
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
@@ -30,18 +39,58 @@ const { mockPieces } = vi.hoisted(() => {
     {
       id: "piece-4",
       title: "春の祭典",
-      composer: "ストラヴィンスキー",
+      composerId: STRAVINSKY,
       videoUrl: "https://www.youtube.com/watch?v=video456",
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
   ];
-  return { mockPieces };
+  const mockComposers: Composer[] = [
+    {
+      id: BEETHOVEN,
+      name: "ベートーヴェン",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+    {
+      id: MOZART,
+      name: "モーツァルト",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+    {
+      id: MUSSORGSKY,
+      name: "ムソルグスキー",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+    {
+      id: STRAVINSKY,
+      name: "ストラヴィンスキー",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+  ];
+  return { mockPieces, mockComposers };
 });
+
+void COMPOSER_ID_BEETHOVEN;
+void COMPOSER_ID_MOZART;
+void COMPOSER_ID_MUSSORGSKY;
+void COMPOSER_ID_STRAVINSKY;
 
 mockNuxtImport("usePiecesAll", () =>
   vi.fn().mockReturnValue({
     data: ref(mockPieces),
+    error: ref(null),
+    pending: ref(false),
+    refresh: vi.fn(),
+  })
+);
+
+mockNuxtImport("useComposersAll", () =>
+  vi.fn().mockReturnValue({
+    data: ref(mockComposers),
     error: ref(null),
     pending: ref(false),
     refresh: vi.fn(),

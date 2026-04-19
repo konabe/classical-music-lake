@@ -4,10 +4,12 @@ import ButtonSecondary from "../atoms/ButtonSecondary.vue";
 import ButtonDanger from "../atoms/ButtonDanger.vue";
 import type { Piece } from "~/types";
 
+const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
+
 const samplePiece: Piece = {
   id: "1",
   title: "交響曲第9番 ニ短調 Op.125",
-  composer: "ベートーヴェン",
+  composerId: COMPOSER_ID,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
@@ -41,35 +43,35 @@ describe("PieceItem", () => {
   describe("表示", () => {
     it("曲名が表示される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.text()).toContain("交響曲第9番 ニ短調 Op.125");
     });
 
     it("作曲家が表示される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.text()).toContain("ベートーヴェン");
     });
 
     it("piece-item クラスが存在する", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".piece-item").exists()).toBe(true);
     });
 
     it("piece-title クラスに曲名が含まれる", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".piece-title").text()).toBe("交響曲第9番 ニ短調 Op.125");
     });
 
     it("piece-composer クラスに作曲家が含まれる", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".piece-composer").text()).toBe("ベートーヴェン");
     });
@@ -78,7 +80,7 @@ describe("PieceItem", () => {
   describe("イベント", () => {
     it("編集ボタンクリックで edit イベントが emit される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
         ...globalComponents,
       });
       await wrapper.find(".btn-secondary").trigger("click");
@@ -87,7 +89,7 @@ describe("PieceItem", () => {
 
     it("削除ボタンクリックで delete イベントが emit される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
         ...globalComponents,
       });
       await wrapper.find(".btn-danger").trigger("click");
@@ -96,7 +98,7 @@ describe("PieceItem", () => {
 
     it("詳細ボタンクリックで detail イベントが emit される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
         ...globalComponents,
       });
       await wrapper.find(".btn-detail").trigger("click");
@@ -107,7 +109,7 @@ describe("PieceItem", () => {
   describe("詳細ボタン表示", () => {
     it("詳細ボタンが表示される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".btn-detail").exists()).toBe(true);
     });
@@ -116,35 +118,35 @@ describe("PieceItem", () => {
   describe("カテゴリ表示", () => {
     it("genre が設定されている場合、ジャンルバッジが表示される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithCategories },
+        props: { piece: samplePieceWithCategories, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".kind-genre").text()).toBe("交響曲");
     });
 
     it("genre が未設定の場合、ジャンルバッジが表示されない", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".kind-genre").exists()).toBe(false);
     });
 
     it("era が設定されている場合、時代バッジが表示される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithCategories },
+        props: { piece: samplePieceWithCategories, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".kind-era").text()).toBe("ロマン派");
     });
 
     it("era が未設定の場合、時代バッジが表示されない", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".kind-era").exists()).toBe(false);
     });
 
     it("4軸すべて設定されている場合、すべてのバッジが表示される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithCategories },
+        props: { piece: samplePieceWithCategories, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".kind-genre").text()).toBe("交響曲");
       expect(wrapper.find(".kind-era").text()).toBe("ロマン派");
@@ -154,7 +156,7 @@ describe("PieceItem", () => {
 
     it("全カテゴリが未設定の場合、バッジが一切表示されない", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePiece },
+        props: { piece: samplePiece, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".piece-category-list").exists()).toBe(false);
     });
@@ -162,7 +164,9 @@ describe("PieceItem", () => {
 
   describe("YouTube サムネイル表示", () => {
     const expectThumbnailVisible = async (piece: Piece, shouldExist: boolean) => {
-      const wrapper = await mountSuspended(PieceItem, { props: { piece } });
+      const wrapper = await mountSuspended(PieceItem, {
+        props: { piece, composerName: "ベートーヴェン" },
+      });
       expect(wrapper.find(".piece-thumbnail").exists()).toBe(shouldExist);
       expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(shouldExist);
     };
@@ -185,7 +189,7 @@ describe("PieceItem", () => {
 
     it("サムネイル画像に曲名を含む alt 属性が設定されている", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithYouTubeUrl },
+        props: { piece: samplePieceWithYouTubeUrl, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find("img.youtube-thumbnail").attributes("alt")).toBe(
         "交響曲第9番 ニ短調 Op.125 の動画サムネイル"
@@ -194,7 +198,7 @@ describe("PieceItem", () => {
 
     it("サムネイル領域の button に曲名を含む aria-label が設定されている", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithYouTubeUrl },
+        props: { piece: samplePieceWithYouTubeUrl, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".piece-thumbnail").attributes("aria-label")).toBe(
         "交響曲第9番 ニ短調 Op.125 の動画を再生"
@@ -203,7 +207,7 @@ describe("PieceItem", () => {
 
     it("サムネイル領域クリックで play イベントが emit される", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithYouTubeUrl },
+        props: { piece: samplePieceWithYouTubeUrl, composerName: "ベートーヴェン" },
         ...globalComponents,
       });
       await wrapper.find(".piece-thumbnail").trigger("click");
@@ -213,7 +217,7 @@ describe("PieceItem", () => {
 
     it("サムネイル領域クリックでは detail イベントが emit されない", async () => {
       const wrapper = await mountSuspended(PieceItem, {
-        props: { piece: samplePieceWithYouTubeUrl },
+        props: { piece: samplePieceWithYouTubeUrl, composerName: "ベートーヴェン" },
         ...globalComponents,
       });
       await wrapper.find(".piece-thumbnail").trigger("click");

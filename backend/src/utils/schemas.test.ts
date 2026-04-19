@@ -138,7 +138,7 @@ describe("updateListeningLogSchema", () => {
 
 const validPiece = {
   title: "交響曲第9番",
-  composer: "ベートーヴェン",
+  composerId: "00000000-0000-4000-8000-000000000001",
 };
 
 describe("createPieceSchema", () => {
@@ -174,18 +174,14 @@ describe("createPieceSchema", () => {
     );
   });
 
-  it("composer が空文字の場合はエラー", () => {
-    const result = createPieceSchema.safeParse({ ...validPiece, composer: "" });
+  it("composerId が空文字の場合はエラー", () => {
+    const result = createPieceSchema.safeParse({ ...validPiece, composerId: "" });
     expect(result.success).toBe(false);
   });
 
-  it("trim 後も 100 文字を超える composer は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
-        (composer) => fails(createPieceSchema.safeParse({ ...validPiece, composer }))
-      )
-    );
+  it("composerId が UUID 形式でない場合はエラー", () => {
+    const result = createPieceSchema.safeParse({ ...validPiece, composerId: "not-a-uuid" });
+    expect(result.success).toBe(false);
   });
 
   it("videoUrl が無効な URL の場合はエラー", () => {

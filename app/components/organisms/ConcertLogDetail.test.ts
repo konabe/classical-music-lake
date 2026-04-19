@@ -2,6 +2,14 @@ import { mountSuspended } from "@nuxt/test-utils/runtime";
 import ConcertLogDetail from "./ConcertLogDetail.vue";
 import type { ConcertLog, Piece } from "~/types";
 
+const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
+const COMPOSER_ID_TCHAIKOVSKY = "00000000-0000-4000-8000-000000000002";
+
+const composerNameById = {
+  [COMPOSER_ID_BEETHOVEN]: "ベートーヴェン",
+  [COMPOSER_ID_TCHAIKOVSKY]: "チャイコフスキー",
+};
+
 const sampleLog: ConcertLog = {
   id: "log-1",
   userId: "user-1",
@@ -19,14 +27,14 @@ const samplePieces: Piece[] = [
   {
     id: "piece-1",
     title: "交響曲第9番",
-    composer: "ベートーヴェン",
+    composerId: COMPOSER_ID_BEETHOVEN,
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "piece-2",
     title: "ピアノ協奏曲第1番",
-    composer: "チャイコフスキー",
+    composerId: COMPOSER_ID_TCHAIKOVSKY,
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
@@ -36,7 +44,7 @@ describe("ConcertLogDetail", () => {
   describe("表示", () => {
     it("title が見出しに表示され会場は詳細に表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
-        props: { log: sampleLog, pieces: [] },
+        props: { log: sampleLog, pieces: [], composerNameById },
       });
       expect(wrapper.find("h1").text()).toBe("定期演奏会 第100回");
       expect(wrapper.text()).toContain("会場");
@@ -45,28 +53,28 @@ describe("ConcertLogDetail", () => {
 
     it("会場名が表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
-        props: { log: sampleLog, pieces: [] },
+        props: { log: sampleLog, pieces: [], composerNameById },
       });
       expect(wrapper.text()).toContain("サントリーホール");
     });
 
     it("指揮者が表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
-        props: { log: sampleLog, pieces: [] },
+        props: { log: sampleLog, pieces: [], composerNameById },
       });
       expect(wrapper.text()).toContain("小澤征爾");
     });
 
     it("オーケストラが表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
-        props: { log: sampleLog, pieces: [] },
+        props: { log: sampleLog, pieces: [], composerNameById },
       });
       expect(wrapper.text()).toContain("ベルリン・フィルハーモニー管弦楽団");
     });
 
     it("ソリストが表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
-        props: { log: sampleLog, pieces: [] },
+        props: { log: sampleLog, pieces: [], composerNameById },
       });
       expect(wrapper.text()).toContain("アルゲリッチ");
     });
@@ -76,6 +84,7 @@ describe("ConcertLogDetail", () => {
         props: {
           log: { ...sampleLog, conductor: undefined, orchestra: undefined, soloist: undefined },
           pieces: [],
+          composerNameById,
         },
       });
       expect(wrapper.text()).not.toContain("指揮者");
@@ -90,6 +99,7 @@ describe("ConcertLogDetail", () => {
         props: {
           log: { ...sampleLog, pieceIds: ["piece-1", "piece-2"] },
           pieces: samplePieces,
+          composerNameById,
         },
       });
       expect(wrapper.text()).toContain("交響曲第9番");
@@ -99,14 +109,18 @@ describe("ConcertLogDetail", () => {
 
     it("pieceIds が空の場合、プログラムなしメッセージが表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
-        props: { log: { ...sampleLog, pieceIds: [] }, pieces: samplePieces },
+        props: {
+          log: { ...sampleLog, pieceIds: [] },
+          pieces: samplePieces,
+          composerNameById,
+        },
       });
       expect(wrapper.text()).toContain("プログラムなし");
     });
 
     it("pieceIds が未設定の場合もプログラムなしメッセージが表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
-        props: { log: sampleLog, pieces: samplePieces },
+        props: { log: sampleLog, pieces: samplePieces, composerNameById },
       });
       expect(wrapper.text()).toContain("プログラムなし");
     });
