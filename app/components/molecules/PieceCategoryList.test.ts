@@ -27,9 +27,9 @@ describe("PieceCategoryList", () => {
       const wrapper = await mountSuspended(PieceCategoryList, {
         props: { piece: allCategories },
       });
-      const ariaLabels = wrapper
-        .findAll(".category-badge")
-        .map((el) => el.attributes("aria-label"));
+      const ariaLabels = wrapper.findAll(".category-badge").map((el) => {
+        return el.attributes("aria-label");
+      });
       expect(ariaLabels).toContain("ジャンル: 交響曲");
       expect(ariaLabels).toContain("時代: ロマン派");
       expect(ariaLabels).toContain("編成: 管弦楽");

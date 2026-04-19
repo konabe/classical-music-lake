@@ -38,7 +38,9 @@ const testLog2: ListeningLog = {
 /** 認証済み状態でページを開くヘルパー */
 async function createAuthenticatedPage() {
   const page = await createPage();
-  await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
+  await page.addInitScript(() => {
+    return localStorage.setItem("accessToken", "fake-token-for-test");
+  });
   return page;
 }
 
@@ -47,13 +49,13 @@ describe("鑑賞記録 E2E テスト", () => {
     it("記録がない場合に空状態メッセージが表示される", async () => {
       const page = await createAuthenticatedPage();
 
-      await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({
+      await page.route("http://api.test/listening-logs", (route) => {
+        return route.fulfill({
           status: 200,
           contentType: "application/json",
           body: JSON.stringify([]),
-        })
-      );
+        });
+      });
 
       await page.goto(url("/listening-logs"));
       await page.waitForLoadState("networkidle");
@@ -66,13 +68,13 @@ describe("鑑賞記録 E2E テスト", () => {
     it("記録一覧が表示される", async () => {
       const page = await createAuthenticatedPage();
 
-      await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({
+      await page.route("http://api.test/listening-logs", (route) => {
+        return route.fulfill({
           status: 200,
           contentType: "application/json",
           body: JSON.stringify([testLog, testLog2]),
-        })
-      );
+        });
+      });
 
       await page.goto(url("/listening-logs"));
       await page.waitForLoadState("networkidle");
@@ -87,13 +89,13 @@ describe("鑑賞記録 E2E テスト", () => {
     it("お気に入りバッジが表示される", async () => {
       const page = await createAuthenticatedPage();
 
-      await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({
+      await page.route("http://api.test/listening-logs", (route) => {
+        return route.fulfill({
           status: 200,
           contentType: "application/json",
           body: JSON.stringify([testLog]),
-        })
-      );
+        });
+      });
 
       await page.goto(url("/listening-logs"));
       await page.waitForLoadState("networkidle");
@@ -106,13 +108,13 @@ describe("鑑賞記録 E2E テスト", () => {
     it("「新しい記録」ボタンが表示される", async () => {
       const page = await createAuthenticatedPage();
 
-      await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({
+      await page.route("http://api.test/listening-logs", (route) => {
+        return route.fulfill({
           status: 200,
           contentType: "application/json",
           body: JSON.stringify([]),
-        })
-      );
+        });
+      });
 
       await page.goto(url("/listening-logs"));
       await page.waitForLoadState("networkidle");
@@ -148,13 +150,13 @@ describe("鑑賞記録 E2E テスト", () => {
     it("鑑賞ログの詳細が表示される", async () => {
       const page = await createAuthenticatedPage();
 
-      await page.route("http://api.test/listening-logs/e2e-test-id-001", (route) =>
-        route.fulfill({
+      await page.route("http://api.test/listening-logs/e2e-test-id-001", (route) => {
+        return route.fulfill({
           status: 200,
           contentType: "application/json",
           body: JSON.stringify(testLog),
-        })
-      );
+        });
+      });
 
       await page.goto(url("/listening-logs/e2e-test-id-001"));
       await page.waitForLoadState("networkidle");
@@ -167,13 +169,13 @@ describe("鑑賞記録 E2E テスト", () => {
     it("メモが表示される", async () => {
       const page = await createAuthenticatedPage();
 
-      await page.route("http://api.test/listening-logs/e2e-test-id-001", (route) =>
-        route.fulfill({
+      await page.route("http://api.test/listening-logs/e2e-test-id-001", (route) => {
+        return route.fulfill({
           status: 200,
           contentType: "application/json",
           body: JSON.stringify(testLog),
-        })
-      );
+        });
+      });
 
       await page.goto(url("/listening-logs/e2e-test-id-001"));
       await page.waitForLoadState("networkidle");

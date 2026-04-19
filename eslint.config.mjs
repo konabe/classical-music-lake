@@ -80,6 +80,7 @@ export default withNuxt(
       "@typescript-eslint/no-explicit-any": "error",
       "vue/component-name-in-template-casing": ["error", "PascalCase"],
       curly: ["error", "all"],
+      "arrow-body-style": ["error", "always"],
     },
   },
   {

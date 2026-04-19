@@ -553,7 +553,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     });
     const withAuth = { authorizer: cognitoAuthorizer }; // NOSONAR: Cognito Authorizer による認証を明示的に設定
 
-    const integ = (fn: lambda.IFunction) => new apigateway.LambdaIntegration(fn);
+    const integ = (fn: lambda.IFunction) => {
+      return new apigateway.LambdaIntegration(fn);
+    };
 
     // /concert-logs
     const concertLogsResource = api.root.addResource("concert-logs");

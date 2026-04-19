@@ -5,7 +5,9 @@ definePageMeta({ middleware: "auth" });
 
 const { create } = useConcertLogs();
 const { error, handleSubmit } = useSubmitHandler<CreateConcertLogInput>({
-  submit: (values) => create(values),
+  submit: (values) => {
+    return create(values);
+  },
   redirectTo: "/concert-logs",
   errorMessage: "記録の作成に失敗しました。",
 });

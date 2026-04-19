@@ -20,22 +20,24 @@ export type LambdaHandler = (
 const httpErrorMiddleware = (): middy.MiddlewareObj<
   APIGatewayProxyEvent,
   APIGatewayProxyResult
-> => ({
-  onError: async (request) => {
-    const error = request.error as HttpError;
-    const statusCode = error.statusCode ?? 500;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- HttpError の index signature により expose が any として解決されるため明示比較が必要
-    const message = error.expose === true ? error.message : "Internal server error";
-    if (statusCode >= 500) {
-      console.error(error);
-    }
-    request.response = {
-      statusCode,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
-    };
-  },
-});
+> => {
+  return {
+    onError: async (request) => {
+      const error = request.error as HttpError;
+      const statusCode = error.statusCode ?? 500;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- HttpError の index signature により expose が any として解決されるため明示比較が必要
+      const message = error.expose === true ? error.message : "Internal server error";
+      if (statusCode >= 500) {
+        console.error(error);
+      }
+      request.response = {
+        statusCode,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      };
+    },
+  };
+};
 
 /**
  * リクエストボディを JSON としてパースする middy ミドルウェア。
@@ -50,33 +52,36 @@ export const jsonBodyParser = httpJsonBodyParser({ disableContentTypeCheck: true
  * - httpErrorMiddleware: throw された http-errors を { message } JSON に変換
  * - @middy/http-response-serializer: 正常レスポンスのボディを JSON シリアライズ
  */
-export const createHandler = (handler: LambdaHandler) =>
-  middy<APIGatewayProxyEvent, APIGatewayProxyResult>()
-    // LambdaHandler returns `body: unknown` while APIGatewayProxyResult expects
-    // `body: string`. The cast is safe because httpResponseSerializer will
-    // JSON.stringify the body at runtime before the response is returned.
-    .handler(
-      handler as unknown as middy.MiddyfiedHandler<APIGatewayProxyEvent, APIGatewayProxyResult>
-    )
-    .use(
-      httpCors({
-        origins: getEnv().corsAllowOrigins,
-        headers: "Content-Type",
-        methods: "GET,POST,PUT,DELETE,OPTIONS",
-      })
-    )
-    .use(httpErrorMiddleware())
-    .use(
-      httpResponseSerializer({
-        serializers: [
-          {
-            regex: /^application\/json$/,
-            serializer: (response) => {
-              const { body } = response as { body: unknown };
-              return body === "" ? "" : JSON.stringify(body);
+export const createHandler = (handler: LambdaHandler) => {
+  return (
+    middy<APIGatewayProxyEvent, APIGatewayProxyResult>()
+      // LambdaHandler returns `body: unknown` while APIGatewayProxyResult expects
+      // `body: string`. The cast is safe because httpResponseSerializer will
+      // JSON.stringify the body at runtime before the response is returned.
+      .handler(
+        handler as unknown as middy.MiddyfiedHandler<APIGatewayProxyEvent, APIGatewayProxyResult>
+      )
+      .use(
+        httpCors({
+          origins: getEnv().corsAllowOrigins,
+          headers: "Content-Type",
+          methods: "GET,POST,PUT,DELETE,OPTIONS",
+        })
+      )
+      .use(httpErrorMiddleware())
+      .use(
+        httpResponseSerializer({
+          serializers: [
+            {
+              regex: /^application\/json$/,
+              serializer: (response) => {
+                const { body } = response as { body: unknown };
+                return body === "" ? "" : JSON.stringify(body);
+              },
             },
-          },
-        ],
-        defaultContentType: "application/json",
-      })
-    );
+          ],
+          defaultContentType: "application/json",
+        })
+      )
+  );
+};

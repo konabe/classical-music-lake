@@ -7,14 +7,16 @@ const props = defineProps<{
   piece: Pick<Piece, "genre" | "era" | "formation" | "region">;
 }>();
 
-const categories = computed(() =>
-  [
+const categories = computed(() => {
+  return [
     { kind: "genre" as Kind, label: "ジャンル", value: props.piece.genre },
     { kind: "era" as Kind, label: "時代", value: props.piece.era },
     { kind: "formation" as Kind, label: "編成", value: props.piece.formation },
     { kind: "region" as Kind, label: "地域", value: props.piece.region },
-  ].filter((c): c is { kind: Kind; label: string; value: string } => c.value !== undefined)
-);
+  ].filter((c): c is { kind: Kind; label: string; value: string } => {
+    return c.value !== undefined;
+  });
+});
 </script>
 
 <template>

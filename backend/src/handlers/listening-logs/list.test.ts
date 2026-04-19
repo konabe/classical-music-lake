@@ -4,19 +4,23 @@ import type { ListeningLog } from "../../types";
 import { handler } from "./list";
 import { makeLog, makeAuthEvent } from "../../test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  update: vi.fn(),
-  remove: vi.fn(),
-}));
+const mockRepo = vi.hoisted(() => {
+  return {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findByUserId: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  };
+});
 
-vi.mock("../../repositories/listening-log-repository", () => ({
-  DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("../../repositories/listening-log-repository", () => {
+  return {
+    DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
+      return mockRepo;
+    }),
+  };
+});
 
 const mockContext = {} as Parameters<typeof handler>[1];
 const mockCallback = { signal: new AbortController().signal };

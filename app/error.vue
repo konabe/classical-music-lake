@@ -3,7 +3,9 @@ defineProps<{
   error: { statusCode: number; statusMessage: string };
 }>();
 
-const handleError = () => clearError({ redirect: "/" });
+const handleError = () => {
+  return clearError({ redirect: "/" });
+};
 </script>
 
 <template>

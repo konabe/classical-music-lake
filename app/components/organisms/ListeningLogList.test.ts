@@ -2,30 +2,32 @@ import { mountSuspended } from "@nuxt/test-utils/runtime";
 import ListeningLogList from "./ListeningLogList.vue";
 import type { ListeningLog } from "~/types";
 
-const makeLogs = (): ListeningLog[] => [
-  {
-    id: "log-1",
-    userId: "user-1",
-    listenedAt: "2024-01-15T19:30:00.000Z",
-    composer: "ベートーヴェン",
-    piece: "交響曲第9番",
-    rating: 5,
-    isFavorite: false,
-    createdAt: "2024-01-15T20:00:00.000Z",
-    updatedAt: "2024-01-15T20:00:00.000Z",
-  },
-  {
-    id: "log-2",
-    userId: "user-1",
-    listenedAt: "2024-02-01T10:00:00.000Z",
-    composer: "モーツァルト",
-    piece: "魔笛",
-    rating: 4,
-    isFavorite: true,
-    createdAt: "2024-02-01T10:00:00.000Z",
-    updatedAt: "2024-02-01T10:00:00.000Z",
-  },
-];
+const makeLogs = (): ListeningLog[] => {
+  return [
+    {
+      id: "log-1",
+      userId: "user-1",
+      listenedAt: "2024-01-15T19:30:00.000Z",
+      composer: "ベートーヴェン",
+      piece: "交響曲第9番",
+      rating: 5,
+      isFavorite: false,
+      createdAt: "2024-01-15T20:00:00.000Z",
+      updatedAt: "2024-01-15T20:00:00.000Z",
+    },
+    {
+      id: "log-2",
+      userId: "user-1",
+      listenedAt: "2024-02-01T10:00:00.000Z",
+      composer: "モーツァルト",
+      piece: "魔笛",
+      rating: 4,
+      isFavorite: true,
+      createdAt: "2024-02-01T10:00:00.000Z",
+      updatedAt: "2024-02-01T10:00:00.000Z",
+    },
+  ];
+};
 
 describe("ListeningLogList", () => {
   describe("空の状態", () => {

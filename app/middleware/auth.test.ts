@@ -5,11 +5,13 @@ import {
   REFRESH_TOKEN_KEY,
 } from "~/composables/useAuth";
 
-const { mockNavigateTo, mockRefreshTokens, mockIsTokenExpired } = vi.hoisted(() => ({
-  mockNavigateTo: vi.fn(),
-  mockRefreshTokens: vi.fn(),
-  mockIsTokenExpired: vi.fn(),
-}));
+const { mockNavigateTo, mockRefreshTokens, mockIsTokenExpired } = vi.hoisted(() => {
+  return {
+    mockNavigateTo: vi.fn(),
+    mockRefreshTokens: vi.fn(),
+    mockIsTokenExpired: vi.fn(),
+  };
+});
 
 vi.mock("#app/composables/router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("#app/composables/router")>();
@@ -23,22 +25,26 @@ vi.mock("~/composables/useAuth", async (importOriginal) => {
   const actual = await importOriginal<typeof import("~/composables/useAuth")>();
   return {
     ...actual,
-    useAuth: () => ({
-      isTokenExpired: mockIsTokenExpired,
-      refreshTokens: mockRefreshTokens,
-      clearTokens: () => {
-        localStorage.removeItem(actual.ACCESS_TOKEN_KEY);
-        localStorage.removeItem(actual.ID_TOKEN_KEY);
-        localStorage.removeItem(actual.REFRESH_TOKEN_KEY);
-        localStorage.removeItem(actual.TOKEN_EXPIRES_AT_KEY);
-      },
-    }),
+    useAuth: () => {
+      return {
+        isTokenExpired: mockIsTokenExpired,
+        refreshTokens: mockRefreshTokens,
+        clearTokens: () => {
+          localStorage.removeItem(actual.ACCESS_TOKEN_KEY);
+          localStorage.removeItem(actual.ID_TOKEN_KEY);
+          localStorage.removeItem(actual.REFRESH_TOKEN_KEY);
+          localStorage.removeItem(actual.TOKEN_EXPIRES_AT_KEY);
+        },
+      };
+    },
   };
 });
 
 const mockLocalStorage = new Map<string, string>();
 vi.stubGlobal("localStorage", {
-  getItem: (key: string) => mockLocalStorage.get(key) ?? null,
+  getItem: (key: string) => {
+    return mockLocalStorage.get(key) ?? null;
+  },
   setItem: (key: string, value: string) => {
     mockLocalStorage.set(key, value);
   },

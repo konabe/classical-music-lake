@@ -6,7 +6,11 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const piecesWithVideo = computed(() => props.pieces.filter((p) => p.videoUrl !== undefined));
+const piecesWithVideo = computed(() => {
+  return props.pieces.filter((p) => {
+    return p.videoUrl !== undefined;
+  });
+});
 
 const currentIndex = ref(0);
 
@@ -22,9 +26,13 @@ watch(piecesWithVideo, (pieces) => {
   }
 });
 
-const featured = computed(() => piecesWithVideo.value[currentIndex.value] ?? null);
+const featured = computed(() => {
+  return piecesWithVideo.value[currentIndex.value] ?? null;
+});
 
-const canShuffle = computed(() => piecesWithVideo.value.length > 1);
+const canShuffle = computed(() => {
+  return piecesWithVideo.value.length > 1;
+});
 
 const shuffle = () => {
   if (!canShuffle.value) {

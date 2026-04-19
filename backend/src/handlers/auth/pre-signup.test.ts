@@ -2,24 +2,28 @@ import type { PreSignUpTriggerEvent } from "aws-lambda";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handler } from "./pre-signup";
 
-const mockRepo = vi.hoisted(() => ({
-  signUp: vi.fn(),
-  initiateAuth: vi.fn(),
-  confirmSignUp: vi.fn(),
-  resendConfirmationCode: vi.fn(),
-  refreshToken: vi.fn(),
-  listUsersByEmail: vi.fn(),
-  linkProviderForUser: vi.fn(),
-}));
+const mockRepo = vi.hoisted(() => {
+  return {
+    signUp: vi.fn(),
+    initiateAuth: vi.fn(),
+    confirmSignUp: vi.fn(),
+    resendConfirmationCode: vi.fn(),
+    refreshToken: vi.fn(),
+    listUsersByEmail: vi.fn(),
+    linkProviderForUser: vi.fn(),
+  };
+});
 
-vi.mock("../../repositories/cognito-auth-repository", () => ({
-  CognitoAuthRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("../../repositories/cognito-auth-repository", () => {
+  return {
+    CognitoAuthRepository: vi.fn().mockImplementation(function () {
+      return mockRepo;
+    }),
+  };
+});
 
-const makeEvent = (overrides: Partial<PreSignUpTriggerEvent> = {}): PreSignUpTriggerEvent =>
-  ({
+const makeEvent = (overrides: Partial<PreSignUpTriggerEvent> = {}): PreSignUpTriggerEvent => {
+  return {
     triggerSource: "PreSignUp_ExternalProvider",
     userName: "google_100749370741417953110",
     userPoolId: "ap-northeast-1_testPoolId",
@@ -30,7 +34,8 @@ const makeEvent = (overrides: Partial<PreSignUpTriggerEvent> = {}): PreSignUpTri
     },
     response: {},
     ...overrides,
-  }) as PreSignUpTriggerEvent;
+  } as PreSignUpTriggerEvent;
+};
 
 describe("pre-signup", () => {
   beforeEach(() => {

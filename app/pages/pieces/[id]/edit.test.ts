@@ -13,29 +13,37 @@ const samplePiece: Piece = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
-vi.mock("~/composables/usePieces", () => ({
-  usePiecesPaginated: () => ({
-    items: ref([]),
-    nextCursor: ref(null),
-    pending: ref(false),
-    error: ref(null),
-    hasMore: ref(true),
-    loadMore: vi.fn(),
-    reset: vi.fn(),
-    retry: vi.fn(),
-    createPiece: vi.fn(),
-    updatePiece: mockUpdatePiece,
-  }),
-  usePiecesAll: () => ({
-    data: ref([]),
-    error: ref(null),
-    pending: ref(false),
-    refresh: vi.fn(),
-    createPiece: vi.fn(),
-    updatePiece: vi.fn(),
-  }),
-  usePiece: () => ({ data: ref(samplePiece), error: ref(null) }),
-}));
+vi.mock("~/composables/usePieces", () => {
+  return {
+    usePiecesPaginated: () => {
+      return {
+        items: ref([]),
+        nextCursor: ref(null),
+        pending: ref(false),
+        error: ref(null),
+        hasMore: ref(true),
+        loadMore: vi.fn(),
+        reset: vi.fn(),
+        retry: vi.fn(),
+        createPiece: vi.fn(),
+        updatePiece: mockUpdatePiece,
+      };
+    },
+    usePiecesAll: () => {
+      return {
+        data: ref([]),
+        error: ref(null),
+        pending: ref(false),
+        refresh: vi.fn(),
+        createPiece: vi.fn(),
+        updatePiece: vi.fn(),
+      };
+    },
+    usePiece: () => {
+      return { data: ref(samplePiece), error: ref(null) };
+    },
+  };
+});
 
 beforeEach(() => {
   mockUpdatePiece.mockClear();

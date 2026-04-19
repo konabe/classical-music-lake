@@ -10,22 +10,28 @@ const sampleComposer: Composer = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
-vi.mock("~/composables/useComposers", () => ({
-  useComposersPaginated: () => ({
-    items: ref([]),
-    nextCursor: ref(null),
-    pending: ref(false),
-    error: ref(null),
-    hasMore: ref(true),
-    loadMore: vi.fn(),
-    reset: vi.fn(),
-    retry: vi.fn(),
-    createComposer: vi.fn(),
-    updateComposer: vi.fn(),
-    deleteComposer: vi.fn(),
-  }),
-  useComposer: () => ({ data: ref(sampleComposer), error: ref(null) }),
-}));
+vi.mock("~/composables/useComposers", () => {
+  return {
+    useComposersPaginated: () => {
+      return {
+        items: ref([]),
+        nextCursor: ref(null),
+        pending: ref(false),
+        error: ref(null),
+        hasMore: ref(true),
+        loadMore: vi.fn(),
+        reset: vi.fn(),
+        retry: vi.fn(),
+        createComposer: vi.fn(),
+        updateComposer: vi.fn(),
+        deleteComposer: vi.fn(),
+      };
+    },
+    useComposer: () => {
+      return { data: ref(sampleComposer), error: ref(null) };
+    },
+  };
+});
 
 describe("ComposerDetailPage", () => {
   it("ComposerDetailTemplate が表示される", async () => {

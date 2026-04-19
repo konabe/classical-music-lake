@@ -17,8 +17,12 @@ import {
   PIECES_PAGE_SIZE_MIN,
 } from "../types/index.js";
 
-const fails = (result: { success: boolean }): boolean => !result.success;
-const succeeds = (result: { success: boolean }): boolean => result.success;
+const fails = (result: { success: boolean }): boolean => {
+  return !result.success;
+};
+const succeeds = (result: { success: boolean }): boolean => {
+  return result.success;
+};
 
 const validLog = {
   listenedAt: "2024-01-15T19:30:00.000Z",
@@ -59,8 +63,12 @@ describe("createListeningLogSchema", () => {
   it("trim 後も 100 文字を超える composer は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
-        (composer) => fails(createListeningLogSchema.safeParse({ ...validLog, composer }))
+        fc.string({ minLength: 101, maxLength: 200 }).filter((s) => {
+          return s.trim().length > 100;
+        }),
+        (composer) => {
+          return fails(createListeningLogSchema.safeParse({ ...validLog, composer }));
+        }
       )
     );
   });
@@ -73,33 +81,41 @@ describe("createListeningLogSchema", () => {
   it("trim 後も 200 文字を超える piece は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
-        (piece) => fails(createListeningLogSchema.safeParse({ ...validLog, piece }))
+        fc.string({ minLength: 201, maxLength: 400 }).filter((s) => {
+          return s.trim().length > 200;
+        }),
+        (piece) => {
+          return fails(createListeningLogSchema.safeParse({ ...validLog, piece }));
+        }
       )
     );
   });
 
   it("rating が 1〜5 の整数は常に有効", () => {
     fc.assert(
-      fc.property(fc.integer({ min: 1, max: 5 }), (rating) =>
-        succeeds(createListeningLogSchema.safeParse({ ...validLog, rating }))
-      )
+      fc.property(fc.integer({ min: 1, max: 5 }), (rating) => {
+        return succeeds(createListeningLogSchema.safeParse({ ...validLog, rating }));
+      })
     );
   });
 
   it("rating が 1〜5 の範囲外の整数は常にエラー", () => {
     fc.assert(
-      fc.property(fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })), (rating) =>
-        fails(createListeningLogSchema.safeParse({ ...validLog, rating }))
-      )
+      fc.property(fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })), (rating) => {
+        return fails(createListeningLogSchema.safeParse({ ...validLog, rating }));
+      })
     );
   });
 
   it("rating が小数の場合は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.integer().map((n) => n + 0.5),
-        (rating) => fails(createListeningLogSchema.safeParse({ ...validLog, rating }))
+        fc.integer().map((n) => {
+          return n + 0.5;
+        }),
+        (rating) => {
+          return fails(createListeningLogSchema.safeParse({ ...validLog, rating }));
+        }
       )
     );
   });
@@ -107,8 +123,12 @@ describe("createListeningLogSchema", () => {
   it("trim 後も 1000 文字を超える memo は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1001, maxLength: 2000 }).filter((s) => s.trim().length > 1000),
-        (memo) => fails(createListeningLogSchema.safeParse({ ...validLog, memo }))
+        fc.string({ minLength: 1001, maxLength: 2000 }).filter((s) => {
+          return s.trim().length > 1000;
+        }),
+        (memo) => {
+          return fails(createListeningLogSchema.safeParse({ ...validLog, memo }));
+        }
       )
     );
   });
@@ -168,8 +188,12 @@ describe("createPieceSchema", () => {
   it("trim 後も 200 文字を超える title は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
-        (title) => fails(createPieceSchema.safeParse({ ...validPiece, title }))
+        fc.string({ minLength: 201, maxLength: 400 }).filter((s) => {
+          return s.trim().length > 200;
+        }),
+        (title) => {
+          return fails(createPieceSchema.safeParse({ ...validPiece, title }));
+        }
       )
     );
   });
@@ -182,8 +206,12 @@ describe("createPieceSchema", () => {
   it("trim 後も 100 文字を超える composer は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
-        (composer) => fails(createPieceSchema.safeParse({ ...validPiece, composer }))
+        fc.string({ minLength: 101, maxLength: 200 }).filter((s) => {
+          return s.trim().length > 100;
+        }),
+        (composer) => {
+          return fails(createPieceSchema.safeParse({ ...validPiece, composer }));
+        }
       )
     );
   });
@@ -236,17 +264,21 @@ describe("registerSchema", () => {
 
   it("8 文字未満の password は常にエラー", () => {
     fc.assert(
-      fc.property(fc.string({ minLength: 1, maxLength: 7 }), (password) =>
-        fails(registerSchema.safeParse({ ...validAuth, password }))
-      )
+      fc.property(fc.string({ minLength: 1, maxLength: 7 }), (password) => {
+        return fails(registerSchema.safeParse({ ...validAuth, password }));
+      })
     );
   });
 
   it("大文字を含まない password は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 8 }).filter((s) => !/[A-Z]/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
+        fc.string({ minLength: 8 }).filter((s) => {
+          return !/[A-Z]/.test(s);
+        }),
+        (password) => {
+          return fails(registerSchema.safeParse({ ...validAuth, password }));
+        }
       )
     );
   });
@@ -254,8 +286,12 @@ describe("registerSchema", () => {
   it("小文字を含まない password は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 8 }).filter((s) => !/[a-z]/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
+        fc.string({ minLength: 8 }).filter((s) => {
+          return !/[a-z]/.test(s);
+        }),
+        (password) => {
+          return fails(registerSchema.safeParse({ ...validAuth, password }));
+        }
       )
     );
   });
@@ -263,8 +299,12 @@ describe("registerSchema", () => {
   it("数字を含まない password は常にエラー", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 8 }).filter((s) => !/\d/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
+        fc.string({ minLength: 8 }).filter((s) => {
+          return !/\d/.test(s);
+        }),
+        (password) => {
+          return fails(registerSchema.safeParse({ ...validAuth, password }));
+        }
       )
     );
   });

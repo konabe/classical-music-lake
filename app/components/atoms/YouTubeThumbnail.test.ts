@@ -6,8 +6,9 @@ const STANDARD_URL = `https://www.youtube.com/watch?v=${VIDEO_ID}`;
 const SHORT_URL = `https://youtu.be/${VIDEO_ID}`;
 const SAMPLE_ALT = "サンプル動画のサムネイル";
 
-const mount = (videoUrl: string | undefined, alt: string = SAMPLE_ALT) =>
-  mountSuspended(YouTubeThumbnail, { props: { videoUrl, alt } });
+const mount = (videoUrl: string | undefined, alt: string = SAMPLE_ALT) => {
+  return mountSuspended(YouTubeThumbnail, { props: { videoUrl, alt } });
+};
 
 describe("YouTubeThumbnail", () => {
   describe("表示", () => {

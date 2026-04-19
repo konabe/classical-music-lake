@@ -9,19 +9,23 @@ import {
   makeDeleteEvent,
 } from "../../test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  update: vi.fn(),
-  remove: vi.fn(),
-}));
+const mockRepo = vi.hoisted(() => {
+  return {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findByUserId: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  };
+});
 
-vi.mock("../../repositories/concert-log-repository", () => ({
-  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("../../repositories/concert-log-repository", () => {
+  return {
+    DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
+      return mockRepo;
+    }),
+  };
+});
 
 const existingItem = {
   id: "abc-123",

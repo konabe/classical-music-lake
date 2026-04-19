@@ -39,14 +39,14 @@ const { mockPieces } = vi.hoisted(() => {
   return { mockPieces };
 });
 
-mockNuxtImport("usePiecesAll", () =>
-  vi.fn().mockReturnValue({
+mockNuxtImport("usePiecesAll", () => {
+  return vi.fn().mockReturnValue({
     data: ref(mockPieces),
     error: ref(null),
     pending: ref(false),
     refresh: vi.fn(),
-  })
-);
+  });
+});
 
 describe("ListeningLogForm", () => {
   describe("デフォルト値でのレンダリング", () => {

@@ -45,9 +45,9 @@ export class PieceEntity {
       updatedAt: new Date().toISOString(),
     };
     const cleared = Object.fromEntries(
-      Object.entries(merged).filter(
-        ([key, value]) => !(CLEARABLE_FIELDS as readonly string[]).includes(key) || value !== ""
-      )
+      Object.entries(merged).filter(([key, value]) => {
+        return !(CLEARABLE_FIELDS as readonly string[]).includes(key) || value !== "";
+      })
     ) as Piece;
     return new PieceEntity(cleared);
   }

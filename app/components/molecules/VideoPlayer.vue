@@ -13,7 +13,9 @@ const emit = defineEmits<{
   play: [];
 }>();
 
-const isYouTube = computed(() => isYouTubeUrl(props.videoUrl));
+const isYouTube = computed(() => {
+  return isYouTubeUrl(props.videoUrl);
+});
 const embedUrl = computed(() => {
   const base = toYouTubeEmbedUrl(props.videoUrl);
   return props.autoplay ? `${base}&autoplay=1` : base;

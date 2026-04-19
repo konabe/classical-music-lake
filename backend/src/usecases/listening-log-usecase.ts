@@ -29,8 +29,12 @@ export class ListeningLogUsecase {
 
   async list(userId: string): Promise<ListeningLog[]> {
     const items = await this.repo.findByUserId(userId);
-    const entities = items.map((item) => ListeningLogEntity.reconstruct(item));
-    return ListeningLogEntity.sortByListenedAtDesc(entities).map((e) => e.toPlain());
+    const entities = items.map((item) => {
+      return ListeningLogEntity.reconstruct(item);
+    });
+    return ListeningLogEntity.sortByListenedAtDesc(entities).map((e) => {
+      return e.toPlain();
+    });
   }
 
   async get(id: string, userId: string): Promise<ListeningLog> {
@@ -49,5 +53,6 @@ export class ListeningLogUsecase {
   }
 }
 
-export const createListeningLogUsecase = () =>
-  new ListeningLogUsecase(new DynamoDBListeningLogRepository());
+export const createListeningLogUsecase = () => {
+  return new ListeningLogUsecase(new DynamoDBListeningLogRepository());
+};

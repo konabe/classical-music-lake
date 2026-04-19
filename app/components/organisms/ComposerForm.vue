@@ -22,7 +22,9 @@ const form = reactive({
 });
 
 watch(
-  () => props.initialValues,
+  () => {
+    return props.initialValues;
+  },
   (initialValues) => {
     form.name = initialValues?.name ?? "";
     form.era = initialValues?.era ?? "";

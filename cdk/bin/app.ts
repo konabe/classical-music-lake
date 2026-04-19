@@ -14,8 +14,9 @@ if (!validStages.includes(rawStageName as StageName)) {
   );
 }
 
-const stackNameFor = (stage: StageName): string =>
-  stage === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stage}`;
+const stackNameFor = (stage: StageName): string => {
+  return stage === "prod" ? "ClassicalMusicLakeStack" : `ClassicalMusicLakeStack-${stage}`;
+};
 
 // -------------------------
 // DNS スタック（us-east-1）

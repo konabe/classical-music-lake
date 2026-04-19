@@ -1,7 +1,10 @@
-export const formatDate = (isoString: string): string => isoString.slice(0, 10);
+export const formatDate = (isoString: string): string => {
+  return isoString.slice(0, 10);
+};
 
-export const formatDatetime = (isoString: string): string =>
-  isoString.replace("T", " ").slice(0, 16);
+export const formatDatetime = (isoString: string): string => {
+  return isoString.replace("T", " ").slice(0, 16);
+};
 
 export const toDatetimeLocal = (isoString: string): string => {
   const date = new Date(isoString);

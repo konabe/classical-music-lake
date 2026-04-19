@@ -6,49 +6,57 @@ export const makeLog = (
   id: string,
   listenedAt: string,
   userId: string | null = "user-123"
-): ListeningLog => ({
-  id,
-  listenedAt,
-  userId,
-  composer: "ベートーヴェン",
-  piece: "交響曲第5番 ハ短調 Op.67",
-  rating: 4,
-  isFavorite: false,
-  memo: "カラヤン指揮、ベルリン・フィル。第1楽章の緊張感が素晴らしい。",
-  createdAt: "2024-06-01T09:00:00.000Z",
-  updatedAt: "2024-06-01T09:00:00.000Z",
-});
+): ListeningLog => {
+  return {
+    id,
+    listenedAt,
+    userId,
+    composer: "ベートーヴェン",
+    piece: "交響曲第5番 ハ短調 Op.67",
+    rating: 4,
+    isFavorite: false,
+    memo: "カラヤン指揮、ベルリン・フィル。第1楽章の緊張感が素晴らしい。",
+    createdAt: "2024-06-01T09:00:00.000Z",
+    updatedAt: "2024-06-01T09:00:00.000Z",
+  };
+};
 
-export const makePiece = (id: string, title: string): Piece => ({
-  id,
-  title,
-  composer: "モーツァルト",
-  createdAt: "2024-06-01T09:00:00.000Z",
-  updatedAt: "2024-06-01T09:00:00.000Z",
-});
+export const makePiece = (id: string, title: string): Piece => {
+  return {
+    id,
+    title,
+    composer: "モーツァルト",
+    createdAt: "2024-06-01T09:00:00.000Z",
+    updatedAt: "2024-06-01T09:00:00.000Z",
+  };
+};
 
-export const makeComposer = (id: string, name: string): Composer => ({
-  id,
-  name,
-  createdAt: "2024-06-01T09:00:00.000Z",
-  updatedAt: "2024-06-01T09:00:00.000Z",
-});
+export const makeComposer = (id: string, name: string): Composer => {
+  return {
+    id,
+    name,
+    createdAt: "2024-06-01T09:00:00.000Z",
+    updatedAt: "2024-06-01T09:00:00.000Z",
+  };
+};
 
-export const makeEvent = (overrides?: Partial<APIGatewayProxyEvent>): APIGatewayProxyEvent => ({
-  body: null,
-  headers: {},
-  multiValueHeaders: {},
-  httpMethod: "GET",
-  isBase64Encoded: false,
-  path: "/",
-  pathParameters: null,
-  queryStringParameters: null,
-  multiValueQueryStringParameters: null,
-  stageVariables: null,
-  requestContext: {} as APIGatewayProxyEvent["requestContext"],
-  resource: "",
-  ...overrides,
-});
+export const makeEvent = (overrides?: Partial<APIGatewayProxyEvent>): APIGatewayProxyEvent => {
+  return {
+    body: null,
+    headers: {},
+    multiValueHeaders: {},
+    httpMethod: "GET",
+    isBase64Encoded: false,
+    path: "/",
+    pathParameters: null,
+    queryStringParameters: null,
+    multiValueQueryStringParameters: null,
+    stageVariables: null,
+    requestContext: {} as APIGatewayProxyEvent["requestContext"],
+    resource: "",
+    ...overrides,
+  };
+};
 
 export const makeAuthEvent = (
   userId: string,
@@ -70,7 +78,9 @@ export const makeAuthEvent = (
 export const makeAdminEvent = (
   userId: string,
   overrides?: Partial<APIGatewayProxyEvent>
-): APIGatewayProxyEvent => makeAuthEvent(userId, overrides, ["admin"]);
+): APIGatewayProxyEvent => {
+  return makeAuthEvent(userId, overrides, ["admin"]);
+};
 
 export const mockContext: Context = {} as Context;
 export const mockCallback = { signal: new AbortController().signal };
@@ -82,22 +92,24 @@ export const makeDeleteEvent = (
   pathPrefix: string,
   id?: string,
   userId?: string
-): APIGatewayProxyEvent => ({
-  body: null,
-  headers: {},
-  multiValueHeaders: {},
-  httpMethod: "DELETE",
-  isBase64Encoded: false,
-  path: `/${pathPrefix}/${id ?? ""}`,
-  pathParameters: id === undefined ? null : { id },
-  queryStringParameters: null,
-  multiValueQueryStringParameters: null,
-  stageVariables: null,
-  requestContext: {
-    authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
-  } as APIGatewayProxyEvent["requestContext"],
-  resource: "",
-});
+): APIGatewayProxyEvent => {
+  return {
+    body: null,
+    headers: {},
+    multiValueHeaders: {},
+    httpMethod: "DELETE",
+    isBase64Encoded: false,
+    path: `/${pathPrefix}/${id ?? ""}`,
+    pathParameters: id === undefined ? null : { id },
+    queryStringParameters: null,
+    multiValueQueryStringParameters: null,
+    stageVariables: null,
+    requestContext: {
+      authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
+    } as APIGatewayProxyEvent["requestContext"],
+    resource: "",
+  };
+};
 
 type HandlerFn = (
   event: APIGatewayProxyEvent,

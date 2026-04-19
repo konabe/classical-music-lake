@@ -4,12 +4,16 @@ import UserRegisterPage from "./user-register.vue";
 const mockRegister = vi.fn();
 const mockValidateEmail = vi.fn();
 
-vi.mock("~/composables/useAuth", () => ({
-  useAuth: () => ({
-    register: mockRegister,
-    validateEmail: mockValidateEmail,
-  }),
-}));
+vi.mock("~/composables/useAuth", () => {
+  return {
+    useAuth: () => {
+      return {
+        register: mockRegister,
+        validateEmail: mockValidateEmail,
+      };
+    },
+  };
+});
 
 beforeEach(() => {
   mockRegister.mockClear();

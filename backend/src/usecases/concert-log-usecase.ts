@@ -29,8 +29,12 @@ export class ConcertLogUsecase {
 
   async list(userId: string): Promise<ConcertLog[]> {
     const items = await this.repo.findByUserId(userId);
-    const entities = items.map((item) => ConcertLogEntity.reconstruct(item));
-    return ConcertLogEntity.sortByConcertDateDesc(entities).map((e) => e.toPlain());
+    const entities = items.map((item) => {
+      return ConcertLogEntity.reconstruct(item);
+    });
+    return ConcertLogEntity.sortByConcertDateDesc(entities).map((e) => {
+      return e.toPlain();
+    });
   }
 
   async get(id: string, userId: string): Promise<ConcertLog> {
@@ -49,5 +53,6 @@ export class ConcertLogUsecase {
   }
 }
 
-export const createConcertLogUsecase = () =>
-  new ConcertLogUsecase(new DynamoDBConcertLogRepository());
+export const createConcertLogUsecase = () => {
+  return new ConcertLogUsecase(new DynamoDBConcertLogRepository());
+};

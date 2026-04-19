@@ -10,8 +10,9 @@ type CognitoAuthorizerContext = {
 
 export const ADMIN_GROUP_NAME = "admin";
 
-const getAuthorizerContext = (event: APIGatewayProxyEvent): CognitoAuthorizerContext | null =>
-  event.requestContext.authorizer as unknown as CognitoAuthorizerContext | null;
+const getAuthorizerContext = (event: APIGatewayProxyEvent): CognitoAuthorizerContext | null => {
+  return event.requestContext.authorizer as unknown as CognitoAuthorizerContext | null;
+};
 
 export const getUserId = (event: APIGatewayProxyEvent): string => {
   const authorizer = getAuthorizerContext(event);
@@ -26,19 +27,26 @@ export const getUserId = (event: APIGatewayProxyEvent): string => {
 export const getUserGroups = (event: APIGatewayProxyEvent): string[] => {
   const raw = getAuthorizerContext(event)?.claims?.["cognito:groups"];
   if (Array.isArray(raw)) {
-    return raw.filter((v): v is string => typeof v === "string");
+    return raw.filter((v): v is string => {
+      return typeof v === "string";
+    });
   }
   if (typeof raw === "string" && raw !== "") {
     return raw
       .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s !== "");
+      .map((s) => {
+        return s.trim();
+      })
+      .filter((s) => {
+        return s !== "";
+      });
   }
   return [];
 };
 
-export const isAdmin = (event: APIGatewayProxyEvent): boolean =>
-  getUserGroups(event).includes(ADMIN_GROUP_NAME);
+export const isAdmin = (event: APIGatewayProxyEvent): boolean => {
+  return getUserGroups(event).includes(ADMIN_GROUP_NAME);
+};
 
 export const requireAdmin = (event: APIGatewayProxyEvent): void => {
   if (!isAdmin(event)) {

@@ -3,12 +3,16 @@ import type { Piece, Rating } from "~/types";
 
 const route = useRoute();
 const apiBase = useApiBase();
-const { data: piece, error } = await usePiece(() => route.params.id as string);
+const { data: piece, error } = await usePiece(() => {
+  return route.params.id as string;
+});
 const { create } = useListeningLogs();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
-const autoplay = computed(() => route.query.autoplay === "1");
+const autoplay = computed(() => {
+  return route.query.autoplay === "1";
+});
 
 async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: string }) {
   if (piece.value === null) {

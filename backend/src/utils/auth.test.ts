@@ -2,26 +2,35 @@ import { describe, it, expect } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { getUserId, getUserGroups, isAdmin, requireAdmin } from "./auth";
 
-const makeEvent = (authorizer: unknown): APIGatewayProxyEvent =>
-  ({
+const makeEvent = (authorizer: unknown): APIGatewayProxyEvent => {
+  return {
     requestContext: { authorizer },
-  }) as unknown as APIGatewayProxyEvent;
+  } as unknown as APIGatewayProxyEvent;
+};
 
 describe("getUserId", () => {
   it("authorizer が null の場合は 401 を投げる", () => {
-    expect(() => getUserId(makeEvent(null))).toThrow("User not authenticated");
+    expect(() => {
+      return getUserId(makeEvent(null));
+    }).toThrow("User not authenticated");
   });
 
   it("authorizer が undefined の場合は 401 を投げる", () => {
-    expect(() => getUserId(makeEvent(undefined))).toThrow("User not authenticated");
+    expect(() => {
+      return getUserId(makeEvent(undefined));
+    }).toThrow("User not authenticated");
   });
 
   it("claims.sub が空文字の場合は 401 を投げる", () => {
-    expect(() => getUserId(makeEvent({ claims: { sub: "" } }))).toThrow("User not authenticated");
+    expect(() => {
+      return getUserId(makeEvent({ claims: { sub: "" } }));
+    }).toThrow("User not authenticated");
   });
 
   it("claims.sub が undefined の場合は 401 を投げる", () => {
-    expect(() => getUserId(makeEvent({ claims: {} }))).toThrow("User not authenticated");
+    expect(() => {
+      return getUserId(makeEvent({ claims: {} }));
+    }).toThrow("User not authenticated");
   });
 
   it("有効な sub がある場合はその値を返す", () => {
@@ -100,24 +109,26 @@ describe("isAdmin", () => {
 
 describe("requireAdmin", () => {
   it("admin グループに所属している場合は throw しない", () => {
-    expect(() =>
-      requireAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": ["admin"] } }))
-    ).not.toThrow();
+    expect(() => {
+      return requireAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": ["admin"] } }));
+    }).not.toThrow();
   });
 
   it("admin グループに所属していない場合は 403 を投げる", () => {
-    expect(() =>
-      requireAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": ["editor"] } }))
-    ).toThrow("Admin privilege required");
+    expect(() => {
+      return requireAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": ["editor"] } }));
+    }).toThrow("Admin privilege required");
   });
 
   it("cognito:groups が未設定の場合は 403 を投げる", () => {
-    expect(() => requireAdmin(makeEvent({ claims: { sub: "u" } }))).toThrow(
-      "Admin privilege required"
-    );
+    expect(() => {
+      return requireAdmin(makeEvent({ claims: { sub: "u" } }));
+    }).toThrow("Admin privilege required");
   });
 
   it("authorizer が null の場合は 403 を投げる", () => {
-    expect(() => requireAdmin(makeEvent(null))).toThrow("Admin privilege required");
+    expect(() => {
+      return requireAdmin(makeEvent(null));
+    }).toThrow("Admin privilege required");
   });
 });

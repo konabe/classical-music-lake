@@ -47,16 +47,22 @@ describe("encodeCursor / decodeCursor", () => {
 
   describe("decodeCursor のエラーハンドリング", () => {
     it("空文字を渡すと InvalidCursorError を投げる", () => {
-      expect(() => decodeCursor("")).toThrow(InvalidCursorError);
+      expect(() => {
+        return decodeCursor("");
+      }).toThrow(InvalidCursorError);
     });
 
     it("base64url として不正な文字列を渡すと InvalidCursorError を投げる", () => {
-      expect(() => decodeCursor("!!!not base64!!!")).toThrow(InvalidCursorError);
+      expect(() => {
+        return decodeCursor("!!!not base64!!!");
+      }).toThrow(InvalidCursorError);
     });
 
     it("base64url デコード後に JSON パースできない文字列を渡すと InvalidCursorError を投げる", () => {
       const notJson = Buffer.from("not a json", "utf8").toString("base64url");
-      expect(() => decodeCursor(notJson)).toThrow(InvalidCursorError);
+      expect(() => {
+        return decodeCursor(notJson);
+      }).toThrow(InvalidCursorError);
     });
 
     it("JSON は有効だが未知のバージョン番号の場合は InvalidCursorError を投げる", () => {
@@ -64,26 +70,34 @@ describe("encodeCursor / decodeCursor", () => {
         JSON.stringify({ v: 999, k: { id: "1" } }),
         "utf8"
       ).toString("base64url");
-      expect(() => decodeCursor(futureVersion)).toThrow(InvalidCursorError);
+      expect(() => {
+        return decodeCursor(futureVersion);
+      }).toThrow(InvalidCursorError);
     });
 
     it("JSON は有効だがバージョン番号が欠損している場合は InvalidCursorError を投げる", () => {
       const noVersion = Buffer.from(JSON.stringify({ k: { id: "1" } }), "utf8").toString(
         "base64url"
       );
-      expect(() => decodeCursor(noVersion)).toThrow(InvalidCursorError);
+      expect(() => {
+        return decodeCursor(noVersion);
+      }).toThrow(InvalidCursorError);
     });
 
     it("JSON は有効だがキー構造が欠損している場合は InvalidCursorError を投げる", () => {
       const noKey = Buffer.from(JSON.stringify({ v: 1 }), "utf8").toString("base64url");
-      expect(() => decodeCursor(noKey)).toThrow(InvalidCursorError);
+      expect(() => {
+        return decodeCursor(noKey);
+      }).toThrow(InvalidCursorError);
     });
 
     it("k がオブジェクトでない場合は InvalidCursorError を投げる", () => {
       const badKey = Buffer.from(JSON.stringify({ v: 1, k: "not an object" }), "utf8").toString(
         "base64url"
       );
-      expect(() => decodeCursor(badKey)).toThrow(InvalidCursorError);
+      expect(() => {
+        return decodeCursor(badKey);
+      }).toThrow(InvalidCursorError);
     });
   });
 

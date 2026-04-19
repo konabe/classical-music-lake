@@ -4,19 +4,23 @@ import type { Context } from "aws-lambda";
 import { handler } from "./create";
 import { makeEvent, makeAuthEvent } from "../../test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  update: vi.fn(),
-  remove: vi.fn(),
-}));
+const mockRepo = vi.hoisted(() => {
+  return {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findByUserId: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  };
+});
 
-vi.mock("../../repositories/concert-log-repository", () => ({
-  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("../../repositories/concert-log-repository", () => {
+  return {
+    DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
+      return mockRepo;
+    }),
+  };
+});
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };

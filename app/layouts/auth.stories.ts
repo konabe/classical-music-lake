@@ -10,12 +10,14 @@ export default meta;
 type Story = StoryObj<typeof AuthLayout>;
 
 export const Default: Story = {
-  render: () => ({
-    components: { AuthLayout },
-    template: `
+  render: () => {
+    return {
+      components: { AuthLayout },
+      template: `
       <AuthLayout>
         <p style="padding: 2rem; text-align: center;">認証ページのコンテンツがここに入ります。</p>
       </AuthLayout>
     `,
-  }),
+    };
+  },
 };

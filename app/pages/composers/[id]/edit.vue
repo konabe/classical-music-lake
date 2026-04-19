@@ -4,9 +4,13 @@ import type { UpdateComposerInput } from "~/types";
 definePageMeta({ middleware: ["admin"] });
 
 const route = useRoute();
-const id = computed(() => route.params.id as string);
+const id = computed(() => {
+  return route.params.id as string;
+});
 
-const { data: composer, error } = await useComposer(() => id.value);
+const { data: composer, error } = await useComposer(() => {
+  return id.value;
+});
 const { updateComposer } = useComposersPaginated();
 const errorMessage = ref("");
 

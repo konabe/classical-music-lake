@@ -5,29 +5,37 @@ import type { CreatePieceInput } from "~/types";
 
 const mockCreatePiece = vi.fn();
 
-vi.mock("~/composables/usePieces", () => ({
-  usePiecesPaginated: () => ({
-    items: ref([]),
-    nextCursor: ref(null),
-    pending: ref(false),
-    error: ref(null),
-    hasMore: ref(true),
-    loadMore: vi.fn(),
-    reset: vi.fn(),
-    retry: vi.fn(),
-    createPiece: mockCreatePiece,
-    updatePiece: vi.fn(),
-  }),
-  usePiecesAll: () => ({
-    data: ref([]),
-    error: ref(null),
-    pending: ref(false),
-    refresh: vi.fn(),
-    createPiece: vi.fn(),
-    updatePiece: vi.fn(),
-  }),
-  usePiece: () => ({ data: ref(null), error: ref(null) }),
-}));
+vi.mock("~/composables/usePieces", () => {
+  return {
+    usePiecesPaginated: () => {
+      return {
+        items: ref([]),
+        nextCursor: ref(null),
+        pending: ref(false),
+        error: ref(null),
+        hasMore: ref(true),
+        loadMore: vi.fn(),
+        reset: vi.fn(),
+        retry: vi.fn(),
+        createPiece: mockCreatePiece,
+        updatePiece: vi.fn(),
+      };
+    },
+    usePiecesAll: () => {
+      return {
+        data: ref([]),
+        error: ref(null),
+        pending: ref(false),
+        refresh: vi.fn(),
+        createPiece: vi.fn(),
+        updatePiece: vi.fn(),
+      };
+    },
+    usePiece: () => {
+      return { data: ref(null), error: ref(null) };
+    },
+  };
+});
 
 beforeEach(() => {
   mockCreatePiece.mockClear();

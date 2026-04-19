@@ -35,12 +35,20 @@ function resolveInitialPieces(): Piece[] {
     return [];
   }
   return props.initialValues.pieceIds
-    .map((id) => pieces.value!.find((p) => p.id === id))
-    .filter((p): p is Piece => p !== undefined);
+    .map((id) => {
+      return pieces.value!.find((p) => {
+        return p.id === id;
+      });
+    })
+    .filter((p): p is Piece => {
+      return p !== undefined;
+    });
 }
 
 watch(
-  () => pieces.value,
+  () => {
+    return pieces.value;
+  },
   () => {
     if (selectedPieces.value.length === 0 && props.initialValues?.pieceIds !== undefined) {
       selectedPieces.value = resolveInitialPieces();
@@ -52,11 +60,17 @@ function addPiece() {
   if (selectedPieceId.value === "") {
     return;
   }
-  const piece = pieces.value?.find((p) => p.id === selectedPieceId.value);
+  const piece = pieces.value?.find((p) => {
+    return p.id === selectedPieceId.value;
+  });
   if (piece === undefined) {
     return;
   }
-  if (selectedPieces.value.some((p) => p.id === piece.id)) {
+  if (
+    selectedPieces.value.some((p) => {
+      return p.id === piece.id;
+    })
+  ) {
     return;
   }
   selectedPieces.value.push(piece);
@@ -75,7 +89,9 @@ function handleSubmit() {
     conductor: form.conductor === "" ? undefined : form.conductor,
     orchestra: form.orchestra === "" ? undefined : form.orchestra,
     soloist: form.soloist === "" ? undefined : form.soloist,
-    pieceIds: selectedPieces.value.map((p) => p.id),
+    pieceIds: selectedPieces.value.map((p) => {
+      return p.id;
+    }),
   };
   emit("submit", input);
 }

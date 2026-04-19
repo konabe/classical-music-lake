@@ -82,7 +82,9 @@ async function batchWrite(tableName, writeRequests) {
           );
         }
         const waitMs = Math.pow(2, retries) * 100;
-        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, waitMs);
+        });
       }
     }
   }
@@ -130,27 +132,39 @@ async function syncTable(sourceTable, destTable, keyAttributes, transform) {
   if (sourceItems.length > 0) {
     console.log("デスティネーションへ書き込み中（upsert）...");
     const putItems = transform ? sourceItems.map(transform) : sourceItems;
-    const putRequests = putItems.map((item) => ({
-      PutRequest: { Item: item },
-    }));
+    const putRequests = putItems.map((item) => {
+      return {
+        PutRequest: { Item: item },
+      };
+    });
     await batchWrite(destTable, putRequests);
     console.log(`  ${sourceItems.length} 件書き込み完了`);
   }
 
   // Step 2: dest にあって source にないキーのみ削除
   if (destItems.length > 0) {
-    const sourceKeySet = new Set(sourceItems.map((item) => itemKey(item, keyAttributes)));
-    const deleteTargets = destItems.filter(
-      (item) => !sourceKeySet.has(itemKey(item, keyAttributes))
+    const sourceKeySet = new Set(
+      sourceItems.map((item) => {
+        return itemKey(item, keyAttributes);
+      })
     );
+    const deleteTargets = destItems.filter((item) => {
+      return !sourceKeySet.has(itemKey(item, keyAttributes));
+    });
 
     if (deleteTargets.length > 0) {
       console.log(`差分削除: ${deleteTargets.length} 件を削除中...`);
-      const deleteRequests = deleteTargets.map((item) => ({
-        DeleteRequest: {
-          Key: Object.fromEntries(keyAttributes.map((k) => [k, item[k]])),
-        },
-      }));
+      const deleteRequests = deleteTargets.map((item) => {
+        return {
+          DeleteRequest: {
+            Key: Object.fromEntries(
+              keyAttributes.map((k) => {
+                return [k, item[k]];
+              })
+            ),
+          },
+        };
+      });
       await batchWrite(destTable, deleteRequests);
       console.log(`  ${deleteTargets.length} 件削除完了`);
     } else {

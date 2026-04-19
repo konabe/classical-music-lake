@@ -13,7 +13,9 @@ export class AppEnv {
       throw new Error("COGNITO_CLIENT_ID environment variable is required");
     }
     this.cognitoClientId = cognitoClientId;
-    this.corsAllowOrigins = (process.env.CORS_ALLOW_ORIGIN ?? "*").split(",").map((o) => o.trim());
+    this.corsAllowOrigins = (process.env.CORS_ALLOW_ORIGIN ?? "*").split(",").map((o) => {
+      return o.trim();
+    });
     this.awsRegion = process.env.AWS_REGION ?? "ap-northeast-1";
     this.dynamoTableListeningLogs =
       process.env.DYNAMO_TABLE_LISTENING_LOGS ?? "classical-music-listening-logs";

@@ -12,8 +12,12 @@ import { writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
 const args = process.argv.slice(2);
-const countArg = args.find((a) => a.startsWith("--count="));
-const outputArg = args.find((a) => a.startsWith("--output="));
+const countArg = args.find((a) => {
+  return a.startsWith("--count=");
+});
+const outputArg = args.find((a) => {
+  return a.startsWith("--output=");
+});
 const rawCount = countArg ? Number.parseInt(countArg.split("=")[1], 10) : 10;
 if (!Number.isInteger(rawCount) || rawCount < 0) {
   console.error("エラー: --count には 0 以上の整数を指定してください");
@@ -139,7 +143,9 @@ function generateLog(index) {
   return log;
 }
 
-const logs = Array.from({ length: count }, (_, i) => generateLog(i));
+const logs = Array.from({ length: count }, (_, i) => {
+  return generateLog(i);
+});
 const json = JSON.stringify(logs, null, 2);
 
 if (outputFile) {

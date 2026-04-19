@@ -6,22 +6,27 @@ import { encodeCursor } from "../../utils/cursor";
 import { COMPOSERS_PAGE_SIZE_DEFAULT, COMPOSERS_PAGE_SIZE_MAX } from "../../types";
 import type { Composer, Paginated } from "../../types";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findPage: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
+const mockRepo = vi.hoisted(() => {
+  return {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findPage: vi.fn(),
+    saveWithOptimisticLock: vi.fn(),
+    remove: vi.fn(),
+  };
+});
 
-vi.mock("../../repositories/composer-repository", () => ({
-  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("../../repositories/composer-repository", () => {
+  return {
+    DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
+      return mockRepo;
+    }),
+  };
+});
 
-const parseBody = (result: { body?: string } | null | undefined): Paginated<Composer> =>
-  JSON.parse(result?.body ?? '{"items":[],"nextCursor":null}') as Paginated<Composer>;
+const parseBody = (result: { body?: string } | null | undefined): Paginated<Composer> => {
+  return JSON.parse(result?.body ?? '{"items":[],"nextCursor":null}') as Paginated<Composer>;
+};
 
 describe("GET /composers (list)", () => {
   beforeEach(() => {

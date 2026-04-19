@@ -23,7 +23,9 @@ export class ListeningLogEntity {
   }
 
   static sortByListenedAtDesc(entities: ListeningLogEntity[]): ListeningLogEntity[] {
-    return [...entities].sort((a, b) => b.props.listenedAt.localeCompare(a.props.listenedAt));
+    return [...entities].sort((a, b) => {
+      return b.props.listenedAt.localeCompare(a.props.listenedAt);
+    });
   }
 
   isOwnedBy(userId: string): boolean {

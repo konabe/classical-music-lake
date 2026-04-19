@@ -29,7 +29,9 @@ export class ConcertLogEntity {
   }
 
   static sortByConcertDateDesc(entities: ConcertLogEntity[]): ConcertLogEntity[] {
-    return [...entities].sort((a, b) => b.props.concertDate.localeCompare(a.props.concertDate));
+    return [...entities].sort((a, b) => {
+      return b.props.concertDate.localeCompare(a.props.concertDate);
+    });
   }
 
   isOwnedBy(userId: string): boolean {

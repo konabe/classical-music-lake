@@ -31,24 +31,30 @@ const sampleLogs: ListeningLog[] = [
   },
 ];
 
-vi.mock("~/composables/useListeningLogs", () => ({
-  useListeningLogs: () => ({
-    data: sampleLogs,
-    error: null,
-    pending: false,
-    refresh: mockRefresh,
-    create: vi.fn(),
-    update: vi.fn(),
-    deleteLog: mockDeleteLog,
-  }),
-}));
+vi.mock("~/composables/useListeningLogs", () => {
+  return {
+    useListeningLogs: () => {
+      return {
+        data: sampleLogs,
+        error: null,
+        pending: false,
+        refresh: mockRefresh,
+        create: vi.fn(),
+        update: vi.fn(),
+        deleteLog: mockDeleteLog,
+      };
+    },
+  };
+});
 
 beforeEach(() => {
   mockDeleteLog.mockClear();
   mockRefresh.mockClear();
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => {
+      return true;
+    })
   );
 });
 
@@ -92,7 +98,9 @@ describe("ListeningLogsPage（削除フロー結合）", () => {
   it("キャンセル時は deleteLog が呼ばれない", async () => {
     vi.stubGlobal(
       "confirm",
-      vi.fn(() => false)
+      vi.fn(() => {
+        return false;
+      })
     );
     const wrapper = await mountSuspended(ListeningLogsPage);
     await wrapper.findAll(".btn-danger")[0].trigger("click");

@@ -3,7 +3,9 @@ const { isAuthenticated, logout } = useAuth();
 const route = useRoute();
 const isLoggedIn = ref(isAuthenticated());
 watch(
-  () => route.path,
+  () => {
+    return route.path;
+  },
   () => {
     isLoggedIn.value = isAuthenticated();
   }

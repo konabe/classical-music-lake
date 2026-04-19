@@ -13,28 +13,34 @@ import { handler as getHandler } from "./get";
 import { handler as deleteHandler } from "./delete";
 import { GetCommand, PutCommand, QueryCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 
-const { mockSend } = vi.hoisted(() => ({ mockSend: vi.fn() }));
+const { mockSend } = vi.hoisted(() => {
+  return { mockSend: vi.fn() };
+});
 
-vi.mock("@aws-sdk/client-dynamodb", () => ({
-  DynamoDBClient: vi.fn(),
-  ConditionalCheckFailedException: class ConditionalCheckFailedException extends Error {
-    constructor(message?: string) {
-      super(message);
-      this.name = "ConditionalCheckFailedException";
-    }
-  },
-}));
+vi.mock("@aws-sdk/client-dynamodb", () => {
+  return {
+    DynamoDBClient: vi.fn(),
+    ConditionalCheckFailedException: class ConditionalCheckFailedException extends Error {
+      constructor(message?: string) {
+        super(message);
+        this.name = "ConditionalCheckFailedException";
+      }
+    },
+  };
+});
 
-vi.mock("@aws-sdk/lib-dynamodb", () => ({
-  DynamoDBDocumentClient: {
-    from: vi.fn().mockReturnValue({ send: mockSend }),
-  },
-  PutCommand: vi.fn(),
-  GetCommand: vi.fn(),
-  QueryCommand: vi.fn(),
-  DeleteCommand: vi.fn(),
-  ScanCommand: vi.fn(),
-}));
+vi.mock("@aws-sdk/lib-dynamodb", () => {
+  return {
+    DynamoDBDocumentClient: {
+      from: vi.fn().mockReturnValue({ send: mockSend }),
+    },
+    PutCommand: vi.fn(),
+    GetCommand: vi.fn(),
+    QueryCommand: vi.fn(),
+    DeleteCommand: vi.fn(),
+    ScanCommand: vi.fn(),
+  };
+});
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };

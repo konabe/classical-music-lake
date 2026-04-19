@@ -7,8 +7,12 @@ const props = defineProps<{
   kind?: Kind;
 }>();
 
-const kindClass = computed(() => (props.kind ? `kind-${props.kind}` : "kind-default"));
-const ariaLabel = computed(() => `${props.label}: ${props.value}`);
+const kindClass = computed(() => {
+  return props.kind ? `kind-${props.kind}` : "kind-default";
+});
+const ariaLabel = computed(() => {
+  return `${props.label}: ${props.value}`;
+});
 </script>
 
 <template>

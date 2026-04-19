@@ -3,11 +3,15 @@ import LoginPage from "./login.vue";
 
 const mockLogin = vi.fn();
 
-vi.mock("~/composables/useAuth", () => ({
-  useAuth: () => ({
-    login: mockLogin,
-  }),
-}));
+vi.mock("~/composables/useAuth", () => {
+  return {
+    useAuth: () => {
+      return {
+        login: mockLogin,
+      };
+    },
+  };
+});
 
 beforeEach(() => {
   mockLogin.mockClear();

@@ -5,13 +5,17 @@ const mockVerifyEmail = vi.fn();
 const mockResendVerificationCode = vi.fn();
 const mockLogin = vi.fn();
 
-vi.mock("~/composables/useAuth", () => ({
-  useAuth: () => ({
-    verifyEmail: mockVerifyEmail,
-    resendVerificationCode: mockResendVerificationCode,
-    login: mockLogin,
-  }),
-}));
+vi.mock("~/composables/useAuth", () => {
+  return {
+    useAuth: () => {
+      return {
+        verifyEmail: mockVerifyEmail,
+        resendVerificationCode: mockResendVerificationCode,
+        login: mockLogin,
+      };
+    },
+  };
+});
 
 beforeEach(() => {
   mockVerifyEmail.mockClear();

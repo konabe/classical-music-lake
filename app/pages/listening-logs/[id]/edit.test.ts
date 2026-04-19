@@ -17,42 +17,56 @@ const sampleLog: ListeningLog = {
   updatedAt: "2024-01-15T20:00:00.000Z",
 };
 
-vi.mock("~/composables/useListeningLogs", () => ({
-  useListeningLogs: () => ({
-    data: [],
-    error: null,
-    pending: false,
-    refresh: vi.fn(),
-    create: vi.fn(),
-    update: mockUpdate,
-    deleteLog: vi.fn(),
-  }),
-  useListeningLog: () => ({ data: sampleLog, error: null }),
-}));
+vi.mock("~/composables/useListeningLogs", () => {
+  return {
+    useListeningLogs: () => {
+      return {
+        data: [],
+        error: null,
+        pending: false,
+        refresh: vi.fn(),
+        create: vi.fn(),
+        update: mockUpdate,
+        deleteLog: vi.fn(),
+      };
+    },
+    useListeningLog: () => {
+      return { data: sampleLog, error: null };
+    },
+  };
+});
 
-vi.mock("~/composables/usePieces", () => ({
-  usePiecesPaginated: () => ({
-    items: ref([]),
-    nextCursor: ref(null),
-    pending: ref(false),
-    error: ref(null),
-    hasMore: ref(true),
-    loadMore: vi.fn(),
-    reset: vi.fn(),
-    retry: vi.fn(),
-    createPiece: vi.fn(),
-    updatePiece: vi.fn(),
-  }),
-  usePiecesAll: () => ({
-    data: ref([]),
-    error: ref(null),
-    pending: ref(false),
-    refresh: vi.fn(),
-    createPiece: vi.fn(),
-    updatePiece: vi.fn(),
-  }),
-  usePiece: () => ({ data: null, error: null }),
-}));
+vi.mock("~/composables/usePieces", () => {
+  return {
+    usePiecesPaginated: () => {
+      return {
+        items: ref([]),
+        nextCursor: ref(null),
+        pending: ref(false),
+        error: ref(null),
+        hasMore: ref(true),
+        loadMore: vi.fn(),
+        reset: vi.fn(),
+        retry: vi.fn(),
+        createPiece: vi.fn(),
+        updatePiece: vi.fn(),
+      };
+    },
+    usePiecesAll: () => {
+      return {
+        data: ref([]),
+        error: ref(null),
+        pending: ref(false),
+        refresh: vi.fn(),
+        createPiece: vi.fn(),
+        updatePiece: vi.fn(),
+      };
+    },
+    usePiece: () => {
+      return { data: null, error: null };
+    },
+  };
+});
 
 beforeEach(() => {
   mockUpdate.mockClear();

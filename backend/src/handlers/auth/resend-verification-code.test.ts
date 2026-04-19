@@ -8,21 +8,25 @@ import {
   describeInvalidBodyCases,
 } from "../../test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  signUp: vi.fn(),
-  initiateAuth: vi.fn(),
-  confirmSignUp: vi.fn(),
-  resendConfirmationCode: vi.fn(),
-  refreshToken: vi.fn(),
-  listUsersByEmail: vi.fn(),
-  linkProviderForUser: vi.fn(),
-}));
+const mockRepo = vi.hoisted(() => {
+  return {
+    signUp: vi.fn(),
+    initiateAuth: vi.fn(),
+    confirmSignUp: vi.fn(),
+    resendConfirmationCode: vi.fn(),
+    refreshToken: vi.fn(),
+    listUsersByEmail: vi.fn(),
+    linkProviderForUser: vi.fn(),
+  };
+});
 
-vi.mock("../../repositories/cognito-auth-repository", () => ({
-  CognitoAuthRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("../../repositories/cognito-auth-repository", () => {
+  return {
+    CognitoAuthRepository: vi.fn().mockImplementation(function () {
+      return mockRepo;
+    }),
+  };
+});
 
 const validInput = {
   email: "user@example.com",

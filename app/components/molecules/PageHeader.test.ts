@@ -2,15 +2,25 @@ import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PageHeader from "./PageHeader.vue";
 import ButtonPrimary from "../atoms/ButtonPrimary.vue";
 
-vi.mock("~/composables/useAuth", () => ({
-  ACCESS_TOKEN_KEY: "accessToken",
-  useAuth: () => ({
-    isAuthenticated: () => false,
-    isTokenExpired: () => false,
-    refreshTokens: () => Promise.resolve(false),
-    clearTokens: () => {},
-  }),
-}));
+vi.mock("~/composables/useAuth", () => {
+  return {
+    ACCESS_TOKEN_KEY: "accessToken",
+    useAuth: () => {
+      return {
+        isAuthenticated: () => {
+          return false;
+        },
+        isTokenExpired: () => {
+          return false;
+        },
+        refreshTokens: () => {
+          return Promise.resolve(false);
+        },
+        clearTokens: () => {},
+      };
+    },
+  };
+});
 
 describe("PageHeader", () => {
   it("title が h1 に表示される", async () => {

@@ -17,14 +17,21 @@ const fetchPage = async (
   return $fetch<PaginatedComposersResponse>(`${apiBase}/composers`, { query });
 };
 
-const postComposer = (apiBase: string, input: CreateComposerInput): Promise<Composer> =>
-  $fetch<Composer>(`${apiBase}/composers`, { method: "POST", body: input });
+const postComposer = (apiBase: string, input: CreateComposerInput): Promise<Composer> => {
+  return $fetch<Composer>(`${apiBase}/composers`, { method: "POST", body: input });
+};
 
-const putComposer = (apiBase: string, id: string, input: UpdateComposerInput): Promise<Composer> =>
-  $fetch<Composer>(`${apiBase}/composers/${id}`, { method: "PUT", body: input });
+const putComposer = (
+  apiBase: string,
+  id: string,
+  input: UpdateComposerInput
+): Promise<Composer> => {
+  return $fetch<Composer>(`${apiBase}/composers/${id}`, { method: "PUT", body: input });
+};
 
-const deleteComposerRequest = (apiBase: string, id: string): Promise<void> =>
-  $fetch(`${apiBase}/composers/${id}`, { method: "DELETE" });
+const deleteComposerRequest = (apiBase: string, id: string): Promise<void> => {
+  return $fetch(`${apiBase}/composers/${id}`, { method: "DELETE" });
+};
 
 /**
  * 作曲家マスタ一覧の無限スクロール / カーソル型ページング用 composable。
@@ -107,5 +114,7 @@ export const useComposersPaginated = () => {
 
 export const useComposer = (id: () => string) => {
   const apiBase = useApiBase();
-  return useFetch<Composer>(() => `${apiBase}/composers/${id()}`);
+  return useFetch<Composer>(() => {
+    return `${apiBase}/composers/${id()}`;
+  });
 };

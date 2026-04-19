@@ -2,23 +2,25 @@ import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceList from "./PieceList.vue";
 import type { Piece } from "~/types";
 
-const makePieces = (): Piece[] => [
-  {
-    id: "piece-1",
-    title: "交響曲第9番",
-    composer: "ベートーヴェン",
-    videoUrl: "https://www.youtube.com/watch?v=abc123",
-    createdAt: "2024-01-01T00:00:00.000Z",
-    updatedAt: "2024-01-01T00:00:00.000Z",
-  },
-  {
-    id: "piece-2",
-    title: "魔笛",
-    composer: "モーツァルト",
-    createdAt: "2024-01-01T00:00:00.000Z",
-    updatedAt: "2024-01-01T00:00:00.000Z",
-  },
-];
+const makePieces = (): Piece[] => {
+  return [
+    {
+      id: "piece-1",
+      title: "交響曲第9番",
+      composer: "ベートーヴェン",
+      videoUrl: "https://www.youtube.com/watch?v=abc123",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+    {
+      id: "piece-2",
+      title: "魔笛",
+      composer: "モーツァルト",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+  ];
+};
 
 describe("PieceList", () => {
   describe("エラー状態", () => {

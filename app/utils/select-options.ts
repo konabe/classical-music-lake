@@ -5,5 +5,7 @@
 export function toSelectOptions<T extends string>(
   values: readonly T[]
 ): { value: T; label: string }[] {
-  return values.map((v) => ({ value: v, label: v }));
+  return values.map((v) => {
+    return { value: v, label: v };
+  });
 }

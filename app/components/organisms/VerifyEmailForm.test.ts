@@ -33,7 +33,9 @@ describe("VerifyEmailForm", () => {
     it("「再送信」ボタンが表示される", async () => {
       const wrapper = await mountSuspended(VerifyEmailForm, { props: defaultProps });
       const buttons = wrapper.findAll("button");
-      const resendButton = buttons.find((b) => b.text() === "再送信");
+      const resendButton = buttons.find((b) => {
+        return b.text() === "再送信";
+      });
       expect(resendButton).toBeDefined();
     });
 
@@ -78,7 +80,9 @@ describe("VerifyEmailForm", () => {
     it("「再送信」ボタンを押すと resend イベントが発火する", async () => {
       const wrapper = await mountSuspended(VerifyEmailForm, { props: defaultProps });
       const buttons = wrapper.findAll("button");
-      const resendButton = buttons.find((b) => b.text() === "再送信");
+      const resendButton = buttons.find((b) => {
+        return b.text() === "再送信";
+      });
       await resendButton?.trigger("click");
       expect(wrapper.emitted("resend")).toBeDefined();
     });

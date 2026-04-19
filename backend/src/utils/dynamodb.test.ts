@@ -3,38 +3,44 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 
 import { queryItemsByUserId, scanAllItems, scanPage, updateItem } from "./dynamodb";
 
-const { mockSend } = vi.hoisted(() => ({
-  mockSend: vi.fn(),
-}));
+const { mockSend } = vi.hoisted(() => {
+  return {
+    mockSend: vi.fn(),
+  };
+});
 
-vi.mock("@aws-sdk/client-dynamodb", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-extraneous-class
-  DynamoDBClient: class DynamoDBClient {},
-  ConditionalCheckFailedException: class ConditionalCheckFailedException extends Error {
-    constructor(message?: string) {
-      super(message);
-      this.name = "ConditionalCheckFailedException";
-    }
-  },
-}));
+vi.mock("@aws-sdk/client-dynamodb", () => {
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-extraneous-class
+    DynamoDBClient: class DynamoDBClient {},
+    ConditionalCheckFailedException: class ConditionalCheckFailedException extends Error {
+      constructor(message?: string) {
+        super(message);
+        this.name = "ConditionalCheckFailedException";
+      }
+    },
+  };
+});
 
-vi.mock("@aws-sdk/lib-dynamodb", () => ({
-  DynamoDBDocumentClient: {
-    from: vi.fn().mockReturnValue({ send: mockSend }),
-  },
-  GetCommand: class GetCommand {
-    constructor(public input: unknown) {}
-  },
-  PutCommand: class PutCommand {
-    constructor(public input: unknown) {}
-  },
-  QueryCommand: class QueryCommand {
-    constructor(public input: unknown) {}
-  },
-  ScanCommand: class ScanCommand {
-    constructor(public input: unknown) {}
-  },
-}));
+vi.mock("@aws-sdk/lib-dynamodb", () => {
+  return {
+    DynamoDBDocumentClient: {
+      from: vi.fn().mockReturnValue({ send: mockSend }),
+    },
+    GetCommand: class GetCommand {
+      constructor(public input: unknown) {}
+    },
+    PutCommand: class PutCommand {
+      constructor(public input: unknown) {}
+    },
+    QueryCommand: class QueryCommand {
+      constructor(public input: unknown) {}
+    },
+    ScanCommand: class ScanCommand {
+      constructor(public input: unknown) {}
+    },
+  };
+});
 
 type TestItem = {
   id: string;

@@ -2,7 +2,9 @@ import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import SelectInput from "./SelectInput.vue";
 import { PIECE_GENRES } from "~/types";
 
-const genreOptions = PIECE_GENRES.map((v) => ({ value: v, label: v }));
+const genreOptions = PIECE_GENRES.map((v) => {
+  return { value: v, label: v };
+});
 
 const meta: Meta<typeof SelectInput> = {
   title: "Atoms/SelectInput",

@@ -7,17 +7,21 @@ import type { ListeningLog } from "~/types";
 
 const mockDeleteLog = vi.fn();
 
-vi.mock("~/composables/useListeningLogs", () => ({
-  useListeningLogs: () => ({
-    data: null,
-    error: null,
-    pending: false,
-    refresh: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    deleteLog: mockDeleteLog,
-  }),
-}));
+vi.mock("~/composables/useListeningLogs", () => {
+  return {
+    useListeningLogs: () => {
+      return {
+        data: null,
+        error: null,
+        pending: false,
+        refresh: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        deleteLog: mockDeleteLog,
+      };
+    },
+  };
+});
 
 const sampleLog: ListeningLog = {
   id: "log-123",
@@ -35,7 +39,9 @@ beforeEach(() => {
   mockDeleteLog.mockClear();
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => {
+      return true;
+    })
   );
 });
 
@@ -94,7 +100,9 @@ describe("ListeningLogDetailTemplate", () => {
     it("confirm でキャンセルすると deleteLog が呼ばれない", async () => {
       vi.stubGlobal(
         "confirm",
-        vi.fn(() => false)
+        vi.fn(() => {
+          return false;
+        })
       );
       const wrapper = await mountSuspended(ListeningLogDetailTemplate, {
         props: { log: sampleLog },

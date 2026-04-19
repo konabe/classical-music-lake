@@ -10,5 +10,6 @@ export const useConcertLogs = () => {
   return { ...rest, deleteLog: deleteItem };
 };
 
-export const useConcertLog = (id: () => string) =>
-  useCrudResourceItem<ConcertLog>("concert-logs", id);
+export const useConcertLog = (id: () => string) => {
+  return useCrudResourceItem<ConcertLog>("concert-logs", id);
+};

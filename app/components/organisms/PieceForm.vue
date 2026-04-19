@@ -31,7 +31,9 @@ const form = reactive({
 });
 
 watch(
-  () => props.initialValues,
+  () => {
+    return props.initialValues;
+  },
   (initialValues) => {
     form.title = initialValues?.title ?? "";
     form.composer = initialValues?.composer ?? "";

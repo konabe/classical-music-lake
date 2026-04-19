@@ -11,20 +11,32 @@ const mockRouterPush = vi.fn();
 
 // Mock useApiBase to return URL without trailing slash
 // (useApiBase removes trailing slashes from the config)
-vi.mock("./useApiBase", () => ({
-  useApiBase: () => "https://api.example.com",
-}));
+vi.mock("./useApiBase", () => {
+  return {
+    useApiBase: () => {
+      return "https://api.example.com";
+    },
+  };
+});
 
-vi.mock("./useCognitoConfig", () => ({
-  useCognitoConfig: () => ({
-    domain: "test.auth.ap-northeast-1.amazoncognito.com",
-    clientId: "test-client-id",
-  }),
-}));
+vi.mock("./useCognitoConfig", () => {
+  return {
+    useCognitoConfig: () => {
+      return {
+        domain: "test.auth.ap-northeast-1.amazoncognito.com",
+        clientId: "test-client-id",
+      };
+    },
+  };
+});
 
-vi.mock("#app", () => ({
-  useRouter: () => ({ push: mockRouterPush }),
-}));
+vi.mock("#app", () => {
+  return {
+    useRouter: () => {
+      return { push: mockRouterPush };
+    },
+  };
+});
 
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
@@ -144,7 +156,9 @@ describe("useAuth", () => {
     it("API 呼び出しが成功したとき success: true を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ message: "User created successfully." }),
+        json: async () => {
+          return { message: "User created successfully." };
+        },
       });
 
       const { register } = useAuth();
@@ -163,7 +177,9 @@ describe("useAuth", () => {
     it("API がエラーを返したとき success: false とエラーメッセージを返す", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
-        json: async () => ({ message: "An account with the given email already exists." }),
+        json: async () => {
+          return { message: "An account with the given email already exists." };
+        },
       });
 
       const { register } = useAuth();
@@ -202,13 +218,15 @@ describe("useAuth", () => {
     it("API 呼び出しが成功したとき success: true と accessToken を返し、idToken・refreshToken・expiresAt を保存する", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-          refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
-          tokenType: "Bearer",
-          expiresIn: 3600,
-        }),
+        json: async () => {
+          return {
+            accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+            refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
+            tokenType: "Bearer",
+            expiresIn: 3600,
+          };
+        },
       });
 
       const { login } = useAuth();
@@ -233,10 +251,12 @@ describe("useAuth", () => {
     it("レスポンスに accessToken がない場合 success: false を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-          tokenType: "Bearer",
-        }),
+        json: async () => {
+          return {
+            idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+            tokenType: "Bearer",
+          };
+        },
       });
 
       const { login } = useAuth();
@@ -250,10 +270,12 @@ describe("useAuth", () => {
     it("レスポンスの accessToken が空文字の場合 success: false を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          accessToken: "   ",
-          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-        }),
+        json: async () => {
+          return {
+            accessToken: "   ",
+            idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+          };
+        },
       });
 
       const { login } = useAuth();
@@ -267,10 +289,12 @@ describe("useAuth", () => {
     it("レスポンスに idToken がない場合 success: false を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-          tokenType: "Bearer",
-        }),
+        json: async () => {
+          return {
+            accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            tokenType: "Bearer",
+          };
+        },
       });
 
       const { login } = useAuth();
@@ -284,10 +308,12 @@ describe("useAuth", () => {
     it("レスポンスの idToken が空文字の場合 success: false を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-          idToken: "   ",
-        }),
+        json: async () => {
+          return {
+            accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            idToken: "   ",
+          };
+        },
       });
 
       const { login } = useAuth();
@@ -301,11 +327,13 @@ describe("useAuth", () => {
     it("レスポンスに refreshToken がない場合 success: false を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-          expiresIn: 3600,
-        }),
+        json: async () => {
+          return {
+            accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+            expiresIn: 3600,
+          };
+        },
       });
 
       const { login } = useAuth();
@@ -318,11 +346,13 @@ describe("useAuth", () => {
     it("レスポンスに expiresIn がない場合 success: false を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-          idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-          refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
-        }),
+        json: async () => {
+          return {
+            accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+            refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
+          };
+        },
       });
 
       const { login } = useAuth();
@@ -335,10 +365,12 @@ describe("useAuth", () => {
     it("認証情報が間違いの場合 success: false とエラーメッセージを返す", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
-        json: async () => ({
-          error: "InvalidCredentials",
-          message: "Email or password is incorrect.",
-        }),
+        json: async () => {
+          return {
+            error: "InvalidCredentials",
+            message: "Email or password is incorrect.",
+          };
+        },
       });
 
       const { login } = useAuth();
@@ -489,11 +521,13 @@ describe("useAuth", () => {
       localStorage.setItem(REFRESH_TOKEN_KEY, "valid-refresh-token");
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          accessToken: "new-access-token",
-          idToken: "new-id-token",
-          expiresIn: 3600,
-        }),
+        json: async () => {
+          return {
+            accessToken: "new-access-token",
+            idToken: "new-id-token",
+            expiresIn: 3600,
+          };
+        },
       });
 
       const { refreshTokens } = useAuth();
@@ -509,7 +543,9 @@ describe("useAuth", () => {
       localStorage.setItem(REFRESH_TOKEN_KEY, "invalid-refresh-token");
       mockFetch.mockResolvedValue({
         ok: false,
-        json: async () => ({ error: "InvalidRefreshToken" }),
+        json: async () => {
+          return { error: "InvalidRefreshToken" };
+        },
       });
 
       const { refreshTokens } = useAuth();
@@ -520,10 +556,12 @@ describe("useAuth", () => {
       localStorage.setItem(REFRESH_TOKEN_KEY, "valid-refresh-token");
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          accessToken: "new-access-token",
-          idToken: "new-id-token",
-        }),
+        json: async () => {
+          return {
+            accessToken: "new-access-token",
+            idToken: "new-id-token",
+          };
+        },
       });
 
       const { refreshTokens } = useAuth();
@@ -556,11 +594,13 @@ describe("useAuth", () => {
 
       resolveFetch!({
         ok: true,
-        json: async () => ({
-          accessToken: "new-access-token",
-          idToken: "new-id-token",
-          expiresIn: 3600,
-        }),
+        json: async () => {
+          return {
+            accessToken: "new-access-token",
+            idToken: "new-id-token",
+            expiresIn: 3600,
+          };
+        },
       });
 
       const result = await refreshPromise;
@@ -575,7 +615,9 @@ describe("useAuth", () => {
     it("API 呼び出しが成功したとき success: true を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ message: "Email confirmed successfully." }),
+        json: async () => {
+          return { message: "Email confirmed successfully." };
+        },
       });
 
       const { verifyEmail } = useAuth();
@@ -594,7 +636,9 @@ describe("useAuth", () => {
     it("CodeMismatch エラー時に success: false と errorType: code_mismatch を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
-        json: async () => ({ error: "CodeMismatch", message: "認証コードが正しくありません" }),
+        json: async () => {
+          return { error: "CodeMismatch", message: "認証コードが正しくありません" };
+        },
       });
 
       const { verifyEmail } = useAuth();
@@ -607,10 +651,12 @@ describe("useAuth", () => {
     it("ExpiredCode エラー時に success: false と errorType: expired_code を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
-        json: async () => ({
-          error: "ExpiredCode",
-          message: "認証コードの有効期限が切れています",
-        }),
+        json: async () => {
+          return {
+            error: "ExpiredCode",
+            message: "認証コードの有効期限が切れています",
+          };
+        },
       });
 
       const { verifyEmail } = useAuth();
@@ -650,12 +696,14 @@ describe("useAuth", () => {
     it("認可コードでトークンエンドポイントを呼び出してトークンを保存する", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          access_token: "access-token",
-          id_token: "id-token",
-          refresh_token: "refresh-token",
-          expires_in: 3600,
-        }),
+        json: async () => {
+          return {
+            access_token: "access-token",
+            id_token: "id-token",
+            refresh_token: "refresh-token",
+            expires_in: 3600,
+          };
+        },
       });
 
       const { handleOAuthCallback } = useAuth();
@@ -692,7 +740,9 @@ describe("useAuth", () => {
     it("API 呼び出しが成功したとき success: true を返す", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ message: "Verification code resent." }),
+        json: async () => {
+          return { message: "Verification code resent." };
+        },
       });
 
       const { resendVerificationCode } = useAuth();
@@ -711,10 +761,12 @@ describe("useAuth", () => {
     it("API がエラーを返したとき success: false とエラーメッセージを返す", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
-        json: async () => ({
-          error: "UserAlreadyConfirmed",
-          message: "このアカウントは既に確認済みです",
-        }),
+        json: async () => {
+          return {
+            error: "UserAlreadyConfirmed",
+            message: "このアカウントは既に確認済みです",
+          };
+        },
       });
 
       const { resendVerificationCode } = useAuth();

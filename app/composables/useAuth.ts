@@ -157,7 +157,9 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => {
+          return {};
+        });
         return {
           success: false,
           error: errorData.message ?? "Registration failed. Please try again.",
@@ -203,7 +205,9 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => {
+          return {};
+        });
         const errorType: LoginErrorType =
           errorData.error === "UserNotConfirmed" ? "not_confirmed" : "credentials";
         return {
@@ -278,7 +282,9 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => {
+          return {};
+        });
         const errorType: VerifyEmailErrorType =
           VERIFY_EMAIL_ERROR_TYPE_MAP[errorData.error] ?? "general";
         return {
@@ -310,7 +316,9 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => {
+          return {};
+        });
         return {
           success: false,
           error: errorData.message ?? "Failed to resend verification code. Please try again.",
@@ -408,7 +416,9 @@ export const useAuth = () => {
     if (typeof groups === "string" && groups !== "") {
       return groups
         .split(",")
-        .map((g) => g.trim())
+        .map((g) => {
+          return g.trim();
+        })
         .includes(ADMIN_GROUP_NAME);
     }
     return false;

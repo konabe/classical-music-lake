@@ -6,33 +6,47 @@ const mockFetch = vi.fn();
 const mockRouterPush = vi.fn();
 const mockRefreshTokens = vi.fn();
 
-vi.mock("./useApiBase", () => ({
-  useApiBase: () => "https://api.example.com",
-}));
+vi.mock("./useApiBase", () => {
+  return {
+    useApiBase: () => {
+      return "https://api.example.com";
+    },
+  };
+});
 
-vi.mock("#app", () => ({
-  useRouter: () => ({ push: mockRouterPush }),
-}));
+vi.mock("#app", () => {
+  return {
+    useRouter: () => {
+      return { push: mockRouterPush };
+    },
+  };
+});
 
 vi.mock("./useAuth", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./useAuth")>();
   return {
     ...actual,
-    useAuth: () => ({
-      refreshTokens: mockRefreshTokens,
-      clearTokens: () => {
-        localStorage.removeItem(actual.ACCESS_TOKEN_KEY);
-        localStorage.removeItem(actual.ID_TOKEN_KEY);
-        localStorage.removeItem(actual.REFRESH_TOKEN_KEY);
-        localStorage.removeItem(actual.TOKEN_EXPIRES_AT_KEY);
-      },
-    }),
+    useAuth: () => {
+      return {
+        refreshTokens: mockRefreshTokens,
+        clearTokens: () => {
+          localStorage.removeItem(actual.ACCESS_TOKEN_KEY);
+          localStorage.removeItem(actual.ID_TOKEN_KEY);
+          localStorage.removeItem(actual.REFRESH_TOKEN_KEY);
+          localStorage.removeItem(actual.TOKEN_EXPIRES_AT_KEY);
+        },
+      };
+    },
   };
 });
 
-const { mockUseFetch } = vi.hoisted(() => ({ mockUseFetch: vi.fn() }));
+const { mockUseFetch } = vi.hoisted(() => {
+  return { mockUseFetch: vi.fn() };
+});
 
-mockNuxtImport("useFetch", () => mockUseFetch);
+mockNuxtImport("useFetch", () => {
+  return mockUseFetch;
+});
 
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
@@ -105,7 +119,9 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 201,
-        json: async () => ({ id: "new-id", composer: "バッハ" }),
+        json: async () => {
+          return { id: "new-id", composer: "バッハ" };
+        },
       });
 
       const { create } = useListeningLogs();
@@ -133,7 +149,9 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
-        json: async () => ({ message: "Unauthorized" }),
+        json: async () => {
+          return { message: "Unauthorized" };
+        },
       });
 
       const { create } = useListeningLogs();
@@ -157,7 +175,9 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400,
-        json: async () => ({ message: "Bad Request" }),
+        json: async () => {
+          return { message: "Bad Request" };
+        },
       });
 
       const { create } = useListeningLogs();
@@ -181,7 +201,9 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ id: "abc-123", rating: 4 }),
+        json: async () => {
+          return { id: "abc-123", rating: 4 };
+        },
       });
 
       const { update } = useListeningLogs();
@@ -203,7 +225,9 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
-        json: async () => ({ message: "Unauthorized" }),
+        json: async () => {
+          return { message: "Unauthorized" };
+        },
       });
 
       const { update } = useListeningLogs();
@@ -219,7 +243,9 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 404,
-        json: async () => ({ message: "Not Found" }),
+        json: async () => {
+          return { message: "Not Found" };
+        },
       });
 
       const { update } = useListeningLogs();
@@ -268,7 +294,9 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
-        json: async () => ({ message: "Unauthorized" }),
+        json: async () => {
+          return { message: "Unauthorized" };
+        },
       });
 
       const { deleteLog } = useListeningLogs();
@@ -284,7 +312,9 @@ describe("useListeningLogs", () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 404,
-        json: async () => ({ message: "Not Found" }),
+        json: async () => {
+          return { message: "Not Found" };
+        },
       });
 
       const { deleteLog } = useListeningLogs();

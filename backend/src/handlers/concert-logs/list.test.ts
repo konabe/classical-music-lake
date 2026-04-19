@@ -4,19 +4,23 @@ import type { ConcertLog } from "../../types";
 import { handler } from "./list";
 import { makeAuthEvent } from "../../test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  update: vi.fn(),
-  remove: vi.fn(),
-}));
+const mockRepo = vi.hoisted(() => {
+  return {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findByUserId: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  };
+});
 
-vi.mock("../../repositories/concert-log-repository", () => ({
-  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("../../repositories/concert-log-repository", () => {
+  return {
+    DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
+      return mockRepo;
+    }),
+  };
+});
 
 const mockContext = {} as Parameters<typeof handler>[1];
 const mockCallback = { signal: new AbortController().signal };
@@ -24,15 +28,17 @@ const mockCallback = { signal: new AbortController().signal };
 const TEST_USER_ID = "cognito-sub-user-123";
 const mockEvent = makeAuthEvent(TEST_USER_ID);
 
-const makeConcertLog = (id: string, concertDate: string, userId = TEST_USER_ID): ConcertLog => ({
-  id,
-  userId,
-  title: "定期演奏会",
-  concertDate,
-  venue: "サントリーホール",
-  createdAt: "2024-06-01T09:00:00.000Z",
-  updatedAt: "2024-06-01T09:00:00.000Z",
-});
+const makeConcertLog = (id: string, concertDate: string, userId = TEST_USER_ID): ConcertLog => {
+  return {
+    id,
+    userId,
+    title: "定期演奏会",
+    concertDate,
+    venue: "サントリーホール",
+    createdAt: "2024-06-01T09:00:00.000Z",
+    updatedAt: "2024-06-01T09:00:00.000Z",
+  };
+};
 
 describe("GET /concert-logs (list)", () => {
   beforeEach(() => {

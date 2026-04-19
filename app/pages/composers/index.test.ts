@@ -28,21 +28,23 @@ const composersPending = ref<boolean>(false);
 const composersError = ref<Error | null>(null);
 const composersHasMore = ref<boolean>(true);
 
-mockNuxtImport("useComposersPaginated", () =>
-  vi.fn(() => ({
-    items: composersItems,
-    nextCursor: ref(null),
-    pending: composersPending,
-    error: composersError,
-    hasMore: composersHasMore,
-    loadMore: mockLoadMore,
-    reset: mockReset,
-    retry: mockRetry,
-    createComposer: vi.fn(),
-    updateComposer: vi.fn(),
-    deleteComposer: mockDeleteComposer,
-  }))
-);
+mockNuxtImport("useComposersPaginated", () => {
+  return vi.fn(() => {
+    return {
+      items: composersItems,
+      nextCursor: ref(null),
+      pending: composersPending,
+      error: composersError,
+      hasMore: composersHasMore,
+      loadMore: mockLoadMore,
+      reset: mockReset,
+      retry: mockRetry,
+      createComposer: vi.fn(),
+      updateComposer: vi.fn(),
+      deleteComposer: mockDeleteComposer,
+    };
+  });
+});
 
 const mockFetch = vi.fn();
 
@@ -72,7 +74,9 @@ beforeEach(() => {
   vi.stubGlobal("$fetch", mockFetch);
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => {
+      return true;
+    })
   );
   vi.stubGlobal("alert", vi.fn());
   vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
@@ -120,7 +124,9 @@ describe("ComposersPage", () => {
     it("削除キャンセル時は deleteComposer が呼ばれない", async () => {
       vi.stubGlobal(
         "confirm",
-        vi.fn(() => false)
+        vi.fn(() => {
+          return false;
+        })
       );
       const wrapper = await mountSuspended(ComposersPage);
       await flushPromises();

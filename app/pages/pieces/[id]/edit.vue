@@ -4,9 +4,13 @@ import type { UpdatePieceInput } from "~/types";
 definePageMeta({ middleware: ["admin"] });
 
 const route = useRoute();
-const id = computed(() => route.params.id as string);
+const id = computed(() => {
+  return route.params.id as string;
+});
 
-const { data: piece, error } = await usePiece(() => id.value);
+const { data: piece, error } = await usePiece(() => {
+  return id.value;
+});
 const { updatePiece } = usePiecesPaginated();
 const errorMessage = ref("");
 

@@ -52,4 +52,6 @@ export class ComposerUsecase {
   }
 }
 
-export const createComposerUsecase = () => new ComposerUsecase(new DynamoDBComposerRepository());
+export const createComposerUsecase = () => {
+  return new ComposerUsecase(new DynamoDBComposerRepository());
+};

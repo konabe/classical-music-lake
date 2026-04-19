@@ -97,7 +97,9 @@ export class AuthUsecase {
     userName: string
   ): Promise<boolean> {
     const users = await this.repo.listUsersByEmail(userPoolId, email);
-    const existingUser = users.find((u) => u.status === "CONFIRMED");
+    const existingUser = users.find((u) => {
+      return u.status === "CONFIRMED";
+    });
 
     if (existingUser === undefined) {
       return false;
@@ -122,4 +124,6 @@ export class AuthUsecase {
   }
 }
 
-export const createAuthUsecase = () => new AuthUsecase(new CognitoAuthRepository());
+export const createAuthUsecase = () => {
+  return new AuthUsecase(new CognitoAuthRepository());
+};

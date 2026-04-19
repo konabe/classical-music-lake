@@ -14,24 +14,34 @@ const samplePiece: Piece = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
-vi.mock("~/composables/usePieces", () => ({
-  usePiecesPaginated: vi.fn(),
-  usePiecesAll: vi.fn(),
-  usePiece: () => ({ data: ref(samplePiece), error: ref(null) }),
-}));
+vi.mock("~/composables/usePieces", () => {
+  return {
+    usePiecesPaginated: vi.fn(),
+    usePiecesAll: vi.fn(),
+    usePiece: () => {
+      return { data: ref(samplePiece), error: ref(null) };
+    },
+  };
+});
 
-vi.mock("~/composables/useListeningLogs", () => ({
-  useListeningLogs: () => ({
-    data: ref([]),
-    error: ref(null),
-    pending: ref(false),
-    refresh: vi.fn(),
-    create: mockCreate,
-    update: vi.fn(),
-    deleteLog: vi.fn(),
-  }),
-  useListeningLog: () => ({ data: ref(null), error: ref(null) }),
-}));
+vi.mock("~/composables/useListeningLogs", () => {
+  return {
+    useListeningLogs: () => {
+      return {
+        data: ref([]),
+        error: ref(null),
+        pending: ref(false),
+        refresh: vi.fn(),
+        create: mockCreate,
+        update: vi.fn(),
+        deleteLog: vi.fn(),
+      };
+    },
+    useListeningLog: () => {
+      return { data: ref(null), error: ref(null) };
+    },
+  };
+});
 
 beforeEach(() => {
   mockCreate.mockClear();

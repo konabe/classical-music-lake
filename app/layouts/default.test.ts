@@ -4,12 +4,16 @@ import DefaultLayout from "./default.vue";
 const mockLogout = vi.fn();
 const mockIsAuthenticated = vi.fn();
 
-vi.mock("~/composables/useAuth", () => ({
-  useAuth: () => ({
-    isAuthenticated: mockIsAuthenticated,
-    logout: mockLogout,
-  }),
-}));
+vi.mock("~/composables/useAuth", () => {
+  return {
+    useAuth: () => {
+      return {
+        isAuthenticated: mockIsAuthenticated,
+        logout: mockLogout,
+      };
+    },
+  };
+});
 
 beforeEach(() => {
   mockLogout.mockClear();

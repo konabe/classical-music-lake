@@ -7,27 +7,39 @@ import {
   PIECES_ALL_MAX_TOTAL,
 } from "~/types";
 
-const { mockUseFetch } = vi.hoisted(() => ({
-  mockUseFetch: vi.fn(),
-}));
+const { mockUseFetch } = vi.hoisted(() => {
+  return {
+    mockUseFetch: vi.fn(),
+  };
+});
 
 mockUseFetch.mockReturnValue({ data: ref(null), error: ref(null), pending: ref(false) });
 
-mockNuxtImport("useApiBase", () => () => "/api");
-mockNuxtImport("useFetch", () => mockUseFetch);
+mockNuxtImport("useApiBase", () => {
+  return () => {
+    return "/api";
+  };
+});
+mockNuxtImport("useFetch", () => {
+  return mockUseFetch;
+});
 
 const mockFetch = vi.fn();
 
-const makePiece = (id: string, title = `title-${id}`): Piece => ({
-  id,
-  title,
-  composer: "composer",
-  createdAt: "2024-01-01T00:00:00.000Z",
-  updatedAt: "2024-01-01T00:00:00.000Z",
-});
+const makePiece = (id: string, title = `title-${id}`): Piece => {
+  return {
+    id,
+    title,
+    composer: "composer",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  };
+};
 
 const flush = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => {
+    return setTimeout(resolve, 0);
+  });
 };
 
 beforeEach(() => {
@@ -221,7 +233,9 @@ describe("usePiecesAll", () => {
   });
 
   it(`総件数が上限 ${PIECES_ALL_MAX_TOTAL} を超えると error にする`, async () => {
-    const bigPage = Array.from({ length: 2500 }, (_, i) => makePiece(String(i)));
+    const bigPage = Array.from({ length: 2500 }, (_, i) => {
+      return makePiece(String(i));
+    });
     mockFetch
       .mockResolvedValueOnce({ items: bigPage, nextCursor: "c1" })
       .mockResolvedValueOnce({ items: bigPage, nextCursor: "c2" })
@@ -254,7 +268,9 @@ describe("usePiecesAll", () => {
 
 describe("usePiece", () => {
   it("正しい URL で useFetch を呼び出す", () => {
-    usePiece(() => "piece-456");
+    usePiece(() => {
+      return "piece-456";
+    });
     expect(mockUseFetch).toHaveBeenCalledWith(expect.any(Function), expect.anything());
   });
 });

@@ -7,17 +7,21 @@ import type { ConcertLog, Piece } from "~/types";
 
 const mockDeleteLog = vi.fn();
 
-vi.mock("~/composables/useConcertLogs", () => ({
-  useConcertLogs: () => ({
-    data: null,
-    error: null,
-    pending: false,
-    refresh: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    deleteLog: mockDeleteLog,
-  }),
-}));
+vi.mock("~/composables/useConcertLogs", () => {
+  return {
+    useConcertLogs: () => {
+      return {
+        data: null,
+        error: null,
+        pending: false,
+        refresh: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        deleteLog: mockDeleteLog,
+      };
+    },
+  };
+});
 
 const mockPieces: Piece[] = [
   {
@@ -29,28 +33,34 @@ const mockPieces: Piece[] = [
   },
 ];
 
-vi.mock("~/composables/usePieces", () => ({
-  usePiecesPaginated: () => ({
-    items: ref([]),
-    nextCursor: ref(null),
-    pending: ref(false),
-    error: ref(null),
-    hasMore: ref(true),
-    loadMore: vi.fn(),
-    reset: vi.fn(),
-    retry: vi.fn(),
-    createPiece: vi.fn(),
-    updatePiece: vi.fn(),
-  }),
-  usePiecesAll: () => ({
-    data: ref(mockPieces),
-    pending: ref(false),
-    error: ref(null),
-    refresh: vi.fn(),
-    createPiece: vi.fn(),
-    updatePiece: vi.fn(),
-  }),
-}));
+vi.mock("~/composables/usePieces", () => {
+  return {
+    usePiecesPaginated: () => {
+      return {
+        items: ref([]),
+        nextCursor: ref(null),
+        pending: ref(false),
+        error: ref(null),
+        hasMore: ref(true),
+        loadMore: vi.fn(),
+        reset: vi.fn(),
+        retry: vi.fn(),
+        createPiece: vi.fn(),
+        updatePiece: vi.fn(),
+      };
+    },
+    usePiecesAll: () => {
+      return {
+        data: ref(mockPieces),
+        pending: ref(false),
+        error: ref(null),
+        refresh: vi.fn(),
+        createPiece: vi.fn(),
+        updatePiece: vi.fn(),
+      };
+    },
+  };
+});
 
 const sampleLog: ConcertLog = {
   id: "log-123",
@@ -68,7 +78,9 @@ beforeEach(() => {
   mockDeleteLog.mockClear();
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => {
+      return true;
+    })
   );
 });
 
@@ -127,7 +139,9 @@ describe("ConcertLogDetailTemplate", () => {
     it("confirm でキャンセルすると deleteLog が呼ばれない", async () => {
       vi.stubGlobal(
         "confirm",
-        vi.fn(() => false)
+        vi.fn(() => {
+          return false;
+        })
       );
       const wrapper = await mountSuspended(ConcertLogDetailTemplate, {
         props: { log: sampleLog },

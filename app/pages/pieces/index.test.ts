@@ -26,20 +26,22 @@ const piecesPending = ref<boolean>(false);
 const piecesError = ref<Error | null>(null);
 const piecesHasMore = ref<boolean>(true);
 
-mockNuxtImport("usePiecesPaginated", () =>
-  vi.fn(() => ({
-    items: piecesItems,
-    nextCursor: ref(null),
-    pending: piecesPending,
-    error: piecesError,
-    hasMore: piecesHasMore,
-    loadMore: mockLoadMore,
-    reset: mockReset,
-    retry: mockRetry,
-    createPiece: vi.fn(),
-    updatePiece: vi.fn(),
-  }))
-);
+mockNuxtImport("usePiecesPaginated", () => {
+  return vi.fn(() => {
+    return {
+      items: piecesItems,
+      nextCursor: ref(null),
+      pending: piecesPending,
+      error: piecesError,
+      hasMore: piecesHasMore,
+      loadMore: mockLoadMore,
+      reset: mockReset,
+      retry: mockRetry,
+      createPiece: vi.fn(),
+      updatePiece: vi.fn(),
+    };
+  });
+});
 
 const mockFetch = vi.fn();
 
@@ -69,7 +71,9 @@ beforeEach(() => {
   vi.stubGlobal("$fetch", mockFetch);
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => {
+      return true;
+    })
   );
   vi.stubGlobal("alert", vi.fn());
   vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
@@ -159,7 +163,9 @@ describe("PiecesPage", () => {
     it("削除キャンセル時は $fetch が呼ばれない", async () => {
       vi.stubGlobal(
         "confirm",
-        vi.fn(() => false)
+        vi.fn(() => {
+          return false;
+        })
       );
       const wrapper = await mountSuspended(PiecesPage);
       await flushPromises();

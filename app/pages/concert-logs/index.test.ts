@@ -15,18 +15,24 @@ const sampleLogs: ConcertLog[] = [
   },
 ];
 
-vi.mock("~/composables/useConcertLogs", () => ({
-  useConcertLogs: () => ({
-    data: sampleLogs,
-    error: null,
-    pending: false,
-    refresh: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    deleteLog: vi.fn(),
-  }),
-  useConcertLog: () => ({ data: null, error: null }),
-}));
+vi.mock("~/composables/useConcertLogs", () => {
+  return {
+    useConcertLogs: () => {
+      return {
+        data: sampleLogs,
+        error: null,
+        pending: false,
+        refresh: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        deleteLog: vi.fn(),
+      };
+    },
+    useConcertLog: () => {
+      return { data: null, error: null };
+    },
+  };
+});
 
 describe("ConcertLogsPage", () => {
   it("ConcertLogsTemplate が表示される", async () => {

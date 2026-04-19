@@ -6,25 +6,33 @@ type TestInput = { name: string; value?: number };
 
 describe("parseRequestBody", () => {
   it("null の場合は 400 を投げる", () => {
-    expect(() => parseRequestBody<TestInput>(null)).toThrow("Request body is required");
+    expect(() => {
+      return parseRequestBody<TestInput>(null);
+    }).toThrow("Request body is required");
   });
 
   it("undefined の場合は 400 を投げる", () => {
-    expect(() => parseRequestBody<TestInput>(undefined)).toThrow("Request body is required");
+    expect(() => {
+      return parseRequestBody<TestInput>(undefined);
+    }).toThrow("Request body is required");
   });
 
   it("配列の場合は 400 を投げる", () => {
-    expect(() => parseRequestBody<TestInput>([])).toThrow("Request body must be a JSON object");
+    expect(() => {
+      return parseRequestBody<TestInput>([]);
+    }).toThrow("Request body must be a JSON object");
   });
 
   it("文字列の場合は 400 を投げる", () => {
-    expect(() => parseRequestBody<TestInput>("string")).toThrow(
-      "Request body must be a JSON object"
-    );
+    expect(() => {
+      return parseRequestBody<TestInput>("string");
+    }).toThrow("Request body must be a JSON object");
   });
 
   it("数値の場合は 400 を投げる", () => {
-    expect(() => parseRequestBody<TestInput>(42)).toThrow("Request body must be a JSON object");
+    expect(() => {
+      return parseRequestBody<TestInput>(42);
+    }).toThrow("Request body must be a JSON object");
   });
 
   it("オブジェクトの場合はそのまま返す", () => {
@@ -40,7 +48,11 @@ describe("parseRequestBody", () => {
 
   describe("スキーマあり", () => {
     const schema = z.object({
-      name: z.string({ error: () => "name is required" }),
+      name: z.string({
+        error: () => {
+          return "name is required";
+        },
+      }),
       value: z.number().optional(),
     });
 
@@ -50,7 +62,9 @@ describe("parseRequestBody", () => {
     });
 
     it("スキーマに適合しない場合は 400 を投げる", () => {
-      expect(() => parseRequestBody({}, schema)).toThrow("name is required");
+      expect(() => {
+        return parseRequestBody({}, schema);
+      }).toThrow("name is required");
     });
 
     it("スキーマにない余分なフィールドは除去される", () => {

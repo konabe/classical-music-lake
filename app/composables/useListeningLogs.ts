@@ -10,5 +10,6 @@ export const useListeningLogs = () => {
   return { ...rest, deleteLog: deleteItem };
 };
 
-export const useListeningLog = (id: () => string) =>
-  useCrudResourceItem<ListeningLog>("listening-logs", id);
+export const useListeningLog = (id: () => string) => {
+  return useCrudResourceItem<ListeningLog>("listening-logs", id);
+};

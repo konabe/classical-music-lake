@@ -20,7 +20,9 @@ describe("AppEnv", () => {
 
     it("COGNITO_CLIENT_ID が未設定の場合は例外をスローする", () => {
       delete process.env.COGNITO_CLIENT_ID;
-      expect(() => new AppEnv()).toThrow("COGNITO_CLIENT_ID environment variable is required");
+      expect(() => {
+        return new AppEnv();
+      }).toThrow("COGNITO_CLIENT_ID environment variable is required");
     });
   });
 

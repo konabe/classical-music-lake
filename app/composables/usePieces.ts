@@ -21,11 +21,13 @@ const fetchPage = async (
   return $fetch<PaginatedResponse<Piece>>(`${apiBase}/pieces`, { query });
 };
 
-const postPiece = (apiBase: string, input: CreatePieceInput): Promise<Piece> =>
-  $fetch<Piece>(`${apiBase}/pieces`, { method: "POST", body: input });
+const postPiece = (apiBase: string, input: CreatePieceInput): Promise<Piece> => {
+  return $fetch<Piece>(`${apiBase}/pieces`, { method: "POST", body: input });
+};
 
-const putPiece = (apiBase: string, id: string, input: UpdatePieceInput): Promise<Piece> =>
-  $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
+const putPiece = (apiBase: string, id: string, input: UpdatePieceInput): Promise<Piece> => {
+  return $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
+};
 
 /**
  * 楽曲マスタ一覧の無限スクロール / カーソル型ページング用 composable。
@@ -174,5 +176,7 @@ export const usePiecesAll = () => {
 
 export const usePiece = (id: () => string) => {
   const apiBase = useApiBase();
-  return useFetch<Piece>(() => `${apiBase}/pieces/${id()}`);
+  return useFetch<Piece>(() => {
+    return `${apiBase}/pieces/${id()}`;
+  });
 };

@@ -14,11 +14,13 @@ describe("ユーザーログアウト E2E テスト", () => {
   describe("ログアウトボタンの表示", () => {
     it("ログイン状態のとき、ナビゲーションバーにログアウトボタンが表示される", async () => {
       const page = await createPage();
-      await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
+      await page.addInitScript(() => {
+        return localStorage.setItem("accessToken", "fake-token-for-test");
+      });
 
-      await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
-      );
+      await page.route("http://api.test/listening-logs", (route) => {
+        return route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
 
       await page.goto(url("/listening-logs"));
       await page.waitForLoadState("networkidle");
@@ -42,11 +44,13 @@ describe("ユーザーログアウト E2E テスト", () => {
   describe("ログアウト処理", () => {
     it("ログアウトボタン押下時、localStorage の accessToken が削除される", async () => {
       const page = await createPage();
-      await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
+      await page.addInitScript(() => {
+        return localStorage.setItem("accessToken", "fake-token-for-test");
+      });
 
-      await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
-      );
+      await page.route("http://api.test/listening-logs", (route) => {
+        return route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
 
       await page.goto(url("/listening-logs"));
       await page.waitForLoadState("networkidle");
@@ -55,7 +59,9 @@ describe("ユーザーログアウト E2E テスト", () => {
       await page.click("button.logout-button");
       await page.waitForLoadState("networkidle");
 
-      const token = await page.evaluate(() => localStorage.getItem("accessToken"));
+      const token = await page.evaluate(() => {
+        return localStorage.getItem("accessToken");
+      });
       expect(token).toBeNull();
     });
   });
@@ -63,11 +69,13 @@ describe("ユーザーログアウト E2E テスト", () => {
   describe("リダイレクト", () => {
     it("ログアウト後、ログイン画面にリダイレクトされる", async () => {
       const page = await createPage();
-      await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
+      await page.addInitScript(() => {
+        return localStorage.setItem("accessToken", "fake-token-for-test");
+      });
 
-      await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
-      );
+      await page.route("http://api.test/listening-logs", (route) => {
+        return route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
 
       await page.goto(url("/listening-logs"));
       await page.waitForLoadState("networkidle");
@@ -83,11 +91,13 @@ describe("ユーザーログアウト E2E テスト", () => {
   describe("ログイン画面での動作確認", () => {
     it("ログアウト後、ログイン画面が表示される", async () => {
       const page = await createPage();
-      await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
+      await page.addInitScript(() => {
+        return localStorage.setItem("accessToken", "fake-token-for-test");
+      });
 
-      await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
-      );
+      await page.route("http://api.test/listening-logs", (route) => {
+        return route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
 
       await page.goto(url("/listening-logs"));
       await page.waitForLoadState("networkidle");

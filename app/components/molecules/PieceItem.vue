@@ -13,11 +13,13 @@ const emit = defineEmits<{
   play: [];
 }>();
 
-const hasYouTubeThumbnail = computed(
-  () => props.piece.videoUrl !== undefined && isYouTubeUrl(props.piece.videoUrl)
-);
+const hasYouTubeThumbnail = computed(() => {
+  return props.piece.videoUrl !== undefined && isYouTubeUrl(props.piece.videoUrl);
+});
 
-const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイル`);
+const thumbnailAlt = computed(() => {
+  return `${props.piece.title} の動画サムネイル`;
+});
 </script>
 
 <template>

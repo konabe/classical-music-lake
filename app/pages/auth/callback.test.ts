@@ -3,11 +3,15 @@ import CallbackPage from "./callback.vue";
 
 const mockHandleOAuthCallback = vi.fn();
 
-vi.mock("~/composables/useAuth", () => ({
-  useAuth: () => ({
-    handleOAuthCallback: mockHandleOAuthCallback,
-  }),
-}));
+vi.mock("~/composables/useAuth", () => {
+  return {
+    useAuth: () => {
+      return {
+        handleOAuthCallback: mockHandleOAuthCallback,
+      };
+    },
+  };
+});
 
 beforeEach(() => {
   mockHandleOAuthCallback.mockClear();

@@ -18,7 +18,9 @@ export const useCrudResource = <TEntity, TCreateInput, TUpdateInput>(resourceNam
   const baseUrl = `${apiBase}/${resourceName}`;
 
   const list = useFetch<TEntity[]>(baseUrl, {
-    headers: computed(() => getAuthHeaders()),
+    headers: computed(() => {
+      return getAuthHeaders();
+    }),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
@@ -84,15 +86,22 @@ export const useCrudResource = <TEntity, TCreateInput, TUpdateInput>(resourceNam
 export const useCrudResourceItem = <TEntity>(resourceName: string, id: () => string) => {
   const apiBase = useApiBase();
   const { getAuthHeaders, handleAuthError } = useAuthenticatedApi();
-  const result = useFetch<TEntity>(() => `${apiBase}/${resourceName}/${id()}`, {
-    headers: computed(() => getAuthHeaders()),
-    async onResponseError({ response }) {
-      const refreshed = await handleAuthError(response.status);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
-      if (refreshed === true) {
-        await result.refresh();
-      }
+  const result = useFetch<TEntity>(
+    () => {
+      return `${apiBase}/${resourceName}/${id()}`;
     },
-  });
+    {
+      headers: computed(() => {
+        return getAuthHeaders();
+      }),
+      async onResponseError({ response }) {
+        const refreshed = await handleAuthError(response.status);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
+        if (refreshed === true) {
+          await result.refresh();
+        }
+      },
+    }
+  );
   return result;
 };

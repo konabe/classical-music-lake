@@ -52,4 +52,6 @@ export class PieceUsecase {
   }
 }
 
-export const createPieceUsecase = () => new PieceUsecase(new DynamoDBPieceRepository());
+export const createPieceUsecase = () => {
+  return new PieceUsecase(new DynamoDBPieceRepository());
+};

@@ -13,19 +13,23 @@ import {
   TEST_USER_ID,
 } from "../../test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findAll: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
+const mockRepo = vi.hoisted(() => {
+  return {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findAll: vi.fn(),
+    saveWithOptimisticLock: vi.fn(),
+    remove: vi.fn(),
+  };
+});
 
-vi.mock("../../repositories/piece-repository", () => ({
-  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("../../repositories/piece-repository", () => {
+  return {
+    DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
+      return mockRepo;
+    }),
+  };
+});
 
 type AuthMode = "admin" | "non-admin" | "none";
 

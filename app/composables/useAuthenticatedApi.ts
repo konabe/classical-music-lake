@@ -27,7 +27,9 @@ export const useAuthenticatedApi = () => {
   };
 
   const throwResponseError = async (response: Response): Promise<never> => {
-    const errorBody = await response.json().catch(() => ({}));
+    const errorBody = await response.json().catch(() => {
+      return {};
+    });
     const message =
       (errorBody as { message?: string }).message ??
       `Request failed with status ${response.status}`;

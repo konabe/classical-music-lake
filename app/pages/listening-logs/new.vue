@@ -5,7 +5,9 @@ definePageMeta({ middleware: "auth" });
 
 const { create } = useListeningLogs();
 const { error, handleSubmit } = useSubmitHandler<CreateListeningLogInput>({
-  submit: (values) => create(values),
+  submit: (values) => {
+    return create(values);
+  },
   redirectTo: "/listening-logs",
   errorMessage: "記録の作成に失敗しました。",
 });

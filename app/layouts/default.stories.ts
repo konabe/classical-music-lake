@@ -10,12 +10,14 @@ export default meta;
 type Story = StoryObj<typeof DefaultLayout>;
 
 export const LoggedIn: Story = {
-  render: () => ({
-    components: { DefaultLayout },
-    template: `
+  render: () => {
+    return {
+      components: { DefaultLayout },
+      template: `
       <DefaultLayout>
         <p style="padding: 1rem;">ページコンテンツがここに入ります。</p>
       </DefaultLayout>
     `,
-  }),
+    };
+  },
 };

@@ -101,8 +101,12 @@ export class CognitoAuthRepository implements AuthRepository {
       })
     );
     return (result.Users ?? [])
-      .filter((u) => u.Username !== undefined)
-      .map((u) => ({ username: u.Username!, status: u.UserStatus ?? "UNKNOWN" }));
+      .filter((u) => {
+        return u.Username !== undefined;
+      })
+      .map((u) => {
+        return { username: u.Username!, status: u.UserStatus ?? "UNKNOWN" };
+      });
   }
 
   async linkProviderForUser(

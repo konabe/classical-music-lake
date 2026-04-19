@@ -3,10 +3,12 @@ import { flushPromises } from "@vue/test-utils";
 import ListeningLogDetailPage from "./index.vue";
 import type { ListeningLog } from "~/types";
 
-vi.mock("~/composables/useAuth", () => ({
-  ACCESS_TOKEN_KEY: "accessToken",
-  useAuth: vi.fn(),
-}));
+vi.mock("~/composables/useAuth", () => {
+  return {
+    ACCESS_TOKEN_KEY: "accessToken",
+    useAuth: vi.fn(),
+  };
+});
 
 const mockDeleteLog = vi.fn();
 
@@ -22,24 +24,32 @@ const sampleLog: ListeningLog = {
   updatedAt: "2024-03-01T14:00:00.000Z",
 };
 
-vi.mock("~/composables/useListeningLogs", () => ({
-  useListeningLog: () => ({ data: sampleLog, error: null, pending: false }),
-  useListeningLogs: () => ({
-    data: null,
-    error: null,
-    pending: false,
-    refresh: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    deleteLog: mockDeleteLog,
-  }),
-}));
+vi.mock("~/composables/useListeningLogs", () => {
+  return {
+    useListeningLog: () => {
+      return { data: sampleLog, error: null, pending: false };
+    },
+    useListeningLogs: () => {
+      return {
+        data: null,
+        error: null,
+        pending: false,
+        refresh: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        deleteLog: mockDeleteLog,
+      };
+    },
+  };
+});
 
 beforeEach(() => {
   mockDeleteLog.mockClear();
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => {
+      return true;
+    })
   );
 });
 
@@ -69,7 +79,9 @@ describe("ListeningLogDetailPage（結合）", () => {
   it("キャンセル時は deleteLog が呼ばれない", async () => {
     vi.stubGlobal(
       "confirm",
-      vi.fn(() => false)
+      vi.fn(() => {
+        return false;
+      })
     );
     const wrapper = await mountSuspended(ListeningLogDetailPage);
     await wrapper.find(".btn-danger").trigger("click");

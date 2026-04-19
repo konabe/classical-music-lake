@@ -1,11 +1,11 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import ListeningLogNewTemplate from "./ListeningLogNewTemplate.vue";
 
-mockNuxtImport("usePiecesAll", () =>
-  vi
+mockNuxtImport("usePiecesAll", () => {
+  return vi
     .fn()
-    .mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false), refresh: vi.fn() })
-);
+    .mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false), refresh: vi.fn() });
+});
 
 describe("ListeningLogNewTemplate", () => {
   it("ページタイトルが表示される", async () => {

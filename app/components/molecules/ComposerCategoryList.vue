@@ -7,12 +7,14 @@ const props = defineProps<{
   composer: Pick<Composer, "era" | "region">;
 }>();
 
-const categories = computed(() =>
-  [
+const categories = computed(() => {
+  return [
     { kind: "era" as Kind, label: "時代", value: props.composer.era },
     { kind: "region" as Kind, label: "地域", value: props.composer.region },
-  ].filter((c): c is { kind: Kind; label: string; value: string } => c.value !== undefined)
-);
+  ].filter((c): c is { kind: Kind; label: string; value: string } => {
+    return c.value !== undefined;
+  });
+});
 </script>
 
 <template>

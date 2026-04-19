@@ -19,16 +19,20 @@ const mockPieces: Piece[] = [
   },
 ];
 
-vi.mock("~/composables/usePieces", () => ({
-  usePiecesAll: () => ({
-    data: ref(mockPieces),
-    pending: ref(false),
-    error: ref(null),
-    refresh: vi.fn(),
-    createPiece: vi.fn(),
-    updatePiece: vi.fn(),
-  }),
-}));
+vi.mock("~/composables/usePieces", () => {
+  return {
+    usePiecesAll: () => {
+      return {
+        data: ref(mockPieces),
+        pending: ref(false),
+        error: ref(null),
+        refresh: vi.fn(),
+        createPiece: vi.fn(),
+        updatePiece: vi.fn(),
+      };
+    },
+  };
+});
 
 describe("ConcertLogForm", () => {
   describe("表示", () => {

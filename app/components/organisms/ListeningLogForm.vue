@@ -30,7 +30,9 @@ const selectedVideoUrl = ref<string | undefined>(undefined);
 
 function handlePieceSelect(e: Event) {
   const id = (e.target as HTMLSelectElement).value;
-  const found = pieces.value?.find((p) => p.id === id);
+  const found = pieces.value?.find((p) => {
+    return p.id === id;
+  });
   form.piece = found?.title ?? "";
   form.composer = found?.composer ?? "";
   selectedVideoUrl.value = found?.videoUrl;

@@ -1,9 +1,11 @@
 import { ID_TOKEN_KEY } from "~/composables/useAuth";
 
-const { mockNavigateTo, mockIsAdmin } = vi.hoisted(() => ({
-  mockNavigateTo: vi.fn(),
-  mockIsAdmin: vi.fn(),
-}));
+const { mockNavigateTo, mockIsAdmin } = vi.hoisted(() => {
+  return {
+    mockNavigateTo: vi.fn(),
+    mockIsAdmin: vi.fn(),
+  };
+});
 
 vi.mock("#app/composables/router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("#app/composables/router")>();
@@ -17,9 +19,11 @@ vi.mock("~/composables/useAuth", async (importOriginal) => {
   const actual = await importOriginal<typeof import("~/composables/useAuth")>();
   return {
     ...actual,
-    useAuth: () => ({
-      isAdmin: mockIsAdmin,
-    }),
+    useAuth: () => {
+      return {
+        isAdmin: mockIsAdmin,
+      };
+    },
   };
 });
 

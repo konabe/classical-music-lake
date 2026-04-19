@@ -10,7 +10,9 @@ describe("FormActions", () => {
     it("キャンセルボタンが表示される", async () => {
       const wrapper = await mountSuspended(FormActions, globalComponents);
       const buttons = wrapper.findAll("button");
-      const cancelButton = buttons.find((b) => b.text() === "キャンセル");
+      const cancelButton = buttons.find((b) => {
+        return b.text() === "キャンセル";
+      });
       expect(cancelButton).toBeDefined();
     });
 
@@ -55,7 +57,9 @@ describe("FormActions", () => {
     it("キャンセルボタンクリックで cancel イベントが emit される", async () => {
       const wrapper = await mountSuspended(FormActions, globalComponents);
       const buttons = wrapper.findAll("button");
-      const cancelButton = buttons.find((b) => b.text() === "キャンセル");
+      const cancelButton = buttons.find((b) => {
+        return b.text() === "キャンセル";
+      });
       await cancelButton?.trigger("click");
       expect(wrapper.emitted("cancel")).toBeDefined();
     });

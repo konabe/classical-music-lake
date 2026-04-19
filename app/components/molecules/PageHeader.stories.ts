@@ -14,11 +14,15 @@ export const ListeningLogs: Story = {
     title: "鑑賞記録",
     newPagePath: "/listening-logs/new",
   },
-  render: (args) => ({
-    components: { PageHeader },
-    setup: () => ({ args }),
-    template: `<PageHeader v-bind="args">+ 新しい記録</PageHeader>`,
-  }),
+  render: (args) => {
+    return {
+      components: { PageHeader },
+      setup: () => {
+        return { args };
+      },
+      template: `<PageHeader v-bind="args">+ 新しい記録</PageHeader>`,
+    };
+  },
 };
 
 export const Pieces: Story = {
@@ -26,9 +30,13 @@ export const Pieces: Story = {
     title: "楽曲マスタ",
     newPagePath: "/pieces/new",
   },
-  render: (args) => ({
-    components: { PageHeader },
-    setup: () => ({ args }),
-    template: `<PageHeader v-bind="args">+ 新しい楽曲</PageHeader>`,
-  }),
+  render: (args) => {
+    return {
+      components: { PageHeader },
+      setup: () => {
+        return { args };
+      },
+      template: `<PageHeader v-bind="args">+ 新しい楽曲</PageHeader>`,
+    };
+  },
 };

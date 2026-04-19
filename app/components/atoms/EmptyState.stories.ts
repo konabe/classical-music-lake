@@ -11,16 +11,20 @@ type Story = StoryObj<typeof EmptyState>;
 
 export const NoLogs: Story = {
   args: {},
-  render: () => ({
-    components: { EmptyState },
-    template: "<EmptyState>まだ記録がありません。最初の鑑賞記録を追加しましょう。</EmptyState>",
-  }),
+  render: () => {
+    return {
+      components: { EmptyState },
+      template: "<EmptyState>まだ記録がありません。最初の鑑賞記録を追加しましょう。</EmptyState>",
+    };
+  },
 };
 
 export const NoPieces: Story = {
   args: {},
-  render: () => ({
-    components: { EmptyState },
-    template: "<EmptyState>楽曲が登録されていません。最初の楽曲を追加しましょう。</EmptyState>",
-  }),
+  render: () => {
+    return {
+      components: { EmptyState },
+      template: "<EmptyState>楽曲が登録されていません。最初の楽曲を追加しましょう。</EmptyState>",
+    };
+  },
 };

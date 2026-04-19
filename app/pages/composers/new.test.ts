@@ -5,22 +5,28 @@ import type { CreateComposerInput } from "~/types";
 
 const mockCreateComposer = vi.fn();
 
-vi.mock("~/composables/useComposers", () => ({
-  useComposersPaginated: () => ({
-    items: ref([]),
-    nextCursor: ref(null),
-    pending: ref(false),
-    error: ref(null),
-    hasMore: ref(true),
-    loadMore: vi.fn(),
-    reset: vi.fn(),
-    retry: vi.fn(),
-    createComposer: mockCreateComposer,
-    updateComposer: vi.fn(),
-    deleteComposer: vi.fn(),
-  }),
-  useComposer: () => ({ data: ref(null), error: ref(null) }),
-}));
+vi.mock("~/composables/useComposers", () => {
+  return {
+    useComposersPaginated: () => {
+      return {
+        items: ref([]),
+        nextCursor: ref(null),
+        pending: ref(false),
+        error: ref(null),
+        hasMore: ref(true),
+        loadMore: vi.fn(),
+        reset: vi.fn(),
+        retry: vi.fn(),
+        createComposer: mockCreateComposer,
+        updateComposer: vi.fn(),
+        deleteComposer: vi.fn(),
+      };
+    },
+    useComposer: () => {
+      return { data: ref(null), error: ref(null) };
+    },
+  };
+});
 
 beforeEach(() => {
   mockCreateComposer.mockClear();

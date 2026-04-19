@@ -12,8 +12,14 @@ const programPieces = computed(() => {
     return [];
   }
   return props.log.pieceIds
-    .map((id) => props.pieces.find((p) => p.id === id))
-    .filter((p): p is Piece => p !== undefined);
+    .map((id) => {
+      return props.pieces.find((p) => {
+        return p.id === id;
+      });
+    })
+    .filter((p): p is Piece => {
+      return p !== undefined;
+    });
 });
 </script>
 
