@@ -27,6 +27,9 @@ const postPiece = (apiBase: string, input: CreatePieceInput): Promise<Piece> =>
 const putPiece = (apiBase: string, id: string, input: UpdatePieceInput): Promise<Piece> =>
   $fetch<Piece>(`${apiBase}/pieces/${id}`, { method: "PUT", body: input });
 
+const deletePieceRequest = (apiBase: string, id: string): Promise<void> =>
+  $fetch(`${apiBase}/pieces/${id}`, { method: "DELETE" });
+
 /**
  * 楽曲マスタ一覧の無限スクロール / カーソル型ページング用 composable。
  * - items / nextCursor / pending / error / hasMore をリアクティブに公開
@@ -90,6 +93,11 @@ export const usePiecesPaginated = () => {
     return result;
   };
 
+  const deletePiece = async (id: string) => {
+    await deletePieceRequest(apiBase, id);
+    reset();
+  };
+
   return {
     items,
     nextCursor,
@@ -101,6 +109,7 @@ export const usePiecesPaginated = () => {
     retry,
     createPiece,
     updatePiece,
+    deletePiece,
   };
 };
 

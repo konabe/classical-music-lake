@@ -15,7 +15,19 @@ const samplePiece: Piece = {
 };
 
 vi.mock("~/composables/usePieces", () => ({
-  usePiecesPaginated: vi.fn(),
+  usePiecesPaginated: () => ({
+    items: ref([]),
+    nextCursor: ref(null),
+    pending: ref(false),
+    error: ref(null),
+    hasMore: ref(true),
+    loadMore: vi.fn(),
+    reset: vi.fn(),
+    retry: vi.fn(),
+    createPiece: vi.fn(),
+    updatePiece: vi.fn(),
+    deletePiece: vi.fn(),
+  }),
   usePiecesAll: vi.fn(),
   usePiece: () => ({ data: ref(samplePiece), error: ref(null) }),
 }));

@@ -3,7 +3,7 @@ import { flushPromises } from "@vue/test-utils";
 import PiecesPage from "./index.vue";
 import type { Piece } from "~/types";
 
-const { samplePieces, mockLoadMore, mockReset, mockRetry } = vi.hoisted(() => {
+const { samplePieces, mockLoadMore, mockReset, mockRetry, mockDeletePiece } = vi.hoisted(() => {
   const samplePieces: Piece[] = [
     {
       id: "piece-1",
@@ -18,6 +18,7 @@ const { samplePieces, mockLoadMore, mockReset, mockRetry } = vi.hoisted(() => {
     mockLoadMore: vi.fn(),
     mockReset: vi.fn(),
     mockRetry: vi.fn(),
+    mockDeletePiece: vi.fn(),
   };
 });
 
@@ -38,6 +39,7 @@ mockNuxtImport("usePiecesPaginated", () =>
     retry: mockRetry,
     createPiece: vi.fn(),
     updatePiece: vi.fn(),
+    deletePiece: mockDeletePiece,
   }))
 );
 
@@ -60,6 +62,7 @@ beforeEach(() => {
   mockLoadMore.mockClear();
   mockReset.mockClear();
   mockRetry.mockClear();
+  mockDeletePiece.mockClear();
   mockFetch.mockClear();
   piecesItems.value = [...samplePieces];
   piecesPending.value = false;
@@ -136,27 +139,26 @@ describe("PiecesPage", () => {
   });
 
   describe("削除", () => {
-    it("削除確認で OK を選ぶと $fetch が呼ばれる", async () => {
-      mockFetch.mockResolvedValue(undefined);
+    it("削除確認で OK を選ぶと deletePiece が呼ばれる", async () => {
+      mockDeletePiece.mockResolvedValue(undefined);
       const wrapper = await mountSuspended(PiecesPage);
       await flushPromises();
       await wrapper.find(".btn-danger").trigger("click");
       await flushPromises();
-      expect(mockFetch).toHaveBeenCalled();
+      expect(mockDeletePiece).toHaveBeenCalledWith("piece-1");
     });
 
-    it("削除後に reset と loadMore が呼ばれて再取得する", async () => {
-      mockFetch.mockResolvedValue(undefined);
+    it("削除後に loadMore が呼ばれて再取得する", async () => {
+      mockDeletePiece.mockResolvedValue(undefined);
       const wrapper = await mountSuspended(PiecesPage);
       await flushPromises();
       mockLoadMore.mockClear();
       await wrapper.find(".btn-danger").trigger("click");
       await flushPromises();
-      expect(mockReset).toHaveBeenCalled();
       expect(mockLoadMore).toHaveBeenCalled();
     });
 
-    it("削除キャンセル時は $fetch が呼ばれない", async () => {
+    it("削除キャンセル時は deletePiece が呼ばれない", async () => {
       vi.stubGlobal(
         "confirm",
         vi.fn(() => false)
@@ -164,7 +166,7 @@ describe("PiecesPage", () => {
       const wrapper = await mountSuspended(PiecesPage);
       await flushPromises();
       await wrapper.find(".btn-danger").trigger("click");
-      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockDeletePiece).not.toHaveBeenCalled();
     });
   });
 });

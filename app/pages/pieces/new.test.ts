@@ -17,6 +17,7 @@ vi.mock("~/composables/usePieces", () => ({
     retry: vi.fn(),
     createPiece: mockCreatePiece,
     updatePiece: vi.fn(),
+    deletePiece: vi.fn(),
   }),
   usePiecesAll: () => ({
     data: ref([]),

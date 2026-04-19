@@ -2,9 +2,9 @@
 import type { Piece, Rating } from "~/types";
 
 const route = useRoute();
-const apiBase = useApiBase();
 const { data: piece, error } = await usePiece(() => route.params.id as string);
 const { create } = useListeningLogs();
+const { deletePiece } = usePiecesPaginated();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
@@ -28,7 +28,7 @@ async function handleDelete(target: Piece) {
     return;
   }
   try {
-    await $fetch(`${apiBase}/pieces/${target.id}`, { method: "DELETE" });
+    await deletePiece(target.id);
     await navigateTo("/pieces");
   } catch {
     alert("削除に失敗しました。もう一度お試しください。");

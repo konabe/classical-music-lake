@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { Piece } from "~/types";
 
-const apiBase = useApiBase();
-const { items, pending, error, hasMore, loadMore, reset, retry } = usePiecesPaginated();
+const { items, pending, error, hasMore, loadMore, retry, deletePiece } = usePiecesPaginated();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
@@ -14,8 +13,7 @@ async function handleDelete(piece: Piece) {
     return;
   }
   try {
-    await $fetch(`${apiBase}/pieces/${piece.id}`, { method: "DELETE" });
-    reset();
+    await deletePiece(piece.id);
     await loadMore();
   } catch (err) {
     const message =
