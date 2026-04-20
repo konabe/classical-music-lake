@@ -1,22 +1,17 @@
 import { COMPOSERS_PAGE_SIZE_DEFAULT, COMPOSERS_PAGE_SIZE_MAX } from "~/types";
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
-import { usePaginatedList } from "./usePaginatedList";
-
-/**
- * GET /composers のレスポンス形式。
- */
-export type PaginatedComposersResponse = { items: Composer[]; nextCursor: string | null };
+import { usePaginatedList, type PageResult } from "./usePaginatedList";
 
 const fetchPage = async (
   apiBase: string,
   options: { limit: number; cursor?: string }
-): Promise<PaginatedComposersResponse> => {
+): Promise<PageResult<Composer>> => {
   const query: { limit: number; cursor?: string } = { limit: options.limit };
   if (options.cursor !== undefined) {
     query.cursor = options.cursor;
   }
-  return $fetch<PaginatedComposersResponse>(`${apiBase}/composers`, { query });
+  return $fetch<PageResult<Composer>>(`${apiBase}/composers`, { query });
 };
 
 /**
