@@ -20,6 +20,11 @@ on:
           - dev
           - stg
           - prod
+      maintenance_mode:
+        description: "メンテナンスモード (CloudFront を閉じて 503 を返す)"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -163,6 +168,9 @@ jobs:
           STAGE_NAME: ${{ env.STAGE_NAME }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          # workflow_dispatch の maintenance_mode 入力が true のときだけ CloudFront を閉じる。
+          # その他のトリガー（push/release）では常に空文字列となり通常デプロイになる。
+          MAINTENANCE_MODE: ${{ github.event.inputs.maintenance_mode }}
 
       # ----------------------------------------
       # CDK デプロイ後にスタック出力を取得

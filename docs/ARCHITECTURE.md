@@ -349,6 +349,14 @@ classical-music-lake/
 - **設定**: prod・stg は CloudFront URL のみ許可。dev 環境のみ `http://localhost:3010` を追加で許可
 - **実装**: CDK が各環境に応じた `CORS_ALLOW_ORIGIN` 環境変数を Lambda に設定し、API Gateway プリフライトも同じオリジンに限定
 
+### メンテナンスモード（CloudFront レベル）
+
+- **目的**: 大規模なデータ移行や障害対応時に、全ユーザーからのアクセスを CloudFront で即時遮断する手段を提供する
+- **実装**: CDK スタックが `MAINTENANCE_MODE=true` 環境変数を検出したときのみ、503 を返す CloudFront Function を `defaultBehavior` / `/index.html` / `/storybook/*` の `VIEWER_REQUEST` に紐付ける。オリジン（S3）には一切リクエストが到達しない
+- **操作**: GitHub Actions の `deploy.yml` に `maintenance_mode` boolean 入力を追加。workflow_dispatch から true にして対象環境（dev/stg/prod）を選んで実行する
+- **設計判断**: Lambda@Edge ではなく CloudFront Function を採用（実行時間 <1ms・料金が約 1/6・us-east-1 に閉じず各エッジで完結）。レスポンスボディは関数コードサイズ制限（10KB）に収まる最小限のインライン HTML とする
+- **トレードオフ**: 切替はディストリビューション変更を伴うため反映に数分を要する。より即時性が必要な場合は S3 上のフラグファイルを Lambda@Edge で読む方式に拡張可能
+
 ### フロントエンド・バックエンドの型定義が分離
 
 - **理由**: フロントエンド（`types/`）とバックエンド（`backend/src/types/`）が独立したパッケージ構成

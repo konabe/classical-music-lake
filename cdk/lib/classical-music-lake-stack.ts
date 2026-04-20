@@ -36,6 +36,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const isProd = stageName === "prod";
     const domainName = isProd ? "nocturne-app.com" : `${stageName}.nocturne-app.com`;
 
+    // デプロイ時に MAINTENANCE_MODE=true を指定すると CloudFront を閉じ、全パスで 503 を返す
+    const maintenanceMode = process.env.MAINTENANCE_MODE === "true";
+
     // -------------------------
     // DynamoDB テーブル
     // -------------------------
@@ -194,6 +197,24 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       }
     );
 
+    // メンテナンスモード: 全リクエストに対して CloudFront Function で 503 を即時返却する
+    const maintenanceFunction = maintenanceMode
+      ? new cloudfront.Function(this, "MaintenanceFunction", {
+          code: cloudfront.FunctionCode.fromInline(buildMaintenanceFunctionCode()),
+          runtime: cloudfront.FunctionRuntime.JS_2_0,
+          comment: "Return 503 maintenance page during maintenance mode",
+        })
+      : undefined;
+
+    const maintenanceFunctionAssociations = maintenanceFunction
+      ? [
+          {
+            function: maintenanceFunction,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          },
+        ]
+      : undefined;
+
     const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
       domainNames: [domainName],
       certificate,
@@ -202,6 +223,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         responseHeadersPolicy: securityHeadersPolicy,
+        functionAssociations: maintenanceFunctionAssociations,
       },
       // index.html はキャッシュしない（SPA デプロイ後に即反映させるため）
       additionalBehaviors: {
@@ -210,6 +232,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
           responseHeadersPolicy: securityHeadersPolicy,
+          functionAssociations: maintenanceFunctionAssociations,
         },
       },
       defaultRootObject: "index.html",
@@ -735,10 +758,13 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // Storybook ホスティング（/storybook/ パス）
     // -------------------------
-    // /storybook/ へのアクセスを /storybook/index.html にリライトする CloudFront Function
-    const storybookRootRewrite = new cloudfront.Function(this, "StorybookRootRewrite", {
-      code: cloudfront.FunctionCode.fromInline(
-        `
+    // メンテナンスモード時は maintenanceFunction を適用し、storybook ルートリライトは作成しない
+    const storybookFunctionAssociations = maintenanceFunctionAssociations ?? [
+      {
+        // /storybook/ へのアクセスを /storybook/index.html にリライトする CloudFront Function
+        function: new cloudfront.Function(this, "StorybookRootRewrite", {
+          code: cloudfront.FunctionCode.fromInline(
+            `
 function handler(event) {
   var request = event.request;
   if (request.uri === '/storybook/' || request.uri === '/storybook') {
@@ -747,9 +773,12 @@ function handler(event) {
   return request;
 }
       `.trim()
-      ),
-      runtime: cloudfront.FunctionRuntime.JS_2_0,
-    });
+          ),
+          runtime: cloudfront.FunctionRuntime.JS_2_0,
+        }),
+        eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+      },
+    ];
 
     // /storybook/* 用の CloudFront behavior を追加
     distribution.addBehavior(
@@ -759,12 +788,7 @@ function handler(event) {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         responseHeadersPolicy: storybookHeadersPolicy,
-        functionAssociations: [
-          {
-            function: storybookRootRewrite,
-            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-          },
-        ],
+        functionAssociations: storybookFunctionAssociations,
       }
     );
 
@@ -913,4 +937,43 @@ function handler(event) {
       allowHeaders,
     });
   }
+}
+
+// CloudFront Function (JS 2.0) で 503 メンテナンスページを返却するハンドラコードを生成する
+// NOTE: CloudFront Functions のコードサイズ上限は 10 KB、実行時間 1 ms のため最小限の HTML に留める
+function buildMaintenanceFunctionCode(): string {
+  const maintenanceHtml = `<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>メンテナンス中 - Nocturne</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #0f1729; color: #e5e7eb; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .card { max-width: 480px; text-align: center; }
+  h1 { font-size: 28px; margin: 0 0 16px; color: #fff; }
+  p { line-height: 1.7; color: #cbd5e1; margin: 0; }
+</style>
+</head>
+<body>
+<div class="card">
+<h1>メンテナンス中</h1>
+<p>ただいまシステムメンテナンスを実施しています。<br>ご不便をおかけいたしますが、しばらくお待ちください。</p>
+</div>
+</body>
+</html>`;
+
+  return `
+function handler(event) {
+  return {
+    statusCode: 503,
+    statusDescription: 'Service Unavailable',
+    headers: {
+      'content-type': { value: 'text/html; charset=utf-8' },
+      'cache-control': { value: 'no-store' }
+    },
+    body: ${JSON.stringify(maintenanceHtml)}
+  };
+}
+`.trim();
 }

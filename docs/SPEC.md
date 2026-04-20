@@ -1093,7 +1093,18 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
 - **Secrets**:
   - `AWS_ROLE_TO_ASSUME`（prod テーブルへの `dynamodb:Scan`、stg テーブルへの `dynamodb:Scan` / `dynamodb:BatchWriteItem` 権限が必要）
 
-### 6.4 ロールバック戦略
+### 6.4 メンテナンスモード
+
+CloudFront レベルで全リクエストを閉じ、503 Service Unavailable とメンテナンス画面を返す機能。
+
+- **実装**: `MAINTENANCE_MODE=true` 環境変数を付けて CDK デプロイすると、CloudFront Function が全 behavior（`defaultBehavior` / `/index.html` / `/storybook/*`）に `VIEWER_REQUEST` として紐付けられ、オリジン（S3）に到達せず即 503 を返す
+- **適用範囲**: CloudFront 配下の SPA・Storybook。API Gateway は影響を受けないため、SPA が読み込めないことで実質的にユーザー操作を停止する
+- **有効化手順**: `deploy.yml` ワークフローを GitHub Actions の `Run workflow`（workflow_dispatch）から起動し、`maintenance_mode` を `true` にして対象環境を選んで実行する
+- **解除手順**: 同じワークフローを `maintenance_mode=false`（既定）で再度実行し、通常デプロイする。`main` への push や release の公開でも自動的に解除される（それらのトリガーでは `MAINTENANCE_MODE` が未設定のため）
+- **レスポンス**: `503` + `Retry-After` なし、`cache-control: no-store`、`content-type: text/html; charset=utf-8`、最小限のインライン HTML（ダーク系デザイン）
+- **制約**: CloudFront Function の切替はディストリビューションの変更を伴うため、反映に数分かかる。完全にオリジンリクエストを止めるため、S3 のコスト・DynamoDB のアクセスも遮断される
+
+### 6.5 ロールバック戦略
 
 #### バックエンド (Lambda / API Gateway)
 
