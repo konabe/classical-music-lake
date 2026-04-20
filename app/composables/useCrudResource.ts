@@ -7,13 +7,8 @@ import { useAuthenticatedApi } from "./useAuthenticatedApi";
  */
 export const useCrudResource = <TEntity, TCreateInput, TUpdateInput>(resourceName: string) => {
   const apiBase = useApiBase();
-  const {
-    getAuthHeaders,
-    handleAuthError,
-    throwResponseError,
-    parseJsonResponse,
-    authenticatedFetch,
-  } = useAuthenticatedApi();
+  const { getAuthHeaders, handleAuthError, postJson, putJson, deleteResource } =
+    useAuthenticatedApi();
 
   const baseUrl = `${apiBase}/${resourceName}`;
 
@@ -29,38 +24,19 @@ export const useCrudResource = <TEntity, TCreateInput, TUpdateInput>(resourceNam
   });
 
   const create = async (input: TCreateInput): Promise<TEntity> => {
-    const response = await authenticatedFetch(baseUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-    if (!response.ok) {
-      return throwResponseError(response);
-    }
+    const result = await postJson<TEntity>(baseUrl, input);
     clearNuxtData();
-    return parseJsonResponse<TEntity>(response);
+    return result;
   };
 
   const update = async (id: string, input: TUpdateInput): Promise<TEntity> => {
-    const response = await authenticatedFetch(`${baseUrl}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-    if (!response.ok) {
-      return throwResponseError(response);
-    }
+    const result = await putJson<TEntity>(`${baseUrl}/${id}`, input);
     clearNuxtData();
-    return parseJsonResponse<TEntity>(response);
+    return result;
   };
 
   const deleteItem = async (id: string): Promise<void> => {
-    const response = await authenticatedFetch(`${baseUrl}/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      return throwResponseError(response);
-    }
+    await deleteResource(`${baseUrl}/${id}`);
     clearNuxtData();
   };
 

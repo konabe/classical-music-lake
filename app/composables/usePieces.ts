@@ -5,6 +5,7 @@ import {
 } from "~/types";
 import type { CreatePieceInput, Piece, UpdatePieceInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
+import { usePaginatedList } from "./usePaginatedList";
 
 /**
  * GET /pieces のレスポンス形式。
@@ -24,31 +25,13 @@ const fetchPage = async (
 
 const usePieceMutations = () => {
   const apiBase = useApiBase();
-  const { authenticatedFetch, throwResponseError, parseJsonResponse } = useAuthenticatedApi();
+  const { postJson, putJson } = useAuthenticatedApi();
 
-  const postPiece = async (input: CreatePieceInput): Promise<Piece> => {
-    const response = await authenticatedFetch(`${apiBase}/pieces`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-    if (!response.ok) {
-      return throwResponseError(response);
-    }
-    return parseJsonResponse<Piece>(response);
-  };
+  const postPiece = (input: CreatePieceInput): Promise<Piece> =>
+    postJson<Piece>(`${apiBase}/pieces`, input);
 
-  const putPiece = async (id: string, input: UpdatePieceInput): Promise<Piece> => {
-    const response = await authenticatedFetch(`${apiBase}/pieces/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-    if (!response.ok) {
-      return throwResponseError(response);
-    }
-    return parseJsonResponse<Piece>(response);
-  };
+  const putPiece = (id: string, input: UpdatePieceInput): Promise<Piece> =>
+    putJson<Piece>(`${apiBase}/pieces/${id}`, input);
 
   return { postPiece, putPiece };
 };
@@ -63,72 +46,23 @@ const usePieceMutations = () => {
 export const usePiecesPaginated = () => {
   const apiBase = useApiBase();
   const { postPiece, putPiece } = usePieceMutations();
-  const items = ref<Piece[]>([]);
-  const nextCursor = ref<string | null>(null);
-  const pending = ref<boolean>(false);
-  const error = ref<Error | null>(null);
-  const hasMore = ref<boolean>(true);
-
-  const loadMore = async () => {
-    if (pending.value === true) {
-      return;
-    }
-    if (hasMore.value === false) {
-      return;
-    }
-    pending.value = true;
-    error.value = null;
-    try {
-      const res = await fetchPage(apiBase, {
-        limit: PIECES_PAGE_SIZE_DEFAULT,
-        cursor: nextCursor.value ?? undefined,
-      });
-      items.value = [...items.value, ...res.items];
-      nextCursor.value = res.nextCursor;
-      hasMore.value = res.nextCursor !== null;
-    } catch (err) {
-      error.value = err instanceof Error ? err : new Error(String(err));
-    } finally {
-      pending.value = false;
-    }
-  };
-
-  const reset = () => {
-    items.value = [];
-    nextCursor.value = null;
-    hasMore.value = true;
-    error.value = null;
-  };
-
-  const retry = async () => {
-    error.value = null;
-    await loadMore();
-  };
+  const pagination = usePaginatedList<Piece>((cursor) =>
+    fetchPage(apiBase, { limit: PIECES_PAGE_SIZE_DEFAULT, cursor })
+  );
 
   const createPiece = async (input: CreatePieceInput) => {
     const result = await postPiece(input);
-    reset();
+    pagination.reset();
     return result;
   };
 
   const updatePiece = async (id: string, input: UpdatePieceInput) => {
     const result = await putPiece(id, input);
-    reset();
+    pagination.reset();
     return result;
   };
 
-  return {
-    items,
-    nextCursor,
-    pending,
-    error,
-    hasMore,
-    loadMore,
-    reset,
-    retry,
-    createPiece,
-    updatePiece,
-  };
+  return { ...pagination, createPiece, updatePiece };
 };
 
 /**
