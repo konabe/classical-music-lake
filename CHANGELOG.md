@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.2.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.1.0...classical-music-lake-v2.2.0) (2026-04-19)
+
+
+### Features
+
+* **composer:** 作曲家マスタの追加 ([75f0420](https://github.com/konabe/classical-music-lake/commit/75f042063102def122700085e2139f4a79476623)), closes [#477](https://github.com/konabe/classical-music-lake/issues/477)
+* **frontend:** ダークモード（ライト/ダーク切り替え）を追加 ([238fee7](https://github.com/konabe/classical-music-lake/commit/238fee7bb7952a6954230b4e0934edb1362fe15e))
+* **frontend:** ダークモード（ライト/ダーク切り替え）を追加 ([941f7f2](https://github.com/konabe/classical-music-lake/commit/941f7f2788c040fb47fe36ce97bf83b7a0408b4f))
+* **piece:** composer 文字列を composerId 参照に置換 ([a6b1cc9](https://github.com/konabe/classical-music-lake/commit/a6b1cc9d64ecb3cbc10f37ed6f1b68a5992b6449))
+* **piece:** composer 文字列を composerId 参照に置換 ([578d97d](https://github.com/konabe/classical-music-lake/commit/578d97d52452103fe7782c014302e333bb37b019))
+
+
+### Bug Fixes
+
+* **frontend:** 作曲家・楽曲マスタの書き込み API に Authorization ヘッダを付与する ([58e1ad9](https://github.com/konabe/classical-music-lake/commit/58e1ad9911485e6b0becd29de3d13eaf11afbdf4))
+* **frontend:** 作曲家・楽曲マスタの書き込み API に Authorization ヘッダを付与する ([b2ac39d](https://github.com/konabe/classical-music-lake/commit/b2ac39d67e86a51850c63bfd217332d7fe438f01))
+
 ## [2.1.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.0.0...classical-music-lake-v2.1.0) (2026-04-18)
 
 
