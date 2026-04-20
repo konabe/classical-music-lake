@@ -94,4 +94,25 @@ describe("ComposerItem", () => {
       expect(wrapper.find(".composer-category-list").exists()).toBe(false);
     });
   });
+
+  describe("画像表示", () => {
+    it("imageUrl が設定されている場合、サムネイルが表示される", async () => {
+      const wrapper = await mountSuspended(ComposerItem, {
+        props: {
+          composer: { ...sampleComposer, imageUrl: "https://example.com/beethoven.jpg" },
+        },
+      });
+      const img = wrapper.find("img.composer-thumb");
+      expect(img.exists()).toBe(true);
+      expect(img.attributes("src")).toBe("https://example.com/beethoven.jpg");
+      expect(img.attributes("alt")).toBe("ベートーヴェン");
+    });
+
+    it("imageUrl が未設定の場合、サムネイルが表示されない", async () => {
+      const wrapper = await mountSuspended(ComposerItem, {
+        props: { composer: sampleComposer },
+      });
+      expect(wrapper.find("img.composer-thumb").exists()).toBe(false);
+    });
+  });
 });

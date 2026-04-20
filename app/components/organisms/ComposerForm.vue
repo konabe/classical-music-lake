@@ -19,6 +19,7 @@ const form = reactive({
   name: "",
   era: "",
   region: "",
+  imageUrl: "",
 });
 
 watch(
@@ -27,6 +28,7 @@ watch(
     form.name = initialValues?.name ?? "";
     form.era = initialValues?.era ?? "";
     form.region = initialValues?.region ?? "";
+    form.imageUrl = initialValues?.imageUrl ?? "";
   },
   { immediate: true }
 );
@@ -36,6 +38,7 @@ function handleSubmit() {
     name: form.name,
     era: (form.era || undefined) as CreateComposerInput["era"],
     region: (form.region || undefined) as CreateComposerInput["region"],
+    imageUrl: form.imageUrl || undefined,
   });
 }
 </script>
@@ -61,6 +64,14 @@ function handleSubmit() {
         v-model="form.region"
         :options="regionOptions"
         placeholder="選択してください"
+      />
+    </FormGroup>
+
+    <FormGroup label="画像 URL" input-id="imageUrl">
+      <TextInput
+        id="imageUrl"
+        v-model="form.imageUrl"
+        placeholder="例：https://upload.wikimedia.org/..."
       />
     </FormGroup>
 

@@ -220,6 +220,7 @@ interface Composer {
   name: string; // 作曲家名
   era?: PieceEra; // 時代（任意、楽曲マスタと共通の定数を流用）
   region?: PieceRegion; // 地域（任意、楽曲マスタと共通の定数を流用）
+  imageUrl?: string; // 肖像画像の URL（任意、Wikimedia Commons 等のパブリックドメイン画像を想定）
   createdAt: string; // 作成日時 (ISO 8601形式)
   updatedAt: string; // 更新日時 (ISO 8601形式)
 }
@@ -230,6 +231,7 @@ interface Composer {
 - `name`: 空文字・空白のみ不可、最大100文字
 - `era`: 任意項目。指定する場合は固定の選択肢から選択。更新時に空文字を送信するとフィールドが削除される
 - `region`: 任意項目。指定する場合は固定の選択肢から選択。更新時に空文字を送信するとフィールドが削除される
+- `imageUrl`: 任意項目。指定する場合は有効な URL 形式であること（ドメイン制限なし）。更新時に空文字を送信するとフィールドが削除される
 
 > バリデーションは `utils/schemas.ts` に定義した Zod スキーマで実施する。
 
@@ -815,6 +817,7 @@ GET /composers?limit=50&cursor={opaque}
         "name": "ベートーヴェン",
         "era": "古典派",
         "region": "ドイツ・オーストリア",
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg",
         "createdAt": "2024-01-15T20:00:00.000Z",
         "updatedAt": "2024-01-15T20:00:00.000Z"
       }
@@ -899,13 +902,14 @@ GET /composers?limit=50&cursor={opaque}
 
 #### 作曲家マスタ（Composer）
 
-| フィールド | 型                 | 必須 | バリデーション                    |
-| ---------- | ------------------ | ---- | --------------------------------- |
-| `name`     | string             | ✅   | 空文字・空白のみ不可、最大100文字 |
-| `era`      | PieceEra (enum)    | -    | 指定する場合は固定の選択肢から    |
-| `region`   | PieceRegion (enum) | -    | 指定する場合は固定の選択肢から    |
+| フィールド | 型                 | 必須 | バリデーション                          |
+| ---------- | ------------------ | ---- | --------------------------------------- |
+| `name`     | string             | ✅   | 空文字・空白のみ不可、最大100文字       |
+| `era`      | PieceEra (enum)    | -    | 指定する場合は固定の選択肢から          |
+| `region`   | PieceRegion (enum) | -    | 指定する場合は固定の選択肢から          |
+| `imageUrl` | string             | -    | 指定する場合は有効な URL 形式であること |
 
-> 更新時（`PUT /composers/{id}`）はすべてのフィールドが任意となる（`updateComposerSchema`）。`era` / `region` は空文字を送信するとフィールドが削除される。
+> 更新時（`PUT /composers/{id}`）はすべてのフィールドが任意となる（`updateComposerSchema`）。`era` / `region` / `imageUrl` は空文字を送信するとフィールドが削除される。
 
 #### 自動生成フィールド（入力不可）
 

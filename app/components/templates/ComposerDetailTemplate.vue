@@ -24,6 +24,14 @@ const emit = defineEmits<{
 
     <template v-else-if="composer">
       <div class="composer-header">
+        <img
+          v-if="composer.imageUrl"
+          :src="composer.imageUrl"
+          :alt="composer.name"
+          class="composer-image"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        />
         <div class="composer-name">{{ composer.name }}</div>
         <div class="composer-category-wrapper">
           <ComposerCategoryList :composer="composer" />
@@ -52,6 +60,17 @@ const emit = defineEmits<{
 
 .composer-header {
   margin-bottom: 1.5rem;
+}
+
+.composer-image {
+  max-width: 240px;
+  max-height: 320px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  background: var(--color-bg-elevated);
 }
 
 .composer-name {

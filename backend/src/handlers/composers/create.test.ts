@@ -204,6 +204,41 @@ describe("POST /composers (create)", () => {
       );
       expect(result?.statusCode).toBe(400);
     });
+
+    it("imageUrl を指定して作成できる", async () => {
+      mockRepo.save.mockResolvedValueOnce();
+      const result = await handler(
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify({
+            ...validInput,
+            imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg",
+          }),
+          httpMethod: "POST",
+          path: "/composers",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(201);
+      const body = JSON.parse(result?.body ?? "{}");
+      expect(body.imageUrl).toBe(
+        "https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg"
+      );
+    });
+
+    it("imageUrl に不正な値を指定すると 400 を返す", async () => {
+      const result = await handler(
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify({ ...validInput, imageUrl: "not-a-url" }),
+          httpMethod: "POST",
+          path: "/composers",
+        }),
+        mockContext,
+        mockCallback
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("imageUrl must be a valid URL");
+    });
   });
 
   it("Repository エラー時に 500 を返す", async () => {

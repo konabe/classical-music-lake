@@ -25,6 +25,7 @@ const emit = defineEmits<{
           name: composer?.name,
           era: composer?.era,
           region: composer?.region,
+          imageUrl: composer?.imageUrl,
         }"
         submit-label="更新する"
         @submit="emit('submit', $event)"

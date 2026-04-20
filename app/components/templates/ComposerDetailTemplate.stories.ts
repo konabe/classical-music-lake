@@ -30,3 +30,15 @@ export const AsVisitor: Story = {
 export const ErrorState: Story = {
   args: { composer: null, error: new Error("fail"), isAdmin: false },
 };
+
+export const WithImage: Story = {
+  args: {
+    composer: {
+      ...sample,
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Beethoven.jpg/320px-Beethoven.jpg",
+    },
+    error: null,
+    isAdmin: false,
+  },
+};

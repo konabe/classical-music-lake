@@ -168,6 +168,53 @@ describe("PUT /composers/{id} (update)", () => {
     expect(body.region).toBeUndefined();
   });
 
+  it("imageUrl を追加して更新できる", async () => {
+    mockRepo.findById.mockResolvedValueOnce(existingComposer);
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+
+    const result = await handler(
+      makeEvent(
+        "abc-123",
+        JSON.stringify({
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg",
+        })
+      ),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}") as Composer;
+    expect(body.imageUrl).toBe("https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg");
+  });
+
+  it("imageUrl を空文字で送信すると削除される", async () => {
+    const existing: Composer = {
+      ...existingComposer,
+      imageUrl: "https://example.com/beethoven.jpg",
+    };
+    mockRepo.findById.mockResolvedValueOnce(existing);
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ imageUrl: "" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}") as Composer;
+    expect(body.imageUrl).toBeUndefined();
+  });
+
+  it("imageUrl に不正な URL を指定すると 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ imageUrl: "not-a-url" })),
+      mockContext,
+      mockCallback
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("imageUrl must be a valid URL");
+  });
+
   it("楽観的ロック競合時に 409 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingComposer);
     mockRepo.saveWithOptimisticLock.mockRejectedValueOnce(

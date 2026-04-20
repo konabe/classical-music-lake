@@ -82,6 +82,7 @@ export interface Composer {
   name: string; // 作曲家名（例: ベートーヴェン）
   era?: PieceEra; // 時代（楽曲マスタと共通の定数を流用）
   region?: PieceRegion; // 地域（楽曲マスタと共通の定数を流用）
+  imageUrl?: string; // 肖像画像の URL（Wikimedia Commons 等のパブリックドメイン画像を想定）
   createdAt: string;
   updatedAt: string;
 }
