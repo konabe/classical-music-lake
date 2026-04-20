@@ -87,11 +87,37 @@ export const useAuthenticatedApi = () => {
     return response;
   };
 
+  const sendJson = async <T>(method: "POST" | "PUT", url: string, body: unknown): Promise<T> => {
+    const response = await authenticatedFetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+    return parseJsonResponse<T>(response);
+  };
+
+  const postJson = <T>(url: string, body: unknown): Promise<T> => sendJson<T>("POST", url, body);
+
+  const putJson = <T>(url: string, body: unknown): Promise<T> => sendJson<T>("PUT", url, body);
+
+  const deleteResource = async (url: string): Promise<void> => {
+    const response = await authenticatedFetch(url, { method: "DELETE" });
+    if (!response.ok) {
+      return throwResponseError(response);
+    }
+  };
+
   return {
     getAuthHeaders,
     handleAuthError,
     throwResponseError,
     parseJsonResponse,
     authenticatedFetch,
+    postJson,
+    putJson,
+    deleteResource,
   };
 };
