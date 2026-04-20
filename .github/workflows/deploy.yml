@@ -20,11 +20,6 @@ on:
           - dev
           - stg
           - prod
-      maintenance_mode:
-        description: "メンテナンスモード (CloudFront を閉じて 503 を返す)"
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: deploy-${{ github.ref }}

@@ -36,9 +36,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const isProd = stageName === "prod";
     const domainName = isProd ? "nocturne-app.com" : `${stageName}.nocturne-app.com`;
 
-    // デプロイ時に MAINTENANCE_MODE=true を指定すると CloudFront を閉じ、全パスで 503 を返す
-    const maintenanceMode = process.env.MAINTENANCE_MODE === "true";
-
     // -------------------------
     // DynamoDB テーブル
     // -------------------------
@@ -197,23 +194,21 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       }
     );
 
-    // メンテナンスモード: 全リクエストに対して CloudFront Function で 503 を即時返却する
-    const maintenanceFunction = maintenanceMode
-      ? new cloudfront.Function(this, "MaintenanceFunction", {
-          code: cloudfront.FunctionCode.fromInline(buildMaintenanceFunctionCode()),
-          runtime: cloudfront.FunctionRuntime.JS_2_0,
-          comment: "Return 503 maintenance page during maintenance mode",
-        })
-      : undefined;
+    // メンテナンスモード: Toggle Lambda から CloudFront Function のコードを差し替えて切替する。
+    // 関数は常に全 behavior に紐付いており、初期コードはメンテナンス OFF（通常動作）。
+    // OFF 時は storybook ルートのリライトも兼ねる（`/storybook/` → `/storybook/index.html`）。
+    const maintenanceFunction = new cloudfront.Function(this, "MaintenanceFunction", {
+      code: cloudfront.FunctionCode.fromInline(buildMaintenanceFunctionCode(false)),
+      runtime: cloudfront.FunctionRuntime.JS_2_0,
+      comment: "Maintenance toggle function (503 when enabled, storybook rewrite otherwise)",
+    });
 
-    const maintenanceFunctionAssociations = maintenanceFunction
-      ? [
-          {
-            function: maintenanceFunction,
-            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-          },
-        ]
-      : undefined;
+    const maintenanceFunctionAssociations = [
+      {
+        function: maintenanceFunction,
+        eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+      },
+    ];
 
     const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
       domainNames: [domainName],
@@ -438,6 +433,21 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const getComposer = fn("GetComposer", "handlers/composers/get.ts");
     const updateComposer = fn("UpdateComposer", "handlers/composers/update.ts");
     const deleteComposer = fn("DeleteComposer", "handlers/composers/delete.ts");
+
+    // メンテナンスモード切替 Lambda（API Gateway 未公開、AWS CLI/コンソールから直接 invoke する）
+    const maintenanceToggle = fn("MaintenanceToggle", "handlers/maintenance/toggle.ts");
+    maintenanceToggle.addEnvironment("MAINTENANCE_FUNCTION_NAME", maintenanceFunction.functionName);
+    maintenanceToggle.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "cloudfront:DescribeFunction",
+          "cloudfront:UpdateFunction",
+          "cloudfront:PublishFunction",
+        ],
+        resources: [maintenanceFunction.functionArn],
+      })
+    );
 
     // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
     // いる場合に自動でアカウントリンクを行う
@@ -758,29 +768,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // Storybook ホスティング（/storybook/ パス）
     // -------------------------
-    // メンテナンスモード時は maintenanceFunction を適用し、storybook ルートリライトは作成しない
-    const storybookFunctionAssociations = maintenanceFunctionAssociations ?? [
-      {
-        // /storybook/ へのアクセスを /storybook/index.html にリライトする CloudFront Function
-        function: new cloudfront.Function(this, "StorybookRootRewrite", {
-          code: cloudfront.FunctionCode.fromInline(
-            `
-function handler(event) {
-  var request = event.request;
-  if (request.uri === '/storybook/' || request.uri === '/storybook') {
-    request.uri = '/storybook/index.html';
-  }
-  return request;
-}
-      `.trim()
-          ),
-          runtime: cloudfront.FunctionRuntime.JS_2_0,
-        }),
-        eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-      },
-    ];
-
     // /storybook/* 用の CloudFront behavior を追加
+    // 通常時は maintenanceFunction が `/storybook/` → `/storybook/index.html` にリライトし、
+    // メンテナンス時は同じ関数が 503 を返す
     distribution.addBehavior(
       "/storybook/*",
       origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
@@ -788,7 +778,7 @@ function handler(event) {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         responseHeadersPolicy: storybookHeadersPolicy,
-        functionAssociations: storybookFunctionAssociations,
+        functionAssociations: maintenanceFunctionAssociations,
       }
     );
 
@@ -833,6 +823,7 @@ function handler(event) {
       getComposer,
       updateComposer,
       deleteComposer,
+      maintenanceToggle,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成
@@ -920,6 +911,17 @@ function handler(event) {
       value: distribution.distributionId,
       description: "CloudFront Distribution ID",
     });
+
+    new cdk.CfnOutput(this, "MaintenanceToggleFunctionName", {
+      value: maintenanceToggle.functionName,
+      description:
+        "メンテナンスモード切替 Lambda 関数名（aws lambda invoke で直接呼び出して ON/OFF する）",
+    });
+
+    new cdk.CfnOutput(this, "MaintenanceCloudFrontFunctionName", {
+      value: maintenanceFunction.functionName,
+      description: "メンテナンス切替対象の CloudFront Function 名",
+    });
   }
 
   private removalPolicy(isProd: boolean): cdk.RemovalPolicy {
@@ -939,9 +941,14 @@ function handler(event) {
   }
 }
 
-// CloudFront Function (JS 2.0) で 503 メンテナンスページを返却するハンドラコードを生成する
-// NOTE: CloudFront Functions のコードサイズ上限は 10 KB、実行時間 1 ms のため最小限の HTML に留める
-function buildMaintenanceFunctionCode(): string {
+// CloudFront Function (JS 2.0) のコードを生成する。
+// - `enabled=true`: 全リクエストに 503 メンテナンスページを即時返却
+// - `enabled=false`: `/storybook/` → `/storybook/index.html` のリライトのみ実施し、それ以外は素通し
+//
+// この関数の実装は `backend/src/handlers/maintenance/build-function-code.ts` と同じロジックを持つ。
+// CDK の tsconfig が `cdk/` 配下しか参照できないため重複させている。両者のドリフトに注意すること。
+// NOTE: CloudFront Functions のコードサイズ上限は 10 KB、実行時間 1 ms のため最小限の HTML に留める。
+function buildMaintenanceFunctionCode(enabled: boolean): string {
   const maintenanceHtml = `<!doctype html>
 <html lang="ja">
 <head>
@@ -965,15 +972,23 @@ function buildMaintenanceFunctionCode(): string {
 
   return `
 function handler(event) {
-  return {
-    statusCode: 503,
-    statusDescription: 'Service Unavailable',
-    headers: {
-      'content-type': { value: 'text/html; charset=utf-8' },
-      'cache-control': { value: 'no-store' }
-    },
-    body: ${JSON.stringify(maintenanceHtml)}
-  };
+  var MAINTENANCE = ${enabled ? "true" : "false"};
+  var request = event.request;
+  if (MAINTENANCE) {
+    return {
+      statusCode: 503,
+      statusDescription: 'Service Unavailable',
+      headers: {
+        'content-type': { value: 'text/html; charset=utf-8' },
+        'cache-control': { value: 'no-store' }
+      },
+      body: ${JSON.stringify(maintenanceHtml)}
+    };
+  }
+  if (request.uri === '/storybook/' || request.uri === '/storybook') {
+    request.uri = '/storybook/index.html';
+  }
+  return request;
 }
 `.trim();
 }

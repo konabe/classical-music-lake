@@ -349,13 +349,22 @@ classical-music-lake/
 - **設定**: prod・stg は CloudFront URL のみ許可。dev 環境のみ `http://localhost:3010` を追加で許可
 - **実装**: CDK が各環境に応じた `CORS_ALLOW_ORIGIN` 環境変数を Lambda に設定し、API Gateway プリフライトも同じオリジンに限定
 
-### メンテナンスモード（CloudFront レベル）
+### メンテナンスモード（CloudFront レベル、ランタイムトグル）
 
-- **目的**: 大規模なデータ移行や障害対応時に、全ユーザーからのアクセスを CloudFront で即時遮断する手段を提供する
-- **実装**: CDK スタックが `MAINTENANCE_MODE=true` 環境変数を検出したときのみ、503 を返す CloudFront Function を `defaultBehavior` / `/index.html` / `/storybook/*` の `VIEWER_REQUEST` に紐付ける。オリジン（S3）には一切リクエストが到達しない
-- **操作**: GitHub Actions の `deploy.yml` に `maintenance_mode` boolean 入力を追加。workflow_dispatch から true にして対象環境（dev/stg/prod）を選んで実行する
-- **設計判断**: Lambda@Edge ではなく CloudFront Function を採用（実行時間 <1ms・料金が約 1/6・us-east-1 に閉じず各エッジで完結）。レスポンスボディは関数コードサイズ制限（10KB）に収まる最小限のインライン HTML とする
-- **トレードオフ**: 切替はディストリビューション変更を伴うため反映に数分を要する。より即時性が必要な場合は S3 上のフラグファイルを Lambda@Edge で読む方式に拡張可能
+- **目的**: 大規模なデータ移行や障害対応時に、全ユーザーからのアクセスを CloudFront で即時遮断する手段を提供する。デプロイを伴わずに任意のタイミングで ON/OFF できることを最優先要件とする
+- **実装**:
+  - **CloudFront Function (`MaintenanceFunction`)**: 全 behavior の `VIEWER_REQUEST` に常時紐付く。コード内に `var MAINTENANCE = true/false;` フラグを埋め込み、true なら 503 を即時返却、false なら `/storybook/` のルートリライトのみ実行して通常通りオリジン（S3）へ流す
+  - **Toggle Lambda (`MaintenanceToggle`)**: `{ enabled: boolean }` を受け取り、`DescribeFunction(DEVELOPMENT)` → `UpdateFunction`（ETag 楽観的ロック）→ `PublishFunction` の 3 ステップで CloudFront Function のコードを差し替え、LIVE ステージに昇格させる。API Gateway には公開せず AWS CLI／コンソールからのみ invoke する
+- **操作**: 運用者は対象環境の `MaintenanceToggleFunctionName` を CloudFormation Outputs から取得し、`aws lambda invoke --payload '{"enabled":true}'` で ON に、`'{"enabled":false}'` で OFF にする
+- **反映時間**: `PublishFunction` 完了から約 30 秒〜数分で全エッジに伝搬する
+- **設計判断**:
+  - Lambda@Edge ではなく CloudFront Function を採用（実行時間 <1ms・料金が約 1/6・us-east-1 に閉じず各エッジで完結）。レスポンスボディは関数コードサイズ制限（10KB）に収まる最小限のインライン HTML とする
+  - 切替をデプロイ時フラグ（`MAINTENANCE_MODE` env 変数）ではなくランタイム Lambda 経由にすることで、障害対応時にインフラデプロイを待たずに即時切替可能とする
+  - 単一 Function に 503 応答ロジックとストーリーブックリライトを統合（CloudFront Function は 1 behavior あたり 1 関数しか紐付けられないため）
+  - `buildMaintenanceFunctionCode(enabled)` は CDK 側（初期コード生成）と Lambda 側（ランタイム差し替え）の双方から呼ばれるが、CDK の tsconfig が `cdk/` 配下しか参照できないため、`backend/src/handlers/maintenance/build-function-code.ts` と `cdk/lib/classical-music-lake-stack.ts` に同等の最小実装を重複させる（ドリフト注意コメントを両方に配置）
+- **トレードオフ**:
+  - デプロイで OFF に戻る: 通常デプロイでは CDK が初期コード（OFF）を投入するため、メンテナンス中に誤ってデプロイすると即座に解除される。運用時は「メンテ中は main への push を避ける」ルールで運用する
+  - `@aws-sdk/client-cloudfront` を Lambda バンドルに追加するため、他の Lambda より若干バンドルサイズが大きくなる（256MB / 10s で十分動作）
 
 ### フロントエンド・バックエンドの型定義が分離
 

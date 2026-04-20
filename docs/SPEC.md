@@ -935,13 +935,14 @@ GET /composers?limit=50&cursor={opaque}
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 26個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
+- **関数数**: 27個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
   - 視聴ログ用 CRUD 操作 × 5
   - 楽曲マスタ用 CRUD 操作 × 5
   - 作曲家マスタ用 CRUD 操作 × 5
   - 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）
   - PreSignUp トリガー × 1
   - コンサート記録 × 5（list・create・get・update・delete）
+  - メンテナンスモード切替 × 1（`MaintenanceToggle`、API Gateway 非公開）
 - **環境変数**:
   - `DYNAMO_TABLE_LISTENING_LOGS`
   - `DYNAMO_TABLE_PIECES`
@@ -949,6 +950,7 @@ GET /composers?limit=50&cursor={opaque}
   - `DYNAMO_TABLE_COMPOSERS`
   - `COGNITO_USER_POOL_ID`（認証系 Lambda で使用）
   - `COGNITO_CLIENT_ID`（認証系 Lambda で使用）
+  - `MAINTENANCE_FUNCTION_NAME`（`MaintenanceToggle` のみ使用、対象 CloudFront Function 名）
 
 #### Cognito
 
@@ -1095,14 +1097,30 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
 
 ### 6.4 メンテナンスモード
 
-CloudFront レベルで全リクエストを閉じ、503 Service Unavailable とメンテナンス画面を返す機能。
+CloudFront レベルで全リクエストを閉じ、503 Service Unavailable とメンテナンス画面を返す機能。切替はデプロイ不要で、専用の Lambda を 1 回 invoke するだけで任意のタイミングで ON/OFF できる。
 
-- **実装**: `MAINTENANCE_MODE=true` 環境変数を付けて CDK デプロイすると、CloudFront Function が全 behavior（`defaultBehavior` / `/index.html` / `/storybook/*`）に `VIEWER_REQUEST` として紐付けられ、オリジン（S3）に到達せず即 503 を返す
+- **構成**:
+  - **CloudFront Function (`MaintenanceFunction`)**: 全 behavior（`defaultBehavior` / `/index.html` / `/storybook/*`）の `VIEWER_REQUEST` に常時紐付く。初期コードは OFF（通常動作 + `/storybook/` → `/storybook/index.html` のリライト）
+  - **Toggle Lambda (`MaintenanceToggle`)**: `enabled: boolean` を受け取り、`DescribeFunction` → `UpdateFunction` → `PublishFunction` で CloudFront Function のコードを ON / OFF 版に差し替えて LIVE ステージに昇格させる。API Gateway には公開していない（AWS CLI / マネジメントコンソールからのみ invoke）
 - **適用範囲**: CloudFront 配下の SPA・Storybook。API Gateway は影響を受けないため、SPA が読み込めないことで実質的にユーザー操作を停止する
-- **有効化手順**: `deploy.yml` ワークフローを GitHub Actions の `Run workflow`（workflow_dispatch）から起動し、`maintenance_mode` を `true` にして対象環境を選んで実行する
-- **解除手順**: 同じワークフローを `maintenance_mode=false`（既定）で再度実行し、通常デプロイする。`main` への push や release の公開でも自動的に解除される（それらのトリガーでは `MAINTENANCE_MODE` が未設定のため）
+- **有効化手順**（例: stg 環境）
+
+  ```bash
+  FN=$(aws cloudformation describe-stacks \
+    --stack-name ClassicalMusicLakeStack-stg \
+    --query 'Stacks[0].Outputs[?OutputKey==`MaintenanceToggleFunctionName`].OutputValue' \
+    --output text)
+  aws lambda invoke --function-name "$FN" \
+    --payload '{"enabled":true}' --cli-binary-format raw-in-base64-out /tmp/out.json
+  cat /tmp/out.json
+  ```
+
+- **解除手順**: 上記 payload を `{"enabled":false}` にして再度 invoke する。以降の通常デプロイ（`main` への push・release 公開等）でも、CloudFront Function の初期コードが OFF で上書きされるため自動的に解除される点に注意する
+- **イベント**: `{ "enabled": true | false }` を Lambda の event として渡す。`enabled` が boolean 以外の場合は 400 相当のエラーを投げる
 - **レスポンス**: `503` + `Retry-After` なし、`cache-control: no-store`、`content-type: text/html; charset=utf-8`、最小限のインライン HTML（ダーク系デザイン）
-- **制約**: CloudFront Function の切替はディストリビューションの変更を伴うため、反映に数分かかる。完全にオリジンリクエストを止めるため、S3 のコスト・DynamoDB のアクセスも遮断される
+- **反映時間**: `PublishFunction` 後、約 30 秒〜数分で全エッジに伝搬する
+- **IAM**: Toggle Lambda のロールには `cloudfront:DescribeFunction` / `cloudfront:UpdateFunction` / `cloudfront:PublishFunction` を対象 Function の ARN に限定して付与する
+- **制約**: CloudFront Function のコードサイズ上限は 10 KB、実行時間は最大 1 ms。503 レスポンス用 HTML はインラインで埋め込む最小限のものに留める
 
 ### 6.5 ロールバック戦略
 
