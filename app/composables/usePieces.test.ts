@@ -1,5 +1,6 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import { usePiecesPaginated, usePiecesAll, usePiece, type PaginatedResponse } from "./usePieces";
+import { usePiecesPaginated, usePiecesAll, usePiece } from "./usePieces";
+import type { PageResult } from "./usePaginatedList";
 import type { Piece } from "~/types";
 import { ID_TOKEN_KEY } from "./useAuth";
 import {
@@ -87,7 +88,7 @@ describe("usePiecesPaginated", () => {
       mockDollarFetch.mockResolvedValueOnce({
         items: [],
         nextCursor: null,
-      } satisfies PaginatedResponse<Piece>);
+      } satisfies PageResult<Piece>);
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(mockDollarFetch).toHaveBeenCalledWith("/api/pieces", {
@@ -129,9 +130,9 @@ describe("usePiecesPaginated", () => {
     });
 
     it("pending 中に loadMore を呼んでも二重発行しない", async () => {
-      let resolvePage: ((value: PaginatedResponse<Piece>) => void) | undefined;
+      let resolvePage: ((value: PageResult<Piece>) => void) | undefined;
       mockDollarFetch.mockReturnValueOnce(
-        new Promise<PaginatedResponse<Piece>>((resolve) => {
+        new Promise<PageResult<Piece>>((resolve) => {
           resolvePage = resolve;
         })
       );

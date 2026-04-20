@@ -5,22 +5,17 @@ import {
 } from "~/types";
 import type { CreatePieceInput, Piece, UpdatePieceInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
-import { usePaginatedList } from "./usePaginatedList";
-
-/**
- * GET /pieces のレスポンス形式。
- */
-export type PaginatedResponse<T> = { items: T[]; nextCursor: string | null };
+import { usePaginatedList, type PageResult } from "./usePaginatedList";
 
 const fetchPage = async (
   apiBase: string,
   options: { limit: number; cursor?: string }
-): Promise<PaginatedResponse<Piece>> => {
+): Promise<PageResult<Piece>> => {
   const query: { limit: number; cursor?: string } = { limit: options.limit };
   if (options.cursor !== undefined) {
     query.cursor = options.cursor;
   }
-  return $fetch<PaginatedResponse<Piece>>(`${apiBase}/pieces`, { query });
+  return $fetch<PageResult<Piece>>(`${apiBase}/pieces`, { query });
 };
 
 const usePieceMutations = () => {

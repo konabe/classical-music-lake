@@ -1,9 +1,6 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import {
-  useComposersPaginated,
-  useComposer,
-  type PaginatedComposersResponse,
-} from "./useComposers";
+import { useComposersPaginated, useComposer } from "./useComposers";
+import type { PageResult } from "./usePaginatedList";
 import type { Composer } from "~/types";
 import { COMPOSERS_PAGE_SIZE_DEFAULT } from "~/types";
 import { ID_TOKEN_KEY } from "./useAuth";
@@ -74,7 +71,7 @@ describe("useComposersPaginated", () => {
       mockDollarFetch.mockResolvedValueOnce({
         items: [],
         nextCursor: null,
-      } satisfies PaginatedComposersResponse);
+      } satisfies PageResult<Composer>);
       const c = useComposersPaginated();
       await c.loadMore();
       expect(mockDollarFetch).toHaveBeenCalledWith("/api/composers", {
