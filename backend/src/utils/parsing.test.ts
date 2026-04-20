@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
-import { parseRequestBody } from "./parsing";
+import { encodeCursor } from "./cursor";
+import { parseListQuery, parseRequestBody } from "./parsing";
 
 type TestInput = { name: string; value?: number };
 
@@ -57,5 +58,59 @@ describe("parseRequestBody", () => {
       const result = parseRequestBody({ name: "test", extra: "ignored" }, schema);
       expect(result).toEqual({ name: "test" });
     });
+  });
+});
+
+describe("parseListQuery", () => {
+  const schema = z.object({
+    limit: z.coerce
+      .number({ error: () => "limit must be a number" })
+      .int({ message: "limit must be an integer" })
+      .min(1, { message: "limit must be at least 1" })
+      .max(100, { message: "limit must be at most 100" })
+      .default(50),
+    cursor: z.base64url({ message: "cursor must be a base64url string" }).min(1).optional(),
+  });
+
+  it("クエリ未指定の場合は既定 limit と undefined の exclusiveStartKey を返す", () => {
+    expect(parseListQuery(null, schema)).toEqual({ limit: 50, exclusiveStartKey: undefined });
+    expect(parseListQuery(undefined, schema)).toEqual({ limit: 50, exclusiveStartKey: undefined });
+    expect(parseListQuery({}, schema)).toEqual({ limit: 50, exclusiveStartKey: undefined });
+  });
+
+  it("limit を数値に変換して返す", () => {
+    expect(parseListQuery({ limit: "20" }, schema)).toEqual({
+      limit: 20,
+      exclusiveStartKey: undefined,
+    });
+  });
+
+  it("cursor を decodeCursor でデコードして返す", () => {
+    const cursor = encodeCursor({ id: "prev-id" });
+    expect(parseListQuery({ cursor }, schema)).toEqual({
+      limit: 50,
+      exclusiveStartKey: { id: "prev-id" },
+    });
+  });
+
+  it("スキーマ違反（範囲外 limit）の場合は 400 を投げる", () => {
+    expect(() => parseListQuery({ limit: "0" }, schema)).toThrow("limit must be at least 1");
+  });
+
+  it("スキーマ違反（非数値 limit）の場合は 400 を投げる", () => {
+    expect(() => parseListQuery({ limit: "abc" }, schema)).toThrow();
+  });
+
+  it("base64url として不正な cursor は 400 を投げる", () => {
+    expect(() => parseListQuery({ cursor: "!!!invalid!!!" }, schema)).toThrow(
+      "cursor must be a base64url string"
+    );
+  });
+
+  it("バージョン不一致の cursor は 400 を投げる", () => {
+    const cursor = Buffer.from(JSON.stringify({ v: 999, k: { id: "1" } }), "utf8").toString(
+      "base64url"
+    );
+    expect(() => parseListQuery({ cursor }, schema)).toThrow(/Unsupported cursor version/);
   });
 });
