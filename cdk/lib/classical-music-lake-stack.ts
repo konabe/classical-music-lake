@@ -449,6 +449,40 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       })
     );
 
+    // CloudWatch Custom Widget Lambda（ダッシュボードから ON/OFF ボタンを押すための描画関数）
+    const maintenanceWidget = fn("MaintenanceWidget", "handlers/maintenance/widget.ts");
+    maintenanceWidget.addEnvironment("MAINTENANCE_FUNCTION_NAME", maintenanceFunction.functionName);
+    maintenanceWidget.addEnvironment("MAINTENANCE_TOGGLE_ARN", maintenanceToggle.functionArn);
+    maintenanceWidget.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["cloudfront:GetFunction"],
+        resources: [maintenanceFunction.functionArn],
+      })
+    );
+
+    // CloudWatch Dashboard: メンテナンスモード操作用
+    // - Custom Widget が maintenanceWidget を呼び出して現在の状態を表示
+    // - Widget 内の <cwdb-action> が maintenanceToggle を呼び出して ON/OFF 切替
+    // NOTE: ダッシュボードを閲覧・操作するユーザーは以下の IAM 権限が必要:
+    //   - cloudwatch:GetDashboard（ダッシュボード表示）
+    //   - lambda:InvokeFunction (MaintenanceWidget)（ウィジェット描画）
+    //   - lambda:InvokeFunction (MaintenanceToggle)（ON/OFF 実行）
+    const maintenanceDashboard = new cloudwatch.Dashboard(this, "MaintenanceDashboard", {
+      dashboardName: `classical-music-lake-${stageName}-maintenance`,
+    });
+    maintenanceDashboard.addWidgets(
+      new cloudwatch.CustomWidget({
+        functionArn: maintenanceWidget.functionArn,
+        title: `メンテナンスモード切替 (${stageName})`,
+        width: 24,
+        height: 6,
+        updateOnRefresh: true,
+        updateOnResize: false,
+        updateOnTimeRangeChange: false,
+      })
+    );
+
     // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
     // いる場合に自動でアカウントリンクを行う
     userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, authPreSignUp);
@@ -824,6 +858,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       updateComposer,
       deleteComposer,
       maintenanceToggle,
+      maintenanceWidget,
     ];
 
     // Lambda エラー監視：各関数ごとにアラーム作成
@@ -921,6 +956,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     new cdk.CfnOutput(this, "MaintenanceCloudFrontFunctionName", {
       value: maintenanceFunction.functionName,
       description: "メンテナンス切替対象の CloudFront Function 名",
+    });
+
+    new cdk.CfnOutput(this, "MaintenanceDashboardUrl", {
+      value: `https://${this.region}.console.aws.amazon.com/cloudwatch/home?region=${this.region}#dashboards:name=${maintenanceDashboard.dashboardName}`,
+      description: "メンテナンス切替ダッシュボード URL（ボタン 1 クリックで ON/OFF）",
     });
   }
 

@@ -354,12 +354,17 @@ classical-music-lake/
 - **目的**: 大規模なデータ移行や障害対応時に、全ユーザーからのアクセスを CloudFront で即時遮断する手段を提供する。デプロイを伴わずに任意のタイミングで ON/OFF できることを最優先要件とする
 - **実装**:
   - **CloudFront Function (`MaintenanceFunction`)**: 全 behavior の `VIEWER_REQUEST` に常時紐付く。コード内に `var MAINTENANCE = true/false;` フラグを埋め込み、true なら 503 を即時返却、false なら `/storybook/` のルートリライトのみ実行して通常通りオリジン（S3）へ流す
-  - **Toggle Lambda (`MaintenanceToggle`)**: `{ enabled: boolean }` を受け取り、`DescribeFunction(DEVELOPMENT)` → `UpdateFunction`（ETag 楽観的ロック）→ `PublishFunction` の 3 ステップで CloudFront Function のコードを差し替え、LIVE ステージに昇格させる。API Gateway には公開せず AWS CLI／コンソールからのみ invoke する
-- **操作**: 運用者は対象環境の `MaintenanceToggleFunctionName` を CloudFormation Outputs から取得し、`aws lambda invoke --payload '{"enabled":true}'` で ON に、`'{"enabled":false}'` で OFF にする
+  - **Toggle Lambda (`MaintenanceToggle`)**: `{ enabled: boolean }` を受け取り、`DescribeFunction(DEVELOPMENT)` → `UpdateFunction`（ETag 楽観的ロック）→ `PublishFunction` の 3 ステップで CloudFront Function のコードを差し替え、LIVE ステージに昇格させる
+  - **Widget Lambda (`MaintenanceWidget`)**: CloudWatch Custom Widget の描画関数。`GetFunction(LIVE)` で CloudFront Function の現在コードを取得して ON/OFF 状態を判定し、`<cwdb-action action="call" endpoint="<MaintenanceToggleArn>">` で ON/OFF ボタンを含む HTML を返す
+  - **CloudWatch Dashboard (`classical-music-lake-{stage}-maintenance`)**: `MaintenanceWidget` を埋め込んだ Custom Widget 1 枚で構成。運用者はこのダッシュボードを開いてボタンをクリックするだけで切替可能
+- **操作**:
+  - **推奨**: CloudFormation Outputs の `MaintenanceDashboardUrl` を開き、ダッシュボード上のボタンをクリック → 確認ダイアログで承認
+  - **代替**: `MaintenanceToggleFunctionName` を取得して `aws lambda invoke --payload '{"enabled":true}'` で CLI から呼ぶ
 - **反映時間**: `PublishFunction` 完了から約 30 秒〜数分で全エッジに伝搬する
 - **設計判断**:
   - Lambda@Edge ではなく CloudFront Function を採用（実行時間 <1ms・料金が約 1/6・us-east-1 に閉じず各エッジで完結）。レスポンスボディは関数コードサイズ制限（10KB）に収まる最小限のインライン HTML とする
   - 切替をデプロイ時フラグ（`MAINTENANCE_MODE` env 変数）ではなくランタイム Lambda 経由にすることで、障害対応時にインフラデプロイを待たずに即時切替可能とする
+  - 操作 UI に CloudWatch Custom Widget を選んだ理由: ①AWS マネジメントコンソール内で完結するため追加のフロントエンドを作らずに済む、②メンテナンス中でも自前 SPA に依存せず切替可能（自前 SPA を CloudFront で閉じるため自分のフロントでは操作不能になる）、③既存の IAM ロール/ポリシーをそのまま利用可能
   - 単一 Function に 503 応答ロジックとストーリーブックリライトを統合（CloudFront Function は 1 behavior あたり 1 関数しか紐付けられないため）
   - `buildMaintenanceFunctionCode(enabled)` は CDK 側（初期コード生成）と Lambda 側（ランタイム差し替え）の双方から呼ばれるが、CDK の tsconfig が `cdk/` 配下しか参照できないため、`backend/src/handlers/maintenance/build-function-code.ts` と `cdk/lib/classical-music-lake-stack.ts` に同等の最小実装を重複させる（ドリフト注意コメントを両方に配置）
 - **トレードオフ**:

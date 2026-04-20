@@ -935,7 +935,7 @@ GET /composers?limit=50&cursor={opaque}
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 27個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
+- **関数数**: 28個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
   - 視聴ログ用 CRUD 操作 × 5
   - 楽曲マスタ用 CRUD 操作 × 5
   - 作曲家マスタ用 CRUD 操作 × 5
@@ -943,6 +943,7 @@ GET /composers?limit=50&cursor={opaque}
   - PreSignUp トリガー × 1
   - コンサート記録 × 5（list・create・get・update・delete）
   - メンテナンスモード切替 × 1（`MaintenanceToggle`、API Gateway 非公開）
+  - メンテナンスウィジェット描画 × 1（`MaintenanceWidget`、CloudWatch Custom Widget 用）
 - **環境変数**:
   - `DYNAMO_TABLE_LISTENING_LOGS`
   - `DYNAMO_TABLE_PIECES`
@@ -950,7 +951,8 @@ GET /composers?limit=50&cursor={opaque}
   - `DYNAMO_TABLE_COMPOSERS`
   - `COGNITO_USER_POOL_ID`（認証系 Lambda で使用）
   - `COGNITO_CLIENT_ID`（認証系 Lambda で使用）
-  - `MAINTENANCE_FUNCTION_NAME`（`MaintenanceToggle` のみ使用、対象 CloudFront Function 名）
+  - `MAINTENANCE_FUNCTION_NAME`（`MaintenanceToggle` / `MaintenanceWidget` で使用、対象 CloudFront Function 名）
+  - `MAINTENANCE_TOGGLE_ARN`（`MaintenanceWidget` のみ使用、`<cwdb-action>` から呼び出す Toggle Lambda の ARN）
 
 #### Cognito
 
@@ -1101,9 +1103,17 @@ CloudFront レベルで全リクエストを閉じ、503 Service Unavailable と
 
 - **構成**:
   - **CloudFront Function (`MaintenanceFunction`)**: 全 behavior（`defaultBehavior` / `/index.html` / `/storybook/*`）の `VIEWER_REQUEST` に常時紐付く。初期コードは OFF（通常動作 + `/storybook/` → `/storybook/index.html` のリライト）
-  - **Toggle Lambda (`MaintenanceToggle`)**: `enabled: boolean` を受け取り、`DescribeFunction` → `UpdateFunction` → `PublishFunction` で CloudFront Function のコードを ON / OFF 版に差し替えて LIVE ステージに昇格させる。API Gateway には公開していない（AWS CLI / マネジメントコンソールからのみ invoke）
+  - **Toggle Lambda (`MaintenanceToggle`)**: `enabled: boolean` を受け取り、`DescribeFunction` → `UpdateFunction` → `PublishFunction` で CloudFront Function のコードを ON / OFF 版に差し替えて LIVE ステージに昇格させる。API Gateway には公開していない
+  - **Widget Lambda (`MaintenanceWidget`)**: CloudWatch Custom Widget の描画関数。`GetFunction(LIVE)` で現在の状態を取得し、HTML 内の `<cwdb-action>` で `MaintenanceToggle` を呼び出すボタンを描画する
+  - **CloudWatch Dashboard (`classical-music-lake-{stage}-maintenance`)**: 上記 Widget を埋め込んだダッシュボード。**ダッシュボード上のボタンを 1 クリックするだけで ON/OFF を切替できる**のが推奨運用
 - **適用範囲**: CloudFront 配下の SPA・Storybook。API Gateway は影響を受けないため、SPA が読み込めないことで実質的にユーザー操作を停止する
-- **有効化手順**（例: stg 環境）
+- **切替方法 A: CloudWatch Dashboard（推奨）**
+  1. CloudFormation Outputs の `MaintenanceDashboardUrl` を開く
+  2. ウィジェット上で現在の状態（ON / OFF）を確認
+  3. 「メンテナンス開始（ON）」または「メンテナンス解除（OFF）」ボタンをクリック
+  4. 確認ダイアログで承認すると `MaintenanceToggle` が呼び出される
+  5. 数秒〜数十秒後にダッシュボードを再読込すると状態表示が更新される
+- **切替方法 B: AWS CLI（コマンドライン運用）**
 
   ```bash
   FN=$(aws cloudformation describe-stacks \
@@ -1115,11 +1125,15 @@ CloudFront レベルで全リクエストを閉じ、503 Service Unavailable と
   cat /tmp/out.json
   ```
 
-- **解除手順**: 上記 payload を `{"enabled":false}` にして再度 invoke する。以降の通常デプロイ（`main` への push・release 公開等）でも、CloudFront Function の初期コードが OFF で上書きされるため自動的に解除される点に注意する
-- **イベント**: `{ "enabled": true | false }` を Lambda の event として渡す。`enabled` が boolean 以外の場合は 400 相当のエラーを投げる
-- **レスポンス**: `503` + `Retry-After` なし、`cache-control: no-store`、`content-type: text/html; charset=utf-8`、最小限のインライン HTML（ダーク系デザイン）
+  解除は `{"enabled":false}` で再度 invoke する。以降の通常デプロイ（`main` への push・release 公開等）でも、CloudFront Function の初期コードが OFF で上書きされるため自動的に解除される点に注意する。
+
+- **イベント**: `MaintenanceToggle` は `{ "enabled": true | false }` を event として受け取る。`enabled` が boolean 以外の場合は 400 相当のエラーを投げる
+- **レスポンス（メンテナンス画面）**: `503` + `Retry-After` なし、`cache-control: no-store`、`content-type: text/html; charset=utf-8`、最小限のインライン HTML（ダーク系デザイン）
 - **反映時間**: `PublishFunction` 後、約 30 秒〜数分で全エッジに伝搬する
-- **IAM**: Toggle Lambda のロールには `cloudfront:DescribeFunction` / `cloudfront:UpdateFunction` / `cloudfront:PublishFunction` を対象 Function の ARN に限定して付与する
+- **IAM**:
+  - `MaintenanceToggle` ロール: `cloudfront:DescribeFunction` / `cloudfront:UpdateFunction` / `cloudfront:PublishFunction` を対象 Function の ARN に限定して付与
+  - `MaintenanceWidget` ロール: `cloudfront:GetFunction` を対象 Function の ARN に限定して付与
+  - ダッシュボード利用者の IAM: `cloudwatch:GetDashboard`、`lambda:InvokeFunction`（`MaintenanceWidget` と `MaintenanceToggle` に対して）が必要
 - **制約**: CloudFront Function のコードサイズ上限は 10 KB、実行時間は最大 1 ms。503 レスポンス用 HTML はインラインで埋め込む最小限のものに留める
 
 ### 6.5 ロールバック戦略
