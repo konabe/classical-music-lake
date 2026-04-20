@@ -49,4 +49,24 @@ describe("ComposerDetailTemplate", () => {
     });
     expect(wrapper.text()).toContain("作曲家の取得に失敗しました");
   });
+
+  it("imageUrl が設定されている場合、画像が表示される", async () => {
+    const wrapper = await mountSuspended(ComposerDetailTemplate, {
+      props: {
+        composer: { ...sample, imageUrl: "https://example.com/beethoven.jpg" },
+        error: null,
+        isAdmin: false,
+      },
+    });
+    const img = wrapper.find("img.composer-image");
+    expect(img.exists()).toBe(true);
+    expect(img.attributes("src")).toBe("https://example.com/beethoven.jpg");
+  });
+
+  it("imageUrl が未設定の場合、画像が表示されない", async () => {
+    const wrapper = await mountSuspended(ComposerDetailTemplate, {
+      props: { composer: sample, error: null, isAdmin: false },
+    });
+    expect(wrapper.find("img.composer-image").exists()).toBe(false);
+  });
 });

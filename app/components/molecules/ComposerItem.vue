@@ -14,6 +14,14 @@ const emit = defineEmits<{
 
 <template>
   <div class="composer-item">
+    <img
+      v-if="composer.imageUrl"
+      :src="composer.imageUrl"
+      :alt="composer.name"
+      class="composer-thumb"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+    />
     <div class="composer-main">
       <div class="composer-name">{{ composer.name }}</div>
       <div class="composer-category-wrapper">
@@ -38,6 +46,15 @@ const emit = defineEmits<{
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+}
+
+.composer-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-bg-elevated);
+  flex-shrink: 0;
 }
 
 .composer-main {

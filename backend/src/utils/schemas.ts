@@ -142,6 +142,7 @@ export const createComposerSchema = z.object({
     .max(100, "name must be 100 characters or less"),
   era: pieceEraSchema.optional(),
   region: pieceRegionSchema.optional(),
+  imageUrl: z.url("imageUrl must be a valid URL").optional(),
 });
 
 export const updateComposerSchema = z.object({
@@ -153,6 +154,7 @@ export const updateComposerSchema = z.object({
     .optional(),
   era: z.union([pieceEraSchema, z.literal("")]).optional(),
   region: z.union([pieceRegionSchema, z.literal("")]).optional(),
+  imageUrl: z.union([z.url("imageUrl must be a valid URL"), z.literal("")]).optional(),
 });
 
 /**

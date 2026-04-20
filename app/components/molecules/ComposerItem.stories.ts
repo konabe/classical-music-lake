@@ -29,3 +29,15 @@ export const WithCategories: Story = {
     },
   },
 };
+
+export const WithImage: Story = {
+  args: {
+    composer: {
+      ...baseComposer,
+      era: "古典派",
+      region: "ドイツ・オーストリア",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Beethoven.jpg/240px-Beethoven.jpg",
+    },
+  },
+};

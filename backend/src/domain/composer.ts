@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "../types";
 
-const CLEARABLE_FIELDS = ["era", "region"] as const;
+const CLEARABLE_FIELDS = ["era", "region", "imageUrl"] as const;
 
 export type ComposerRepository = {
   findById(id: string): Promise<Composer | undefined>;
