@@ -1,23 +1,22 @@
-import createError from "http-errors";
-
 import { ListeningLogEntity } from "../domain/listening-log";
 import type { ListeningLogRepository } from "../domain/listening-log";
 import { DynamoDBListeningLogRepository } from "../repositories/listening-log-repository";
 import type { CreateListeningLogInput, ListeningLog } from "../types";
+import { loadOwnedEntityOrNotFound } from "./helpers";
+
+const ENTITY_NAME = "Listening log";
 
 export class ListeningLogUsecase {
   constructor(private readonly repo: ListeningLogRepository) {}
 
-  private async loadOwnedEntity(id: string, userId: string): Promise<ListeningLogEntity> {
-    const item = await this.repo.findById(id);
-    if (item === undefined) {
-      throw new createError.NotFound("Listening log not found");
-    }
-    const entity = ListeningLogEntity.reconstruct(item);
-    if (!entity.isOwnedBy(userId)) {
-      throw new createError.NotFound("Listening log not found");
-    }
-    return entity;
+  private loadOwnedEntity(id: string, userId: string): Promise<ListeningLogEntity> {
+    return loadOwnedEntityOrNotFound({
+      findById: (id) => this.repo.findById(id),
+      reconstruct: ListeningLogEntity.reconstruct,
+      id,
+      userId,
+      entityName: ENTITY_NAME,
+    });
   }
 
   async create(input: CreateListeningLogInput): Promise<ListeningLog> {

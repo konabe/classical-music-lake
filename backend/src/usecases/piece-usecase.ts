@@ -1,10 +1,11 @@
-import createError from "http-errors";
-
 import { PieceEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
 import { DynamoDBPieceRepository } from "../repositories/piece-repository";
 import type { CreatePieceInput, Paginated, Piece, UpdatePieceInput } from "../types";
 import { encodeCursor } from "../utils/cursor";
+import { findByIdOrNotFound } from "./helpers";
+
+const ENTITY_NAME = "Piece";
 
 export class PieceUsecase {
   constructor(private readonly repo: PieceRepository) {}
@@ -28,18 +29,11 @@ export class PieceUsecase {
   }
 
   async get(id: string): Promise<Piece> {
-    const item = await this.repo.findById(id);
-    if (item === undefined) {
-      throw new createError.NotFound("Piece not found");
-    }
-    return item;
+    return findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
   }
 
   async update(id: string, input: UpdatePieceInput): Promise<Piece> {
-    const current = await this.repo.findById(id);
-    if (current === undefined) {
-      throw new createError.NotFound("Piece not found");
-    }
+    const current = await findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
     const entity = PieceEntity.reconstruct(current);
     const updated = entity.mergeUpdate(input);
     const plain = updated.toPlain();

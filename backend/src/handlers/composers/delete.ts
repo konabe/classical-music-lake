@@ -1,13 +1,11 @@
-import { requireAdmin } from "../../utils/auth";
-import { createHandler } from "../../utils/middleware";
+import { createAdminHandler } from "../../utils/middleware";
 import { getIdParam } from "../../utils/path-params";
 import { noContent } from "../../utils/response";
 import { createComposerUsecase } from "../../usecases/composer-usecase";
 
 const usecase = createComposerUsecase();
 
-export const handler = createHandler(async (event) => {
-  requireAdmin(event);
+export const handler = createAdminHandler(async (event) => {
   const id = getIdParam(event);
   await usecase.delete(id);
   return noContent();

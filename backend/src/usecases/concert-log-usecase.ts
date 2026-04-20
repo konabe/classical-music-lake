@@ -1,23 +1,22 @@
-import createError from "http-errors";
-
 import { ConcertLogEntity } from "../domain/concert-log";
 import type { ConcertLogRepository } from "../domain/concert-log";
 import { DynamoDBConcertLogRepository } from "../repositories/concert-log-repository";
 import type { ConcertLog, CreateConcertLogInput } from "../types";
+import { loadOwnedEntityOrNotFound } from "./helpers";
+
+const ENTITY_NAME = "Concert log";
 
 export class ConcertLogUsecase {
   constructor(private readonly repo: ConcertLogRepository) {}
 
-  private async loadOwnedEntity(id: string, userId: string): Promise<ConcertLogEntity> {
-    const item = await this.repo.findById(id);
-    if (item === undefined) {
-      throw new createError.NotFound("Concert log not found");
-    }
-    const entity = ConcertLogEntity.reconstruct(item);
-    if (!entity.isOwnedBy(userId)) {
-      throw new createError.NotFound("Concert log not found");
-    }
-    return entity;
+  private loadOwnedEntity(id: string, userId: string): Promise<ConcertLogEntity> {
+    return loadOwnedEntityOrNotFound({
+      findById: (id) => this.repo.findById(id),
+      reconstruct: ConcertLogEntity.reconstruct,
+      id,
+      userId,
+      entityName: ENTITY_NAME,
+    });
   }
 
   async create(input: CreateConcertLogInput, userId: string): Promise<ConcertLog> {

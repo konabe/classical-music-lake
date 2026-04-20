@@ -1,5 +1,4 @@
-import { requireAdmin } from "../../utils/auth";
-import { createHandler, jsonBodyParser } from "../../utils/middleware";
+import { createAdminHandler, jsonBodyParser } from "../../utils/middleware";
 import { parseRequestBody } from "../../utils/parsing";
 import { updatePieceSchema } from "../../utils/schemas";
 import { getIdParam } from "../../utils/path-params";
@@ -8,8 +7,7 @@ import { createPieceUsecase } from "../../usecases/piece-usecase";
 
 const usecase = createPieceUsecase();
 
-export const handler = createHandler(async (event) => {
-  requireAdmin(event);
+export const handler = createAdminHandler(async (event) => {
   const id = getIdParam(event);
   const input = parseRequestBody(event.body as unknown, updatePieceSchema);
   const piece = await usecase.update(id, input);
