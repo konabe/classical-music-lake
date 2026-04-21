@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.2.0...classical-music-lake-v2.3.0) (2026-04-20)
+
+
+### Features
+
+* **composer:** 作曲家マスタに imageUrl を追加して肖像画像を表示 ([44df3b8](https://github.com/konabe/classical-music-lake/commit/44df3b8134e6126fd63152a5798927fde5c632c6))
+
 ## [2.2.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.1.0...classical-music-lake-v2.2.0) (2026-04-19)
 
 
