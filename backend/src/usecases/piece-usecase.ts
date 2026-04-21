@@ -2,8 +2,7 @@ import { PieceEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
 import { DynamoDBPieceRepository } from "../repositories/piece-repository";
 import type { CreatePieceInput, Paginated, Piece, UpdatePieceInput } from "../types";
-import { encodeCursor } from "../utils/cursor";
-import { findByIdOrNotFound } from "./helpers";
+import { findByIdOrNotFound, toPaginatedResult } from "./helpers";
 
 const ENTITY_NAME = "Piece";
 
@@ -21,11 +20,7 @@ export class PieceUsecase {
     limit: number;
     exclusiveStartKey?: Record<string, unknown>;
   }): Promise<Paginated<Piece>> {
-    const { items, lastEvaluatedKey } = await this.repo.findPage(options);
-    return {
-      items,
-      nextCursor: lastEvaluatedKey === undefined ? null : encodeCursor(lastEvaluatedKey),
-    };
+    return toPaginatedResult(await this.repo.findPage(options));
   }
 
   async get(id: string): Promise<Piece> {

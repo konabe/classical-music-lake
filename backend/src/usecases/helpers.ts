@@ -1,6 +1,23 @@
 import createError from "http-errors";
 
+import type { Paginated } from "../types";
+import { encodeCursor } from "../utils/cursor";
+
 type Owned = { isOwnedBy(userId: string): boolean };
+
+/**
+ * Repository の findPage 戻り値（items + lastEvaluatedKey）を
+ * API レスポンス形式 Paginated<T> に変換する。
+ */
+export function toPaginatedResult<T>(page: {
+  items: T[];
+  lastEvaluatedKey?: Record<string, unknown>;
+}): Paginated<T> {
+  return {
+    items: page.items,
+    nextCursor: page.lastEvaluatedKey === undefined ? null : encodeCursor(page.lastEvaluatedKey),
+  };
+}
 
 export async function findByIdOrNotFound<T>(
   findById: (id: string) => Promise<T | undefined>,
