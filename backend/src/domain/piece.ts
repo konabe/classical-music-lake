@@ -1,6 +1,5 @@
-import { randomUUID } from "node:crypto";
-
 import type { CreatePieceInput, Piece, UpdatePieceInput } from "../types";
+import { buildCreateProps, buildUpdateProps } from "./entity-helpers";
 
 const CLEARABLE_FIELDS = ["videoUrl", "genre", "era", "formation", "region"] as const;
 
@@ -24,8 +23,7 @@ export class PieceEntity {
   private constructor(private readonly props: Piece) {}
 
   static create(input: CreatePieceInput): PieceEntity {
-    const now = new Date().toISOString();
-    return new PieceEntity({ ...input, id: randomUUID(), createdAt: now, updatedAt: now });
+    return new PieceEntity(buildCreateProps<CreatePieceInput, Piece>(input));
   }
 
   static reconstruct(data: Piece): PieceEntity {
@@ -37,19 +35,7 @@ export class PieceEntity {
   }
 
   mergeUpdate(input: UpdatePieceInput): PieceEntity {
-    const merged: Piece = {
-      ...this.props,
-      ...input,
-      id: this.props.id,
-      createdAt: this.props.createdAt,
-      updatedAt: new Date().toISOString(),
-    };
-    const cleared = Object.fromEntries(
-      Object.entries(merged).filter(
-        ([key, value]) => !(CLEARABLE_FIELDS as readonly string[]).includes(key) || value !== ""
-      )
-    ) as Piece;
-    return new PieceEntity(cleared);
+    return new PieceEntity(buildUpdateProps(this.props, input, CLEARABLE_FIELDS));
   }
 
   toPlain(): Piece {

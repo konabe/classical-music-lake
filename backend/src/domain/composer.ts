@@ -1,6 +1,5 @@
-import { randomUUID } from "node:crypto";
-
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "../types";
+import { buildCreateProps, buildUpdateProps } from "./entity-helpers";
 
 const CLEARABLE_FIELDS = ["era", "region", "imageUrl"] as const;
 
@@ -19,8 +18,7 @@ export class ComposerEntity {
   private constructor(private readonly props: Composer) {}
 
   static create(input: CreateComposerInput): ComposerEntity {
-    const now = new Date().toISOString();
-    return new ComposerEntity({ ...input, id: randomUUID(), createdAt: now, updatedAt: now });
+    return new ComposerEntity(buildCreateProps<CreateComposerInput, Composer>(input));
   }
 
   static reconstruct(data: Composer): ComposerEntity {
@@ -32,19 +30,7 @@ export class ComposerEntity {
   }
 
   mergeUpdate(input: UpdateComposerInput): ComposerEntity {
-    const merged: Composer = {
-      ...this.props,
-      ...input,
-      id: this.props.id,
-      createdAt: this.props.createdAt,
-      updatedAt: new Date().toISOString(),
-    };
-    const cleared = Object.fromEntries(
-      Object.entries(merged).filter(
-        ([key, value]) => !(CLEARABLE_FIELDS as readonly string[]).includes(key) || value !== ""
-      )
-    ) as Composer;
-    return new ComposerEntity(cleared);
+    return new ComposerEntity(buildUpdateProps(this.props, input, CLEARABLE_FIELDS));
   }
 
   toPlain(): Composer {

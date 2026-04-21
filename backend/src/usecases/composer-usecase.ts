@@ -2,8 +2,7 @@ import { ComposerEntity } from "../domain/composer";
 import type { ComposerRepository } from "../domain/composer";
 import { DynamoDBComposerRepository } from "../repositories/composer-repository";
 import type { Composer, CreateComposerInput, Paginated, UpdateComposerInput } from "../types";
-import { encodeCursor } from "../utils/cursor";
-import { findByIdOrNotFound } from "./helpers";
+import { findByIdOrNotFound, toPaginatedResult } from "./helpers";
 
 const ENTITY_NAME = "Composer";
 
@@ -21,11 +20,7 @@ export class ComposerUsecase {
     limit: number;
     exclusiveStartKey?: Record<string, unknown>;
   }): Promise<Paginated<Composer>> {
-    const { items, lastEvaluatedKey } = await this.repo.findPage(options);
-    return {
-      items,
-      nextCursor: lastEvaluatedKey === undefined ? null : encodeCursor(lastEvaluatedKey),
-    };
+    return toPaginatedResult(await this.repo.findPage(options));
   }
 
   async get(id: string): Promise<Composer> {
