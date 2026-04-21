@@ -1,10 +1,11 @@
-import createError from "http-errors";
-
 import { ComposerEntity } from "../domain/composer";
 import type { ComposerRepository } from "../domain/composer";
 import { DynamoDBComposerRepository } from "../repositories/composer-repository";
 import type { Composer, CreateComposerInput, Paginated, UpdateComposerInput } from "../types";
 import { encodeCursor } from "../utils/cursor";
+import { findByIdOrNotFound } from "./helpers";
+
+const ENTITY_NAME = "Composer";
 
 export class ComposerUsecase {
   constructor(private readonly repo: ComposerRepository) {}
@@ -28,18 +29,11 @@ export class ComposerUsecase {
   }
 
   async get(id: string): Promise<Composer> {
-    const item = await this.repo.findById(id);
-    if (item === undefined) {
-      throw new createError.NotFound("Composer not found");
-    }
-    return item;
+    return findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
   }
 
   async update(id: string, input: UpdateComposerInput): Promise<Composer> {
-    const current = await this.repo.findById(id);
-    if (current === undefined) {
-      throw new createError.NotFound("Composer not found");
-    }
+    const current = await findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
     const entity = ComposerEntity.reconstruct(current);
     const updated = entity.mergeUpdate(input);
     const plain = updated.toPlain();

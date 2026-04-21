@@ -5,6 +5,7 @@ import httpResponseSerializer from "@middy/http-response-serializer";
 import type { HttpError } from "http-errors";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 
+import { requireAdmin } from "./auth";
 import { getEnv } from "./env";
 
 export type LambdaHandler = (
@@ -80,3 +81,13 @@ export const createHandler = (handler: LambdaHandler) =>
         defaultContentType: "application/json",
       })
     );
+
+/**
+ * createHandler に admin グループ必須の認可チェックを加えたラッパー。
+ * `cognito:groups` に `admin` が無い場合は 403 Forbidden を返す。
+ */
+export const createAdminHandler = (handler: LambdaHandler) =>
+  createHandler(async (event, context) => {
+    requireAdmin(event);
+    return handler(event, context);
+  });
