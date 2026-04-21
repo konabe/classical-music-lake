@@ -1,9 +1,10 @@
 import createError from "http-errors";
 
+import type { EntityId, UserId } from "../domain/value-objects/ids";
 import type { Paginated } from "../types";
 import { encodeCursor } from "../utils/cursor";
 
-type Owned = { isOwnedBy(userId: string): boolean };
+type Owned = { isOwnedBy(userId: UserId): boolean };
 
 /**
  * Repository の findPage 戻り値（items + lastEvaluatedKey）を
@@ -21,10 +22,10 @@ export function toPaginatedResult<T>(page: {
 
 export async function findByIdOrNotFound<T>(
   findById: (id: string) => Promise<T | undefined>,
-  id: string,
+  id: EntityId,
   entityName: string
 ): Promise<T> {
-  const item = await findById(id);
+  const item = await findById(id.value);
   if (item === undefined) {
     throw new createError.NotFound(`${entityName} not found`);
   }
@@ -34,8 +35,8 @@ export async function findByIdOrNotFound<T>(
 export async function loadOwnedEntityOrNotFound<TItem, TEntity extends Owned>(options: {
   findById: (id: string) => Promise<TItem | undefined>;
   reconstruct: (item: TItem) => TEntity;
-  id: string;
-  userId: string;
+  id: EntityId;
+  userId: UserId;
   entityName: string;
 }): Promise<TEntity> {
   const item = await findByIdOrNotFound(options.findById, options.id, options.entityName);

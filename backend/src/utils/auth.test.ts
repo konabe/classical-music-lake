@@ -24,9 +24,9 @@ describe("getUserId", () => {
     expect(() => getUserId(makeEvent({ claims: {} }))).toThrow("User not authenticated");
   });
 
-  it("有効な sub がある場合はその値を返す", () => {
+  it("有効な sub がある場合は UserId 値オブジェクトを返す", () => {
     const result = getUserId(makeEvent({ claims: { sub: "user-abc-123" } }));
-    expect(result).toBe("user-abc-123");
+    expect(result.value).toBe("user-abc-123");
   });
 });
 

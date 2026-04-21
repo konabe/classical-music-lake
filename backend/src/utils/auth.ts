@@ -1,6 +1,8 @@
 import createError from "http-errors";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
+import { UserId } from "../domain/value-objects/ids";
+
 type CognitoAuthorizerContext = {
   claims: {
     sub: string;
@@ -13,13 +15,13 @@ export const ADMIN_GROUP_NAME = "admin";
 const getAuthorizerContext = (event: APIGatewayProxyEvent): CognitoAuthorizerContext | null =>
   event.requestContext.authorizer as unknown as CognitoAuthorizerContext | null;
 
-export const getUserId = (event: APIGatewayProxyEvent): string => {
+export const getUserId = (event: APIGatewayProxyEvent): UserId => {
   const authorizer = getAuthorizerContext(event);
   const userId = authorizer?.claims?.sub;
   if (typeof userId !== "string" || userId === "") {
     throw new createError.Unauthorized("User not authenticated");
   }
-  return userId;
+  return UserId.from(userId);
 };
 
 // Cognito の cognito:groups クレームは所属グループによって配列・カンマ区切り文字列のいずれかで渡る

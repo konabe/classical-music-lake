@@ -1222,6 +1222,35 @@ cdk deploy
 | --------------- | -------------------------------------------------------- |
 | `isValidRating` | Rating のバリデーション関数（Lambda 内バリデーション用） |
 
+### 8.2 ID 値オブジェクト（バックエンドのみ）
+
+バックエンドではエンティティ ID を DDD の値オブジェクトとして表現し、異種 ID の取り違え（例: `PieceId` を `ComposerId` として渡す）を TypeScript の型検査で防ぐ。定義箇所は `backend/src/domain/value-objects/ids.ts`。
+
+| クラス           | 用途                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| `ListeningLogId` | 鑑賞ログの ID                                                                            |
+| `ConcertLogId`   | コンサート記録の ID                                                                      |
+| `PieceId`        | 楽曲マスタの ID（コンサート記録 `pieceIds` 参照にも使用）                                |
+| `ComposerId`     | 作曲家マスタの ID（楽曲マスタ `composerId` 参照にも使用）                                |
+| `UserId`         | Cognito sub を表す。外部 IdP 発行のため `generate()` は持たず `from(value)` のみ提供する |
+
+- 各クラスは共通基底 `IdValueObject` を継承し、`private readonly __brand` フィールドで nominal typing を得る（subclass 間で代入不可）
+- 生成系は `Xxx.generate()`（内部で UUID v4 を採番）と `Xxx.from(value)`（既存文字列からの復元）の 2 つを提供する
+- 厳密な UUID 形式検証は行わない（後方互換性のため）。空文字・非文字列のみ拒否する。UUID 形式の検証は Zod スキーマ（`z.uuid()`）で行う責務分離
+- 値の取り出しは `.value` プロパティまたは `toString()`
+- 同一クラス同士は `.equals(other)` で比較する（クラスが異なれば値が同じでも `false`）
+
+#### レイヤー境界との関係
+
+- **domain**: `ListeningLogEntity` 等の `create()` で `Xxx.generate()` を使い新規 ID を採番する。`isOwnedBy(userId: UserId)` のように値オブジェクトを引数に取る
+- **usecases**: `get(id: XxxId, userId: UserId)` のようにメソッド引数を値オブジェクトで受け取る。Repository 呼び出し時のみ `.value` で string を取り出す
+- **handlers**: パスパラメータ・認証情報から `getIdParam(event, XxxId.from)` / `getUserId(event)` で値オブジェクトを組み立てて usecase に渡す
+- **repositories**: インフラ層のため引数は string のまま（DynamoDB の Key も string）
+
+#### レイヤー依存規約との統合
+
+`handlers/` 層から `domain/` への直接 import は ESLint で禁止されているため、ID 値オブジェクトは各 usecase ファイル（例: `usecases/listening-log-usecase.ts`）から re-export してハンドラに公開する。
+
 #### 変更時のチェックリスト
 
 1. 共通定数・型を変更する場合、`shared/` のファイルを編集する（re-export により両パッケージに自動反映）

@@ -1,5 +1,6 @@
 import type { CreatePieceInput, Piece, UpdatePieceInput } from "../types";
 import { buildCreateProps, buildUpdateProps } from "./entity-helpers";
+import { PieceId } from "./value-objects/ids";
 
 const CLEARABLE_FIELDS = ["videoUrl", "genre", "era", "formation", "region"] as const;
 
@@ -23,7 +24,9 @@ export class PieceEntity {
   private constructor(private readonly props: Piece) {}
 
   static create(input: CreatePieceInput): PieceEntity {
-    return new PieceEntity(buildCreateProps<CreatePieceInput, Piece>(input));
+    return new PieceEntity(
+      buildCreateProps<CreatePieceInput, Piece>(input, PieceId.generate().value)
+    );
   }
 
   static reconstruct(data: Piece): PieceEntity {

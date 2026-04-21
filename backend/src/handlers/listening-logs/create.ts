@@ -11,6 +11,10 @@ const usecase = createListeningLogUsecase();
 export const handler = createHandler(async (event) => {
   const input = parseRequestBody(event.body as unknown, createListeningLogSchema);
   const userId = getUserId(event);
-  const log = await usecase.create({ ...input, rating: input.rating as Rating, userId });
+  const log = await usecase.create({
+    ...input,
+    rating: input.rating as Rating,
+    userId: userId.value,
+  });
   return created(log);
 }).use(jsonBodyParser);

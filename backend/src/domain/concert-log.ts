@@ -1,6 +1,6 @@
-import { randomUUID } from "node:crypto";
-
 import type { ConcertLog, CreateConcertLogInput } from "../types";
+import { ConcertLogId } from "./value-objects/ids";
+import type { UserId } from "./value-objects/ids";
 
 export type ConcertLogRepository = {
   findById(id: string): Promise<ConcertLog | undefined>;
@@ -13,12 +13,12 @@ export type ConcertLogRepository = {
 export class ConcertLogEntity {
   private constructor(private readonly props: ConcertLog) {}
 
-  static create(input: CreateConcertLogInput, userId: string): ConcertLogEntity {
+  static create(input: CreateConcertLogInput, userId: UserId): ConcertLogEntity {
     const now = new Date().toISOString();
     return new ConcertLogEntity({
       ...input,
-      id: randomUUID(),
-      userId,
+      id: ConcertLogId.generate().value,
+      userId: userId.value,
       createdAt: now,
       updatedAt: now,
     });
@@ -32,8 +32,8 @@ export class ConcertLogEntity {
     return [...entities].sort((a, b) => b.props.concertDate.localeCompare(a.props.concertDate));
   }
 
-  isOwnedBy(userId: string): boolean {
-    return this.props.userId === userId;
+  isOwnedBy(userId: UserId): boolean {
+    return this.props.userId === userId.value;
   }
 
   toPlain(): ConcertLog {

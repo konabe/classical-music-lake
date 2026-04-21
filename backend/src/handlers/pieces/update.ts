@@ -3,12 +3,12 @@ import { parseRequestBody } from "../../utils/parsing";
 import { updatePieceSchema } from "../../utils/schemas";
 import { getIdParam } from "../../utils/path-params";
 import { ok } from "../../utils/response";
-import { createPieceUsecase } from "../../usecases/piece-usecase";
+import { createPieceUsecase, PieceId } from "../../usecases/piece-usecase";
 
 const usecase = createPieceUsecase();
 
 export const handler = createAdminHandler(async (event) => {
-  const id = getIdParam(event);
+  const id = getIdParam(event, PieceId.from);
   const input = parseRequestBody(event.body as unknown, updatePieceSchema);
   const piece = await usecase.update(id, input);
   return ok(piece);

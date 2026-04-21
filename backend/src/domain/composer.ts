@@ -1,5 +1,6 @@
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "../types";
 import { buildCreateProps, buildUpdateProps } from "./entity-helpers";
+import { ComposerId } from "./value-objects/ids";
 
 const CLEARABLE_FIELDS = ["era", "region", "imageUrl"] as const;
 
@@ -18,7 +19,9 @@ export class ComposerEntity {
   private constructor(private readonly props: Composer) {}
 
   static create(input: CreateComposerInput): ComposerEntity {
-    return new ComposerEntity(buildCreateProps<CreateComposerInput, Composer>(input));
+    return new ComposerEntity(
+      buildCreateProps<CreateComposerInput, Composer>(input, ComposerId.generate().value)
+    );
   }
 
   static reconstruct(data: Composer): ComposerEntity {
