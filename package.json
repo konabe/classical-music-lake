@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "nuxt": "^4.4.2",
-    "vue": "^3.5.31",
+    "vue": "^3.5.33",
     "vue-router": "^4.0.0",
     "vuedraggable": "^4.1.0"
   },
@@ -85,10 +85,10 @@
     "@storybook/addon-docs": "^10.3.5",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
-    "@vitest/coverage-v8": "^4.1.4",
+    "@vitest/coverage-v8": "^4.1.5",
     "@vitest/eslint-plugin": "^1.6.16",
     "@vue/test-utils": "^2.4.6",
-    "eslint": "^10.1.0",
+    "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-storybook": "^10.3.5",
     "eslint-plugin-vuejs-accessibility": "^2.5.0",
@@ -101,7 +101,7 @@
     "storybook": "^10.3.5",
     "stylelint": "^17.8.0",
     "stylelint-config-recommended-vue": "^1.6.1",
-    "typescript": "~6.0.2",
-    "vitest": "^4.1.4"
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.5"
   }
 }
