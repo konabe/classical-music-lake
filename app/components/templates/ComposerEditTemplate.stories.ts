@@ -20,13 +20,13 @@ const sample: Composer = {
 };
 
 export const Default: Story = {
-  args: { composer: sample, fetchError: null, errorMessage: "" },
+  args: { composer: sample, fetchError: null, error: null },
 };
 
 export const WithError: Story = {
-  args: { composer: sample, fetchError: null, errorMessage: "更新に失敗しました" },
+  args: { composer: sample, fetchError: null, error: "更新に失敗しました" },
 };
 
 export const FetchError: Story = {
-  args: { composer: null, fetchError: new Error("fail"), errorMessage: "" },
+  args: { composer: null, fetchError: new Error("fail"), error: null },
 };

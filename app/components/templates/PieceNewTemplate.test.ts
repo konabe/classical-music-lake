@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceNewTemplate from "./PieceNewTemplate.vue";
 
-const commonProps = { errorMessage: "", composers: [] } as const;
+const commonProps = { error: null, composers: [] } as const;
 
 describe("PieceNewTemplate", () => {
   it("ページタイトルが表示される", async () => {
@@ -16,7 +16,7 @@ describe("PieceNewTemplate", () => {
 
   it("エラーがあるとき ErrorMessage が表示される", async () => {
     const wrapper = await mountSuspended(PieceNewTemplate, {
-      props: { ...commonProps, errorMessage: "登録に失敗しました" },
+      props: { ...commonProps, error: "登録に失敗しました" },
     });
     expect(wrapper.findComponent({ name: "ErrorMessage" }).exists()).toBe(true);
   });

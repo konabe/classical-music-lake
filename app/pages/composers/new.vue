@@ -4,19 +4,13 @@ import type { CreateComposerInput } from "~/types";
 definePageMeta({ middleware: ["admin"] });
 
 const { createComposer } = useComposersPaginated();
-const errorMessage = ref("");
-
-async function handleSubmit(values: CreateComposerInput) {
-  errorMessage.value = "";
-  try {
-    await createComposer(values);
-    await navigateTo("/composers");
-  } catch {
-    errorMessage.value = "登録に失敗しました。入力内容を確認してください。";
-  }
-}
+const { error, handleSubmit } = useSubmitHandler<CreateComposerInput>({
+  submit: (values) => createComposer(values),
+  redirectTo: "/composers",
+  errorMessage: "登録に失敗しました。入力内容を確認してください。",
+});
 </script>
 
 <template>
-  <ComposerNewTemplate :error-message="errorMessage" @submit="handleSubmit" />
+  <ComposerNewTemplate :error="error" @submit="handleSubmit" />
 </template>

@@ -30,18 +30,18 @@ const samplePiece: Piece = {
 };
 
 export const Default: Story = {
-  args: { piece: samplePiece, fetchError: null, errorMessage: "", composers },
+  args: { piece: samplePiece, fetchError: null, error: null, composers },
 };
 
 export const WithFetchError: Story = {
-  args: { piece: null, fetchError: new Error("取得失敗"), errorMessage: "", composers },
+  args: { piece: null, fetchError: new Error("取得失敗"), error: null, composers },
 };
 
 export const WithSubmitError: Story = {
   args: {
     piece: samplePiece,
     fetchError: null,
-    errorMessage: "更新に失敗しました。時間をおいて再度お試しください。",
+    error: "更新に失敗しました。時間をおいて再度お試しください。",
     composers,
   },
 };

@@ -58,10 +58,10 @@ describe("PieceNewPage", () => {
     const wrapper = await mountSuspended(PieceNewPage);
     const vm = wrapper.vm as {
       handleSubmit: (values: CreatePieceInput) => Promise<void>;
-      errorMessage: string;
+      error: string | null;
     };
     await vm.handleSubmit({ title: "交響曲第9番", composer: "ベートーヴェン" });
     await flushPromises();
-    expect(vm.errorMessage).toContain("失敗");
+    expect(vm.error).toContain("失敗");
   });
 });

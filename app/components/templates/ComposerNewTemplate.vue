@@ -2,7 +2,7 @@
 import type { CreateComposerInput } from "~/types";
 
 defineProps<{
-  errorMessage: string;
+  error: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -14,7 +14,7 @@ const emit = defineEmits<{
   <div>
     <h1 class="page-title">作曲家を追加</h1>
 
-    <ErrorMessage v-if="errorMessage" :message="errorMessage" variant="block" />
+    <ErrorMessage v-if="error" :message="error" variant="block" />
 
     <ComposerForm submit-label="登録する" @submit="emit('submit', $event)" />
   </div>
