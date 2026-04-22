@@ -142,8 +142,8 @@ importers:
         specifier: ^7.3.1
         version: 7.3.1
       '@middy/http-response-serializer':
-        specifier: ^7.2.2
-        version: 7.2.2
+        specifier: ^7.3.1
+        version: 7.3.1
       http-errors:
         specifier: ^2.0.1
         version: 2.0.1
@@ -1429,8 +1429,8 @@ packages:
     resolution: {integrity: sha512-XsbfJSubrAu82vyb1cN8fPCA/XHMbshLNSfQeIVvnWXsnwQlEtdutCKwObmDRlIRmgJsk3qh8mMqILlO2dyPUA==}
     engines: {node: '>=22'}
 
-  '@middy/http-response-serializer@7.2.2':
-    resolution: {integrity: sha512-x/cC/98ktWd7CDvifby4H2ZdyI89BImAMGEwu5u4Mu+5iylOefo/6bLzbga3ljnhwhCIIpoDLP2bpKZNps+4ag==}
+  '@middy/http-response-serializer@7.3.1':
+    resolution: {integrity: sha512-XMGKLuNHumrr+1xZPZjtcf+bDIMfN5a9y5UETGvB/DgEHE3PzgFy8vxbUiCetALXaR8p6c+7wzRQ6r6Ig9XVXw==}
     engines: {node: '>=22'}
 
   '@middy/util@7.2.2':
@@ -8591,9 +8591,9 @@ snapshots:
     dependencies:
       '@middy/util': 7.3.1
 
-  '@middy/http-response-serializer@7.2.2':
+  '@middy/http-response-serializer@7.3.1':
     dependencies:
-      '@middy/util': 7.2.2
+      '@middy/util': 7.3.1
 
   '@middy/util@7.2.2': {}
 
