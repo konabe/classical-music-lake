@@ -12,16 +12,8 @@ const emit = defineEmits<{
 
 <template>
   <div>
-    <h1 class="page-title">コンサート記録を追加</h1>
+    <PageTitle>コンサート記録を追加</PageTitle>
     <ErrorMessage v-if="error" :message="error" />
     <ConcertLogForm submit-label="記録する" @submit="emit('submit', $event)" />
   </div>
 </template>
-
-<style scoped>
-.page-title {
-  font-size: 1.6rem;
-  color: var(--color-text);
-  margin-bottom: 1.5rem;
-}
-</style>
