@@ -1242,10 +1242,10 @@ cdk deploy
 
 #### レイヤー境界との関係
 
-- **domain**: `ListeningLogEntity` 等の `create()` で `Xxx.generate()` を使い新規 ID を採番する。`isOwnedBy(userId: UserId)` のように値オブジェクトを引数に取る
+- **domain**: エンティティの内部フィールド（`props`）は ID を値オブジェクトとして保持する（例: `PieceEntity` の `props.composerId` は `ComposerId`、`ConcertLogEntity` の `props.pieceIds` は `PieceId[]`）。`create()` で `Xxx.generate()` を使い新規 ID を採番し、`reconstruct(data)` で DynamoDB から復元した文字列 ID を VO に変換する。`toPlain()` は VO を `.value` で string に戻して DTO を返す
 - **usecases**: `get(id: XxxId, userId: UserId)` のようにメソッド引数を値オブジェクトで受け取る。Repository 呼び出し時のみ `.value` で string を取り出す
 - **handlers**: パスパラメータ・認証情報から `getIdParam(event, XxxId.from)` / `getUserId(event)` で値オブジェクトを組み立てて usecase に渡す
-- **repositories**: インフラ層のため引数は string のまま（DynamoDB の Key も string）
+- **repositories**: インフラ層のため引数・戻り値は string ベースの DTO のまま（DynamoDB の Key も string）
 
 #### レイヤー依存規約との統合
 

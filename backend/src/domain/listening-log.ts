@@ -1,6 +1,5 @@
-import type { CreateListeningLogInput, ListeningLog } from "../types";
-import { ListeningLogId } from "./value-objects/ids";
-import type { UserId } from "./value-objects/ids";
+import type { CreateListeningLogInput, ListeningLog, Rating } from "../types";
+import { ListeningLogId, UserId } from "./value-objects/ids";
 
 export type ListeningLogRepository = {
   findById(id: string): Promise<ListeningLog | undefined>;
@@ -10,21 +9,39 @@ export type ListeningLogRepository = {
   remove(id: string): Promise<void>;
 };
 
+type ListeningLogProps = {
+  id: ListeningLogId;
+  userId: UserId | null;
+  listenedAt: string;
+  composer: string;
+  piece: string;
+  rating: Rating;
+  isFavorite: boolean;
+  memo?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export class ListeningLogEntity {
-  private constructor(private readonly props: ListeningLog) {}
+  private constructor(private readonly props: ListeningLogProps) {}
 
   static create(input: CreateListeningLogInput): ListeningLogEntity {
     const now = new Date().toISOString();
     return new ListeningLogEntity({
       ...input,
-      id: ListeningLogId.generate().value,
+      id: ListeningLogId.generate(),
+      userId: input.userId === null ? null : UserId.from(input.userId),
       createdAt: now,
       updatedAt: now,
     });
   }
 
   static reconstruct(data: ListeningLog): ListeningLogEntity {
-    return new ListeningLogEntity(data);
+    return new ListeningLogEntity({
+      ...data,
+      id: ListeningLogId.from(data.id),
+      userId: data.userId === null ? null : UserId.from(data.userId),
+    });
   }
 
   static sortByListenedAtDesc(entities: ListeningLogEntity[]): ListeningLogEntity[] {
@@ -32,10 +49,14 @@ export class ListeningLogEntity {
   }
 
   isOwnedBy(userId: UserId): boolean {
-    return this.props.userId !== null && this.props.userId === userId.value;
+    return this.props.userId !== null && this.props.userId.equals(userId);
   }
 
   toPlain(): ListeningLog {
-    return { ...this.props };
+    return {
+      ...this.props,
+      id: this.props.id.value,
+      userId: this.props.userId === null ? null : this.props.userId.value,
+    };
   }
 }
