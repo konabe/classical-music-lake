@@ -27,11 +27,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: pnpm run test:frontend:ci
-
-      - name: Run coverage
-        run: pnpm run test:coverage
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6
