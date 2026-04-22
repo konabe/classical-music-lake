@@ -41,7 +41,7 @@ export class PieceUsecase {
   }
 
   async delete(id: PieceId): Promise<void> {
-    await this.repo.remove(id.value);
+    await this.repo.remove(id);
   }
 }
 

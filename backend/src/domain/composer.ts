@@ -11,14 +11,14 @@ import { ComposerId } from "./value-objects/ids";
 const CLEARABLE_FIELDS = ["era", "region", "imageUrl"] as const;
 
 export type ComposerRepository = {
-  findById(id: string): Promise<Composer | undefined>;
+  findById(id: ComposerId): Promise<Composer | undefined>;
   findPage(options: {
     limit: number;
     exclusiveStartKey?: Record<string, unknown>;
   }): Promise<{ items: Composer[]; lastEvaluatedKey?: Record<string, unknown> }>;
   save(item: Composer): Promise<void>;
   saveWithOptimisticLock(item: Composer, prevUpdatedAt: string): Promise<void>;
-  remove(id: string): Promise<void>;
+  remove(id: ComposerId): Promise<void>;
 };
 
 type ComposerProps = {

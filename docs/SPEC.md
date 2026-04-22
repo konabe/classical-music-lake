@@ -1243,9 +1243,9 @@ cdk deploy
 #### レイヤー境界との関係
 
 - **domain**: エンティティの内部フィールド（`props`）は ID を値オブジェクトとして保持する（例: `PieceEntity` の `props.composerId` は `ComposerId`、`ConcertLogEntity` の `props.pieceIds` は `PieceId[]`）。`create()` で `Xxx.generate()` を使い新規 ID を採番し、`reconstruct(data)` で DynamoDB から復元した文字列 ID を VO に変換する。`toPlain()` は VO を `.value` で string に戻して DTO を返す
-- **usecases**: `get(id: XxxId, userId: UserId)` のようにメソッド引数を値オブジェクトで受け取る。Repository 呼び出し時のみ `.value` で string を取り出す
+- **usecases**: `get(id: XxxId, userId: UserId)` のようにメソッド引数を値オブジェクトで受け取り、Repository にも値オブジェクトのまま渡す
 - **handlers**: パスパラメータ・認証情報から `getIdParam(event, XxxId.from)` / `getUserId(event)` で値オブジェクトを組み立てて usecase に渡す
-- **repositories**: インフラ層のため引数・戻り値は string ベースの DTO のまま（DynamoDB の Key も string）
+- **repositories**: インターフェイス（`domain/*.ts` で定義）のメソッド引数は ID 値オブジェクト（`findById(id: XxxId)` / `findByUserId(userId: UserId)` / `remove(id: XxxId)` / `update(id: XxxId, ...)`）を受け取る。実装（`repositories/*.ts`）内部で `.value` に変換して DynamoDB の Key / GSI に渡す。戻り値は引き続き string ベースの DTO（Entity 復元は usecase 層の責務）
 
 #### レイヤー依存規約との統合
 

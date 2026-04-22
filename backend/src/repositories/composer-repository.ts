@@ -2,13 +2,16 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { DeleteCommand, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 
+import type { ComposerId } from "../domain/value-objects/ids";
 import { dynamo, scanPage, TABLE_COMPOSERS } from "../utils/dynamodb";
 import type { Composer } from "../types";
 import type { ComposerRepository } from "../domain/composer";
 
 export class DynamoDBComposerRepository implements ComposerRepository {
-  async findById(id: string): Promise<Composer | undefined> {
-    const result = await dynamo.send(new GetCommand({ TableName: TABLE_COMPOSERS, Key: { id } }));
+  async findById(id: ComposerId): Promise<Composer | undefined> {
+    const result = await dynamo.send(
+      new GetCommand({ TableName: TABLE_COMPOSERS, Key: { id: id.value } })
+    );
     return result.Item as Composer | undefined;
   }
 
@@ -41,7 +44,7 @@ export class DynamoDBComposerRepository implements ComposerRepository {
     }
   }
 
-  async remove(id: string): Promise<void> {
-    await dynamo.send(new DeleteCommand({ TableName: TABLE_COMPOSERS, Key: { id } }));
+  async remove(id: ComposerId): Promise<void> {
+    await dynamo.send(new DeleteCommand({ TableName: TABLE_COMPOSERS, Key: { id: id.value } }));
   }
 }

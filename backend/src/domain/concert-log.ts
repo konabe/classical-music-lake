@@ -2,11 +2,11 @@ import type { ConcertLog, CreateConcertLogInput } from "../types";
 import { ConcertLogId, PieceId, UserId } from "./value-objects/ids";
 
 export type ConcertLogRepository = {
-  findById(id: string): Promise<ConcertLog | undefined>;
-  findByUserId(userId: string): Promise<ConcertLog[]>;
+  findById(id: ConcertLogId): Promise<ConcertLog | undefined>;
+  findByUserId(userId: UserId): Promise<ConcertLog[]>;
   save(item: ConcertLog): Promise<void>;
-  update(id: string, input: Partial<ConcertLog>): Promise<ConcertLog>;
-  remove(id: string): Promise<void>;
+  update(id: ConcertLogId, input: Partial<ConcertLog>): Promise<ConcertLog>;
+  remove(id: ConcertLogId): Promise<void>;
 };
 
 type ConcertLogProps = {

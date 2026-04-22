@@ -41,7 +41,7 @@ export class ComposerUsecase {
   }
 
   async delete(id: ComposerId): Promise<void> {
-    await this.repo.remove(id.value);
+    await this.repo.remove(id);
   }
 }
 

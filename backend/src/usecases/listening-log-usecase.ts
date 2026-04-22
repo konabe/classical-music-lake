@@ -32,7 +32,7 @@ export class ListeningLogUsecase {
   }
 
   async list(userId: UserId): Promise<ListeningLog[]> {
-    const items = await this.repo.findByUserId(userId.value);
+    const items = await this.repo.findByUserId(userId);
     const entities = items.map((item) => ListeningLogEntity.reconstruct(item));
     return ListeningLogEntity.sortByListenedAtDesc(entities).map((e) => e.toPlain());
   }
@@ -48,12 +48,12 @@ export class ListeningLogUsecase {
     userId: UserId
   ): Promise<ListeningLog> {
     await this.loadOwnedEntity(id, userId);
-    return this.repo.update(id.value, input);
+    return this.repo.update(id, input);
   }
 
   async delete(id: ListeningLogId, userId: UserId): Promise<void> {
     await this.loadOwnedEntity(id, userId);
-    await this.repo.remove(id.value);
+    await this.repo.remove(id);
   }
 }
 

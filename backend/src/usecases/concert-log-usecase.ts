@@ -32,7 +32,7 @@ export class ConcertLogUsecase {
   }
 
   async list(userId: UserId): Promise<ConcertLog[]> {
-    const items = await this.repo.findByUserId(userId.value);
+    const items = await this.repo.findByUserId(userId);
     const entities = items.map((item) => ConcertLogEntity.reconstruct(item));
     return ConcertLogEntity.sortByConcertDateDesc(entities).map((e) => e.toPlain());
   }
@@ -44,12 +44,12 @@ export class ConcertLogUsecase {
 
   async update(id: ConcertLogId, input: Partial<ConcertLog>, userId: UserId): Promise<ConcertLog> {
     await this.loadOwnedEntity(id, userId);
-    return this.repo.update(id.value, input);
+    return this.repo.update(id, input);
   }
 
   async delete(id: ConcertLogId, userId: UserId): Promise<void> {
     await this.loadOwnedEntity(id, userId);
-    await this.repo.remove(id.value);
+    await this.repo.remove(id);
   }
 }
 

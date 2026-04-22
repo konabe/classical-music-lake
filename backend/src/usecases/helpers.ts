@@ -20,22 +20,26 @@ export function toPaginatedResult<T>(page: {
   };
 }
 
-export async function findByIdOrNotFound<T>(
-  findById: (id: string) => Promise<T | undefined>,
-  id: EntityId,
+export async function findByIdOrNotFound<T, I extends EntityId>(
+  findById: (id: I) => Promise<T | undefined>,
+  id: I,
   entityName: string
 ): Promise<T> {
-  const item = await findById(id.value);
+  const item = await findById(id);
   if (item === undefined) {
     throw new createError.NotFound(`${entityName} not found`);
   }
   return item;
 }
 
-export async function loadOwnedEntityOrNotFound<TItem, TEntity extends Owned>(options: {
-  findById: (id: string) => Promise<TItem | undefined>;
+export async function loadOwnedEntityOrNotFound<
+  TItem,
+  TEntity extends Owned,
+  I extends EntityId,
+>(options: {
+  findById: (id: I) => Promise<TItem | undefined>;
   reconstruct: (item: TItem) => TEntity;
-  id: EntityId;
+  id: I;
   userId: UserId;
   entityName: string;
 }): Promise<TEntity> {

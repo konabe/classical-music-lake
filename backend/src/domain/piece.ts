@@ -13,7 +13,7 @@ import { ComposerId, PieceId } from "./value-objects/ids";
 const CLEARABLE_FIELDS = ["videoUrl", "genre", "era", "formation", "region"] as const;
 
 export type PieceRepository = {
-  findById(id: string): Promise<Piece | undefined>;
+  findById(id: PieceId): Promise<Piece | undefined>;
   /**
    * @deprecated 新規コードでは {@link findPage} を使うこと。
    * 本関数は `usePiecesAll`（フロントの全件集約互換ヘルパー）の削除後に併せて廃止予定。
@@ -25,7 +25,7 @@ export type PieceRepository = {
   }): Promise<{ items: Piece[]; lastEvaluatedKey?: Record<string, unknown> }>;
   save(item: Piece): Promise<void>;
   saveWithOptimisticLock(item: Piece, prevUpdatedAt: string): Promise<void>;
-  remove(id: string): Promise<void>;
+  remove(id: PieceId): Promise<void>;
 };
 
 type PieceProps = {

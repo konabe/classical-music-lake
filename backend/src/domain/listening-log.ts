@@ -2,11 +2,11 @@ import type { CreateListeningLogInput, ListeningLog, Rating } from "../types";
 import { ListeningLogId, UserId } from "./value-objects/ids";
 
 export type ListeningLogRepository = {
-  findById(id: string): Promise<ListeningLog | undefined>;
-  findByUserId(userId: string): Promise<ListeningLog[]>;
+  findById(id: ListeningLogId): Promise<ListeningLog | undefined>;
+  findByUserId(userId: UserId): Promise<ListeningLog[]>;
   save(item: ListeningLog): Promise<void>;
-  update(id: string, input: Partial<ListeningLog>): Promise<ListeningLog>;
-  remove(id: string): Promise<void>;
+  update(id: ListeningLogId, input: Partial<ListeningLog>): Promise<ListeningLog>;
+  remove(id: ListeningLogId): Promise<void>;
 };
 
 type ListeningLogProps = {
