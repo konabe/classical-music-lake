@@ -130,8 +130,8 @@ importers:
         specifier: ^3.1034.0
         version: 3.1034.0(@aws-sdk/client-dynamodb@3.1030.0)
       '@middy/core':
-        specifier: ^7.2.2
-        version: 7.2.2
+        specifier: ^7.3.1
+        version: 7.3.1
       '@middy/http-cors':
         specifier: ^7.2.2
         version: 7.2.2
@@ -1408,8 +1408,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@middy/core@7.2.2':
-    resolution: {integrity: sha512-UO1skdDb0ZRrbOlD4h0+FnOUqhT0YuA8ppuzNhaQGzz6CnQ3uYdKMrfgfoMChQ5HReNFhzejUa/LhRPX2CPvdA==}
+  '@middy/core@7.3.1':
+    resolution: {integrity: sha512-vdeWJ8HagsVQyawFknLDAGNtOaP7JcCMRG9NGt7B0irLIWxSL+fLzScoHlO6ipaXimlv+tcqhxXlhaWzUSoInw==}
     engines: {node: '>=22'}
     peerDependencies:
       '@aws/durable-execution-sdk-js': ^1.0.0
@@ -8575,9 +8575,9 @@ snapshots:
       '@types/react': 19.2.14
       react: 19.2.5
 
-  '@middy/core@7.2.2':
+  '@middy/core@7.3.1':
     dependencies:
-      '@middy/util': 7.2.2
+      '@middy/util': 7.3.1
 
   '@middy/http-cors@7.2.2':
     dependencies:
