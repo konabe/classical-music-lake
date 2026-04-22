@@ -1,17 +1,4 @@
-import { randomUUID } from "node:crypto";
-
 type BaseEntityFields = { id: string; createdAt: string; updatedAt: string };
-
-/**
- * 新規エンティティ用のメタデータ（id / createdAt / updatedAt）を付与した props を生成する。
- * Composer / Piece のような admin 管理エンティティで共通利用する。
- */
-export function buildCreateProps<TInput extends object, TProps extends TInput & BaseEntityFields>(
-  input: TInput
-): TProps {
-  const now = new Date().toISOString();
-  return { ...input, id: randomUUID(), createdAt: now, updatedAt: now } as TProps;
-}
 
 /**
  * 既存エンティティ props に更新入力をマージし、クリア可能フィールドに空文字が渡された場合は

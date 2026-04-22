@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
+import { ComposerId } from "../../domain/value-objects/ids";
 import { handler } from "./delete";
 import {
   makeAdminEvent,
@@ -64,7 +65,7 @@ describe("DELETE /composers/{id} (delete)", () => {
     mockRepo.remove.mockResolvedValueOnce();
     await handler(makeEvent("test-id-123"), mockContext, mockCallback);
 
-    expect(mockRepo.remove).toHaveBeenCalledWith("test-id-123");
+    expect(mockRepo.remove).toHaveBeenCalledWith(ComposerId.from("test-id-123"));
   });
 
   it("Repository エラー時に 500 を返す", async () => {

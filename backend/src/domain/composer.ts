@@ -1,28 +1,54 @@
-import type { Composer, CreateComposerInput, UpdateComposerInput } from "../types";
-import { buildCreateProps, buildUpdateProps } from "./entity-helpers";
+import type {
+  Composer,
+  CreateComposerInput,
+  PieceEra,
+  PieceRegion,
+  UpdateComposerInput,
+} from "../types";
+import { buildUpdateProps } from "./entity-helpers";
+import { ComposerId } from "./value-objects/ids";
 
 const CLEARABLE_FIELDS = ["era", "region", "imageUrl"] as const;
 
 export type ComposerRepository = {
-  findById(id: string): Promise<Composer | undefined>;
+  findById(id: ComposerId): Promise<Composer | undefined>;
   findPage(options: {
     limit: number;
     exclusiveStartKey?: Record<string, unknown>;
   }): Promise<{ items: Composer[]; lastEvaluatedKey?: Record<string, unknown> }>;
   save(item: Composer): Promise<void>;
   saveWithOptimisticLock(item: Composer, prevUpdatedAt: string): Promise<void>;
-  remove(id: string): Promise<void>;
+  remove(id: ComposerId): Promise<void>;
+};
+
+type ComposerProps = {
+  id: ComposerId;
+  name: string;
+  era?: PieceEra;
+  region?: PieceRegion;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export class ComposerEntity {
-  private constructor(private readonly props: Composer) {}
+  private constructor(private readonly props: ComposerProps) {}
 
   static create(input: CreateComposerInput): ComposerEntity {
-    return new ComposerEntity(buildCreateProps<CreateComposerInput, Composer>(input));
+    const now = new Date().toISOString();
+    return new ComposerEntity({
+      ...input,
+      id: ComposerId.generate(),
+      createdAt: now,
+      updatedAt: now,
+    });
   }
 
   static reconstruct(data: Composer): ComposerEntity {
-    return new ComposerEntity(data);
+    return new ComposerEntity({
+      ...data,
+      id: ComposerId.from(data.id),
+    });
   }
 
   get updatedAt(): string {
@@ -30,10 +56,14 @@ export class ComposerEntity {
   }
 
   mergeUpdate(input: UpdateComposerInput): ComposerEntity {
-    return new ComposerEntity(buildUpdateProps(this.props, input, CLEARABLE_FIELDS));
+    const merged = buildUpdateProps(this.toPlain(), input, CLEARABLE_FIELDS);
+    return ComposerEntity.reconstruct(merged);
   }
 
   toPlain(): Composer {
-    return { ...this.props };
+    return {
+      ...this.props,
+      id: this.props.id.value,
+    };
   }
 }

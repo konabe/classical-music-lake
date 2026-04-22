@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ConcertLog } from "../../types";
 
+import { UserId } from "../../domain/value-objects/ids";
 import { handler } from "./list";
 import { makeAuthEvent } from "../../test/fixtures";
 
@@ -68,7 +69,7 @@ describe("GET /concert-logs (list)", () => {
 
     await handler(mockEvent, mockContext, mockCallback);
 
-    expect(mockRepo.findByUserId).toHaveBeenCalledWith(TEST_USER_ID);
+    expect(mockRepo.findByUserId).toHaveBeenCalledWith(UserId.from(TEST_USER_ID));
   });
 
   it("Repository エラー時に 500 を返す", async () => {

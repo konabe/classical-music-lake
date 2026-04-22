@@ -1,8 +1,12 @@
 import { ComposerEntity } from "../domain/composer";
 import type { ComposerRepository } from "../domain/composer";
+import { ComposerId } from "../domain/value-objects/ids";
 import { DynamoDBComposerRepository } from "../repositories/composer-repository";
 import type { Composer, CreateComposerInput, Paginated, UpdateComposerInput } from "../types";
 import { findByIdOrNotFound, toPaginatedResult } from "./helpers";
+
+// handlers 層は domain へ直接アクセスできないため、ID 値オブジェクトを usecase 層経由で公開する
+export { ComposerId };
 
 const ENTITY_NAME = "Composer";
 
@@ -23,11 +27,11 @@ export class ComposerUsecase {
     return toPaginatedResult(await this.repo.findPage(options));
   }
 
-  async get(id: string): Promise<Composer> {
+  async get(id: ComposerId): Promise<Composer> {
     return findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
   }
 
-  async update(id: string, input: UpdateComposerInput): Promise<Composer> {
+  async update(id: ComposerId, input: UpdateComposerInput): Promise<Composer> {
     const current = await findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
     const entity = ComposerEntity.reconstruct(current);
     const updated = entity.mergeUpdate(input);
@@ -36,7 +40,7 @@ export class ComposerUsecase {
     return plain;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: ComposerId): Promise<void> {
     await this.repo.remove(id);
   }
 }
