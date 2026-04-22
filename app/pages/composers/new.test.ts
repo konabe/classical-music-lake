@@ -48,10 +48,10 @@ describe("ComposerNewPage", () => {
     const wrapper = await mountSuspended(ComposerNewPage);
     const vm = wrapper.vm as {
       handleSubmit: (values: CreateComposerInput) => Promise<void>;
-      errorMessage: string;
+      error: string | null;
     };
     await vm.handleSubmit({ name: "ベートーヴェン" });
     await flushPromises();
-    expect(vm.errorMessage).toContain("失敗");
+    expect(vm.error).toContain("失敗");
   });
 });

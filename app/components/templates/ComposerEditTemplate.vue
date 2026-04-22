@@ -4,7 +4,7 @@ import type { Composer, UpdateComposerInput } from "~/types";
 defineProps<{
   composer: Composer | null;
   fetchError: Error | null;
-  errorMessage: string;
+  error: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -19,7 +19,7 @@ const emit = defineEmits<{
     <ErrorMessage v-if="fetchError" message="作曲家の取得に失敗しました。" variant="block" />
 
     <template v-else>
-      <ErrorMessage v-if="errorMessage" :message="errorMessage" variant="block" />
+      <ErrorMessage v-if="error" :message="error" variant="block" />
       <ComposerForm
         :initial-values="{
           name: composer?.name,

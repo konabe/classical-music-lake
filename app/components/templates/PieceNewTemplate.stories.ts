@@ -11,12 +11,12 @@ type Story = StoryObj<typeof PieceNewTemplate>;
 
 export const Default: Story = {
   args: {
-    errorMessage: "",
+    error: null,
   },
 };
 
 export const WithError: Story = {
   args: {
-    errorMessage: "楽曲の登録に失敗しました。時間をおいて再度お試しください。",
+    error: "楽曲の登録に失敗しました。時間をおいて再度お試しください。",
   },
 };

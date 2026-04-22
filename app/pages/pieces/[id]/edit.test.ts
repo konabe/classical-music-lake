@@ -63,10 +63,10 @@ describe("PieceEditPage", () => {
     const wrapper = await mountSuspended(PieceEditPage);
     const vm = wrapper.vm as {
       handleSubmit: (values: UpdatePieceInput) => Promise<void>;
-      errorMessage: string;
+      error: string | null;
     };
     await vm.handleSubmit({ title: "更新後" });
     await flushPromises();
-    expect(vm.errorMessage).toContain("失敗");
+    expect(vm.error).toContain("失敗");
   });
 });

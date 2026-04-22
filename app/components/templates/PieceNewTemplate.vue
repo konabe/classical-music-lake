@@ -2,7 +2,7 @@
 import type { Composer, CreatePieceInput } from "~/types";
 
 defineProps<{
-  errorMessage: string;
+  error: string | null;
   composers: Composer[];
   composersPending?: boolean;
 }>();
@@ -16,7 +16,7 @@ const emit = defineEmits<{
   <div>
     <h1 class="page-title">楽曲を追加</h1>
 
-    <ErrorMessage v-if="errorMessage" :message="errorMessage" variant="block" />
+    <ErrorMessage v-if="error" :message="error" variant="block" />
 
     <PieceForm
       :composers="composers"

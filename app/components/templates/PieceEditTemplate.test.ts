@@ -24,7 +24,7 @@ const composers: Composer[] = [
 describe("PieceEditTemplate", () => {
   it("ページタイトルが表示される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
-      props: { piece: samplePiece, fetchError: null, errorMessage: "", composers },
+      props: { piece: samplePiece, fetchError: null, error: null, composers },
     });
     expect(wrapper.text()).toContain("楽曲を編集");
   });
@@ -34,7 +34,7 @@ describe("PieceEditTemplate", () => {
       props: {
         piece: null,
         fetchError: new Error("fetch error"),
-        errorMessage: "",
+        error: null,
         composers,
       },
     });
@@ -46,7 +46,7 @@ describe("PieceEditTemplate", () => {
       props: {
         piece: null,
         fetchError: new Error("fetch error"),
-        errorMessage: "",
+        error: null,
         composers,
       },
     });
@@ -55,14 +55,14 @@ describe("PieceEditTemplate", () => {
 
   it("fetchError がない場合は PieceForm が表示される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
-      props: { piece: samplePiece, fetchError: null, errorMessage: "", composers },
+      props: { piece: samplePiece, fetchError: null, error: null, composers },
     });
     expect(wrapper.find("form.piece-form").exists()).toBe(true);
   });
 
   it("初期値が PieceForm に反映される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
-      props: { piece: samplePiece, fetchError: null, errorMessage: "", composers },
+      props: { piece: samplePiece, fetchError: null, error: null, composers },
     });
     const titleInput = wrapper.find('input[placeholder="例：交響曲第9番"]');
     expect((titleInput.element as HTMLInputElement).value).toBe("交響曲第9番");
@@ -72,7 +72,7 @@ describe("PieceEditTemplate", () => {
 
   it("フォーム送信時に submit イベントが emit される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
-      props: { piece: samplePiece, fetchError: null, errorMessage: "", composers },
+      props: { piece: samplePiece, fetchError: null, error: null, composers },
     });
     await wrapper.find("form").trigger("submit.prevent");
     expect(wrapper.emitted("submit")).toBeDefined();

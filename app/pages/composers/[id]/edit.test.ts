@@ -55,10 +55,10 @@ describe("ComposerEditPage", () => {
     const wrapper = await mountSuspended(ComposerEditPage);
     const vm = wrapper.vm as {
       handleSubmit: (values: UpdateComposerInput) => Promise<void>;
-      errorMessage: string;
+      error: string | null;
     };
     await vm.handleSubmit({ name: "モーツァルト" });
     await flushPromises();
-    expect(vm.errorMessage).toContain("失敗");
+    expect(vm.error).toContain("失敗");
   });
 });
