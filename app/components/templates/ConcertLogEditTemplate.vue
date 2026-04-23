@@ -13,7 +13,7 @@ const emit = defineEmits<{
 
 <template>
   <div>
-    <h1 class="page-title">コンサート記録を編集</h1>
+    <PageTitle>コンサート記録を編集</PageTitle>
     <ErrorMessage v-if="error" :message="error" />
     <ConcertLogForm
       :initial-values="log"
@@ -22,11 +22,3 @@ const emit = defineEmits<{
     />
   </div>
 </template>
-
-<style scoped>
-.page-title {
-  font-size: 1.6rem;
-  color: var(--color-text);
-  margin-bottom: 1.5rem;
-}
-</style>

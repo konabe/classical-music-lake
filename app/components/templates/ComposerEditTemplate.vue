@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 <template>
   <div>
-    <h1 class="page-title">作曲家を編集</h1>
+    <PageTitle>作曲家を編集</PageTitle>
 
     <ErrorMessage v-if="fetchError" message="作曲家の取得に失敗しました。" variant="block" />
 
@@ -33,11 +33,3 @@ const emit = defineEmits<{
     </template>
   </div>
 </template>
-
-<style scoped>
-.page-title {
-  font-size: 1.6rem;
-  color: var(--color-text);
-  margin-bottom: 1.5rem;
-}
-</style>
