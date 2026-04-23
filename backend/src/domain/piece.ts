@@ -9,6 +9,7 @@ import type {
 } from "../types";
 import { buildUpdateProps } from "./entity-helpers";
 import { ComposerId, PieceId } from "./value-objects/ids";
+import { PieceTitle } from "./value-objects/piece-title";
 
 const CLEARABLE_FIELDS = ["videoUrl", "genre", "era", "formation", "region"] as const;
 
@@ -30,7 +31,7 @@ export type PieceRepository = {
 
 type PieceProps = {
   id: PieceId;
-  title: string;
+  title: PieceTitle;
   composerId: ComposerId;
   videoUrl?: string;
   genre?: PieceGenre;
@@ -49,6 +50,7 @@ export class PieceEntity {
     return new PieceEntity({
       ...input,
       id: PieceId.generate(),
+      title: PieceTitle.of(input.title),
       composerId: ComposerId.from(input.composerId),
       createdAt: now,
       updatedAt: now,
@@ -59,6 +61,7 @@ export class PieceEntity {
     return new PieceEntity({
       ...data,
       id: PieceId.from(data.id),
+      title: PieceTitle.of(data.title),
       composerId: ComposerId.from(data.composerId),
     });
   }
@@ -76,6 +79,7 @@ export class PieceEntity {
     return {
       ...this.props,
       id: this.props.id.value,
+      title: this.props.title.value,
       composerId: this.props.composerId.value,
     };
   }
