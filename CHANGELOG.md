@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.4.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.3.0...classical-music-lake-v2.4.0) (2026-04-23)
+
+
+### Features
+
+* **backend:** エンティティIDをID値オブジェクトで型安全化 ([47e8681](https://github.com/konabe/classical-music-lake/commit/47e8681646018f274565eeb4aeb212bf5503cab1))
+* introduce Rating value object for listening log ratings ([#561](https://github.com/konabe/classical-music-lake/issues/561)) ([4c70e7e](https://github.com/konabe/classical-music-lake/commit/4c70e7e12ee6e220ec3e1bb7b850236ef06b0a39))
+
+
+### Bug Fixes
+
+* **frontend:** autoplay機能を削除 ([#563](https://github.com/konabe/classical-music-lake/issues/563)) ([3833d39](https://github.com/konabe/classical-music-lake/commit/3833d3982856841c44b9a00870959069be04fc55))
+
+
+### Code Refactoring
+
+* **backend:** admin エンティティの create/update ロジックとページング変換を共通化 ([af56d47](https://github.com/konabe/classical-music-lake/commit/af56d4763dc09ca02fe8ed9a7cc6cac235195da0))
+* **backend:** usecase の所有者検証と admin ハンドラ認可を共通化 ([5d60264](https://github.com/konabe/classical-music-lake/commit/5d602645dd8b2ffafc874798a17f1198c6b4bafe))
+* **backend:** リスト API のクエリ検証を parseListQuery に集約 ([bd3a55a](https://github.com/konabe/classical-music-lake/commit/bd3a55a08e55da5c48c6d5ece7e52ff7ddeb735c))
+* **composable:** ページングレスポンス型を PageResult&lt;T&gt; に統一 ([123e77b](https://github.com/konabe/classical-music-lake/commit/123e77b5ec3e85b3d5aabee379e09d3ca983b595))
+* **frontend:** composer/piece ページを useSubmitHandler に統一 ([#555](https://github.com/konabe/classical-music-lake/issues/555)) ([886c12c](https://github.com/konabe/classical-music-lake/commit/886c12cd16a8a31680ef6bfe37cc907360ec398c))
+
 ## [2.3.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.2.0...classical-music-lake-v2.3.0) (2026-04-20)
 
 
