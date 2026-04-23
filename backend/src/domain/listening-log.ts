@@ -1,4 +1,5 @@
-import type { CreateListeningLogInput, ListeningLog, Rating } from "../types";
+import type { CreateListeningLogInput, ListeningLog } from "../types";
+import { Rating } from "./value-objects/rating";
 import { ListeningLogId, UserId } from "./value-objects/ids";
 
 export type ListeningLogRepository = {
@@ -31,6 +32,7 @@ export class ListeningLogEntity {
       ...input,
       id: ListeningLogId.generate(),
       userId: input.userId === null ? null : UserId.from(input.userId),
+      rating: Rating.of(input.rating),
       createdAt: now,
       updatedAt: now,
     });
@@ -41,6 +43,7 @@ export class ListeningLogEntity {
       ...data,
       id: ListeningLogId.from(data.id),
       userId: data.userId === null ? null : UserId.from(data.userId),
+      rating: Rating.of(data.rating),
     });
   }
 
@@ -57,6 +60,7 @@ export class ListeningLogEntity {
       ...this.props,
       id: this.props.id.value,
       userId: this.props.userId === null ? null : this.props.userId.value,
+      rating: this.props.rating.value,
     };
   }
 }
