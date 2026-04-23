@@ -1,5 +1,6 @@
 import type { ConcertLog, CreateConcertLogInput } from "../types";
 import { ConcertLogId, PieceId, UserId } from "./value-objects/ids";
+import { Venue } from "./value-objects/venue";
 
 export type ConcertLogRepository = {
   findById(id: ConcertLogId): Promise<ConcertLog | undefined>;
@@ -14,7 +15,7 @@ type ConcertLogProps = {
   userId: UserId;
   title: string;
   concertDate: string;
-  venue: string;
+  venue: Venue;
   conductor?: string;
   orchestra?: string;
   soloist?: string;
@@ -32,6 +33,7 @@ export class ConcertLogEntity {
       ...input,
       id: ConcertLogId.generate(),
       userId,
+      venue: Venue.of(input.venue),
       pieceIds: input.pieceIds === undefined ? undefined : input.pieceIds.map(PieceId.from),
       createdAt: now,
       updatedAt: now,
@@ -43,6 +45,7 @@ export class ConcertLogEntity {
       ...data,
       id: ConcertLogId.from(data.id),
       userId: UserId.from(data.userId),
+      venue: Venue.of(data.venue),
       pieceIds: data.pieceIds === undefined ? undefined : data.pieceIds.map(PieceId.from),
     });
   }
@@ -60,6 +63,7 @@ export class ConcertLogEntity {
       ...this.props,
       id: this.props.id.value,
       userId: this.props.userId.value,
+      venue: this.props.venue.value,
       pieceIds:
         this.props.pieceIds === undefined ? undefined : this.props.pieceIds.map((id) => id.value),
     };

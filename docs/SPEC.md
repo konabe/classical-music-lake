@@ -1262,15 +1262,30 @@ cdk deploy
 
 ID 以外のドメイン概念についても、不変条件を型と実装の両面で保証するために値オブジェクトを導入する。
 
-| クラス   | 定義箇所                                     | 用途                                                                          |
-| -------- | -------------------------------------------- | ----------------------------------------------------------------------------- |
-| `Rating` | `backend/src/domain/value-objects/rating.ts` | 鑑賞ログの評価値（1〜5 の整数）。`ListeningLogEntity` の内部 props で保持する |
+| クラス         | 定義箇所                                            | 用途                                                                                  |
+| -------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `Rating`       | `backend/src/domain/value-objects/rating.ts`        | 鑑賞ログの評価値（1〜5 の整数）。`ListeningLogEntity` の内部 props で保持する         |
+| `PieceTitle`   | `backend/src/domain/value-objects/piece-title.ts`   | 楽曲マスタのタイトル（非空・最大 200 文字）。`PieceEntity` の内部 props で保持する    |
+| `ComposerName` | `backend/src/domain/value-objects/composer-name.ts` | 作曲家マスタの名前（非空・最大 100 文字）。`ComposerEntity` の内部 props で保持する   |
+| `Venue`        | `backend/src/domain/value-objects/venue.ts`         | コンサートの会場名（非空・最大 200 文字）。`ConcertLogEntity` の内部 props で保持する |
+
+#### `Rating`
 
 - 生成は `Rating.of(value)`。整数・範囲（1〜5）を満たさない場合は `RangeError` を投げる
 - `.value` は narrow な `1 | 2 | 3 | 4 | 5` 型
 - 等価判定は `equals(other)`。インスタンスが `Rating` でない場合は `false` を返す
 - `ListeningLogEntity` は `create()` / `reconstruct()` で `Rating.of(input.rating)` により VO を組み立て、`toPlain()` で `.value` に戻して DTO を返す
 - DTO 境界（`types/index.ts` の `Rating` 型エイリアス = `1 | 2 | 3 | 4 | 5`）は従来どおり。VO と primitive を混同しないよう、エンティティ props の型と DTO の型を分けて扱う
+
+#### `PieceTitle` / `ComposerName` / `Venue`（テキスト系 VO）
+
+ドメインにおける名前・タイトル系のプリミティブな `string` を値オブジェクト化し、「非空・最大文字数」の不変条件をドメイン層で保証する。
+
+- 生成は `Xxx.of(value)`。内部で `value.trim()` を適用した上で、空文字は `RangeError`、最大長超過も `RangeError`、文字列以外は `TypeError` を投げる
+- 最大長は VO ごとに異なる（`PieceTitle`: 200、`ComposerName`: 100、`Venue`: 200）。Zod スキーマ（`utils/schemas.ts`）と数値を揃えて二重検証を行う
+- 等価判定は `equals(other)`。異なる VO クラス間は型レベルで混同できないため、実質クラス内比較となる
+- 各エンティティは `create()` / `reconstruct()` で `Xxx.of(...)` により VO を組み立て、`toPlain()` で `.value` に戻して DTO を返す
+- DTO 境界（`types/index.ts` の `Piece.title` / `Composer.name` / `ConcertLog.venue` など）は従来どおり `string`。VO はエンティティ内部の props 型としてのみ扱い、ハンドラ・ユースケース・リポジトリは引き続き string ベースの DTO を受け渡す
 
 ---
 

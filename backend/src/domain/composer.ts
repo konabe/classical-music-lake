@@ -6,6 +6,7 @@ import type {
   UpdateComposerInput,
 } from "../types";
 import { buildUpdateProps } from "./entity-helpers";
+import { ComposerName } from "./value-objects/composer-name";
 import { ComposerId } from "./value-objects/ids";
 
 const CLEARABLE_FIELDS = ["era", "region", "imageUrl"] as const;
@@ -23,7 +24,7 @@ export type ComposerRepository = {
 
 type ComposerProps = {
   id: ComposerId;
-  name: string;
+  name: ComposerName;
   era?: PieceEra;
   region?: PieceRegion;
   imageUrl?: string;
@@ -39,6 +40,7 @@ export class ComposerEntity {
     return new ComposerEntity({
       ...input,
       id: ComposerId.generate(),
+      name: ComposerName.of(input.name),
       createdAt: now,
       updatedAt: now,
     });
@@ -48,6 +50,7 @@ export class ComposerEntity {
     return new ComposerEntity({
       ...data,
       id: ComposerId.from(data.id),
+      name: ComposerName.of(data.name),
     });
   }
 
@@ -64,6 +67,7 @@ export class ComposerEntity {
     return {
       ...this.props,
       id: this.props.id.value,
+      name: this.props.name.value,
     };
   }
 }
