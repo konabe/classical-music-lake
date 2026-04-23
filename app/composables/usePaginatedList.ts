@@ -5,6 +5,21 @@
  */
 export type PageResult<T> = { items: T[]; nextCursor: string | null };
 
+/**
+ * カーソル型ページング API（`{ items, nextCursor }` 形式）を呼び出す共通ヘルパー。
+ * `cursor` が `undefined` のときはクエリに含めない（初回リクエスト用）。
+ */
+export const fetchCursorPage = <T>(
+  url: string,
+  options: { limit: number; cursor?: string }
+): Promise<PageResult<T>> => {
+  const query: { limit: number; cursor?: string } = { limit: options.limit };
+  if (options.cursor !== undefined) {
+    query.cursor = options.cursor;
+  }
+  return $fetch<PageResult<T>>(url, { query });
+};
+
 export const usePaginatedList = <T>(fetchPage: (cursor?: string) => Promise<PageResult<T>>) => {
   const items = ref<T[]>([]);
   const nextCursor = ref<string | null>(null);
