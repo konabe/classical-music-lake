@@ -42,6 +42,13 @@ describe("VideoPlayer", () => {
       });
       expect(wrapper.find("iframe").attributes("src")).toContain("autoplay=1");
     });
+
+    it("iframe に allow='autoplay' 属性が設定される", async () => {
+      const wrapper = await mountSuspended(VideoPlayer, {
+        props: { videoUrl: youtubeUrl },
+      });
+      expect(wrapper.find("iframe").attributes("allow")).toBe("autoplay");
+    });
   });
 
   describe("非 YouTube URL の場合", () => {

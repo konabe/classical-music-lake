@@ -82,6 +82,7 @@ onUnmounted(() => {
       :src="embedUrl"
       class="youtube-iframe"
       title="YouTube 動画プレーヤー"
+      allow="autoplay"
     />
     <a
       v-else
