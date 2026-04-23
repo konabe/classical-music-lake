@@ -1,23 +1,16 @@
 <script setup lang="ts">
 import { isYouTubeUrl, toYouTubeEmbedUrl } from "~/utils/video";
 
-const props = withDefaults(
-  defineProps<{
-    videoUrl: string;
-    autoplay?: boolean;
-  }>(),
-  { autoplay: false }
-);
+const props = defineProps<{
+  videoUrl: string;
+}>();
 
 const emit = defineEmits<{
   play: [];
 }>();
 
 const isYouTube = computed(() => isYouTubeUrl(props.videoUrl));
-const embedUrl = computed(() => {
-  const base = toYouTubeEmbedUrl(props.videoUrl);
-  return props.autoplay ? `${base}&autoplay=1` : base;
-});
+const embedUrl = computed(() => toYouTubeEmbedUrl(props.videoUrl));
 
 type YTPlayer = { destroy: () => void };
 
@@ -82,7 +75,6 @@ onUnmounted(() => {
       :src="embedUrl"
       class="youtube-iframe"
       title="YouTube 動画プレーヤー"
-      allow="autoplay"
     />
     <a
       v-else

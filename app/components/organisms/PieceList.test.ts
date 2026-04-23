@@ -108,7 +108,7 @@ describe("PieceList", () => {
       expect(emitted[0][0].id).toBe("piece-1");
     });
 
-    it("詳細ボタンクリックで autoplay なしの詳細ページへ遷移する", async () => {
+    it("詳細ボタンクリックで詳細ページへ遷移する", async () => {
       const wrapper = await mountSuspended(PieceList, {
         props: { pieces: makePieces(), error: null, composerNameById },
       });
@@ -117,13 +117,13 @@ describe("PieceList", () => {
       expect(routerPushSpy).toHaveBeenCalledWith("/pieces/piece-1");
     });
 
-    it("サムネイルクリックで autoplay=1 付きの詳細ページへ遷移する", async () => {
+    it("サムネイルクリックで詳細ページへ遷移する", async () => {
       const wrapper = await mountSuspended(PieceList, {
         props: { pieces: makePieces(), error: null, composerNameById },
       });
       const routerPushSpy = vi.spyOn(wrapper.vm.$router, "push");
       await wrapper.find(".piece-thumbnail").trigger("click");
-      expect(routerPushSpy).toHaveBeenCalledWith("/pieces/piece-1?autoplay=1");
+      expect(routerPushSpy).toHaveBeenCalledWith("/pieces/piece-1");
     });
   });
 });

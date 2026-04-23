@@ -81,7 +81,7 @@ describe("PieceDetailTemplate", () => {
       expect(wrapper.find(".quick-log-form").exists()).toBe(false);
     });
 
-    it("autoplay が未指定のとき iframe の src に autoplay=1 が含まれない", async () => {
+    it("iframe の src に autoplay パラメータが含まれない", async () => {
       const wrapper = await mountSuspended(PieceDetailTemplate, {
         props: {
           piece: pieceWithVideo,
@@ -90,20 +90,7 @@ describe("PieceDetailTemplate", () => {
           composerName: "ベートーヴェン",
         },
       });
-      expect(wrapper.find("iframe").attributes("src")).not.toContain("autoplay=1");
-    });
-
-    it("autoplay が true のとき iframe の src に autoplay=1 が含まれる", async () => {
-      const wrapper = await mountSuspended(PieceDetailTemplate, {
-        props: {
-          piece: pieceWithVideo,
-          error: null,
-          autoplay: true,
-          isAdmin: false,
-          composerName: "ベートーヴェン",
-        },
-      });
-      expect(wrapper.find("iframe").attributes("src")).toContain("autoplay=1");
+      expect(wrapper.find("iframe").attributes("src")).not.toContain("autoplay");
     });
   });
 

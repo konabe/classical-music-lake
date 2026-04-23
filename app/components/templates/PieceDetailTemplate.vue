@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import type { Piece, Rating } from "~/types";
 
-withDefaults(
-  defineProps<{
-    piece: Piece | null;
-    error: Error | null;
-    autoplay?: boolean;
-    isAdmin: boolean;
-    composerName: string;
-  }>(),
-  { autoplay: false }
-);
+defineProps<{
+  piece: Piece | null;
+  error: Error | null;
+  isAdmin: boolean;
+  composerName: string;
+}>();
 
 const emit = defineEmits<{
   save: [values: { rating: Rating; isFavorite: boolean; memo: string }];
@@ -44,11 +40,7 @@ const hasStartedPlaying = ref(false);
       </div>
 
       <template v-if="piece.videoUrl">
-        <VideoPlayer
-          :video-url="piece.videoUrl"
-          :autoplay="autoplay"
-          @play="hasStartedPlaying = true"
-        />
+        <VideoPlayer :video-url="piece.videoUrl" @play="hasStartedPlaying = true" />
 
         <QuickLogForm
           v-if="hasStartedPlaying"
