@@ -10,8 +10,6 @@ const { create } = useListeningLogs();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
-const autoplay = computed(() => route.query.autoplay === "1");
-
 const composerName = computed(() => {
   const id = piece.value?.composerId;
   if (id === undefined) {
@@ -51,7 +49,6 @@ async function handleDelete(target: Piece) {
   <PieceDetailTemplate
     :piece="piece ?? null"
     :error="error"
-    :autoplay="autoplay"
     :is-admin="isAdminUser"
     :composer-name="composerName"
     @save="handleSave"

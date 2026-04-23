@@ -31,7 +31,7 @@ const router = useRouter();
           :piece="piece"
           :composer-name="composerNameById[piece.composerId] ?? '(不明な作曲家)'"
           @detail="router.push(`/pieces/${piece.id}`)"
-          @play="router.push(`/pieces/${piece.id}?autoplay=1`)"
+          @play="router.push(`/pieces/${piece.id}`)"
           @edit="router.push(`/pieces/${piece.id}/edit`)"
           @delete="emit('delete', piece)"
         />

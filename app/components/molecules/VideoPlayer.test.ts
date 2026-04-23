@@ -29,18 +29,11 @@ describe("VideoPlayer", () => {
       expect(wrapper.find("a.external-link").exists()).toBe(false);
     });
 
-    it("autoplay が未指定のときは embed URL に autoplay=1 が含まれない", async () => {
+    it("embed URL に autoplay パラメータが含まれない", async () => {
       const wrapper = await mountSuspended(VideoPlayer, {
         props: { videoUrl: youtubeUrl },
       });
-      expect(wrapper.find("iframe").attributes("src")).not.toContain("autoplay=1");
-    });
-
-    it("autoplay が true のとき embed URL に autoplay=1 が追加される", async () => {
-      const wrapper = await mountSuspended(VideoPlayer, {
-        props: { videoUrl: youtubeUrl, autoplay: true },
-      });
-      expect(wrapper.find("iframe").attributes("src")).toContain("autoplay=1");
+      expect(wrapper.find("iframe").attributes("src")).not.toContain("autoplay");
     });
   });
 
