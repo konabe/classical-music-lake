@@ -91,6 +91,34 @@ export async function scanPage<T>(
   };
 }
 
+/**
+ * `updatedAt` による楽観的ロック付きで DynamoDB にアイテムを保存する。
+ * 既存レコードの `updatedAt` が `prevUpdatedAt` と一致しない場合、
+ * ConditionalCheckFailedException を 409 Conflict に変換して投げる。
+ */
+export async function putItemWithOptimisticLock<T>(options: {
+  tableName: string;
+  item: T;
+  prevUpdatedAt: string;
+  conflictMessage: string;
+}): Promise<void> {
+  try {
+    await dynamo.send(
+      new PutCommand({
+        TableName: options.tableName,
+        Item: options.item,
+        ConditionExpression: "updatedAt = :prevUpdatedAt",
+        ExpressionAttributeValues: { ":prevUpdatedAt": options.prevUpdatedAt },
+      })
+    );
+  } catch (err) {
+    if (err instanceof ConditionalCheckFailedException) {
+      throw new createError.Conflict(options.conflictMessage);
+    }
+    throw err;
+  }
+}
+
 export async function updateItem<T extends { id: string; createdAt: string; updatedAt: string }>(
   tableName: string,
   id: string,
@@ -109,20 +137,11 @@ export async function updateItem<T extends { id: string; createdAt: string; upda
     createdAt: current.createdAt,
     updatedAt: new Date().toISOString(),
   };
-  try {
-    await dynamo.send(
-      new PutCommand({
-        TableName: tableName,
-        Item: updated,
-        ConditionExpression: "updatedAt = :prevUpdatedAt",
-        ExpressionAttributeValues: { ":prevUpdatedAt": current.updatedAt },
-      })
-    );
-  } catch (err) {
-    if (err instanceof ConditionalCheckFailedException) {
-      throw new createError.Conflict("Item was updated by another request");
-    }
-    throw err;
-  }
+  await putItemWithOptimisticLock({
+    tableName,
+    item: updated,
+    prevUpdatedAt: current.updatedAt,
+    conflictMessage: "Item was updated by another request",
+  });
   return updated;
 }

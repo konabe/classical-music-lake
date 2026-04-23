@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 
-import { queryItemsByUserId, scanAllItems, scanPage, updateItem } from "./dynamodb";
+import {
+  putItemWithOptimisticLock,
+  queryItemsByUserId,
+  scanAllItems,
+  scanPage,
+  updateItem,
+} from "./dynamodb";
 
 const { mockSend } = vi.hoisted(() => ({
   mockSend: vi.fn(),
@@ -163,6 +169,63 @@ describe("scanPage", () => {
       input: { ExclusiveStartKey?: Record<string, unknown> };
     };
     expect(command.input.ExclusiveStartKey).toBeUndefined();
+  });
+});
+
+describe("putItemWithOptimisticLock", () => {
+  it("指定アイテムを ConditionExpression 付きで Put する", async () => {
+    mockSend.mockResolvedValueOnce({});
+    const item = { id: "x", updatedAt: "2024-01-01T00:00:00.000Z" };
+
+    await putItemWithOptimisticLock({
+      tableName: "test-table",
+      item,
+      prevUpdatedAt: "2024-01-01T00:00:00.000Z",
+      conflictMessage: "Test was updated by another request",
+    });
+
+    const command = mockSend.mock.calls[0]?.[0] as {
+      input: {
+        TableName: string;
+        Item: unknown;
+        ConditionExpression?: string;
+        ExpressionAttributeValues?: Record<string, unknown>;
+      };
+    };
+    expect(command.input.TableName).toBe("test-table");
+    expect(command.input.Item).toEqual(item);
+    expect(command.input.ConditionExpression).toBe("updatedAt = :prevUpdatedAt");
+    expect(command.input.ExpressionAttributeValues).toEqual({
+      ":prevUpdatedAt": "2024-01-01T00:00:00.000Z",
+    });
+  });
+
+  it("ConditionalCheckFailedException が発生した場合は 409 を投げる", async () => {
+    mockSend.mockRejectedValueOnce(
+      new ConditionalCheckFailedException({ message: "Condition failed", $metadata: {} })
+    );
+
+    await expect(
+      putItemWithOptimisticLock({
+        tableName: "test-table",
+        item: { id: "x" },
+        prevUpdatedAt: "prev",
+        conflictMessage: "Custom was updated by another request",
+      })
+    ).rejects.toThrow("Custom was updated by another request");
+  });
+
+  it("その他のエラーはそのまま再スローされる", async () => {
+    mockSend.mockRejectedValueOnce(new Error("DynamoDB connection error"));
+
+    await expect(
+      putItemWithOptimisticLock({
+        tableName: "test-table",
+        item: { id: "x" },
+        prevUpdatedAt: "prev",
+        conflictMessage: "Whatever",
+      })
+    ).rejects.toThrow("DynamoDB connection error");
   });
 });
 

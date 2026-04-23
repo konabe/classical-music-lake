@@ -1,10 +1,14 @@
-import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { DeleteCommand, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
-import createError from "http-errors";
 
 import type { PieceId } from "../domain/value-objects/ids";
 // `scanAllItems` は `findAll`（deprecated・互換用）のみで使用する。`usePiecesAll` 廃止後に一括削除する。
-import { dynamo, scanAllItems, scanPage, TABLE_PIECES } from "../utils/dynamodb"; // NOSONAR: typescript:S1874
+import {
+  dynamo,
+  putItemWithOptimisticLock,
+  scanAllItems,
+  scanPage,
+  TABLE_PIECES,
+} from "../utils/dynamodb"; // NOSONAR: typescript:S1874
 import type { Piece } from "../types";
 import type { PieceRepository } from "../domain/piece";
 
@@ -35,21 +39,12 @@ export class DynamoDBPieceRepository implements PieceRepository {
   }
 
   async saveWithOptimisticLock(item: Piece, prevUpdatedAt: string): Promise<void> {
-    try {
-      await dynamo.send(
-        new PutCommand({
-          TableName: TABLE_PIECES,
-          Item: item,
-          ConditionExpression: "updatedAt = :prevUpdatedAt",
-          ExpressionAttributeValues: { ":prevUpdatedAt": prevUpdatedAt },
-        })
-      );
-    } catch (err) {
-      if (err instanceof ConditionalCheckFailedException) {
-        throw new createError.Conflict("Piece was updated by another request");
-      }
-      throw err;
-    }
+    await putItemWithOptimisticLock({
+      tableName: TABLE_PIECES,
+      item,
+      prevUpdatedAt,
+      conflictMessage: "Piece was updated by another request",
+    });
   }
 
   async remove(id: PieceId): Promise<void> {
