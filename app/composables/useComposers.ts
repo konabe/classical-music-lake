@@ -1,18 +1,10 @@
 import { COMPOSERS_PAGE_SIZE_DEFAULT, COMPOSERS_PAGE_SIZE_MAX } from "~/types";
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
-import { usePaginatedList, type PageResult } from "./usePaginatedList";
+import { fetchCursorPage, usePaginatedList } from "./usePaginatedList";
 
-const fetchPage = async (
-  apiBase: string,
-  options: { limit: number; cursor?: string }
-): Promise<PageResult<Composer>> => {
-  const query: { limit: number; cursor?: string } = { limit: options.limit };
-  if (options.cursor !== undefined) {
-    query.cursor = options.cursor;
-  }
-  return $fetch<PageResult<Composer>>(`${apiBase}/composers`, { query });
-};
+const fetchComposersPage = (apiBase: string, options: { limit: number; cursor?: string }) =>
+  fetchCursorPage<Composer>(`${apiBase}/composers`, options);
 
 /**
  * 作曲家マスタ一覧の無限スクロール / カーソル型ページング用 composable。
@@ -28,7 +20,7 @@ export const useComposersPaginated = () => {
     putJson<Composer>(`${apiBase}/composers/${id}`, input);
 
   const pagination = usePaginatedList<Composer>((cursor) =>
-    fetchPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_DEFAULT, cursor })
+    fetchComposersPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_DEFAULT, cursor })
   );
 
   const createComposer = async (input: CreateComposerInput) => {
@@ -72,7 +64,7 @@ export const useComposersAll = () => {
     pending.value = true;
     error.value = null;
     try {
-      const res = await fetchPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_MAX });
+      const res = await fetchComposersPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_MAX });
       if (res.nextCursor !== null) {
         throw new Error(
           `useComposersAll: composers exceed single-scan limit (${COMPOSERS_PAGE_SIZE_MAX}). Switch to paginated/search UI.`

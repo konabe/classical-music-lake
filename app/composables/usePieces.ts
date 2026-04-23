@@ -5,18 +5,10 @@ import {
 } from "~/types";
 import type { CreatePieceInput, Piece, UpdatePieceInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
-import { usePaginatedList, type PageResult } from "./usePaginatedList";
+import { fetchCursorPage, usePaginatedList } from "./usePaginatedList";
 
-const fetchPage = async (
-  apiBase: string,
-  options: { limit: number; cursor?: string }
-): Promise<PageResult<Piece>> => {
-  const query: { limit: number; cursor?: string } = { limit: options.limit };
-  if (options.cursor !== undefined) {
-    query.cursor = options.cursor;
-  }
-  return $fetch<PageResult<Piece>>(`${apiBase}/pieces`, { query });
-};
+const fetchPiecesPage = (apiBase: string, options: { limit: number; cursor?: string }) =>
+  fetchCursorPage<Piece>(`${apiBase}/pieces`, options);
 
 const usePieceMutations = () => {
   const apiBase = useApiBase();
@@ -42,7 +34,7 @@ export const usePiecesPaginated = () => {
   const apiBase = useApiBase();
   const { postPiece, putPiece } = usePieceMutations();
   const pagination = usePaginatedList<Piece>((cursor) =>
-    fetchPage(apiBase, { limit: PIECES_PAGE_SIZE_DEFAULT, cursor })
+    fetchPiecesPage(apiBase, { limit: PIECES_PAGE_SIZE_DEFAULT, cursor })
   );
 
   const createPiece = async (input: CreatePieceInput) => {
@@ -86,7 +78,7 @@ export const usePiecesAll = () => {
     let consecutiveEmpty = 0;
     try {
       while (true) {
-        const res = await fetchPage(apiBase, { limit: PIECES_PAGE_SIZE_DEFAULT, cursor });
+        const res = await fetchPiecesPage(apiBase, { limit: PIECES_PAGE_SIZE_DEFAULT, cursor });
         acc.push(...res.items);
         if (acc.length > PIECES_ALL_MAX_TOTAL) {
           throw new Error(`usePiecesAll: exceeded maximum total items (${PIECES_ALL_MAX_TOTAL})`);
