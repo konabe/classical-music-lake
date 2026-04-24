@@ -10,6 +10,7 @@ import type {
 import { buildUpdateProps } from "./entity-helpers";
 import { ComposerId, PieceId } from "./value-objects/ids";
 import { PieceTitle } from "./value-objects/piece-title";
+import { Url } from "./value-objects/url";
 
 const CLEARABLE_FIELDS = ["videoUrl", "genre", "era", "formation", "region"] as const;
 
@@ -33,7 +34,7 @@ type PieceProps = {
   id: PieceId;
   title: PieceTitle;
   composerId: ComposerId;
-  videoUrl?: string;
+  videoUrl?: Url;
   genre?: PieceGenre;
   era?: PieceEra;
   formation?: PieceFormation;
@@ -52,6 +53,7 @@ export class PieceEntity {
       id: PieceId.generate(),
       title: PieceTitle.of(input.title),
       composerId: ComposerId.from(input.composerId),
+      videoUrl: input.videoUrl !== undefined ? Url.of(input.videoUrl) : undefined,
       createdAt: now,
       updatedAt: now,
     });
@@ -63,6 +65,7 @@ export class PieceEntity {
       id: PieceId.from(data.id),
       title: PieceTitle.of(data.title),
       composerId: ComposerId.from(data.composerId),
+      videoUrl: data.videoUrl !== undefined ? Url.of(data.videoUrl) : undefined,
     });
   }
 
@@ -81,6 +84,7 @@ export class PieceEntity {
       id: this.props.id.value,
       title: this.props.title.value,
       composerId: this.props.composerId.value,
+      videoUrl: this.props.videoUrl?.value,
     };
   }
 }
