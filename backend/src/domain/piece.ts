@@ -7,6 +7,7 @@ import type {
   PieceRegion,
   UpdatePieceInput,
 } from "../types";
+import { Entity, type EntityProps } from "./entity";
 import { buildUpdateProps } from "./entity-helpers";
 import { ComposerId, PieceId } from "./value-objects/ids";
 import { PieceTitle } from "./value-objects/piece-title";
@@ -30,8 +31,7 @@ export type PieceRepository = {
   remove(id: PieceId): Promise<void>;
 };
 
-type PieceProps = {
-  id: PieceId;
+type PieceProps = EntityProps<PieceId> & {
   title: PieceTitle;
   composerId: ComposerId;
   videoUrl?: Url;
@@ -39,12 +39,12 @@ type PieceProps = {
   era?: PieceEra;
   formation?: PieceFormation;
   region?: PieceRegion;
-  createdAt: string;
-  updatedAt: string;
 };
 
-export class PieceEntity {
-  private constructor(private readonly props: PieceProps) {}
+export class PieceEntity extends Entity<PieceId, PieceProps> {
+  private constructor(props: PieceProps) {
+    super(props);
+  }
 
   static create(input: CreatePieceInput): PieceEntity {
     const now = new Date().toISOString();
@@ -67,10 +67,6 @@ export class PieceEntity {
       composerId: ComposerId.from(data.composerId),
       videoUrl: data.videoUrl !== undefined ? Url.of(data.videoUrl) : undefined,
     });
-  }
-
-  get updatedAt(): string {
-    return this.props.updatedAt;
   }
 
   mergeUpdate(input: UpdatePieceInput): PieceEntity {

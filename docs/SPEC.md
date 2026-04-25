@@ -1258,7 +1258,30 @@ cdk deploy
 3. バックエンド固有の型・関数はバックエンド側にのみ追加し、フロントエンド側には移植しない
 4. フロントエンド固有の型はフロントエンド側にのみ追加し、バックエンド側には移植しない
 
-### 8.3 その他の値オブジェクト（バックエンドのみ）
+### 8.3 エンティティ基底クラス（バックエンドのみ）
+
+DDD のエンティティが共通で持つべき性質（ID・タイムスタンプの保持、等価性）を `backend/src/domain/entity.ts` の `Entity<TId, TProps>` 抽象クラスに集約する。各エンティティ（`ListeningLogEntity` / `ConcertLogEntity` / `PieceEntity` / `ComposerEntity`）はこれを継承する。
+
+#### 提供する API
+
+- `protected readonly props: TProps`: 派生クラスが内部状態を保持する領域。`TProps` は `EntityProps<TId> = { id: TId; createdAt: string; updatedAt: string }` を拡張した型を指定する
+- `get id(): TId` / `get createdAt(): string` / `get updatedAt(): string`: タイムスタンプ・ID への共通アクセサ
+- `equals(other: unknown): boolean`: DDD の等価性。「同じ具象クラス」かつ「同じ ID」を満たすときに `true`。`Entity` でないオブジェクトや異なる派生クラス（例: `PieceEntity` vs `ComposerEntity`）を渡すと `false`
+
+#### 派生クラスの規約
+
+- `private constructor(props: XxxProps)` を定義し `super(props)` を呼ぶ
+- `static create(input)` / `static reconstruct(data)` ファクトリは従来どおり各エンティティで実装する
+- `props` には `EntityProps<XxxId>` を含めるため `id` / `createdAt` / `updatedAt` の重複定義は不要
+- `toPlain()`・`isOwnedBy()`・`mergeUpdate()` など、エンティティ固有のロジックは派生クラスで実装する（基底クラスでは抽象化しない）
+
+#### `ListeningLogEntity` / `ConcertLogEntity` / `PieceEntity` / `ComposerEntity` への影響
+
+- `get updatedAt()` を個別実装していた `PieceEntity` / `ComposerEntity` の getter は基底クラスから継承される（`saveWithOptimisticLock` の呼び出し元コードはそのまま）
+- 内部 `props` 型は `EntityProps<XxxId> & { ... }` の交差型で表現する
+- 各エンティティの公開 API（`create` / `reconstruct` / `toPlain` / `isOwnedBy` / `mergeUpdate` 等）は変更なし
+
+### 8.4 その他の値オブジェクト（バックエンドのみ）
 
 ID 以外のドメイン概念についても、不変条件を型と実装の両面で保証するために値オブジェクトを導入する。
 

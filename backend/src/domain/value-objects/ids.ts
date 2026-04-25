@@ -11,7 +11,7 @@ import { randomUUID } from "node:crypto";
  *   入力側のスキーマ検証（Zod の `z.uuid()`）と responsibility を分ける。
  * - 空文字・非文字列のみ拒否する。
  */
-abstract class IdValueObject {
+export abstract class IdValueObject {
   public readonly value: string;
 
   protected constructor(value: string) {

@@ -1,4 +1,5 @@
 import type { ConcertLog, CreateConcertLogInput } from "../types";
+import { Entity, type EntityProps } from "./entity";
 import { ConcertLogId, PieceId, UserId } from "./value-objects/ids";
 import { Venue } from "./value-objects/venue";
 
@@ -10,8 +11,7 @@ export type ConcertLogRepository = {
   remove(id: ConcertLogId): Promise<void>;
 };
 
-type ConcertLogProps = {
-  id: ConcertLogId;
+type ConcertLogProps = EntityProps<ConcertLogId> & {
   userId: UserId;
   title: string;
   concertDate: string;
@@ -20,12 +20,12 @@ type ConcertLogProps = {
   orchestra?: string;
   soloist?: string;
   pieceIds?: PieceId[];
-  createdAt: string;
-  updatedAt: string;
 };
 
-export class ConcertLogEntity {
-  private constructor(private readonly props: ConcertLogProps) {}
+export class ConcertLogEntity extends Entity<ConcertLogId, ConcertLogProps> {
+  private constructor(props: ConcertLogProps) {
+    super(props);
+  }
 
   static create(input: CreateConcertLogInput, userId: UserId): ConcertLogEntity {
     const now = new Date().toISOString();

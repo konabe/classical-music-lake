@@ -1,4 +1,5 @@
 import type { CreateListeningLogInput, ListeningLog } from "../types";
+import { Entity, type EntityProps } from "./entity";
 import { Rating } from "./value-objects/rating";
 import { ListeningLogId, UserId } from "./value-objects/ids";
 
@@ -10,8 +11,7 @@ export type ListeningLogRepository = {
   remove(id: ListeningLogId): Promise<void>;
 };
 
-type ListeningLogProps = {
-  id: ListeningLogId;
+type ListeningLogProps = EntityProps<ListeningLogId> & {
   userId: UserId | null;
   listenedAt: string;
   composer: string;
@@ -19,12 +19,12 @@ type ListeningLogProps = {
   rating: Rating;
   isFavorite: boolean;
   memo?: string;
-  createdAt: string;
-  updatedAt: string;
 };
 
-export class ListeningLogEntity {
-  private constructor(private readonly props: ListeningLogProps) {}
+export class ListeningLogEntity extends Entity<ListeningLogId, ListeningLogProps> {
+  private constructor(props: ListeningLogProps) {
+    super(props);
+  }
 
   static create(input: CreateListeningLogInput): ListeningLogEntity {
     const now = new Date().toISOString();
