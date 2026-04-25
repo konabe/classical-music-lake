@@ -5,6 +5,7 @@ import type {
   PieceRegion,
   UpdateComposerInput,
 } from "../types";
+import { Entity, type EntityProps } from "./entity";
 import { buildUpdateProps } from "./entity-helpers";
 import { ComposerName } from "./value-objects/composer-name";
 import { ComposerId } from "./value-objects/ids";
@@ -23,18 +24,17 @@ export type ComposerRepository = {
   remove(id: ComposerId): Promise<void>;
 };
 
-type ComposerProps = {
-  id: ComposerId;
+type ComposerProps = EntityProps<ComposerId> & {
   name: ComposerName;
   era?: PieceEra;
   region?: PieceRegion;
   imageUrl?: Url;
-  createdAt: string;
-  updatedAt: string;
 };
 
-export class ComposerEntity {
-  private constructor(private readonly props: ComposerProps) {}
+export class ComposerEntity extends Entity<ComposerId, ComposerProps> {
+  private constructor(props: ComposerProps) {
+    super(props);
+  }
 
   static create(input: CreateComposerInput): ComposerEntity {
     const now = new Date().toISOString();
@@ -55,10 +55,6 @@ export class ComposerEntity {
       name: ComposerName.of(data.name),
       imageUrl: data.imageUrl !== undefined ? Url.of(data.imageUrl) : undefined,
     });
-  }
-
-  get updatedAt(): string {
-    return this.props.updatedAt;
   }
 
   mergeUpdate(input: UpdateComposerInput): ComposerEntity {
