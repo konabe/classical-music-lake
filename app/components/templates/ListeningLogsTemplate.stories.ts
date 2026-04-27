@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import type { ListeningLog } from "~/types";
+import type { ListeningLogFilterState } from "~/composables/useListeningLogFilter";
 import ListeningLogsTemplate from "./ListeningLogsTemplate.vue";
 
 const meta: Meta<typeof ListeningLogsTemplate> = {
@@ -36,14 +37,37 @@ const sampleLogs: ListeningLog[] = [
   },
 ];
 
+const emptyFilter: ListeningLogFilterState = {
+  keyword: "",
+  rating: "",
+  favoriteOnly: false,
+  fromDate: "",
+  toDate: "",
+};
+
 export const WithLogs: Story = {
   args: {
     logs: sampleLogs,
+    filterState: emptyFilter,
+    filterActive: false,
+    totalCount: sampleLogs.length,
   },
 };
 
 export const EmptyState: Story = {
   args: {
     logs: [],
+    filterState: emptyFilter,
+    filterActive: false,
+    totalCount: 0,
+  },
+};
+
+export const FilteredEmpty: Story = {
+  args: {
+    logs: [],
+    filterState: { ...emptyFilter, keyword: "ストラヴィンスキー" },
+    filterActive: true,
+    totalCount: sampleLogs.length,
   },
 };
