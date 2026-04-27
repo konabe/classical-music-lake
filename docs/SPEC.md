@@ -1004,6 +1004,20 @@ GET /composers?limit=50&cursor={opaque}
 - **エラーハンドリング**: 404/403 → index.html（SPA対応）
 - **プロトコル**: HTTPS強制
 
+#### CloudWatch アラーム / SNS
+
+各環境のメインスタック（`ClassicalMusicLakeStack[-<stage>]`）で以下のアラームと通知用 SNS トピックを作成する。詳細手順は `docs/OPERATIONS.md` の「監視・アラート設定」を参照。
+
+- **SNS トピック**: `classical-music-lake-<stage>-alerts`（CDK 出力 `AlertTopicArn`）
+- **メール購読**: CDK デプロイ時の `ALERT_EMAIL`（カンマ区切りで複数指定可）から自動作成。未指定時はサブスクリプションなし
+- **アラーム一覧**:
+  - Lambda Errors（関数ごと、26 個）: 5 分間に 1 件以上のエラーで発火
+  - API Gateway 5XX: 5 分間に 1 件以上の 5xx で発火
+  - API Gateway Latency p99: 5 分間の p99 レイテンシが 3,000ms を超えた状態が 2 期間連続で発火
+  - DynamoDB ThrottledRequests（4 テーブル分）: 5 分間に 1 件以上のスロットリングで発火
+  - DynamoDB SystemErrors（4 テーブル分）: 5 分間に 1 件以上のシステムエラーで発火
+- **通知**: 各アラームは ALARM / OK の両状態で SNS にイベント送信する
+
 ### 5.2 環境変数
 
 #### フロントエンド
@@ -1020,9 +1034,10 @@ GET /composers?limit=50&cursor={opaque}
 
 #### CI/CD（GitHub Secrets）
 
-| シークレット名       | 用途                                          |
-| -------------------- | --------------------------------------------- |
-| `AWS_ROLE_TO_ASSUME` | GitHub OIDC で AssumeRole する IAM ロール ARN |
+| シークレット名       | 用途                                                                                          |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| `AWS_ROLE_TO_ASSUME` | GitHub OIDC で AssumeRole する IAM ロール ARN                                                 |
+| `ALERT_EMAIL`        | CloudWatch アラート通知先メールアドレス（任意、カンマ区切りで複数指定可。未設定時は購読なし） |
 
 > **シークレット管理方針**: CI/CD 認証は GitHub Actions OIDC + IAM Role Assume によるキーレス認証を採用。長期 AWS アクセスキーを使用しない。Lambda 環境変数に秘密情報は含まれない（テーブル名・CORS オリジンのみ）。将来フェーズで認証機能を追加する場合は AWS Secrets Manager の導入を検討すること。
 >

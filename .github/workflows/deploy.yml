@@ -163,6 +163,7 @@ jobs:
           STAGE_NAME: ${{ env.STAGE_NAME }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
 
       # ----------------------------------------
       # CDK デプロイ後にスタック出力を取得
