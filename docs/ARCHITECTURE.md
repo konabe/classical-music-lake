@@ -46,8 +46,9 @@ classical-music-lake/
 │   │   │   ├── verify-email.vue  # メール確認コード入力ページ
 │   │   │   └── login.vue         # ログインページ
 │   │   ├── listening-logs/       # 視聴ログ関連ページ（要認証）
-│   │   │   ├── index.vue         # 一覧
+│   │   │   ├── index.vue         # 一覧（検索フィルタ付き）
 │   │   │   ├── new.vue           # 新規作成
+│   │   │   ├── statistics.vue    # 統計ダッシュボード（クライアントサイド集計）
 │   │   │   └── [id]/
 │   │   │       ├── index.vue     # 詳細
 │   │   │       └── edit.vue      # 編集
@@ -153,6 +154,34 @@ classical-music-lake/
   → DynamoDB PutItem
   → 201 Created + 作成済みオブジェクト
   → ブラウザに返却
+```
+
+### 視聴ログ検索フィルタ（クライアントサイド）
+
+```text
+ブラウザ (/listening-logs)
+  → useListeningLogs() で全件取得（GET /listening-logs、API は同じ）
+  → useListeningLogFilter(logs) でフィルタ状態を保持
+    - keyword（作曲家・曲名・メモを横断する部分一致検索）
+    - rating（1〜5）
+    - favoriteOnly（お気に入りのみ）
+    - fromDate / toDate（listenedAt の範囲）
+  → filteredLogs を ListeningLogsTemplate に渡して描画
+  ※ サーバー API には絞り込みパラメータを送らない（OpenSearch 連携は将来フェーズ）
+```
+
+### 視聴ログ統計取得（クライアントサイド）
+
+```text
+ブラウザ (/listening-logs/statistics)
+  → useListeningLogs() で全件取得
+  → useListeningLogStatistics(logs) で集計
+    - 総数 / お気に入り数 / 平均評価
+    - 評価分布（1〜5 の件数）
+    - 作曲家ランキング（上位 5 件）
+    - 月別トレンド（直近 12 ヶ月）
+  → ListeningLogStatisticsTemplate に渡して描画
+  ※ サーバー API には集計エンドポイントを設けない（クライアント集計）
 ```
 
 ### ログイン（確認済みユーザー）
