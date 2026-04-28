@@ -1,4 +1,7 @@
+import { StatusCodes } from "http-status-codes";
+
 import { mapCognitoError } from "../domain/auth-error";
+import type { AuthContext } from "../domain/auth-error";
 import type { AuthRepository } from "../domain/auth";
 import { CognitoAuthRepository } from "../repositories/cognito-auth-repository";
 import type { CognitoError } from "../types";
@@ -7,88 +10,76 @@ const providerNameMap: Record<string, string> = {
   google: "Google",
 };
 
+export type AuthResponse = { statusCode: number; body: unknown };
+
+// Cognito 呼び出しのエラーをコンテキスト別にマッピングし、共通レスポンス形式に整える。
+// マッピング対象外のエラーは throw して middleware の 500 ハンドリングへ委ねる。
+const tryCognito = async <T>(
+  context: AuthContext,
+  successCode: number,
+  successBodyFactory: (result: T) => unknown,
+  fn: () => Promise<T>
+): Promise<AuthResponse> => {
+  try {
+    const result = await fn();
+    return { statusCode: successCode, body: successBodyFactory(result) };
+  } catch (error) {
+    const mapped = mapCognitoError((error as CognitoError).name, context);
+    if (mapped !== undefined) {
+      return mapped;
+    }
+    throw error;
+  }
+};
+
 export class AuthUsecase {
   constructor(private readonly repo: AuthRepository) {}
 
-  async login(email: string, password: string) {
-    try {
-      const tokens = await this.repo.initiateAuth(email, password);
-      return { success: true as const, body: tokens };
-    } catch (error) {
-      const mapped = mapCognitoError((error as CognitoError).name, "login");
-      if (mapped !== undefined) {
-        return { success: false as const, ...mapped };
-      }
-      throw error;
-    }
+  login(email: string, password: string): Promise<AuthResponse> {
+    return tryCognito(
+      "login",
+      StatusCodes.OK,
+      (tokens) => tokens,
+      () => this.repo.initiateAuth(email, password)
+    );
   }
 
-  async register(email: string, password: string) {
-    try {
-      await this.repo.signUp(email, password);
-      return {
-        success: true as const,
-        body: {
-          message: "User created successfully. Please check your email to verify your account.",
-        },
-      };
-    } catch (error) {
-      const mapped = mapCognitoError((error as CognitoError).name, "register");
-      if (mapped !== undefined) {
-        return { success: false as const, ...mapped };
-      }
-      throw error;
-    }
+  register(email: string, password: string): Promise<AuthResponse> {
+    return tryCognito(
+      "register",
+      StatusCodes.CREATED,
+      () => ({
+        message: "User created successfully. Please check your email to verify your account.",
+      }),
+      () => this.repo.signUp(email, password)
+    );
   }
 
-  async verifyEmail(email: string, code: string) {
-    try {
-      await this.repo.confirmSignUp(email, code);
-      return { success: true as const, body: { message: "Email confirmed successfully." } };
-    } catch (error) {
-      const mapped = mapCognitoError((error as CognitoError).name, "verify");
-      if (mapped !== undefined) {
-        return { success: false as const, ...mapped };
-      }
-      return {
-        success: false as const,
-        statusCode: 500,
-        body: { message: "Internal server error" },
-      };
-    }
+  verifyEmail(email: string, code: string): Promise<AuthResponse> {
+    return tryCognito(
+      "verify",
+      StatusCodes.OK,
+      () => ({ message: "Email confirmed successfully." }),
+      () => this.repo.confirmSignUp(email, code)
+    );
   }
 
-  async refreshToken(token: string) {
-    try {
-      const tokens = await this.repo.refreshToken(token);
-      return { success: true as const, body: tokens };
-    } catch (error) {
-      const mapped = mapCognitoError((error as CognitoError).name, "refresh");
-      if (mapped !== undefined) {
-        return { success: false as const, ...mapped };
-      }
-      throw error;
-    }
+  refreshToken(token: string): Promise<AuthResponse> {
+    return tryCognito(
+      "refresh",
+      StatusCodes.OK,
+      (tokens) => tokens,
+      () => this.repo.refreshToken(token)
+    );
   }
 
-  async resendVerificationCode(email: string) {
-    try {
-      await this.repo.resendConfirmationCode(email);
-      return {
-        success: true as const,
-        body: { message: "Verification code resent. Please check your email." },
-      };
-    } catch (error) {
-      const mapped = mapCognitoError((error as CognitoError).name, "resend");
-      if (mapped !== undefined) {
-        return { success: false as const, ...mapped };
-      }
-      return {
-        success: false as const,
-        statusCode: 500,
-        body: { message: "Internal server error" },
-      };
-    }
+  resendVerificationCode(email: string): Promise<AuthResponse> {
+    return tryCognito(
+      "resend",
+      StatusCodes.OK,
+      () => ({ message: "Verification code resent. Please check your email." }),
+      () => this.repo.resendConfirmationCode(email)
+    );
   }
 
   async linkExternalProvider(
