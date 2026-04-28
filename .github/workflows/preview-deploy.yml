@@ -1,0 +1,185 @@
+name: Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, labeled, synchronize, reopened]
+
+# 同一 PR の連続 push は最新コミットだけデプロイする
+concurrency:
+  group: preview-deploy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # preview ラベルが付与されている場合のみ実行
+    # （labeled 以外のイベントでは「現在ラベルが付いている」、labeled では追加されたラベルが preview のときだけ）
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'preview') &&
+      (github.event.action != 'labeled' || github.event.label.name == 'preview')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    env:
+      STAGE_NAME: pr-${{ github.event.pull_request.number }}
+      DEV_STACK_NAME: ClassicalMusicLakeStack-dev
+      STACK_NAME: ClassicalMusicLakeStack-pr-${{ github.event.pull_request.number }}
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate required secrets
+        env:
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          if [ -z "$AWS_ROLE_TO_ASSUME" ]; then
+            echo "::error::AWS_ROLE_TO_ASSUME secret is not set"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ap-northeast-1
+
+      # ----------------------------------------
+      # dev スタックから Cognito User Pool ID / Client ID を取得
+      # Preview スタックは独自の Cognito を作らず dev のものを参照する
+      # ----------------------------------------
+      - name: Fetch dev Cognito IDs
+        id: cognito
+        run: |
+          POOL=$(aws cloudformation describe-stacks --stack-name "$DEV_STACK_NAME" \
+            --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue' \
+            --output text 2>/dev/null || true)
+          CLIENT=$(aws cloudformation describe-stacks --stack-name "$DEV_STACK_NAME" \
+            --query 'Stacks[0].Outputs[?OutputKey==`CognitoClientId`].OutputValue' \
+            --output text 2>/dev/null || true)
+          if [ -z "$POOL" ] || [ "$POOL" = "None" ] || [ -z "$CLIENT" ] || [ "$CLIENT" = "None" ]; then
+            echo "::error::dev スタック (${DEV_STACK_NAME}) が稼働していないため Cognito ID が取得できませんでした。プレビュー環境のデプロイには dev スタックが必要です。"
+            exit 1
+          fi
+          echo "pool=$POOL" >> "$GITHUB_OUTPUT"
+          echo "client=$CLIENT" >> "$GITHUB_OUTPUT"
+
+      # ----------------------------------------
+      # 同時稼働中の Preview スタック数を集計
+      # ----------------------------------------
+      - name: Count active preview stacks
+        id: count
+        run: |
+          COUNT=$(aws cloudformation list-stacks \
+            --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE CREATE_IN_PROGRESS UPDATE_IN_PROGRESS \
+            --query 'StackSummaries[?starts_with(StackName,`ClassicalMusicLakeStack-pr-`)].StackName' \
+            --output text | tr '\t' '\n' | grep -v '^$' | wc -l)
+          echo "active=$COUNT" >> "$GITHUB_OUTPUT"
+
+      # ----------------------------------------
+      # CDK Deploy
+      # Preview スタックは us-east-1 を使わず ap-northeast-1 のみ
+      # 既存 deploy.yml が bootstrap を担当するため、ここでは bootstrap しない
+      # ----------------------------------------
+      - name: CDK Deploy
+        run: |
+          npx cdk deploy "$STACK_NAME" \
+            --require-approval never \
+            --hotswap-fallback \
+            --exclusively \
+            --context cognitoUserPoolId="${{ steps.cognito.outputs.pool }}" \
+            --context cognitoClientId="${{ steps.cognito.outputs.client }}"
+        working-directory: cdk
+        env:
+          STAGE_NAME: ${{ env.STAGE_NAME }}
+
+      # ----------------------------------------
+      # API URL を取得
+      # ----------------------------------------
+      - name: Get API URL
+        id: out
+        run: |
+          API_URL=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
+            --output text 2>/dev/null || true)
+          if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
+            echo "::error::ApiUrl not found in stack outputs"
+            exit 1
+          fi
+          echo "api=$API_URL" >> "$GITHUB_OUTPUT"
+
+      # ----------------------------------------
+      # NOTE: 48h cleanup は CFN スタックの LastUpdatedTime を使って判定するため、
+      # ここで明示的にタグを更新する必要はない（CDK で Preview / PreviewStage タグは
+      # 既に付与されている）。
+      # ----------------------------------------
+
+      # ----------------------------------------
+      # PR にコメントを投稿
+      # ----------------------------------------
+      - name: Comment on PR
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v8
+        with:
+          script: |
+            const apiUrl = '${{ steps.out.outputs.api }}';
+            const active = parseInt('${{ steps.count.outputs.active }}', 10);
+            const stage = process.env.STAGE_NAME;
+            const warning = active >= 5
+              ? `\n\n> ⚠️ 現在 ${active} 件のプレビュー環境が稼働中です。コストにご注意ください。`
+              : '';
+            const body = [
+              '### 🚀 Preview environment deployed',
+              '',
+              `- **Stage**: \`${stage}\``,
+              `- **API URL**: ${apiUrl}`,
+              '',
+              '#### ログイン手順（dev Cognito を使用）',
+              '1. [dev フロント](https://dev.nocturne-app.com) にアクセスして通常通りログイン',
+              '2. ブラウザの DevTools → Application → Local Storage で `cognito.idToken` をコピー',
+              '',
+              '#### サンプル curl',
+              '```bash',
+              `# 公開 API`,
+              `curl ${apiUrl}pieces`,
+              '',
+              `# 認証必須 API（ID Token を Authorization ヘッダーに指定）`,
+              `curl -H "Authorization: <ID_TOKEN>" ${apiUrl}listening-logs`,
+              '```',
+              '',
+              '> このプレビュー環境のデータは PR クローズ または `preview` ラベル削除で破棄されます。dev 環境のデータには影響しません。',
+              warning
+            ].join('\n');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+      # ----------------------------------------
+      # 失敗時に PR にコメント
+      # ----------------------------------------
+      - name: Comment on failure
+        if: failure()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v8
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### ❌ Preview deploy failed\n\nWorkflow run: ${runUrl}\n\nログを確認してください。dev スタックが稼働していない場合はプレビュー環境を作成できません。`
+            });

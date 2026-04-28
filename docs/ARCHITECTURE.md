@@ -114,9 +114,10 @@ classical-music-lake/
 │       └── utils/                # DynamoDB クライアント、レスポンスヘルパーなど
 ├── cdk/
 │   └── lib/
-│       ├── classical-music-lake-stack.ts  # AWSインフラ定義（本番ランタイム）
+│       ├── classical-music-lake-stack.ts  # AWSインフラ定義（本番ランタイム + Preview 環境）
 │       ├── dns-stack.ts                   # Route53 / ACM 証明書（us-east-1）
-│       └── migrations-stack.ts            # 一時的な移行 Lambda を集約（本番スタックから分離）
+│       ├── migrations-stack.ts            # 一時的な移行 Lambda を集約（本番スタックから分離）
+│       └── preview-budgets-stack.ts       # PR プレビュー環境のコスト監視（手動デプロイ）
 ├── docs/
 │   ├── SPEC.md                   # システム仕様書
 │   ├── ARCHITECTURE.md           # 本ドキュメント
@@ -353,3 +354,13 @@ classical-music-lake/
 
 - **理由**: フロントエンド（`types/`）とバックエンド（`backend/src/types/`）が独立したパッケージ構成
 - **トレードオフ**: 重複するが、依存関係を分離することでデプロイの独立性を確保
+
+### PR プレビュー環境（実装済み）
+
+- **状態**: PR ごとに独立した試験用 AWS 環境を立てる仕組みを実装済み
+- **構成**: `ClassicalMusicLakeStack` に `isPreview` フラグを追加。`pr-{番号}` ステージ時は API Gateway + Lambda + DynamoDB のみを構築し、フロント関連リソース（S3 / CloudFront / Route53 / 新規 Cognito User Pool）はスキップ
+- **Cognito の扱い**: Preview 環境は dev の User Pool を `cognito.UserPool.fromUserPoolId` で import 参照する。新規 Pool を作らないことで管理者運用の手間とコスト増を回避
+- **トレードオフ**:
+  - 利点: フロント無しでデプロイ時間が 2〜3 分（フル構成は 10〜15 分）、CloudFront コストもゼロ。dev Cognito のテストユーザーをそのまま使える
+  - 欠点: フロントエンドの動作確認は dev フロント経由でしかできない（curl/Postman での API 検証が前提）。dev User Pool に依存しており、dev スタックが落ちていると Preview がデプロイできない
+- **詳細**: `docs/OPERATIONS.md` 「PR プレビュー環境」章を参照

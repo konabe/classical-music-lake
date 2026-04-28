@@ -377,3 +377,111 @@ aws dynamodb restore-table-from-backup \
 5. S3 同期（フロント差し替え）
 6. CloudFront invalidation
 7. 移行完了確認後、任意のタイミングで `cdk destroy MigrationsStack[-<stage>]` でスタック破棄
+
+---
+
+## PR プレビュー環境
+
+### 概要
+
+PR ごとに独立した試験用 AWS 環境を立てて、レビュアーが本物の API Gateway + Lambda + DynamoDB に対して動作確認できる仕組み。フロントエンドはデプロイされず、API のみが対象。
+
+| 項目             | 内容                                                                          |
+| ---------------- | ----------------------------------------------------------------------------- |
+| スタック名       | `ClassicalMusicLakeStack-pr-{PR番号}`（例: `ClassicalMusicLakeStack-pr-260`） |
+| 含むリソース     | API Gateway + Lambda + DynamoDB（GSI 含む 4 テーブル）+ CloudWatch Alarms     |
+| 含まないリソース | S3 / CloudFront / Route53 / ACM / 新規 Cognito User Pool / Storybook          |
+| Cognito          | dev 環境の User Pool を参照（新規作成しない）                                 |
+| 削除ポリシー     | 全テーブル DESTROY、空データ                                                  |
+| CORS             | `*` で公開                                                                    |
+| デプロイ時間     | 初回 2〜3 分、差分 30 秒〜2 分（フロント無しのため高速）                      |
+
+### 利用方法
+
+1. PR を作成
+2. PR に **`preview` ラベル**を付与 → GitHub Actions が自動でプレビュー環境をデプロイ
+3. デプロイ完了後、PR に Bot がコメントで API URL とログイン手順を投稿
+4. レビュアーが dev フロントエンド（<https://dev.nocturne-app.com>）にログインして ID Token をブラウザの localStorage から取得
+5. curl / Postman 等で API URL に対してリクエスト送信
+
+```bash
+# 公開 API
+curl https://abc123.execute-api.ap-northeast-1.amazonaws.com/prod/pieces
+
+# 認証必須 API
+curl -H "Authorization: <ID_TOKEN>" \
+  https://abc123.execute-api.ap-northeast-1.amazonaws.com/prod/listening-logs
+```
+
+### ライフサイクル
+
+| イベント                                  | 動作                                |
+| ----------------------------------------- | ----------------------------------- |
+| `preview` ラベル付与（PR opened/labeled） | 初回デプロイ                        |
+| ラベル付き PR への push（synchronize）    | 差分デプロイ（push のたびに自動）   |
+| `preview` ラベル削除                      | 即時 destroy                        |
+| PR クローズ                               | ラベル付きなら destroy              |
+| 最終 deploy から 48h 経過                 | スケジュール cleanup で自動 destroy |
+
+### 同時稼働の上限
+
+ハード制限は無いが、稼働中の Preview スタックが **5 件以上**になると `preview-deploy.yml` が PR に警告コメントを投稿する。コストが気になる場合は不要な PR の `preview` ラベルを外して環境を片付けること。
+
+### 初回セットアップ（リポジトリ管理者）
+
+PR プレビュー機能を有効化するために、**1 度だけ**以下の手動オペレーションが必要。
+
+#### 1. `preview` ラベルを作成
+
+```bash
+gh label create preview \
+  --color 0e8a16 \
+  --description "Deploy a preview AWS environment for this PR"
+```
+
+#### 2. `PreviewBudgetsStack` をデプロイ（コスト監視のため）
+
+```bash
+cd cdk
+npx cdk deploy PreviewBudgetsStack
+```
+
+このスタックは **us-east-1** にデプロイされる（AWS Budgets はグローバルサービス）。月次予算 $20 USD を設定し、80% 実績超過 / 100% 予測超過時に `rt.konabe@gmail.com` にメール通知する。
+
+#### 3. AWS Billing で `Preview` タグをコスト配分タグとして有効化
+
+`PreviewBudgetsStack` のフィルタは「`Preview` タグが `true` のリソース」を見るが、AWS の制約でユーザータグをコスト管理に使うには手動アクティベートが必要（CDK 自動化不可）。
+
+1. AWS Billing コンソール → 「Cost allocation tags」→ 「User-defined tags」タブ
+2. `Preview` を検索してチェックボックスを選択
+3. 「Activate」をクリック
+4. 反映まで最大 24 時間かかる場合あり
+
+### Cognito の扱い（重要）
+
+Preview スタックは **dev 環境の Cognito User Pool を参照**するため:
+
+- レビュアーは dev フロントエンドでログインして ID Token を取得する必要がある
+- Preview 環境で作成した視聴ログ・コンサート記録は **dev Cognito ユーザーに紐づくが、データ自体は Preview 専用テーブル（`-pr-{番号}` サフィックス付き）に保存**される
+- PR 環境を destroy するとデータも消える。dev 環境のデータには影響しない
+- Preview 環境で `POST /pieces` などの管理者 API を叩く場合、dev の `admin` グループに属する ID Token が必要
+
+### IAM 権限
+
+`AWS_ROLE_TO_ASSUME` シークレットの IAM ロールに必要な権限は、通常デプロイで使うものと同種（`cloudformation:*` / `lambda:*` / `apigateway:*` / `dynamodb:*` / `iam:*Role*` / `logs:*` / `cloudwatch:*` 等）。Preview スタック専用の追加権限は不要。
+
+ただし `PreviewBudgetsStack` をデプロイする際は **`budgets:CreateBudget` / `budgets:DescribeBudgets` / `budgets:ModifyBudget` / `budgets:DeleteBudget`** が必要。デプロイ時にエラーが出た場合は IAM ロールに追加すること。
+
+### トラブルシューティング
+
+#### preview-deploy が「dev スタック (ClassicalMusicLakeStack-dev) が稼働していない」で失敗する
+
+dev スタックがダウンしているか、ロールバック中で Output が読めない。dev を再デプロイしてから再度 `preview` ラベルを付け直す。
+
+#### preview-destroy が失敗する
+
+CFN が `DELETE_FAILED` 状態になっている可能性。AWS コンソールで該当スタックを開き、削除をブロックしているリソース（保護されている DynamoDB テーブル等）を手動で削除してから `aws cloudformation delete-stack --stack-name ClassicalMusicLakeStack-pr-{番号}` を再実行する。
+
+#### preview-cleanup が動いていない
+
+GitHub Actions の Schedule トリガーは pulse の重い時間帯では遅延・スキップされることがある（公式ドキュメントに明記）。手動で `Preview Cleanup (48h idle)` ワークフローを `workflow_dispatch` から起動して掃除する。

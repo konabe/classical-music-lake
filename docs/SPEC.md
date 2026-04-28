@@ -1039,13 +1039,18 @@ GET /composers?limit=50&cursor={opaque}
 
 ### 6.1 環境構成
 
-| 環境   | スタック名                    | カスタムドメイン       | DynamoDB テーブル名（視聴ログ）      | DynamoDB テーブル名（コンサート記録） | 削除ポリシー | 用途                                     |
-| ------ | ----------------------------- | ---------------------- | ------------------------------------ | ------------------------------------- | ------------ | ---------------------------------------- |
-| `prod` | `ClassicalMusicLakeStack`     | `nocturne-app.com`     | `classical-music-listening-logs`     | `classical-music-concert-logs`        | RETAIN       | 本番環境                                 |
-| `stg`  | `ClassicalMusicLakeStack-stg` | `stg.nocturne-app.com` | `classical-music-listening-logs-stg` | `classical-music-concert-logs-stg`    | DESTROY      | リリース前の検証環境                     |
-| `dev`  | `ClassicalMusicLakeStack-dev` | `dev.nocturne-app.com` | `classical-music-listening-logs-dev` | `classical-music-concert-logs-dev`    | DESTROY      | 開発環境（ローカル環境からの接続も想定） |
+| 環境               | スタック名                       | カスタムドメイン        | DynamoDB テーブル名（視聴ログ）         | DynamoDB テーブル名（コンサート記録） | 削除ポリシー | 用途                                                             |
+| ------------------ | -------------------------------- | ----------------------- | --------------------------------------- | ------------------------------------- | ------------ | ---------------------------------------------------------------- |
+| `prod`             | `ClassicalMusicLakeStack`        | `nocturne-app.com`      | `classical-music-listening-logs`        | `classical-music-concert-logs`        | RETAIN       | 本番環境                                                         |
+| `stg`              | `ClassicalMusicLakeStack-stg`    | `stg.nocturne-app.com`  | `classical-music-listening-logs-stg`    | `classical-music-concert-logs-stg`    | DESTROY      | リリース前の検証環境                                             |
+| `dev`              | `ClassicalMusicLakeStack-dev`    | `dev.nocturne-app.com`  | `classical-music-listening-logs-dev`    | `classical-music-concert-logs-dev`    | DESTROY      | 開発環境（ローカル環境からの接続も想定）                         |
+| `pr-{N}` (Preview) | `ClassicalMusicLakeStack-pr-{N}` | なし（CloudFront 無し） | `classical-music-listening-logs-pr-{N}` | `classical-music-concert-logs-pr-{N}` | DESTROY      | PR ごとの試験用 API 環境（API Gateway + Lambda + DynamoDB のみ） |
 
 > **DNS スタック**: `NocturneAppDnsStack`（us-east-1）は全環境で共有する Route53 Hosted Zone と ACM 証明書を管理する。初回のみ手動デプロイが必要（`npx cdk deploy NocturneAppDnsStack`）。
+>
+> **Preview スタック**: `pr-{番号}` のスタックはフロントエンド関連リソース（S3 / CloudFront / Route53 / 新規 Cognito User Pool）を持たず、API Gateway + Lambda + DynamoDB のみを構築する。Cognito は dev 環境の User Pool を import して参照する。詳細運用手順は `docs/OPERATIONS.md` の「PR プレビュー環境」章を参照。
+>
+> **Preview Budgets スタック**: `PreviewBudgetsStack`（us-east-1）は Preview 環境のコスト監視用。月次予算 $20 USD でメール通知。初回のみ手動デプロイが必要（`npx cdk deploy PreviewBudgetsStack`）。
 
 ### 6.2 デプロイフロー
 
@@ -1096,6 +1101,22 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
   3. UnprocessedItems は指数バックオフで最大 5 回リトライ
 - **Secrets**:
   - `AWS_ROLE_TO_ASSUME`（prod テーブルへの `dynamodb:Scan`、stg テーブルへの `dynamodb:Scan` / `dynamodb:BatchWriteItem` 権限が必要）
+
+#### preview-deploy.yml / preview-destroy.yml / preview-cleanup.yml（PR プレビュー環境）
+
+- **概要**: PR ごとに `ClassicalMusicLakeStack-pr-{番号}` を立てて、レビュアーが API のみの試験環境で動作確認できるようにする
+- **トリガー**:
+  - `preview-deploy.yml`: PR `opened` / `labeled` / `synchronize` / `reopened` で `preview` ラベルが付いている場合
+  - `preview-destroy.yml`: PR `unlabeled`（preview ラベルが外れた）または `closed`（preview ラベル付きでクローズ）
+  - `preview-cleanup.yml`: 6 時間ごとの cron で 48h 経過した Preview スタックを destroy
+- **動作（preview-deploy.yml）**:
+  1. dev スタック（`ClassicalMusicLakeStack-dev`）の Output から Cognito User Pool ID / Client ID を取得
+  2. 稼働中 Preview スタック数をカウント（5 以上で警告コメント）
+  3. `cdk deploy ClassicalMusicLakeStack-pr-{番号} --context cognitoUserPoolId=... --context cognitoClientId=...`
+  4. API URL を取得して PR にコメント（dev Cognito でのログイン手順とサンプル curl 付き）
+- **Secrets**:
+  - `AWS_ROLE_TO_ASSUME`（既存の通常デプロイと同じ権限で動作。Preview 専用の追加権限不要）
+- **詳細**: `docs/OPERATIONS.md` 「PR プレビュー環境」章
 
 ### 6.4 ロールバック戦略
 

@@ -17,23 +17,46 @@ import type * as acm from "aws-cdk-lib/aws-certificatemanager";
 import type { Construct } from "constructs";
 import * as path from "node:path";
 
-export type StageName = "dev" | "stg" | "prod";
+export type StageName = "dev" | "stg" | "prod" | `pr-${number}`;
 
 export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
   stageName: StageName;
-  hostedZone: route53.IHostedZone;
-  certificate: acm.ICertificate;
+  // 通常デプロイ（dev/stg/prod）では必須、Preview デプロイ（pr-*）では未指定
+  hostedZone?: route53.IHostedZone;
+  certificate?: acm.ICertificate;
+  // Preview デプロイ用フラグ。true の場合、フロントエンド関連リソース（S3/CloudFront/
+  // Route53）と Cognito User Pool の新規作成をスキップし、dev 環境の Cognito を参照する
+  isPreview?: boolean;
+  // Preview デプロイで参照する既存 Cognito User Pool ID（dev 環境のものを想定）
+  existingCognitoUserPoolId?: string;
+  // Preview デプロイで参照する既存 Cognito User Pool Client ID
+  existingCognitoClientId?: string;
 }
 
 export class ClassicalMusicLakeStack extends cdk.Stack {
-  private readonly corsAllowOrigin: string = "";
-  private readonly corsAllowOrigins: string[] = [];
+  private corsAllowOrigin: string = "";
+  private corsAllowOrigins: string[] = [];
 
   constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
 
     const { stageName, hostedZone, certificate } = props;
+    const isPreview = props.isPreview === true;
     const isProd = stageName === "prod";
+
+    // Preview スタックは Budgets フィルタ用にタグを付与
+    if (isPreview) {
+      cdk.Tags.of(this).add("Preview", "true");
+      cdk.Tags.of(this).add("PreviewStage", stageName);
+      if (!props.existingCognitoUserPoolId || !props.existingCognitoClientId) {
+        throw new Error(
+          "Preview stack requires existingCognitoUserPoolId and existingCognitoClientId"
+        );
+      }
+    } else if (!hostedZone || !certificate) {
+      throw new Error("Non-preview stack requires hostedZone and certificate");
+    }
+
     const domainName = isProd ? "nocturne-app.com" : `${stageName}.nocturne-app.com`;
 
     // -------------------------
@@ -47,8 +70,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       tableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      // prod は RETAIN、stg/dev は DESTROY（スタック削除時にテーブルも削除）
-      removalPolicy: this.removalPolicy(isProd),
+      // prod は RETAIN、stg/dev/preview は DESTROY（スタック削除時にテーブルも削除）
+      removalPolicy: this.removalPolicy(isProd && !isPreview),
       // ポイントインタイムリカバリ（PITR）有効化（35日間のバックアップ自動保持）
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
@@ -77,7 +100,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       tableName: piecesTableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      // 通常は RETAIN だが Preview ではスタック削除時に消す
+      removalPolicy: isPreview ? cdk.RemovalPolicy.DESTROY : cdk.RemovalPolicy.RETAIN,
     });
 
     // -------------------------
@@ -91,229 +115,256 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       tableName: composersTableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      // 通常は RETAIN だが Preview ではスタック削除時に消す
+      removalPolicy: isPreview ? cdk.RemovalPolicy.DESTROY : cdk.RemovalPolicy.RETAIN,
     });
 
     // -------------------------
     // AWS Cognito User Pool
+    // Preview デプロイでは新規作成せず、dev 環境の User Pool を import して使う
     // -------------------------
-    const userPoolName = isProd ? "classical-music-lake" : `classical-music-lake-${stageName}`;
+    let userPool: cognito.IUserPool;
+    if (isPreview) {
+      userPool = cognito.UserPool.fromUserPoolId(
+        this,
+        "ImportedUserPool",
+        props.existingCognitoUserPoolId!
+      );
+    } else {
+      const userPoolName = isProd ? "classical-music-lake" : `classical-music-lake-${stageName}`;
 
-    const userPool = new cognito.UserPool(this, "CognitoUserPool", {
-      userPoolName,
-      removalPolicy: this.removalPolicy(isProd),
-      selfSignUpEnabled: true,
-      signInAliases: { email: true },
-      passwordPolicy: {
-        minLength: 8,
-        requireLowercase: true,
-        requireDigits: true,
-        requireSymbols: false,
-        requireUppercase: true,
-      },
-      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
-      userVerification: {
-        emailStyle: cognito.VerificationEmailStyle.CODE,
-      },
-      standardAttributes: {
-        email: {
-          required: true,
-          mutable: true,
+      const newUserPool = new cognito.UserPool(this, "CognitoUserPool", {
+        userPoolName,
+        removalPolicy: this.removalPolicy(isProd),
+        selfSignUpEnabled: true,
+        signInAliases: { email: true },
+        passwordPolicy: {
+          minLength: 8,
+          requireLowercase: true,
+          requireDigits: true,
+          requireSymbols: false,
+          requireUppercase: true,
         },
-      },
-      signInCaseSensitive: false,
-    });
-
-    new cognito.CfnUserPoolGroup(this, "AdminGroup", {
-      userPoolId: userPool.userPoolId,
-      groupName: "admin",
-      description: "管理者グループ",
-    });
-
-    // -------------------------
-    // S3 + CloudFront (SPA ホスティング)
-    // App Client の callback URL に CloudFront ドメインが必要なため先に作成する
-    // -------------------------
-    const spaBucket = new s3.Bucket(this, "SpaBucket", {
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      enforceSSL: true,
-      // prod は RETAIN（本番アセットの誤削除防止）、stg/dev は DESTROY
-      removalPolicy: this.removalPolicy(isProd),
-      autoDeleteObjects: !isProd,
-      // prod は S3 バージョニング有効（静的ファイルのロールバック用）
-      versioned: isProd,
-    });
-
-    // セキュリティヘッダポリシー（SPA 用: X-Frame-Options: DENY）
-    const securityHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
-      this,
-      "SecurityHeadersPolicy",
-      {
-        securityHeadersBehavior: {
-          strictTransportSecurity: {
-            accessControlMaxAge: cdk.Duration.days(365),
-            includeSubdomains: true,
-            override: true,
-          },
-          contentTypeOptions: { override: true },
-          frameOptions: {
-            frameOption: cloudfront.HeadersFrameOption.DENY,
-            override: true,
-          },
-          xssProtection: { protection: true, modeBlock: true, override: true },
-          referrerPolicy: {
-            referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
-            override: true,
+        accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+        userVerification: {
+          emailStyle: cognito.VerificationEmailStyle.CODE,
+        },
+        standardAttributes: {
+          email: {
+            required: true,
+            mutable: true,
           },
         },
-      }
-    );
+        signInCaseSensitive: false,
+      });
 
-    // Storybook 用セキュリティヘッダポリシー（X-Frame-Options を除外: iframe プレビューに必要）
-    const storybookHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
-      this,
-      "StorybookHeadersPolicy",
-      {
-        securityHeadersBehavior: {
-          strictTransportSecurity: {
-            accessControlMaxAge: cdk.Duration.days(365),
-            includeSubdomains: true,
-            override: true,
-          },
-          contentTypeOptions: { override: true },
-          contentSecurityPolicy: {
-            contentSecurityPolicy: "frame-ancestors 'self';",
-            override: true,
-          },
-          xssProtection: { protection: true, modeBlock: true, override: true },
-          referrerPolicy: {
-            referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
-            override: true,
-          },
-        },
-      }
-    );
+      new cognito.CfnUserPoolGroup(this, "AdminGroup", {
+        userPoolId: newUserPool.userPoolId,
+        groupName: "admin",
+        description: "管理者グループ",
+      });
 
-    const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
-      domainNames: [domainName],
-      certificate,
-      defaultBehavior: {
-        origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        responseHeadersPolicy: securityHeadersPolicy,
-      },
-      // index.html はキャッシュしない（SPA デプロイ後に即反映させるため）
-      additionalBehaviors: {
-        "/index.html": {
+      userPool = newUserPool;
+    }
+
+    // -------------------------
+    // フロントエンド関連リソース（S3 + CloudFront + Cognito クライアント + Hosted UI + Google IdP + Route53）
+    // Preview デプロイでは作成しない
+    // -------------------------
+    let spaBucket: s3.Bucket | undefined;
+    let distribution: cloudfront.Distribution | undefined;
+    let storybookHeadersPolicy: cloudfront.ResponseHeadersPolicy | undefined;
+    let storybookRootRewrite: cloudfront.Function | undefined;
+    let appClientId: string;
+    let cognitoDomainPrefix: string | undefined;
+
+    if (isPreview) {
+      // Preview ではフロント無し、dev User Pool の Client ID を直接使う
+      appClientId = props.existingCognitoClientId!;
+      this.corsAllowOrigin = "*";
+      this.corsAllowOrigins = ["*"];
+    } else {
+      spaBucket = new s3.Bucket(this, "SpaBucket", {
+        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        enforceSSL: true,
+        // prod は RETAIN（本番アセットの誤削除防止）、stg/dev は DESTROY
+        removalPolicy: this.removalPolicy(isProd),
+        autoDeleteObjects: !isProd,
+        // prod は S3 バージョニング有効（静的ファイルのロールバック用）
+        versioned: isProd,
+      });
+
+      // セキュリティヘッダポリシー（SPA 用: X-Frame-Options: DENY）
+      const securityHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
+        this,
+        "SecurityHeadersPolicy",
+        {
+          securityHeadersBehavior: {
+            strictTransportSecurity: {
+              accessControlMaxAge: cdk.Duration.days(365),
+              includeSubdomains: true,
+              override: true,
+            },
+            contentTypeOptions: { override: true },
+            frameOptions: {
+              frameOption: cloudfront.HeadersFrameOption.DENY,
+              override: true,
+            },
+            xssProtection: { protection: true, modeBlock: true, override: true },
+            referrerPolicy: {
+              referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+              override: true,
+            },
+          },
+        }
+      );
+
+      // Storybook 用セキュリティヘッダポリシー（X-Frame-Options を除外: iframe プレビューに必要）
+      storybookHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
+        this,
+        "StorybookHeadersPolicy",
+        {
+          securityHeadersBehavior: {
+            strictTransportSecurity: {
+              accessControlMaxAge: cdk.Duration.days(365),
+              includeSubdomains: true,
+              override: true,
+            },
+            contentTypeOptions: { override: true },
+            contentSecurityPolicy: {
+              contentSecurityPolicy: "frame-ancestors 'self';",
+              override: true,
+            },
+            xssProtection: { protection: true, modeBlock: true, override: true },
+            referrerPolicy: {
+              referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+              override: true,
+            },
+          },
+        }
+      );
+
+      distribution = new cloudfront.Distribution(this, "SpaDistribution", {
+        domainNames: [domainName],
+        certificate: certificate!,
+        defaultBehavior: {
           origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
           responseHeadersPolicy: securityHeadersPolicy,
         },
-      },
-      defaultRootObject: "index.html",
-      errorResponses: [
-        // SPA のクライアントサイドルーティング対応
-        // ttl を 0 にして index.html の古いキャッシュが返らないようにする
-        {
-          httpStatus: 403,
-          responseHttpStatus: 200,
-          responsePagePath: "/index.html",
-          ttl: cdk.Duration.seconds(0),
+        // index.html はキャッシュしない（SPA デプロイ後に即反映させるため）
+        additionalBehaviors: {
+          "/index.html": {
+            origin: origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
+            viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+            responseHeadersPolicy: securityHeadersPolicy,
+          },
         },
-        {
-          httpStatus: 404,
-          responseHttpStatus: 200,
-          responsePagePath: "/index.html",
-          ttl: cdk.Duration.seconds(0),
-        },
-      ],
-    });
-
-    // カスタムドメインを CORS オリジンとして Lambda 環境変数に設定
-    // 移行期間中は CloudFront デフォルトドメインも許可（DNS 切り替え完了後に削除可能）
-    this.corsAllowOrigin = `https://${domainName}`;
-    const cloudFrontOrigin = `https://${distribution.distributionDomainName}`;
-    // dev 環境のみローカル開発用に localhost を許可（NOTE: 3000だとなぜか起動できない）
-    this.corsAllowOrigins =
-      stageName === "dev"
-        ? [this.corsAllowOrigin, cloudFrontOrigin, "http://localhost:3010"]
-        : [this.corsAllowOrigin, cloudFrontOrigin];
-
-    // -------------------------
-    // Google Identity Provider
-    // GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET 環境変数が設定されている場合のみ作成
-    // -------------------------
-    const googleClientId = process.env.GOOGLE_CLIENT_ID ?? "";
-    const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? "";
-    const hasGoogleCredentials = googleClientId !== "" && googleClientSecret !== "";
-
-    let googleIdP: cognito.UserPoolIdentityProviderGoogle | undefined;
-    if (hasGoogleCredentials) {
-      googleIdP = new cognito.UserPoolIdentityProviderGoogle(this, "GoogleProvider", {
-        userPool,
-        clientId: googleClientId,
-        clientSecretValue: cdk.SecretValue.unsafePlainText(googleClientSecret),
-        scopes: ["email", "profile", "openid"],
-        attributeMapping: {
-          email: cognito.ProviderAttribute.GOOGLE_EMAIL,
-          givenName: cognito.ProviderAttribute.GOOGLE_GIVEN_NAME,
-          familyName: cognito.ProviderAttribute.GOOGLE_FAMILY_NAME,
-        },
+        defaultRootObject: "index.html",
+        errorResponses: [
+          // SPA のクライアントサイドルーティング対応
+          // ttl を 0 にして index.html の古いキャッシュが返らないようにする
+          {
+            httpStatus: 403,
+            responseHttpStatus: 200,
+            responsePagePath: "/index.html",
+            ttl: cdk.Duration.seconds(0),
+          },
+          {
+            httpStatus: 404,
+            responseHttpStatus: 200,
+            responsePagePath: "/index.html",
+            ttl: cdk.Duration.seconds(0),
+          },
+        ],
       });
-    }
 
-    // App Client: フロントエンド用
-    // 移行期間中は CloudFront デフォルトドメインも callback URL に含める
-    const callbackUrls = [
-      `https://${domainName}/auth/callback`,
-      `https://${distribution.distributionDomainName}/auth/callback`,
-    ];
-    const logoutUrls = [
-      `https://${domainName}/auth/login`,
-      `https://${distribution.distributionDomainName}/auth/login`,
-    ];
-    if (stageName === "dev") {
-      callbackUrls.push("http://localhost:3010/auth/callback");
-      logoutUrls.push("http://localhost:3010/auth/login");
-    }
+      // カスタムドメインを CORS オリジンとして Lambda 環境変数に設定
+      // 移行期間中は CloudFront デフォルトドメインも許可（DNS 切り替え完了後に削除可能）
+      this.corsAllowOrigin = `https://${domainName}`;
+      const cloudFrontOrigin = `https://${distribution.distributionDomainName}`;
+      // dev 環境のみローカル開発用に localhost を許可（NOTE: 3000だとなぜか起動できない）
+      this.corsAllowOrigins =
+        stageName === "dev"
+          ? [this.corsAllowOrigin, cloudFrontOrigin, "http://localhost:3010"]
+          : [this.corsAllowOrigin, cloudFrontOrigin];
 
-    const appClient = userPool.addClient("FrontendClient", {
-      authFlows: {
-        userPassword: true,
-        custom: true,
-      },
-      supportedIdentityProviders: [
-        cognito.UserPoolClientIdentityProvider.COGNITO,
-        ...(hasGoogleCredentials ? [cognito.UserPoolClientIdentityProvider.GOOGLE] : []),
-      ],
-      oAuth: {
-        flows: {
-          authorizationCodeGrant: true,
+      // -------------------------
+      // Google Identity Provider
+      // GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET 環境変数が設定されている場合のみ作成
+      // -------------------------
+      const googleClientId = process.env.GOOGLE_CLIENT_ID ?? "";
+      const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? "";
+      const hasGoogleCredentials = googleClientId !== "" && googleClientSecret !== "";
+
+      let googleIdP: cognito.UserPoolIdentityProviderGoogle | undefined;
+      if (hasGoogleCredentials) {
+        googleIdP = new cognito.UserPoolIdentityProviderGoogle(this, "GoogleProvider", {
+          userPool,
+          clientId: googleClientId,
+          clientSecretValue: cdk.SecretValue.unsafePlainText(googleClientSecret),
+          scopes: ["email", "profile", "openid"],
+          attributeMapping: {
+            email: cognito.ProviderAttribute.GOOGLE_EMAIL,
+            givenName: cognito.ProviderAttribute.GOOGLE_GIVEN_NAME,
+            familyName: cognito.ProviderAttribute.GOOGLE_FAMILY_NAME,
+          },
+        });
+      }
+
+      // App Client: フロントエンド用
+      // 移行期間中は CloudFront デフォルトドメインも callback URL に含める
+      const callbackUrls = [
+        `https://${domainName}/auth/callback`,
+        `https://${distribution.distributionDomainName}/auth/callback`,
+      ];
+      const logoutUrls = [
+        `https://${domainName}/auth/login`,
+        `https://${distribution.distributionDomainName}/auth/login`,
+      ];
+      if (stageName === "dev") {
+        callbackUrls.push("http://localhost:3010/auth/callback");
+        logoutUrls.push("http://localhost:3010/auth/login");
+      }
+
+      const appClient = userPool.addClient("FrontendClient", {
+        authFlows: {
+          userPassword: true,
+          custom: true,
         },
-        scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE],
-        callbackUrls,
-        logoutUrls,
-      },
-      accessTokenValidity: cdk.Duration.minutes(60),
-      idTokenValidity: cdk.Duration.minutes(60),
-      refreshTokenValidity: cdk.Duration.days(30),
-      preventUserExistenceErrors: true,
-    });
+        supportedIdentityProviders: [
+          cognito.UserPoolClientIdentityProvider.COGNITO,
+          ...(hasGoogleCredentials ? [cognito.UserPoolClientIdentityProvider.GOOGLE] : []),
+        ],
+        oAuth: {
+          flows: {
+            authorizationCodeGrant: true,
+          },
+          scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE],
+          callbackUrls,
+          logoutUrls,
+        },
+        accessTokenValidity: cdk.Duration.minutes(60),
+        idTokenValidity: cdk.Duration.minutes(60),
+        refreshTokenValidity: cdk.Duration.days(30),
+        preventUserExistenceErrors: true,
+      });
 
-    // Google IdP が存在する場合、App Client との依存関係を明示
-    if (googleIdP !== undefined) {
-      appClient.node.addDependency(googleIdP);
+      // Google IdP が存在する場合、App Client との依存関係を明示
+      if (googleIdP !== undefined) {
+        appClient.node.addDependency(googleIdP);
+      }
+
+      // Cognito Hosted UI ドメイン（Google OAuth のリダイレクト先として必要）
+      cognitoDomainPrefix = isProd ? "classical-music-lake" : `classical-music-lake-${stageName}`;
+      userPool.addDomain("CognitoDomain", {
+        cognitoDomain: { domainPrefix: cognitoDomainPrefix },
+      });
+
+      appClientId = appClient.userPoolClientId;
     }
-
-    // Cognito Hosted UI ドメイン（Google OAuth のリダイレクト先として必要）
-    const cognitoDomainPrefix = isProd
-      ? "classical-music-lake"
-      : `classical-music-lake-${stageName}`;
-    userPool.addDomain("CognitoDomain", {
-      cognitoDomain: { domainPrefix: cognitoDomainPrefix },
-    });
 
     // NOTE: COGNITO_USER_POOL_ID / COGNITO_CLIENT_ID は commonEnv に含めない。
     // authPreSignUp を addTrigger すると userPool → authPreSignUp の依存が生まれ、
@@ -331,7 +382,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       tableName: concertLogsTableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: this.removalPolicy(isProd),
+      removalPolicy: this.removalPolicy(isProd && !isPreview),
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
@@ -372,7 +423,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       // CloudWatch Logs 保持期間を 3 ヶ月に設定（カスタムリソース不要の explicit LogGroup）
       const logGroup = new logs.LogGroup(this, `${id}LogGroup`, {
         retention: logs.RetentionDays.THREE_MONTHS,
-        removalPolicy: this.removalPolicy(isProd),
+        removalPolicy: this.removalPolicy(isProd && !isPreview),
       });
       return new lambdaNodejs.NodejsFunction(this, id, {
         ...commonFnProps,
@@ -402,7 +453,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const authVerifyEmail = fn("AuthVerifyEmail", "handlers/auth/verify-email.ts");
     const authResendCode = fn("AuthResendCode", "handlers/auth/resend-verification-code.ts");
     const authRefresh = fn("AuthRefresh", "handlers/auth/refresh.ts");
-    const authPreSignUp = fn("AuthPreSignUp", "handlers/auth/pre-signup.ts");
 
     const concertLogsList = fn("ConcertLogsList", "handlers/concert-logs/list.ts");
     const concertLogsCreate = fn("ConcertLogsCreate", "handlers/concert-logs/create.ts");
@@ -416,9 +466,30 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const updateComposer = fn("UpdateComposer", "handlers/composers/update.ts");
     const deleteComposer = fn("DeleteComposer", "handlers/composers/delete.ts");
 
-    // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
-    // いる場合に自動でアカウントリンクを行う
-    userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, authPreSignUp);
+    // PreSignUp Lambda + トリガー
+    // Preview デプロイでは dev の User Pool を import して使うため、トリガーを上書き
+    // できないので Lambda 自体を作らない。dev 側で既に PreSignUp トリガーが発動するので
+    // Google アカウント連携の挙動は維持される。
+    let authPreSignUp: lambdaNodejs.NodejsFunction | undefined;
+    if (!isPreview) {
+      authPreSignUp = fn("AuthPreSignUp", "handlers/auth/pre-signup.ts");
+      // PreSignUp トリガー: Google 等の外部プロバイダーで既存メールアドレスのユーザーが
+      // いる場合に自動でアカウントリンクを行う
+      (userPool as cognito.UserPool).addTrigger(
+        cognito.UserPoolOperation.PRE_SIGN_UP,
+        authPreSignUp
+      );
+
+      // auth/pre-signup: ListUsers + AdminLinkProviderForUser を実行
+      // NOTE: userPool.userPoolArn を使うと CognitoUserPool ↔ AuthPreSignUp の循環依存が
+      // 発生するため、リソースを "*" にして依存関係を断ち切る
+      const cognitoPreSignUpPolicy = new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["cognito-idp:ListUsers", "cognito-idp:AdminLinkProviderForUser"],
+        resources: ["*"],
+      });
+      authPreSignUp.addToRolePolicy(cognitoPreSignUpPolicy);
+    }
 
     // -------------------------
     // Cognito 権限付与
@@ -462,16 +533,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       resources: [userPool.userPoolArn],
     });
     authRefresh.addToRolePolicy(cognitoRefreshPolicy);
-
-    // auth/pre-signup: ListUsers + AdminLinkProviderForUser を実行
-    // NOTE: userPool.userPoolArn を使うと CognitoUserPool ↔ AuthPreSignUp の循環依存が
-    // 発生するため、リソースを "*" にして依存関係を断ち切る
-    const cognitoPreSignUpPolicy = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: ["cognito-idp:ListUsers", "cognito-idp:AdminLinkProviderForUser"],
-      resources: ["*"],
-    });
-    authPreSignUp.addToRolePolicy(cognitoPreSignUpPolicy);
 
     // -------------------------
     // DynamoDB 権限付与
@@ -518,7 +579,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // logGroupName を指定しない（CDK 自動生成名）ことで既存リソースとの名前衝突を回避
     const apiAccessLogGroup = new logs.LogGroup(this, "ApiAccessLogs", {
       retention: logs.RetentionDays.THREE_MONTHS,
-      removalPolicy: this.removalPolicy(isProd),
+      removalPolicy: this.removalPolicy(isProd && !isPreview),
     });
 
     const api = new apigateway.RestApi(this, "Api", {
@@ -665,7 +726,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // （authPreSignUp は event.userPoolId から取得するため不要かつ循環依存を避けるため除外）
     authExcludedFunctions.forEach((fn) => {
       fn.addEnvironment("COGNITO_USER_POOL_ID", userPool.userPoolId);
-      fn.addEnvironment("COGNITO_CLIENT_ID", appClient.userPoolClientId);
+      fn.addEnvironment("COGNITO_CLIENT_ID", appClientId);
     });
 
     // API Gateway の CORS オリジンも CloudFront URL に限定
@@ -734,11 +795,13 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
 
     // -------------------------
     // Storybook ホスティング（/storybook/ パス）
+    // Preview デプロイでは S3 / CloudFront を作らないためスキップ
     // -------------------------
-    // /storybook/ へのアクセスを /storybook/index.html にリライトする CloudFront Function
-    const storybookRootRewrite = new cloudfront.Function(this, "StorybookRootRewrite", {
-      code: cloudfront.FunctionCode.fromInline(
-        `
+    if (!isPreview && distribution && spaBucket && storybookHeadersPolicy) {
+      // /storybook/ へのアクセスを /storybook/index.html にリライトする CloudFront Function
+      storybookRootRewrite = new cloudfront.Function(this, "StorybookRootRewrite", {
+        code: cloudfront.FunctionCode.fromInline(
+          `
 function handler(event) {
   var request = event.request;
   if (request.uri === '/storybook/' || request.uri === '/storybook') {
@@ -747,37 +810,41 @@ function handler(event) {
   return request;
 }
       `.trim()
-      ),
-      runtime: cloudfront.FunctionRuntime.JS_2_0,
-    });
+        ),
+        runtime: cloudfront.FunctionRuntime.JS_2_0,
+      });
 
-    // /storybook/* 用の CloudFront behavior を追加
-    distribution.addBehavior(
-      "/storybook/*",
-      origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
-      {
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-        responseHeadersPolicy: storybookHeadersPolicy,
-        functionAssociations: [
-          {
-            function: storybookRootRewrite,
-            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-          },
-        ],
-      }
-    );
+      // /storybook/* 用の CloudFront behavior を追加
+      distribution.addBehavior(
+        "/storybook/*",
+        origins.S3BucketOrigin.withOriginAccessControl(spaBucket),
+        {
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          responseHeadersPolicy: storybookHeadersPolicy,
+          functionAssociations: [
+            {
+              function: storybookRootRewrite,
+              eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+            },
+          ],
+        }
+      );
+    }
 
     // NOTE: Storybook ファイルの S3 アップロードも GitHub Actions ワークフローで実行する。
 
     // -------------------------
     // Route53 A レコード（カスタムドメイン → CloudFront）
+    // Preview デプロイでは作らない
     // -------------------------
-    new route53.ARecord(this, "CloudFrontAliasRecord", {
-      zone: hostedZone,
-      recordName: domainName,
-      target: route53.RecordTarget.fromAlias(new route53Targets.CloudFrontTarget(distribution)),
-    });
+    if (!isPreview && hostedZone && distribution) {
+      new route53.ARecord(this, "CloudFrontAliasRecord", {
+        zone: hostedZone,
+        recordName: domainName,
+        target: route53.RecordTarget.fromAlias(new route53Targets.CloudFrontTarget(distribution)),
+      });
+    }
 
     // -------------------------
     // CloudWatch アラーム
@@ -798,7 +865,7 @@ function handler(event) {
       authVerifyEmail,
       authResendCode,
       authRefresh,
-      authPreSignUp,
+      ...(authPreSignUp ? [authPreSignUp] : []),
       concertLogsList,
       concertLogsCreate,
       concertLogsGet,
@@ -857,45 +924,54 @@ function handler(event) {
       description: "API Gateway URL (NUXT_PUBLIC_API_BASE_URL に設定)",
     });
 
-    new cdk.CfnOutput(this, "SpaUrl", {
-      value: `https://${domainName}`,
-      description: "カスタムドメイン URL (フロントエンド)",
-    });
+    if (!isPreview && distribution && spaBucket && cognitoDomainPrefix) {
+      new cdk.CfnOutput(this, "SpaUrl", {
+        value: `https://${domainName}`,
+        description: "カスタムドメイン URL (フロントエンド)",
+      });
 
-    new cdk.CfnOutput(this, "StorybookUrl", {
-      value: `https://${domainName}/storybook/`,
-      description: "Storybook URL",
-    });
+      new cdk.CfnOutput(this, "StorybookUrl", {
+        value: `https://${domainName}/storybook/`,
+        description: "Storybook URL",
+      });
 
-    new cdk.CfnOutput(this, "CognitoUserPoolId", {
-      value: userPool.userPoolId,
-      description: "Cognito User Pool ID",
-    });
+      new cdk.CfnOutput(this, "CognitoUserPoolId", {
+        value: userPool.userPoolId,
+        description: "Cognito User Pool ID",
+      });
 
-    new cdk.CfnOutput(this, "CognitoClientId", {
-      value: appClient.userPoolClientId,
-      description: "Cognito App Client ID",
-    });
+      new cdk.CfnOutput(this, "CognitoClientId", {
+        value: appClientId,
+        description: "Cognito App Client ID",
+      });
 
-    new cdk.CfnOutput(this, "CognitoUserPoolArn", {
-      value: userPool.userPoolArn,
-      description: "Cognito User Pool ARN",
-    });
+      new cdk.CfnOutput(this, "CognitoUserPoolArn", {
+        value: userPool.userPoolArn,
+        description: "Cognito User Pool ARN",
+      });
 
-    new cdk.CfnOutput(this, "CognitoDomainName", {
-      value: `${cognitoDomainPrefix}.auth.${this.region}.amazoncognito.com`,
-      description: "Cognito Hosted UI Domain (NUXT_PUBLIC_COGNITO_DOMAIN に設定)",
-    });
+      new cdk.CfnOutput(this, "CognitoDomainName", {
+        value: `${cognitoDomainPrefix}.auth.${this.region}.amazoncognito.com`,
+        description: "Cognito Hosted UI Domain (NUXT_PUBLIC_COGNITO_DOMAIN に設定)",
+      });
 
-    new cdk.CfnOutput(this, "SpaBucketName", {
-      value: spaBucket.bucketName,
-      description: "S3 Bucket Name for SPA static files",
-    });
+      new cdk.CfnOutput(this, "SpaBucketName", {
+        value: spaBucket.bucketName,
+        description: "S3 Bucket Name for SPA static files",
+      });
 
-    new cdk.CfnOutput(this, "DistributionId", {
-      value: distribution.distributionId,
-      description: "CloudFront Distribution ID",
-    });
+      new cdk.CfnOutput(this, "DistributionId", {
+        value: distribution.distributionId,
+        description: "CloudFront Distribution ID",
+      });
+    }
+
+    if (isPreview) {
+      new cdk.CfnOutput(this, "PreviewStageName", {
+        value: stageName,
+        description: "Preview stage name (e.g., pr-260)",
+      });
+    }
   }
 
   private removalPolicy(isProd: boolean): cdk.RemovalPolicy {

@@ -1,0 +1,87 @@
+name: Preview Cleanup (48h idle)
+
+on:
+  schedule:
+    # 6 時間おきに実行（UTC 0:00, 6:00, 12:00, 18:00）
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ap-northeast-1
+
+      # ----------------------------------------
+      # 48 時間以上更新されていない Preview スタックを検出
+      # CFN の LastUpdatedTime（無い場合は CreationTime）を判定基準にする
+      # ----------------------------------------
+      - name: Find idle preview stacks
+        id: find
+        run: |
+          THRESHOLD=$(($(date -u +%s) - 48 * 3600))
+          aws cloudformation describe-stacks \
+            --query 'Stacks[?starts_with(StackName,`ClassicalMusicLakeStack-pr-`)].[StackName,LastUpdatedTime,CreationTime]' \
+            --output json > /tmp/stacks.json
+
+          jq -r --argjson th "$THRESHOLD" '
+            .[] | . as $s |
+            ($s[1] // $s[2]) as $time |
+            select(($time | fromdateiso8601) < $th) |
+            $s[0]
+          ' /tmp/stacks.json > /tmp/idle.txt
+
+          echo "Found idle stacks:"
+          cat /tmp/idle.txt
+          {
+            echo 'stacks<<EOF'
+            cat /tmp/idle.txt
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      # ----------------------------------------
+      # アイドルスタックを destroy
+      # ----------------------------------------
+      - name: Destroy idle stacks
+        if: steps.find.outputs.stacks != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          while IFS= read -r STACK; do
+            [ -z "$STACK" ] && continue
+            STAGE="${STACK#ClassicalMusicLakeStack-}"
+            PR_NUM="${STAGE#pr-}"
+            echo "Destroying $STACK (stage: $STAGE)"
+            if ! STAGE_NAME="$STAGE" npx cdk destroy "$STACK" --force --exclusively \
+              --context cognitoUserPoolId=cleanup-dummy \
+              --context cognitoClientId=cleanup-dummy; then
+              echo "::warning::Failed to destroy $STACK"
+              continue
+            fi
+            BODY=$(printf '### Preview environment auto-destroyed (48h idle)\n\nStage `%s` を 48 時間以上更新が無かったため自動で削除しました。再度プレビューが必要な場合は `preview` ラベルを外して付け直してください。' "$STAGE")
+            gh pr comment "$PR_NUM" --body "$BODY" --repo "$REPO" \
+              || echo "::warning::Failed to comment on PR $PR_NUM"
+          done < /tmp/idle.txt
+        working-directory: cdk
