@@ -5,6 +5,9 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
+import * as cloudwatchActions from "aws-cdk-lib/aws-cloudwatch-actions";
+import * as sns from "aws-cdk-lib/aws-sns";
+import * as snsSubscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import type { IResource } from "aws-cdk-lib/aws-apigateway";
 import * as s3 from "aws-cdk-lib/aws-s3";
@@ -780,8 +783,31 @@ function handler(event) {
     });
 
     // -------------------------
-    // CloudWatch アラーム
+    // CloudWatch アラート（SNS 経由でメール通知）
+    // ALERT_EMAIL（カンマ区切り）が設定されていればメール購読を作成。
+    // 未設定でも SNS トピックは作成され、後から AWS コンソール / CLI で購読を追加できる。
     // -------------------------
+    const alertTopic = new sns.Topic(this, "AlertTopic", {
+      topicName: `classical-music-lake-${stageName}-alerts`,
+      displayName: `Classical Music Lake (${stageName}) alerts`,
+    });
+
+    const alertEmails = (process.env.ALERT_EMAIL ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s !== "");
+    alertEmails.forEach((email) => {
+      alertTopic.addSubscription(new snsSubscriptions.EmailSubscription(email));
+    });
+
+    const alarmAction = new cloudwatchActions.SnsAction(alertTopic);
+    const createAlarm = (id: string, props: cloudwatch.AlarmProps): cloudwatch.Alarm => {
+      const alarm = new cloudwatch.Alarm(this, id, props);
+      alarm.addAlarmAction(alarmAction);
+      alarm.addOkAction(alarmAction);
+      return alarm;
+    };
+
     const allFunctions = [
       listeningLogsList,
       listeningLogsGet,
@@ -811,12 +837,12 @@ function handler(event) {
       deleteComposer,
     ];
 
-    // Lambda エラー監視：各関数ごとにアラーム作成
+    // Lambda エラー監視：各関数ごとにアラームを作成
     allFunctions.forEach((f, i) => {
-      new cloudwatch.Alarm(this, `LambdaErrorAlarm${i}`, {
-        alarmName: `classical-music-lake-${stageName}-lambda-${f.functionName}-errors`,
-        alarmDescription: `Lambda 関数 ${f.functionName} でエラーが発生しています`,
-        metric: f.metricErrors({ period: cdk.Duration.minutes(5) }),
+      createAlarm(`LambdaErrorAlarm${i}`, {
+        alarmName: `classical-music-lake-${stageName}-lambda-${f.node.id}-errors`,
+        alarmDescription: `Lambda 関数 ${f.node.id} でエラーが発生しています`,
+        metric: f.metricErrors({ period: cdk.Duration.minutes(5), statistic: "Sum" }),
         threshold: 1,
         evaluationPeriods: 1,
         comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
@@ -825,28 +851,61 @@ function handler(event) {
     });
 
     // API Gateway 5xx エラー監視
-    new cloudwatch.Alarm(this, "ApiGateway5xxAlarm", {
+    createAlarm("ApiGateway5xxAlarm", {
       alarmName: `classical-music-lake-${stageName}-api-5xx`,
       alarmDescription: "API Gateway で 5xx エラーが発生しています",
-      metric: api.metricServerError({ period: cdk.Duration.minutes(5) }),
+      metric: api.metricServerError({ period: cdk.Duration.minutes(5), statistic: "Sum" }),
       threshold: 1,
       evaluationPeriods: 1,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
 
-    // DynamoDB スロットリング監視
-    new cloudwatch.Alarm(this, "DynamoThrottleAlarm", {
-      alarmName: `classical-music-lake-${stageName}-dynamo-throttle`,
-      alarmDescription: "DynamoDB でスロットリングが発生しています",
-      metric: listeningLogsTable.metric("ThrottledRequests", {
-        statistic: "Sum",
-        period: cdk.Duration.minutes(5),
-      }),
-      threshold: 1,
-      evaluationPeriods: 1,
-      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+    // API Gateway レイテンシ監視（p99 が 3 秒を超えたら通知）
+    createAlarm("ApiGatewayLatencyAlarm", {
+      alarmName: `classical-music-lake-${stageName}-api-latency-p99`,
+      alarmDescription: "API Gateway のレイテンシ p99 が 3 秒を超えています",
+      metric: api.metricLatency({ period: cdk.Duration.minutes(5), statistic: "p99" }),
+      threshold: 3000,
+      evaluationPeriods: 2,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // DynamoDB の監視（全テーブルでスロットリング・SystemErrors を監視）
+    const dynamoTables: Array<{ id: string; table: dynamodb.Table }> = [
+      { id: "ListeningLogs", table: listeningLogsTable },
+      { id: "Pieces", table: piecesTable },
+      { id: "ConcertLogs", table: concertLogsTable },
+      { id: "Composers", table: composersTable },
+    ];
+
+    dynamoTables.forEach(({ id, table }) => {
+      createAlarm(`Dynamo${id}ThrottleAlarm`, {
+        alarmName: `classical-music-lake-${stageName}-dynamo-${id}-throttle`,
+        alarmDescription: `DynamoDB ${id} テーブルでスロットリングが発生しています`,
+        metric: table.metric("ThrottledRequests", {
+          statistic: "Sum",
+          period: cdk.Duration.minutes(5),
+        }),
+        threshold: 1,
+        evaluationPeriods: 1,
+        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+
+      createAlarm(`Dynamo${id}SystemErrorAlarm`, {
+        alarmName: `classical-music-lake-${stageName}-dynamo-${id}-system-errors`,
+        alarmDescription: `DynamoDB ${id} テーブルで SystemErrors が発生しています`,
+        metric: table.metric("SystemErrors", {
+          statistic: "Sum",
+          period: cdk.Duration.minutes(5),
+        }),
+        threshold: 1,
+        evaluationPeriods: 1,
+        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
     });
 
     // -------------------------
@@ -895,6 +954,11 @@ function handler(event) {
     new cdk.CfnOutput(this, "DistributionId", {
       value: distribution.distributionId,
       description: "CloudFront Distribution ID",
+    });
+
+    new cdk.CfnOutput(this, "AlertTopicArn", {
+      value: alertTopic.topicArn,
+      description: "CloudWatch アラート通知用 SNS トピック ARN",
     });
   }
 

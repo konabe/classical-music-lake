@@ -94,19 +94,55 @@ Lambda 関数のログは自動的に CloudWatch Logs に収集される。
 aws logs tail /aws/lambda/ClassicalMusicLake-ListeningLogsCreate --follow
 ```
 
-### 現在の監視設定
+### CloudWatch アラート
 
-現時点では CloudWatch アラートは未設定（フェーズ2で整備予定）。
+CDK で各環境に CloudWatch アラートを定義済み（`cdk/lib/classical-music-lake-stack.ts`）。アラート発火時の通知先は SNS トピック `classical-music-lake-<stage>-alerts` 経由でメール送信される。
 
-エラーは Lambda の `console.error` 出力で CloudWatch Logs に記録される。
+| メトリクス                         | 閾値                           | 通知先             |
+| ---------------------------------- | ------------------------------ | ------------------ |
+| Lambda Errors（関数ごと）          | 1 件以上 / 5 分                | SNS Topic → メール |
+| API Gateway 5XX                    | 1 件以上 / 5 分                | SNS Topic → メール |
+| API Gateway Latency (p99)          | 3,000ms 超 / 5 分 × 2 期間連続 | SNS Topic → メール |
+| DynamoDB ThrottledRequests（各表） | 1 件以上 / 5 分                | SNS Topic → メール |
+| DynamoDB SystemErrors（各表）      | 1 件以上 / 5 分                | SNS Topic → メール |
 
-### 推奨アラート（今後設定予定）
+> 各アラームは ALARM 状態と OK 状態の両方で SNS にイベントを送信する。
 
-| メトリクス            | 閾値        | アクション |
-| --------------------- | ----------- | ---------- |
-| Lambda Errors         | 1件以上/5分 | メール通知 |
-| API Gateway 5XX       | 1件以上/5分 | メール通知 |
-| DynamoDB SystemErrors | 1件以上/5分 | メール通知 |
+#### 通知先メールアドレスの設定
+
+CDK デプロイ時に `ALERT_EMAIL` 環境変数（カンマ区切りで複数指定可）を渡すと、SNS トピックにメール購読が作成される。GitHub Actions では `ALERT_EMAIL` シークレットを参照する。
+
+```bash
+# ローカルからのデプロイ例
+ALERT_EMAIL="ops@example.com,oncall@example.com" \
+STAGE_NAME=stg \
+npx cdk deploy ClassicalMusicLakeStack-stg
+```
+
+未設定でも SNS トピック自体は作成されるため、後から AWS コンソールまたは CLI で購読を追加できる：
+
+```bash
+TOPIC_ARN=$(aws cloudformation describe-stacks \
+  --stack-name ClassicalMusicLakeStack-stg \
+  --query 'Stacks[0].Outputs[?OutputKey==`AlertTopicArn`].OutputValue' \
+  --output text)
+
+aws sns subscribe \
+  --topic-arn "$TOPIC_ARN" \
+  --protocol email \
+  --notification-endpoint ops@example.com
+```
+
+メール購読は購読確認メール内のリンクをクリックして承認するまで `PendingConfirmation` 状態となる。
+
+#### アラート停止（一時的）
+
+メンテナンス等で通知を一時停止したい場合、AWS コンソールから対象アラームのアクションを無効化するか、CLI で実施する：
+
+```bash
+aws cloudwatch disable-alarm-actions \
+  --alarm-names classical-music-lake-stg-api-5xx
+```
 
 ---
 
