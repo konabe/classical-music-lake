@@ -2,6 +2,7 @@
 defineProps<{
   modelValue: string;
   options: { value: string; label: string }[];
+  id?: string;
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -14,6 +15,7 @@ defineEmits<{
 
 <template>
   <select
+    :id="id"
     class="select-input"
     :value="modelValue"
     :required="required"

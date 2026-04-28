@@ -33,9 +33,9 @@ const sampleLogs: ListeningLog[] = [
 
 vi.mock("~/composables/useListeningLogs", () => ({
   useListeningLogs: () => ({
-    data: sampleLogs,
-    error: null,
-    pending: false,
+    data: ref(sampleLogs),
+    error: ref(null),
+    pending: ref(false),
     refresh: mockRefresh,
     create: vi.fn(),
     update: vi.fn(),
@@ -97,5 +97,26 @@ describe("ListeningLogsPage（削除フロー結合）", () => {
     const wrapper = await mountSuspended(ListeningLogsPage);
     await wrapper.findAll(".btn-danger")[0].trigger("click");
     expect(mockDeleteLog).not.toHaveBeenCalled();
+  });
+});
+
+describe("ListeningLogsPage（検索フィルタ結合）", () => {
+  it("キーワードを入力すると一致しないログが除外される", async () => {
+    const wrapper = await mountSuspended(ListeningLogsPage);
+    const keywordInput = wrapper.find('input[type="text"]');
+    await keywordInput.setValue("モーツァルト");
+    await flushPromises();
+    expect(wrapper.findAll(".btn-danger")).toHaveLength(1);
+    expect(wrapper.text()).toContain("1 / 2 件を表示中");
+  });
+
+  it("条件をクリアすると全件に戻る", async () => {
+    const wrapper = await mountSuspended(ListeningLogsPage);
+    const keywordInput = wrapper.find('input[type="text"]');
+    await keywordInput.setValue("モーツァルト");
+    await flushPromises();
+    await wrapper.find(".btn-secondary").trigger("click");
+    await flushPromises();
+    expect(wrapper.findAll(".btn-danger")).toHaveLength(2);
   });
 });
