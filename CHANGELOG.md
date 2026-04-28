@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.4.0...classical-music-lake-v2.4.1) (2026-04-28)
+
+
+### Code Refactoring
+
+* **backend:** エンティティ基底クラスを導入して共通プロパティを集約 ([#565](https://github.com/konabe/classical-music-lake/issues/565)) ([e421981](https://github.com/konabe/classical-music-lake/commit/e421981d8a84716dd9eb32887fb44723b77a98a9))
+
 ## [2.4.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.3.0...classical-music-lake-v2.4.0) (2026-04-23)
 
 
