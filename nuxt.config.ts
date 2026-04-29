@@ -9,7 +9,11 @@ export default defineNuxtConfig({
   devServer: {
     port: 3010,
   },
-  modules: ["@nuxt/eslint", "@nuxtjs/storybook", "@nuxtjs/color-mode"],
+  // NOTE: @nuxtjs/storybook@9.0.1 は storybook ~9.0.5 を peer に要求しているが、
+  // 本プロジェクトは storybook@10.3.5 を使用しているため、組み込み proxy が壊れて
+  // dev サーバーが /_nuxt/* を 500 で返す。upstream の修正待ちのため一旦外す。
+  // Storybook 自体は `pnpm storybook` でスタンドアロン起動可能。詳細は #590 を参照。
+  modules: ["@nuxt/eslint", "@nuxtjs/color-mode"],
   colorMode: {
     preference: "system",
     fallback: "light",

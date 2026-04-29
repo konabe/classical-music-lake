@@ -73,7 +73,7 @@
     ]
   },
   "devDependencies": {
-    "@codecov/vite-plugin": "^1.9.1",
+    "@codecov/vite-plugin": "^2.0.1",
     "@commitlint/cli": "^20.4.3",
     "@commitlint/config-conventional": "^20.4.3",
     "@nuxt/devtools": "^3.2.4",
@@ -85,6 +85,7 @@
     "@storybook/addon-docs": "^10.3.5",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
+    "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/eslint-plugin": "^1.6.16",
     "@vue/test-utils": "^2.4.6",
@@ -92,7 +93,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-storybook": "^10.3.5",
     "eslint-plugin-vuejs-accessibility": "^2.5.0",
-    "happy-dom": "^20.8.9",
+    "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.3.3",
     "playwright": "^1.59.1",

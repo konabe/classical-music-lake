@@ -43,10 +43,9 @@ function handleSubmit() {
         required
         :error-message="props.errors.password"
       >
-        <TextInput
+        <PasswordInput
           id="password"
           v-model="form.password"
-          type="password"
           placeholder="8文字以上で入力"
           required
         />
