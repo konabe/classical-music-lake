@@ -85,6 +85,7 @@
     "@storybook/addon-docs": "^10.3.5",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
+    "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/eslint-plugin": "^1.6.16",
     "@vue/test-utils": "^2.4.6",
