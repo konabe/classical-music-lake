@@ -1104,6 +1104,7 @@ GitHub (workflow_dispatch)   → dev / stg / prod を手動選択
 - **概要**: prod の DynamoDB データを stg へ全件コピーする
 - **対象テーブル**:
   - `classical-music-pieces` → `classical-music-pieces-stg`
+  - `classical-music-composers` → `classical-music-composers-stg`
   - ※ 視聴ログ（`classical-music-listening-logs`）・コンサート記録（`classical-music-concert-logs`）は個人情報を含むため同期対象外
 - **トリガー**:
   - スケジュール: 毎日 0:00 JST（UTC 15:00）に自動実行
