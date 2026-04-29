@@ -75,7 +75,7 @@ describe("LoginForm", () => {
       const wrapper = await mountSuspended(LoginForm, {
         props: { isLoading: false, errors: defaultErrors },
       });
-      const requiredMarks = wrapper.findAllComponents({ name: "RequiredMark" });
+      const requiredMarks = wrapper.findAll('[aria-label="必須"]');
       expect(requiredMarks).toHaveLength(2);
     });
   });

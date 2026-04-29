@@ -70,7 +70,7 @@ describe("UserRegisterForm", () => {
       const wrapper = await mountSuspended(UserRegisterForm, {
         props: { isLoading: false, errors: defaultErrors, successMessage: "" },
       });
-      const requiredMarks = wrapper.findAllComponents({ name: "RequiredMark" });
+      const requiredMarks = wrapper.findAll('[aria-label="必須"]');
       expect(requiredMarks).toHaveLength(2);
     });
   });
