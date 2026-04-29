@@ -2,9 +2,9 @@ import { mountSuspended } from "@nuxt/test-utils/runtime";
 import RequiredMark from "./RequiredMark.vue";
 
 describe("RequiredMark", () => {
-  it("* が表示される", async () => {
+  it("「必須」テキストが表示される", async () => {
     const wrapper = await mountSuspended(RequiredMark);
-    expect(wrapper.text()).toBe("*");
+    expect(wrapper.text()).toBe("必須");
   });
 
   it("required クラスが存在する", async () => {
@@ -15,5 +15,10 @@ describe("RequiredMark", () => {
   it("span 要素として描画される", async () => {
     const wrapper = await mountSuspended(RequiredMark);
     expect(wrapper.element.tagName.toLowerCase()).toBe("span");
+  });
+
+  it("aria-label に「必須」が設定される", async () => {
+    const wrapper = await mountSuspended(RequiredMark);
+    expect(wrapper.attributes("aria-label")).toBe("必須");
   });
 });
