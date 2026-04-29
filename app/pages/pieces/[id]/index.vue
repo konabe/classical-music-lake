@@ -6,7 +6,7 @@ const apiBase = useApiBase();
 const { data: piece, error } = await usePiece(() => route.params.id as string);
 const { data: composers, refresh: refreshComposers } = useComposersAll();
 await refreshComposers();
-const { create } = useListeningLogs();
+const { create } = useListeningLogCreate();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
