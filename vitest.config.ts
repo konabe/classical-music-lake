@@ -22,7 +22,7 @@ export default defineVitestConfig({
         "**/*.d.ts",
         "app/**/index.ts",
       ],
-      reporter: ["text", "lcov", "json-summary", "html"],
+      reporter: ["text", "lcov"],
       reportsDirectory: "./coverage",
       thresholds: {
         lines: 80,
