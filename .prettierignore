@@ -9,5 +9,6 @@ package-lock.json
 pnpm-lock.yaml
 .claude/
 .playwright-mcp/
+.playwright-cli/
 # release-please が自動生成するため除外
 CHANGELOG.md

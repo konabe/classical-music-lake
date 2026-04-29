@@ -53,6 +53,7 @@ vi.mock("~/composables/useListeningLogs", () => ({
     deleteLog: vi.fn(),
   }),
   useListeningLog: () => ({ data: ref(null), error: ref(null) }),
+  useListeningLogCreate: () => ({ create: mockCreate }),
 }));
 
 beforeEach(() => {
