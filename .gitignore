@@ -47,3 +47,6 @@ tmp/
 
 # Playwright MCP local snapshots
 .playwright-mcp/
+
+# Playwright CLI local snapshots
+.playwright-cli/
