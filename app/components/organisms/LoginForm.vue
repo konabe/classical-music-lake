@@ -37,7 +37,12 @@ function handleSubmit() {
         />
       </FormGroup>
 
-      <FormGroup label="パスワード" input-id="password" :error-message="props.errors.password">
+      <FormGroup
+        label="パスワード"
+        input-id="password"
+        required
+        :error-message="props.errors.password"
+      >
         <PasswordInput
           id="password"
           v-model="form.password"
