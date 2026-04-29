@@ -65,6 +65,14 @@ describe("UserRegisterForm", () => {
       });
       expect(wrapper.find('a[href="/auth/login"]').exists()).toBe(true);
     });
+
+    it("メール・パスワード両方の FormGroup に必須マークが表示される", async () => {
+      const wrapper = await mountSuspended(UserRegisterForm, {
+        props: { isLoading: false, errors: defaultErrors, successMessage: "" },
+      });
+      const requiredMarks = wrapper.findAllComponents({ name: "RequiredMark" });
+      expect(requiredMarks).toHaveLength(2);
+    });
   });
 
   describe("イベント", () => {
