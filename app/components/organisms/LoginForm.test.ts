@@ -70,6 +70,14 @@ describe("LoginForm", () => {
       });
       expect(wrapper.find(".btn-google-login").exists()).toBe(true);
     });
+
+    it("メール・パスワード両方の FormGroup に必須マークが表示される", async () => {
+      const wrapper = await mountSuspended(LoginForm, {
+        props: { isLoading: false, errors: defaultErrors },
+      });
+      const requiredMarks = wrapper.findAll('[aria-label="必須"]');
+      expect(requiredMarks).toHaveLength(2);
+    });
   });
 
   describe("イベント", () => {

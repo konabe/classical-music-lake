@@ -22,7 +22,12 @@ function handleSubmit() {
 <template>
   <AuthFormContainer title="新規登録">
     <form @submit.prevent="handleSubmit">
-      <FormGroup label="メールアドレス" input-id="email" :error-message="props.errors.email">
+      <FormGroup
+        label="メールアドレス"
+        input-id="email"
+        required
+        :error-message="props.errors.email"
+      >
         <TextInput
           id="email"
           v-model="form.email"
@@ -32,7 +37,12 @@ function handleSubmit() {
         />
       </FormGroup>
 
-      <FormGroup label="パスワード" input-id="password" :error-message="props.errors.password">
+      <FormGroup
+        label="パスワード"
+        input-id="password"
+        required
+        :error-message="props.errors.password"
+      >
         <PasswordInput
           id="password"
           v-model="form.password"
