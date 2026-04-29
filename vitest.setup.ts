@@ -11,7 +11,8 @@
  * するため、name だけでなく message でも判定する。
  *
  * TODO: vitest の上流修正が入ったらこのファイルごと削除する。
- *   - https://github.com/vitest-dev/vitest/issues/9872
+ *   - 上流 issue: https://github.com/vitest-dev/vitest/issues/9872
+ *   - トラッキング: https://github.com/konabe/classical-music-lake/issues/574
  *   検証履歴: vitest 4.1.5 + @nuxt/test-utils 4.0.3 の組み合わせでも未解消（2026-04-29 時点）。
  */
 process.on("unhandledRejection", (reason: unknown) => {
