@@ -4,6 +4,8 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["vitest/globals"]
   },
   "exclude": ["backend/**", "cdk/**", "node_modules", ".nuxt", "dist", ".output"]

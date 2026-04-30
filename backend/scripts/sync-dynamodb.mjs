@@ -2,9 +2,11 @@
  * prod → stg DynamoDB 同期スクリプト
  *
  * 対象テーブル:
- *   classical-music-pieces → classical-music-pieces-stg
+ *   classical-music-pieces    → classical-music-pieces-stg
+ *   classical-music-composers → classical-music-composers-stg
  *
- * 視聴ログ（classical-music-listening-logs）は個人情報を含むため同期対象外。
+ * 視聴ログ（classical-music-listening-logs）・コンサート記録（classical-music-concert-logs）は
+ * 個人情報を含むため同期対象外。
  *
  * 使用方法:
  *   node backend/scripts/sync-dynamodb.mjs
@@ -23,6 +25,11 @@ const TABLES = [
   {
     source: "classical-music-pieces",
     dest: "classical-music-pieces-stg",
+    keyAttributes: ["id"],
+  },
+  {
+    source: "classical-music-composers",
+    dest: "classical-music-composers-stg",
     keyAttributes: ["id"],
   },
 ];

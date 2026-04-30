@@ -1,17 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2023",
     "module": "commonjs",
-    "lib": ["ES2020"],
+    "lib": ["ES2023"],
     "outDir": "dist",
     "rootDir": ".",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
+    // bin/app.ts の `import "source-map-support/register"` は型定義を持たない side-effect import のため、
+    // TypeScript 6.x のデフォルト（true）だと TS2882 で落ちる。明示的に無効化する。
     "noUncheckedSideEffectImports": false
   },
   "include": ["bin/**/*", "lib/**/*"],
