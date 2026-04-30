@@ -18,9 +18,9 @@ catalog:
 # pnpm v9.5+ では overrides / onlyBuiltDependencies / auditConfig は
 # package.json の pnpm フィールドではなく pnpm-workspace.yaml に書くのが推奨パス。
 overrides:
-  serialize-javascript: ">=7.0.3"
+  serialize-javascript: ^7.0.3
   h3-next: "npm:h3@2.0.1-rc.16"
-  undici: ">=6.24.0"
+  undici: ^6.24.0
   fast-xml-parser: 5.5.6
 
 onlyBuiltDependencies:
@@ -32,3 +32,9 @@ auditConfig:
   ignoreGhsas:
     - GHSA-v2wj-q39q-566r
     - GHSA-p9ff-h696-f583
+
+# サプライチェーン攻撃対策。https://pnpm.io/supply-chain-security
+# 公開直後の改ざん版（chalk/debug、Shai-Hulud 等の事案）を取り込まないための設定。
+minimumReleaseAge: 1440 # 公開後 24 時間経過しないバージョンはインストール拒否
+trustPolicy: no-downgrade # 署名/プロビナンスのレベルが下がったパッケージを拒否
+blockExoticSubdeps: true # トランジティブ依存に git/tarball ソースを許可しない
