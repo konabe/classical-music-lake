@@ -1,7 +1,13 @@
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 export default {
   testRunner: "vitest",
-  mutate: ["app/**/*.ts", "app/**/*.vue", "!app/**/*.test.ts", "!app/**/*.stories.ts"],
+  mutate: [
+    "app/**/*.ts",
+    "app/**/*.vue",
+    "shared/**/*.ts",
+    "!app/**/*.test.ts",
+    "!app/**/*.stories.ts",
+  ],
   vitest: {
     configFile: "vitest.config.ts",
   },
@@ -15,5 +21,6 @@ export default {
     reportType: "full",
   },
   coverageAnalysis: "perTest",
+  thresholds: { high: 80, low: 60, break: 0 },
   tempDirName: ".stryker-tmp",
 };
