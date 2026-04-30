@@ -5,6 +5,8 @@
 
 :root,
 :root.light {
+  color-scheme: light;
+
   /* 背景 */
   --color-bg-base: #f8f4ed;
   --color-bg-surface: #fff;
@@ -71,6 +73,8 @@
 }
 
 :root.dark {
+  color-scheme: dark;
+
   /* 背景: ネイビー寄りのダークパレット */
   --color-bg-base: #0f1729;
   --color-bg-surface: #1a2547;
@@ -134,13 +138,4 @@
 
   /* ロゴフィルタ（ダークでも白抜きのまま） */
   --logo-filter: brightness(0) invert(1);
-}
-
-/* color-scheme でブラウザ提供のフォーム色等も追従 */
-:root.light {
-  color-scheme: light;
-}
-
-:root.dark {
-  color-scheme: dark;
 }

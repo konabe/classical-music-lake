@@ -132,6 +132,9 @@ importers:
       stylelint:
         specifier: ^17.8.0
         version: 17.8.0(typescript@6.0.3)
+      stylelint-config-recommended:
+        specifier: ^18.0.0
+        version: 18.0.0(stylelint@17.8.0(typescript@6.0.3))
       stylelint-config-recommended-vue:
         specifier: ^1.6.1
         version: 1.6.1(postcss-html@1.8.1)(stylelint@17.8.0(typescript@6.0.3))
