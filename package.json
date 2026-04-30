@@ -72,6 +72,7 @@
     "@vue/test-utils": "^2.4.9",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-package-json": "^0.91.2",
     "eslint-plugin-pnpm": "^1.6.0",
     "eslint-plugin-storybook": "^10.3.5",
     "eslint-plugin-vuejs-accessibility": "^2.5.0",
