@@ -5,7 +5,7 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 export const makeLog = (
   id: string,
   listenedAt: string,
-  userId: string | null = "user-123"
+  userId: string | null = "user-123",
 ): ListeningLog => ({
   id,
   listenedAt,
@@ -55,7 +55,7 @@ export const makeEvent = (overrides?: Partial<APIGatewayProxyEvent>): APIGateway
 export const makeAuthEvent = (
   userId: string,
   overrides?: Partial<APIGatewayProxyEvent>,
-  groups?: string[] | string
+  groups?: string[] | string,
 ): APIGatewayProxyEvent => {
   const claims: Record<string, unknown> = { sub: userId };
   if (groups !== undefined) {
@@ -71,7 +71,7 @@ export const makeAuthEvent = (
 
 export const makeAdminEvent = (
   userId: string,
-  overrides?: Partial<APIGatewayProxyEvent>
+  overrides?: Partial<APIGatewayProxyEvent>,
 ): APIGatewayProxyEvent => makeAuthEvent(userId, overrides, ["admin"]);
 
 export const mockContext: Context = {} as Context;
@@ -83,7 +83,7 @@ export const OTHER_USER_ID = "cognito-sub-other-user";
 export const makeDeleteEvent = (
   pathPrefix: string,
   id?: string,
-  userId?: string
+  userId?: string,
 ): APIGatewayProxyEvent => ({
   body: null,
   headers: {},
@@ -104,7 +104,7 @@ export const makeDeleteEvent = (
 type HandlerFn = (
   event: APIGatewayProxyEvent,
   context: Context,
-  callback: unknown
+  callback: unknown,
 ) => Promise<{ statusCode?: number; body?: string } | null | undefined>;
 
 export const describeInvalidBodyCases = (handler: HandlerFn, path: string) => {
@@ -118,7 +118,7 @@ export const describeInvalidBodyCases = (handler: HandlerFn, path: string) => {
       const result = await handler(
         makeEvent({ body, httpMethod: "POST", path }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);

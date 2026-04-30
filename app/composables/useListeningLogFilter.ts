@@ -62,14 +62,14 @@ const matchesDateRange = (log: ListeningLog, fromDate: string, toDate: string): 
 
 export const filterListeningLogs = (
   logs: ListeningLog[],
-  state: ListeningLogFilterState
+  state: ListeningLogFilterState,
 ): ListeningLog[] =>
   logs.filter(
     (log) =>
       matchesKeyword(log, state.keyword) &&
       matchesRating(log, state.rating) &&
       matchesFavorite(log, state.favoriteOnly) &&
-      matchesDateRange(log, state.fromDate, state.toDate)
+      matchesDateRange(log, state.fromDate, state.toDate),
   );
 
 export const useListeningLogFilter = (logs: Ref<ListeningLog[] | null | undefined>) => {

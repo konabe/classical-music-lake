@@ -31,7 +31,7 @@ describe("CallbackPage", () => {
       mockHandleOAuthCallback.mockReturnValue(
         new Promise<{ success: boolean }>((resolve) => {
           resolveCallback = resolve;
-        })
+        }),
       );
 
       const wrapper = await mountSuspended(CallbackPage, {

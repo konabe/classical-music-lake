@@ -55,7 +55,7 @@ watch(
     if (selectedPieces.value.length === 0 && props.initialValues?.pieceIds !== undefined) {
       selectedPieces.value = resolveInitialPieces();
     }
-  }
+  },
 );
 
 function addPiece() {

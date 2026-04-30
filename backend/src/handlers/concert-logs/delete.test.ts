@@ -43,7 +43,7 @@ describe("DELETE /concert-logs/:id (delete)", () => {
     const result = await handler(
       makeDeleteEvent("concert-logs", undefined, TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
@@ -54,7 +54,7 @@ describe("DELETE /concert-logs/:id (delete)", () => {
     const result = await handler(
       makeDeleteEvent("concert-logs", "not-found-id", TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
   });
@@ -64,7 +64,7 @@ describe("DELETE /concert-logs/:id (delete)", () => {
     const result = await handler(
       makeDeleteEvent("concert-logs", "abc-123", OTHER_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
     expect(mockRepo.remove).not.toHaveBeenCalled();
@@ -76,7 +76,7 @@ describe("DELETE /concert-logs/:id (delete)", () => {
     const result = await handler(
       makeDeleteEvent("concert-logs", "abc-123", TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
@@ -88,7 +88,7 @@ describe("DELETE /concert-logs/:id (delete)", () => {
     const result = await handler(
       makeDeleteEvent("concert-logs", "abc-123", TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(500);
   });

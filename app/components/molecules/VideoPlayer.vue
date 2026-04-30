@@ -21,7 +21,7 @@ declare global {
     | {
         Player: new (
           elementId: string,
-          options: { events: { onStateChange: (event: { data: number }) => void } }
+          options: { events: { onStateChange: (event: { data: number }) => void } },
         ) => YTPlayer;
         PlayerState: { PLAYING: number };
       }

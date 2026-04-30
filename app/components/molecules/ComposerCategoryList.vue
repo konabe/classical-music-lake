@@ -11,7 +11,7 @@ const categories = computed(() =>
   [
     { kind: "era" as Kind, label: "時代", value: props.composer.era },
     { kind: "region" as Kind, label: "地域", value: props.composer.region },
-  ].filter((c): c is { kind: Kind; label: string; value: string } => c.value !== undefined)
+  ].filter((c): c is { kind: Kind; label: string; value: string } => c.value !== undefined),
 );
 </script>
 

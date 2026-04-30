@@ -22,7 +22,7 @@ const ratingOptions = [
 function update<K extends keyof ListeningLogFilterState>(
   current: ListeningLogFilterState,
   key: K,
-  value: ListeningLogFilterState[K]
+  value: ListeningLogFilterState[K],
 ) {
   emit("update:modelValue", { ...current, [key]: value });
 }

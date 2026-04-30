@@ -23,7 +23,7 @@ const props = withDefaults(
     submitLabel: undefined,
     composers: () => [],
     composersPending: false,
-  }
+  },
 );
 
 const emit = defineEmits<{
@@ -31,7 +31,7 @@ const emit = defineEmits<{
 }>();
 
 const composerOptions = computed(() =>
-  props.composers.map((c) => ({ value: c.id, label: c.name }))
+  props.composers.map((c) => ({ value: c.id, label: c.name })),
 );
 
 const form = reactive({
@@ -55,7 +55,7 @@ watch(
     form.formation = initialValues?.formation ?? "";
     form.region = initialValues?.region ?? "";
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function handleSubmit() {

@@ -439,7 +439,7 @@ export const useAuth = () => {
   };
 
   const handleOAuthCallback = async (
-    code: string
+    code: string,
   ): Promise<{ success: boolean; error?: string }> => {
     const redirectUri = `${globalThis.location.origin}/auth/callback`;
     const body = new URLSearchParams({

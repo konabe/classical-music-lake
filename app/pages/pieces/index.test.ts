@@ -48,7 +48,7 @@ mockNuxtImport("usePiecesPaginated", () =>
     retry: mockRetry,
     createPiece: vi.fn(),
     updatePiece: vi.fn(),
-  }))
+  })),
 );
 
 mockNuxtImport("useComposersAll", () =>
@@ -57,7 +57,7 @@ mockNuxtImport("useComposersAll", () =>
     pending: ref(false),
     error: ref(null),
     refresh: vi.fn().mockResolvedValue(undefined),
-  }))
+  })),
 );
 
 const mockFetch = vi.fn();
@@ -88,7 +88,7 @@ beforeEach(() => {
   vi.stubGlobal("$fetch", mockFetch);
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => true),
   );
   vi.stubGlobal("alert", vi.fn());
   vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
@@ -178,7 +178,7 @@ describe("PiecesPage", () => {
     it("削除キャンセル時は $fetch が呼ばれない", async () => {
       vi.stubGlobal(
         "confirm",
-        vi.fn(() => false)
+        vi.fn(() => false),
       );
       const wrapper = await mountSuspended(PiecesPage);
       await flushPromises();

@@ -91,7 +91,7 @@ describe("DynamoDB 統合テスト", () => {
       await listHandler(
         makeEvent({ method: "GET", path: "/listening-logs", userId: TEST_USER_ID }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(QueryCommand).toHaveBeenCalledWith(
@@ -100,7 +100,7 @@ describe("DynamoDB 統合テスト", () => {
           IndexName: "GSI1",
           KeyConditionExpression: "userId = :userId",
           ExpressionAttributeValues: { ":userId": TEST_USER_ID },
-        })
+        }),
       );
     });
   });
@@ -117,7 +117,7 @@ describe("DynamoDB 統合テスト", () => {
           userId: TEST_USER_ID,
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(GetCommand).toHaveBeenCalledWith({
@@ -147,7 +147,7 @@ describe("DynamoDB 統合テスト", () => {
           userId: TEST_USER_ID,
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(PutCommand).toHaveBeenCalledWith({
@@ -178,7 +178,7 @@ describe("DynamoDB 統合テスト", () => {
           userId: TEST_USER_ID,
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(GetCommand).toHaveBeenCalledWith({
@@ -208,7 +208,7 @@ describe("DynamoDB 統合テスト", () => {
           userId: TEST_USER_ID,
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(GetCommand).toHaveBeenCalledTimes(2);

@@ -8,7 +8,7 @@ import type { ListeningLogRepository } from "../domain/listening-log";
 export class DynamoDBListeningLogRepository implements ListeningLogRepository {
   async findById(id: ListeningLogId): Promise<ListeningLog | undefined> {
     const result = await dynamo.send(
-      new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id: id.value } })
+      new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id: id.value } }),
     );
     return result.Item as ListeningLog | undefined;
   }
@@ -27,7 +27,7 @@ export class DynamoDBListeningLogRepository implements ListeningLogRepository {
 
   async remove(id: ListeningLogId): Promise<void> {
     await dynamo.send(
-      new DeleteCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id: id.value } })
+      new DeleteCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id: id.value } }),
     );
   }
 }

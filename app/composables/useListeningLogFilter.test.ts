@@ -59,7 +59,7 @@ describe("filterListeningLogs", () => {
   it("日付範囲でフィルタする", () => {
     const result = filterListeningLogs(
       logs,
-      makeState({ fromDate: "2024-02-01", toDate: "2024-04-30" })
+      makeState({ fromDate: "2024-02-01", toDate: "2024-04-30" }),
     );
     expect(result.map((l) => l.id)).toEqual(["2"]);
   });
@@ -67,7 +67,7 @@ describe("filterListeningLogs", () => {
   it("条件を組み合わせて AND で評価する", () => {
     const result = filterListeningLogs(
       logs,
-      makeState({ keyword: "交響曲", favoriteOnly: true, rating: "4" })
+      makeState({ keyword: "交響曲", favoriteOnly: true, rating: "4" }),
     );
     expect(result.map((l) => l.id)).toEqual(["3"]);
   });
@@ -102,7 +102,7 @@ describe("useListeningLogFilter", () => {
 });
 
 function makeState(
-  overrides: Partial<ReturnType<typeof useListeningLogFilter>["state"]["value"]> = {}
+  overrides: Partial<ReturnType<typeof useListeningLogFilter>["state"]["value"]> = {},
 ): ReturnType<typeof useListeningLogFilter>["state"]["value"] {
   return {
     keyword: "",

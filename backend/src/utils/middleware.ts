@@ -10,7 +10,7 @@ import { getEnv } from "./env";
 
 export type LambdaHandler = (
   event: APIGatewayProxyEvent,
-  context: Context
+  context: Context,
 ) => Promise<{ statusCode: number; body: unknown }>;
 
 /**
@@ -57,14 +57,14 @@ export const createHandler = (handler: LambdaHandler) =>
     // `body: string`. The cast is safe because httpResponseSerializer will
     // JSON.stringify the body at runtime before the response is returned.
     .handler(
-      handler as unknown as middy.MiddyfiedHandler<APIGatewayProxyEvent, APIGatewayProxyResult>
+      handler as unknown as middy.MiddyfiedHandler<APIGatewayProxyEvent, APIGatewayProxyResult>,
     )
     .use(
       httpCors({
         origins: getEnv().corsAllowOrigins,
         headers: "Content-Type",
         methods: "GET,POST,PUT,DELETE,OPTIONS",
-      })
+      }),
     )
     .use(httpErrorMiddleware())
     .use(
@@ -79,7 +79,7 @@ export const createHandler = (handler: LambdaHandler) =>
           },
         ],
         defaultContentType: "application/json",
-      })
+      }),
     );
 
 /**

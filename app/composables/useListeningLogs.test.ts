@@ -60,11 +60,11 @@ describe("useListeningLogs", () => {
       mockUseFetch.mockImplementation(
         (
           _url: unknown,
-          options: { onResponseError?: (ctx: { response: { status: number } }) => Promise<void> }
+          options: { onResponseError?: (ctx: { response: { status: number } }) => Promise<void> },
         ) => {
           capturedOnResponseError = options?.onResponseError;
           return { data: null, error: null, pending: false, refresh: vi.fn() };
-        }
+        },
       );
 
       useListeningLogs();
@@ -83,11 +83,11 @@ describe("useListeningLogs", () => {
       mockUseFetch.mockImplementation(
         (
           _url: unknown,
-          options: { onResponseError?: (ctx: { response: { status: number } }) => void }
+          options: { onResponseError?: (ctx: { response: { status: number } }) => void },
         ) => {
           capturedOnResponseError = options?.onResponseError;
           return { data: null, error: null, pending: false, refresh: vi.fn() };
-        }
+        },
       );
 
       useListeningLogs();
@@ -123,7 +123,7 @@ describe("useListeningLogs", () => {
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
-        })
+        }),
       );
     });
 
@@ -144,7 +144,7 @@ describe("useListeningLogs", () => {
           piece: "ゴルトベルク変奏曲",
           rating: 5,
           isFavorite: false,
-        })
+        }),
       ).rejects.toThrow("Unauthorized");
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
@@ -168,7 +168,7 @@ describe("useListeningLogs", () => {
           piece: "ゴルトベルク変奏曲",
           rating: 5,
           isFavorite: false,
-        })
+        }),
       ).rejects.toThrow("Bad Request");
     });
   });
@@ -193,7 +193,7 @@ describe("useListeningLogs", () => {
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
-        })
+        }),
       );
     });
 
@@ -246,7 +246,7 @@ describe("useListeningLogs", () => {
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
-        })
+        }),
       );
     });
 

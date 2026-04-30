@@ -88,7 +88,7 @@ export class MigrationsStack extends cdk.Stack {
       assumedBy: new cdk.aws_iam.ServicePrincipal("lambda.amazonaws.com"),
       managedPolicies: [
         cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
-          "service-role/AWSLambdaBasicExecutionRole"
+          "service-role/AWSLambdaBasicExecutionRole",
         ),
         cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AWSXRayDaemonWriteAccess"),
       ],
@@ -107,7 +107,7 @@ export class MigrationsStack extends cdk.Stack {
           "dynamodb:Query",
         ],
         resources: tables.map((t) => t.tableArn),
-      })
+      }),
     );
     return role;
   }

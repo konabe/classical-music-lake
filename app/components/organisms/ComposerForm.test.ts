@@ -32,7 +32,7 @@ describe("ComposerForm", () => {
       expect((nameInput.element as HTMLInputElement).value).toBe("ベートーヴェン");
       expect((wrapper.find("#era").element as HTMLSelectElement).value).toBe("古典派");
       expect((wrapper.find("#region").element as HTMLSelectElement).value).toBe(
-        "ドイツ・オーストリア"
+        "ドイツ・オーストリア",
       );
     });
   });

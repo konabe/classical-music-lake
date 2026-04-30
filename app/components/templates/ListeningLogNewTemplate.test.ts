@@ -4,7 +4,7 @@ import ListeningLogNewTemplate from "./ListeningLogNewTemplate.vue";
 mockNuxtImport("usePiecesAll", () =>
   vi
     .fn()
-    .mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false), refresh: vi.fn() })
+    .mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false), refresh: vi.fn() }),
 );
 
 describe("ListeningLogNewTemplate", () => {

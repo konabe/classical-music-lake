@@ -11,7 +11,7 @@ export type PageResult<T> = { items: T[]; nextCursor: string | null };
  */
 export const fetchCursorPage = <T>(
   url: string,
-  options: { limit: number; cursor?: string }
+  options: { limit: number; cursor?: string },
 ): Promise<PageResult<T>> => {
   const query: { limit: number; cursor?: string } = { limit: options.limit };
   if (options.cursor !== undefined) {

@@ -36,7 +36,7 @@ export async function queryItemsByUserId<T>(tableName: string, userId: string): 
         KeyConditionExpression: "userId = :userId",
         ExpressionAttributeValues: { ":userId": userId },
         ExclusiveStartKey: lastEvaluatedKey,
-      })
+      }),
     );
     items.push(...((result.Items ?? []) as T[]));
     lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
@@ -58,7 +58,7 @@ export async function scanAllItems<T>(tableName: string): Promise<T[]> {
 
   do {
     const result = await dynamo.send(
-      new ScanCommand({ TableName: tableName, ExclusiveStartKey: lastEvaluatedKey })
+      new ScanCommand({ TableName: tableName, ExclusiveStartKey: lastEvaluatedKey }),
     );
     items.push(...((result.Items ?? []) as T[]));
     lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
@@ -76,14 +76,14 @@ export async function scanAllItems<T>(tableName: string): Promise<T[]> {
  */
 export async function scanPage<T>(
   tableName: string,
-  options: { limit: number; exclusiveStartKey?: Record<string, unknown> }
+  options: { limit: number; exclusiveStartKey?: Record<string, unknown> },
 ): Promise<{ items: T[]; lastEvaluatedKey?: Record<string, unknown> }> {
   const result = await dynamo.send(
     new ScanCommand({
       TableName: tableName,
       Limit: options.limit,
       ExclusiveStartKey: options.exclusiveStartKey,
-    })
+    }),
   );
   return {
     items: (result.Items ?? []) as T[],
@@ -109,7 +109,7 @@ export async function putItemWithOptimisticLock<T>(options: {
         Item: options.item,
         ConditionExpression: "updatedAt = :prevUpdatedAt",
         ExpressionAttributeValues: { ":prevUpdatedAt": options.prevUpdatedAt },
-      })
+      }),
     );
   } catch (err) {
     if (err instanceof ConditionalCheckFailedException) {
@@ -122,7 +122,7 @@ export async function putItemWithOptimisticLock<T>(options: {
 export async function updateItem<T extends { id: string; createdAt: string; updatedAt: string }>(
   tableName: string,
   id: string,
-  input: Partial<T>
+  input: Partial<T>,
 ): Promise<T> {
   const existing = await dynamo.send(new GetCommand({ TableName: tableName, Key: { id } }));
   if (existing.Item === undefined) {

@@ -32,7 +32,7 @@ type AuthMode = "admin" | "non-admin" | "none";
 function makeEvent(
   id?: string,
   body?: string | null,
-  auth: AuthMode = "admin"
+  auth: AuthMode = "admin",
 ): APIGatewayProxyEvent {
   const overrides: Partial<APIGatewayProxyEvent> = {
     body: body === undefined ? null : body,
@@ -65,7 +65,7 @@ describe("PUT /composers/{id} (update)", () => {
     const result = await handler(
       makeEvent(undefined, JSON.stringify({ name: "新しい名前" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
@@ -77,18 +77,18 @@ describe("PUT /composers/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ name: invalidName })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("name must be a non-empty string");
-    }
+    },
   );
 
   it("name が 100 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ name: "あ".repeat(101) })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("name must be 100 characters or less");
@@ -99,7 +99,7 @@ describe("PUT /composers/{id} (update)", () => {
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ name: "新しい名前" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
   });
@@ -111,7 +111,7 @@ describe("PUT /composers/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ name: "モーツァルト" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
 
@@ -127,7 +127,7 @@ describe("PUT /composers/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ name: "モーツァルト" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}") as Composer;
     expect(body.createdAt).toBe(existingComposer.createdAt);
@@ -140,7 +140,7 @@ describe("PUT /composers/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ era: "古典派", region: "ドイツ・オーストリア" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}") as Composer;
@@ -160,7 +160,7 @@ describe("PUT /composers/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ era: "", region: "" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}") as Composer;
@@ -177,10 +177,10 @@ describe("PUT /composers/{id} (update)", () => {
         "abc-123",
         JSON.stringify({
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg",
-        })
+        }),
       ),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}") as Composer;
@@ -198,7 +198,7 @@ describe("PUT /composers/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ imageUrl: "" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}") as Composer;
@@ -209,7 +209,7 @@ describe("PUT /composers/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ imageUrl: "not-a-url" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("imageUrl must be a valid URL");
@@ -218,13 +218,13 @@ describe("PUT /composers/{id} (update)", () => {
   it("楽観的ロック競合時に 409 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingComposer);
     mockRepo.saveWithOptimisticLock.mockRejectedValueOnce(
-      new createError.Conflict("Composer was updated by another request")
+      new createError.Conflict("Composer was updated by another request"),
     );
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ name: "モーツァルト" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(409);
   });
@@ -234,7 +234,7 @@ describe("PUT /composers/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ name: "新しい名前" }), "non-admin"),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(mockRepo.findById).not.toHaveBeenCalled();
@@ -245,7 +245,7 @@ describe("PUT /composers/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ name: "新しい名前" }), "none"),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(mockRepo.findById).not.toHaveBeenCalled();

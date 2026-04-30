@@ -60,11 +60,11 @@ describe("useConcertLogs", () => {
       mockUseFetch.mockImplementation(
         (
           _url: unknown,
-          options: { onResponseError?: (ctx: { response: { status: number } }) => Promise<void> }
+          options: { onResponseError?: (ctx: { response: { status: number } }) => Promise<void> },
         ) => {
           capturedOnResponseError = options?.onResponseError;
           return { data: null, error: null, pending: false, refresh: vi.fn() };
-        }
+        },
       );
 
       useConcertLogs();
@@ -83,11 +83,11 @@ describe("useConcertLogs", () => {
       mockUseFetch.mockImplementation(
         (
           _url: unknown,
-          options: { onResponseError?: (ctx: { response: { status: number } }) => void }
+          options: { onResponseError?: (ctx: { response: { status: number } }) => void },
         ) => {
           capturedOnResponseError = options?.onResponseError;
           return { data: null, error: null, pending: false, refresh: vi.fn() };
-        }
+        },
       );
 
       useConcertLogs();
@@ -121,7 +121,7 @@ describe("useConcertLogs", () => {
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
-        })
+        }),
       );
     });
 
@@ -140,7 +140,7 @@ describe("useConcertLogs", () => {
           title: "定期演奏会",
           concertDate: "2024-01-15T19:00:00.000Z",
           venue: "サントリーホール",
-        })
+        }),
       ).rejects.toThrow("Unauthorized");
 
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
@@ -162,7 +162,7 @@ describe("useConcertLogs", () => {
           title: "定期演奏会",
           concertDate: "2024-01-15T19:00:00.000Z",
           venue: "サントリーホール",
-        })
+        }),
       ).rejects.toThrow("Bad Request");
     });
   });
@@ -187,7 +187,7 @@ describe("useConcertLogs", () => {
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
-        })
+        }),
       );
     });
 
@@ -240,7 +240,7 @@ describe("useConcertLogs", () => {
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
-        })
+        }),
       );
     });
 

@@ -10,7 +10,7 @@ describe("IdValueObject", () => {
         const id = Ctor.generate();
         expect(id.value).toBeUUID();
         expect(String(id)).toBe(id.value);
-      }
+      },
     );
 
     it.each([ListeningLogId, ConcertLogId, PieceId, ComposerId, UserId] as const)(
@@ -18,14 +18,14 @@ describe("IdValueObject", () => {
       (Ctor) => {
         const id = Ctor.from("abc-123");
         expect(id.value).toBe("abc-123");
-      }
+      },
     );
 
     it.each([ListeningLogId, ConcertLogId, PieceId, ComposerId, UserId] as const)(
       "%s.from() は空文字列を拒否する",
       (Ctor) => {
         expect(() => Ctor.from("")).toThrow(TypeError);
-      }
+      },
     );
 
     it.each([ListeningLogId, ConcertLogId, PieceId, ComposerId, UserId] as const)(
@@ -35,7 +35,7 @@ describe("IdValueObject", () => {
         expect(() => Ctor.from(undefined as unknown as string)).toThrow(TypeError);
         expect(() => Ctor.from(null as unknown as string)).toThrow(TypeError);
         expect(() => Ctor.from(123 as unknown as string)).toThrow(TypeError);
-      }
+      },
     );
   });
 

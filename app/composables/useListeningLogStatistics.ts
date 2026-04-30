@@ -44,7 +44,7 @@ const formatMonth = (iso: string): string | null => {
 
 export const computeStatistics = (
   logs: ListeningLog[],
-  options: { topComposerLimit?: number; monthlyTrendLimit?: number } = {}
+  options: { topComposerLimit?: number; monthlyTrendLimit?: number } = {},
 ): ListeningLogStatistics => {
   const topComposerLimit = options.topComposerLimit ?? 5;
   const monthlyTrendLimit = options.monthlyTrendLimit ?? 12;
@@ -99,7 +99,7 @@ export const computeStatistics = (
 
 export const useListeningLogStatistics = (
   logs: Ref<ListeningLog[] | null | undefined>,
-  options: { topComposerLimit?: number; monthlyTrendLimit?: number } = {}
+  options: { topComposerLimit?: number; monthlyTrendLimit?: number } = {},
 ) => {
   const statistics = computed(() => computeStatistics(logs.value ?? [], options));
   return { statistics };

@@ -72,7 +72,7 @@ describe("GET /listening-logs/:id (get)", () => {
     const result = await handler(
       makeEvent("not-found-id", TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
   });

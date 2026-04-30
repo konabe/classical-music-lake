@@ -47,7 +47,7 @@ describe("POST /composers (create)", () => {
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, { body, httpMethod: "POST", path: "/composers" }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
@@ -62,7 +62,7 @@ describe("POST /composers (create)", () => {
         path: "/composers",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("name is required");
@@ -78,11 +78,11 @@ describe("POST /composers (create)", () => {
           path: "/composers",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("name is required");
-    }
+    },
   );
 
   it("name が 100 文字を超える場合は 400 を返す", async () => {
@@ -93,7 +93,7 @@ describe("POST /composers (create)", () => {
         path: "/composers",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("name must be 100 characters or less");
@@ -108,7 +108,7 @@ describe("POST /composers (create)", () => {
         path: "/composers",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(201);
 
@@ -130,7 +130,7 @@ describe("POST /composers (create)", () => {
         path: "/composers",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBeUUID();
@@ -149,7 +149,7 @@ describe("POST /composers (create)", () => {
         path: "/composers",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.createdAt).toBe(now.toISOString());
@@ -171,7 +171,7 @@ describe("POST /composers (create)", () => {
           path: "/composers",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(201);
       const body = JSON.parse(result?.body ?? "{}");
@@ -187,7 +187,7 @@ describe("POST /composers (create)", () => {
           path: "/composers",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -200,7 +200,7 @@ describe("POST /composers (create)", () => {
           path: "/composers",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -217,12 +217,12 @@ describe("POST /composers (create)", () => {
           path: "/composers",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(201);
       const body = JSON.parse(result?.body ?? "{}");
       expect(body.imageUrl).toBe(
-        "https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg",
       );
     });
 
@@ -234,7 +234,7 @@ describe("POST /composers (create)", () => {
           path: "/composers",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("imageUrl must be a valid URL");
@@ -250,7 +250,7 @@ describe("POST /composers (create)", () => {
         path: "/composers",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(500);
   });
@@ -264,7 +264,7 @@ describe("POST /composers (create)", () => {
           path: "/composers",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
@@ -275,7 +275,7 @@ describe("POST /composers (create)", () => {
       const result = await handler(
         makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/composers" }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(mockRepo.save).not.toHaveBeenCalled();

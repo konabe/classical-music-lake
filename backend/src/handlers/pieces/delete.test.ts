@@ -79,7 +79,7 @@ describe("DELETE /pieces/{id} (delete)", () => {
       const result = await handler(
         makeEvent("test-id-123", "non-admin"),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");

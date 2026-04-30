@@ -8,7 +8,7 @@ const toggle = () => {
 };
 
 const ariaLabel = computed(() =>
-  isDark.value ? "ライトモードに切り替え" : "ダークモードに切り替え"
+  isDark.value ? "ライトモードに切り替え" : "ダークモードに切り替え",
 );
 </script>
 

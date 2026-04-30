@@ -6,7 +6,7 @@ watch(
   () => route.path,
   () => {
     isLoggedIn.value = isAuthenticated();
-  }
+  },
 );
 </script>
 

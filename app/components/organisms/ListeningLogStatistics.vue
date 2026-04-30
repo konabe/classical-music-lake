@@ -9,21 +9,21 @@ const ratingRows = computed(() =>
   ([5, 4, 3, 2, 1] as const).map((rating) => ({
     rating,
     count: props.statistics.ratingDistribution[rating],
-  }))
+  })),
 );
 
 const ratingMax = computed(() => Math.max(1, ...ratingRows.value.map((r) => r.count)));
 
 const composerMax = computed(() =>
-  Math.max(1, ...props.statistics.topComposers.map((c) => c.count))
+  Math.max(1, ...props.statistics.topComposers.map((c) => c.count)),
 );
 
 const monthlyMax = computed(() =>
-  Math.max(1, ...props.statistics.monthlyTrend.map((m) => m.count))
+  Math.max(1, ...props.statistics.monthlyTrend.map((m) => m.count)),
 );
 
 const averageDisplay = computed(() =>
-  props.statistics.total === 0 ? "-" : props.statistics.averageRating.toFixed(2)
+  props.statistics.total === 0 ? "-" : props.statistics.averageRating.toFixed(2),
 );
 
 const formatMonthLabel = (month: string): string => {

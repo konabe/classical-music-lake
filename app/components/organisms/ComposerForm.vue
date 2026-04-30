@@ -30,7 +30,7 @@ watch(
     form.region = initialValues?.region ?? "";
     form.imageUrl = initialValues?.imageUrl ?? "";
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function handleSubmit() {

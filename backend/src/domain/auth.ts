@@ -21,12 +21,12 @@ export type AuthRepository = {
   refreshToken(token: string): Promise<RefreshedTokens>;
   listUsersByEmail(
     userPoolId: string,
-    email: string
+    email: string,
   ): Promise<{ username: string; status: string }[]>;
   linkProviderForUser(
     userPoolId: string,
     destinationUsername: string,
     providerName: string,
-    providerUserId: string
+    providerUserId: string,
   ): Promise<void>;
 };

@@ -7,7 +7,7 @@ type BaseEntityFields = { id: string; createdAt: string; updatedAt: string };
 export function buildUpdateProps<TProps extends BaseEntityFields>(
   current: TProps,
   input: Partial<TProps>,
-  clearableFields: readonly string[]
+  clearableFields: readonly string[],
 ): TProps {
   const merged: TProps = {
     ...current,
@@ -17,6 +17,6 @@ export function buildUpdateProps<TProps extends BaseEntityFields>(
     updatedAt: new Date().toISOString(),
   };
   return Object.fromEntries(
-    Object.entries(merged).filter(([key, value]) => !clearableFields.includes(key) || value !== "")
+    Object.entries(merged).filter(([key, value]) => !clearableFields.includes(key) || value !== ""),
   ) as TProps;
 }

@@ -18,7 +18,7 @@ describe("VideoPlayer", () => {
         props: { videoUrl: youtubeUrl },
       });
       expect(wrapper.find("iframe").attributes("src")).toContain(
-        "https://www.youtube.com/embed/abc123"
+        "https://www.youtube.com/embed/abc123",
       );
     });
 

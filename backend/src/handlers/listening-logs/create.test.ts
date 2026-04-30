@@ -47,7 +47,7 @@ describe("POST /listening-logs (create)", () => {
       const result = await handler(
         makeEvent({ body, httpMethod: "POST", path: "/listening-logs" }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
@@ -64,11 +64,11 @@ describe("POST /listening-logs (create)", () => {
           path: "/listening-logs",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("rating must be between 1 and 5");
-    }
+    },
   );
 
   it.each(["   ", "\t", "\n"])(
@@ -81,11 +81,11 @@ describe("POST /listening-logs (create)", () => {
           path: "/listening-logs",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be a non-empty string");
-    }
+    },
   );
 
   it("composer が 100 文字を超える場合は 400 を返す", async () => {
@@ -96,11 +96,11 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe(
-      "composer must be 100 characters or less"
+      "composer must be 100 characters or less",
     );
   });
 
@@ -114,11 +114,11 @@ describe("POST /listening-logs (create)", () => {
           path: "/listening-logs",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be a non-empty string");
-    }
+    },
   );
 
   it("piece が 200 文字を超える場合は 400 を返す", async () => {
@@ -129,7 +129,7 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be 200 characters or less");
@@ -143,7 +143,7 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("memo must be 1000 characters or less");
@@ -158,7 +158,7 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(201);
 
@@ -179,7 +179,7 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toMatch(/^[0-9a-f-]{36}$/);
@@ -194,7 +194,7 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.createdAt).toBe(body.updatedAt);
@@ -209,7 +209,7 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
 
     const savedItem = mockRepo.save.mock.calls[0][0];
@@ -225,7 +225,7 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.userId).toBe(TEST_USER_ID);
@@ -240,7 +240,7 @@ describe("POST /listening-logs (create)", () => {
         path: "/listening-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(500);
   });
