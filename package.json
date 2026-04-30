@@ -72,10 +72,12 @@
     "@vue/test-utils": "^2.4.9",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-pnpm": "^1.6.0",
     "eslint-plugin-storybook": "^10.3.5",
     "eslint-plugin-vuejs-accessibility": "^2.5.0",
     "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
+    "jsonc-eslint-parser": "^3.1.0",
     "lint-staged": "^16.3.3",
     "playwright": "^1.59.1",
     "postcss-html": "^1.8.1",
@@ -84,6 +86,7 @@
     "stylelint": "^17.8.0",
     "stylelint-config-recommended-vue": "^1.6.1",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "yaml-eslint-parser": "^2.0.0"
   }
 }

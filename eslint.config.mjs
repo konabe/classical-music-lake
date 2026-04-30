@@ -2,6 +2,9 @@
 import storybook from "eslint-plugin-storybook";
 import vitest from "@vitest/eslint-plugin";
 import vueA11y from "eslint-plugin-vuejs-accessibility";
+import pnpm from "eslint-plugin-pnpm";
+import * as jsoncParser from "jsonc-eslint-parser";
+import * as yamlParser from "yaml-eslint-parser";
 
 // @ts-check
 import prettierConfig from "eslint-config-prettier";
@@ -69,6 +72,26 @@ const md040Rule = {
 export default withNuxt(
   prettierConfig,
   ...storybook.configs["flat/recommended"],
+  // pnpm catalog の整合性チェック。
+  // 何を catalog 化するかは引き続き手動判断とし、
+  // 既存の catalog: 参照と pnpm-workspace.yaml の整合性のみを検証する。
+  {
+    files: ["**/package.json"],
+    plugins: { pnpm },
+    languageOptions: { parser: jsoncParser },
+    rules: {
+      "pnpm/json-valid-catalog": "error",
+    },
+  },
+  {
+    files: ["pnpm-workspace.yaml"],
+    plugins: { pnpm },
+    languageOptions: { parser: yamlParser },
+    rules: {
+      "pnpm/yaml-no-unused-catalog-item": "error",
+      "pnpm/yaml-no-duplicate-catalog-item": "error",
+    },
+  },
   {
     files: ["backend/src/test/vitest.d.ts"],
     rules: {
