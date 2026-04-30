@@ -11,6 +11,9 @@ node_modules/
 .node_modules/
 node-compile-cache/
 
+# Lint cache
+.stylelintcache
+
 # Env
 .env
 .env.local
