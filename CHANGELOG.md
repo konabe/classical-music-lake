@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.5.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.4.1...classical-music-lake-v2.5.0) (2026-05-01)
+
+
+### Features
+
+* **sync-db:** 作曲家マスタを prod → stg 同期対象に追加 ([#597](https://github.com/konabe/classical-music-lake/issues/597)) ([61df3f0](https://github.com/konabe/classical-music-lake/commit/61df3f0a1e98df19cd069a638df1c897cfcdb485))
+* **ui:** フォーム必須マークを「必須」バッジに改修して視認性を向上 (closes [#511](https://github.com/konabe/classical-music-lake/issues/511)) ([#589](https://github.com/konabe/classical-music-lake/issues/589)) ([dc95d5f](https://github.com/konabe/classical-music-lake/commit/dc95d5ffde342dbf7e3c1ccfe0418763edf9127d))
+
+
+### Bug Fixes
+
+* **pieces:** 未認証ユーザーが楽曲マスタ詳細ページでログイン画面にリダイレクトされる問題を修正 ([#596](https://github.com/konabe/classical-music-lake/issues/596)) ([f3babb3](https://github.com/konabe/classical-music-lake/commit/f3babb343ed35e18744fb42bbfac4c25a336b4f3))
+* **sonar:** app/ と backend/src/ 配下のテストファイルを sonar.tests に含める ([#605](https://github.com/konabe/classical-music-lake/issues/605)) ([f4b4339](https://github.com/konabe/classical-music-lake/commit/f4b43392f9f05664ff246d7cc69cc9a8ceda7f6d))
+
+
+### Code Refactoring
+
+* .nuxtrc 設定ファイルを削除 ([#613](https://github.com/konabe/classical-music-lake/issues/613)) ([fbdd02e](https://github.com/konabe/classical-music-lake/commit/fbdd02eb92e7bcc5ea456ccd1184c4d9fe5e6bcf))
+* **backend:** auth usecase/handler の重複を tryCognito ヘルパーに集約 ([#569](https://github.com/konabe/classical-music-lake/issues/569)) ([e4a2d1f](https://github.com/konabe/classical-music-lake/commit/e4a2d1ffdeebef8b6484eaeabab4091211618a86))
+* **frontend:** theme.css を Nuxt 標準の css オプションで読み込む ([#616](https://github.com/konabe/classical-music-lake/issues/616)) ([4e67b82](https://github.com/konabe/classical-music-lake/commit/4e67b82b41247547ef81f63b93b169e9ec4ac784))
+* improve ESLint config organization and file matching ([#618](https://github.com/konabe/classical-music-lake/issues/618)) ([c8bb108](https://github.com/konabe/classical-music-lake/commit/c8bb108766bc83fcf4db5a877766fd6a42f1fa2c))
+* **stylelint:** lint対象にcssファイルを追加しVue overridesでdeep系セレクタを禁止 ([#601](https://github.com/konabe/classical-music-lake/issues/601)) ([1557038](https://github.com/konabe/classical-music-lake/commit/1557038803404f3f791acd03bbc089f9d510590d))
+
 ## [2.4.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.4.0...classical-music-lake-v2.4.1) (2026-04-28)
 
 
