@@ -22,11 +22,10 @@ const handleDelete = async () => {
     <div class="page-header">
       <NuxtLink to="/listening-logs" class="back-link">← 鑑賞記録一覧</NuxtLink>
       <div class="actions">
-        <ButtonSecondary
-          label="編集"
-          @click="router.push(`/listening-logs/${props.log.id}/edit`)"
-        />
-        <ButtonDanger label="削除" @click="handleDelete" />
+        <ButtonSecondary @click="router.push(`/listening-logs/${props.log.id}/edit`)">
+          編集
+        </ButtonSecondary>
+        <ButtonDanger @click="handleDelete">削除</ButtonDanger>
       </div>
     </div>
 

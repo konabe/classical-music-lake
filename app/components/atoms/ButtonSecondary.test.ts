@@ -3,36 +3,55 @@ import ButtonSecondary from "./ButtonSecondary.vue";
 
 describe("ButtonSecondary", () => {
   describe("表示", () => {
-    it("label が表示される", async () => {
+    it("スロットのテキストが描画される", async () => {
       const wrapper = await mountSuspended(ButtonSecondary, {
-        props: { label: "戻る" },
+        slots: { default: "戻る" },
       });
       expect(wrapper.text()).toBe("戻る");
     });
 
     it("btn-secondary クラスが付いている", async () => {
       const wrapper = await mountSuspended(ButtonSecondary, {
-        props: { label: "戻る" },
+        slots: { default: "戻る" },
       });
       expect(wrapper.find("button.btn-secondary").exists()).toBe(true);
     });
+  });
 
-    it("type は button", async () => {
+  describe("props による挙動の変化", () => {
+    it("type は常に button 固定", async () => {
       const wrapper = await mountSuspended(ButtonSecondary, {
-        props: { label: "戻る" },
+        slots: { default: "戻る" },
       });
       expect(wrapper.find("button").attributes("type")).toBe("button");
+    });
+
+    it("disabled=true のとき button に disabled 属性が付く", async () => {
+      const wrapper = await mountSuspended(ButtonSecondary, {
+        props: { disabled: true },
+        slots: { default: "処理中..." },
+      });
+      expect(wrapper.find("button").attributes("disabled")).toBeDefined();
+    });
+
+    it("disabled=false のとき disabled 属性が付かない", async () => {
+      const wrapper = await mountSuspended(ButtonSecondary, {
+        props: { disabled: false },
+        slots: { default: "戻る" },
+      });
+      expect(wrapper.find("button").attributes("disabled")).toBeUndefined();
     });
   });
 
   describe("イベント", () => {
-    it("クリック時に click イベントが emit される", async () => {
+    it("クリックで親に渡された onClick が呼ばれる", async () => {
+      const onClick = vi.fn();
       const wrapper = await mountSuspended(ButtonSecondary, {
-        props: { label: "戻る" },
+        slots: { default: "戻る" },
+        attrs: { onClick },
       });
       await wrapper.find("button").trigger("click");
-      expect(wrapper.emitted("click")).toBeDefined();
-      expect(wrapper.emitted("click")).toHaveLength(1);
+      expect(onClick).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -1,15 +1,14 @@
 <script setup lang="ts">
-defineProps<{
-  label: string;
-}>();
+import type { CommonButtonProps, ButtonSlots } from "./button-props";
 
-const emit = defineEmits<{
-  click: [];
-}>();
+defineProps<CommonButtonProps>();
+defineSlots<ButtonSlots>();
 </script>
 
 <template>
-  <button type="button" class="btn-danger" @click="emit('click')">{{ label }}</button>
+  <button class="btn-danger" type="button" :disabled="disabled">
+    <slot />
+  </button>
 </template>
 
 <style scoped>
@@ -21,10 +20,20 @@ const emit = defineEmits<{
   border-radius: 6px;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
 }
 
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   background: var(--color-danger-bg-strong);
+}
+
+.btn-danger:focus-visible {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 2px;
+}
+
+.btn-danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>

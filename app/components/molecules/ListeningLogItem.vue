@@ -31,8 +31,8 @@ const emit = defineEmits<{
       <p v-if="listeningLog.memo" class="log-memo">{{ listeningLog.memo }}</p>
     </div>
     <div class="log-actions">
-      <ButtonSecondary label="編集" @click="emit('edit')" />
-      <ButtonDanger label="削除" @click="emit('delete')" />
+      <ButtonSecondary @click="emit('edit')">編集</ButtonSecondary>
+      <ButtonDanger @click="emit('delete')">削除</ButtonDanger>
     </div>
   </div>
 </template>

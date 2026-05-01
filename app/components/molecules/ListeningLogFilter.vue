@@ -84,12 +84,9 @@ function update<K extends keyof ListeningLogFilterState>(
         />
         <span>お気に入りのみ</span>
       </label>
-      <ButtonSecondary
-        v-if="isActive"
-        class="filter-reset"
-        label="条件をクリア"
-        @click="emit('reset')"
-      />
+      <ButtonSecondary v-if="isActive" class="filter-reset" @click="emit('reset')">
+        条件をクリア
+      </ButtonSecondary>
     </div>
   </div>
 </template>

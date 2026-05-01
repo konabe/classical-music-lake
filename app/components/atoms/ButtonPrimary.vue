@@ -1,8 +1,8 @@
 <script setup lang="ts">
-defineProps<{
-  type?: "button" | "submit";
-  disabled?: boolean;
-}>();
+import type { SubmittableButtonProps, ButtonSlots } from "./button-props";
+
+defineProps<SubmittableButtonProps>();
+defineSlots<ButtonSlots>();
 </script>
 
 <template>
@@ -21,10 +21,24 @@ defineProps<{
   font-size: 0.95rem;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--color-primary-active);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>

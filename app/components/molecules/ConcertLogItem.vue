@@ -30,7 +30,7 @@ const emit = defineEmits<{
       <div v-if="concertLog.soloist" class="log-sub">ソリスト: {{ concertLog.soloist }}</div>
     </div>
     <div class="log-actions">
-      <ButtonSecondary label="詳細" @click="emit('detail')" />
+      <ButtonSecondary @click="emit('detail')">詳細</ButtonSecondary>
     </div>
   </div>
 </template>

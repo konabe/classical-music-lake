@@ -63,6 +63,31 @@
   --color-header-text: #fff;
   --color-header-text-muted: #9aa5b4;
 
+  /* バッジ: デフォルト */
+  --color-badge-default-bg: #f0ebe0;
+  --color-badge-default-border: #e0d8cc;
+  --color-badge-default-text: #555;
+
+  /* バッジ: ジャンル */
+  --color-badge-genre-bg: #eef2fb;
+  --color-badge-genre-border: #c9d5ec;
+  --color-badge-genre-text: #2a3f6e;
+
+  /* バッジ: 時代 */
+  --color-badge-era-bg: #f4efe5;
+  --color-badge-era-border: #d9c9a8;
+  --color-badge-era-text: #6a5424;
+
+  /* バッジ: 編成 */
+  --color-badge-formation-bg: #eaf2ec;
+  --color-badge-formation-border: #c3d9c9;
+  --color-badge-formation-text: #28623e;
+
+  /* バッジ: 地域 */
+  --color-badge-region-bg: #f8ecec;
+  --color-badge-region-border: #e6c9c9;
+  --color-badge-region-text: #7b3a3a;
+
   /* 影 */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -130,6 +155,31 @@
   --color-header-bg: #0a1020;
   --color-header-text: #f0f3f9;
   --color-header-text-muted: #8b95a8;
+
+  /* バッジ: デフォルト */
+  --color-badge-default-bg: #2a2820;
+  --color-badge-default-border: #3d3a30;
+  --color-badge-default-text: #c9c2b0;
+
+  /* バッジ: ジャンル */
+  --color-badge-genre-bg: #1c2540;
+  --color-badge-genre-border: #2c3e6b;
+  --color-badge-genre-text: #b8c8e8;
+
+  /* バッジ: 時代 */
+  --color-badge-era-bg: #2a2418;
+  --color-badge-era-border: #4a3f25;
+  --color-badge-era-text: #d9c280;
+
+  /* バッジ: 編成 */
+  --color-badge-formation-bg: #1c2a1f;
+  --color-badge-formation-border: #2e4a35;
+  --color-badge-formation-text: #a8d6b0;
+
+  /* バッジ: 地域 */
+  --color-badge-region-bg: #2c1f1f;
+  --color-badge-region-border: #4a2c2c;
+  --color-badge-region-text: #e0a8a8;
 
   /* 影（ダーク用、より深く） */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
