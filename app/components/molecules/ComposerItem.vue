@@ -94,7 +94,7 @@ const emit = defineEmits<{
   background: var(--color-border);
 }
 
-:global(.dark) .btn-detail {
+:global(.dark .btn-detail) {
   border-color: #6e5a3d;
 }
 

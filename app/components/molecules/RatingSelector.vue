@@ -46,7 +46,7 @@ const emit = defineEmits<{
   color: var(--color-warning);
 }
 
-:global(.dark) .star-btn {
+:global(.dark .star-btn) {
   color: #6e5a3d;
 }
 </style>

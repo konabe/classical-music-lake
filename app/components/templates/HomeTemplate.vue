@@ -262,7 +262,7 @@ defineProps<{
 .cta-primary {
   display: inline-block;
   padding: 0.75rem 2rem;
-  background: var(--color-bg-surface);
+  background: #fff;
   color: var(--color-primary);
   border-radius: 6px;
   text-decoration: none;
@@ -413,12 +413,12 @@ defineProps<{
 }
 
 /* ── Dark mode overrides for purple-themed admin cards ── */
-:global(.dark) .admin-card {
+:global(.dark .admin-card) {
   background: #2a1f3a;
   border-color: #6e4ea8;
 }
 
-:global(.dark) .admin-card h3 {
+:global(.dark .admin-card h3) {
   color: #c4a8e0;
 }
 </style>

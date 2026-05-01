@@ -107,29 +107,41 @@ form {
   color: #7a5c38;
 }
 
+.login-link p {
+  margin: 0;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 .login-link a {
+  display: inline-block;
   color: var(--color-primary-soft);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .login-link a:hover {
   text-decoration: underline;
 }
 
-:global(.dark) .password-requirements {
+:global(.dark .password-requirements) {
   color: #c8a878;
 }
 
-:global(.dark) .success-message {
+:global(.dark .success-message) {
   background-color: #2a5218;
   color: #d8e8c0;
 }
 
-:global(.dark) .success-message a {
+:global(.dark .success-message a) {
   color: #d8e8c0;
 }
 
-:global(.dark) .login-link {
-  color: #c8a878;
+:global(.dark .login-link) {
+  color: var(--color-text-secondary);
+}
+
+:global(.dark .login-link a) {
+  color: var(--color-link);
 }
 </style>

@@ -28,15 +28,19 @@ async function handleSubmit(email: string, password: string) {
     if (result.success === true) {
       sessionStorage.setItem("pendingPassword", password);
       router.push({ path: "/auth/verify-email", state: { email } });
-    } else if (result.error?.includes("email") === true) {
-      errors.email = result.error;
-    } else if (result.error?.includes("password") === true) {
-      errors.password = result.error;
-    } else if (result.error?.includes("already") === true) {
+      return;
+    }
+
+    const message = result.error ?? "登録に失敗しました";
+
+    if (result.errorType === "email") {
+      errors.email = message;
+    } else if (result.errorType === "password") {
+      errors.password = message;
+    } else if (message.includes("already") === true || message.includes("既に") === true) {
       errors.email = "このメールアドレスは既に登録されています";
     } else {
-      errors.email =
-        result.error !== undefined && result.error !== "" ? result.error : "登録に失敗しました";
+      errors.email = message;
     }
   } finally {
     isLoading.value = false;

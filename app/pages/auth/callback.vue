@@ -59,7 +59,7 @@ onMounted(async () => {
   font-size: 1rem;
 }
 
-:global(.dark) .loading-message {
+:global(.dark .loading-message) {
   color: #d4c5b0;
 }
 </style>

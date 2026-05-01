@@ -88,9 +88,17 @@ form {
   color: #7a5c38;
 }
 
+.register-link p {
+  margin: 0;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 .register-link a {
+  display: inline-block;
   color: var(--color-primary-soft);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .register-link a:hover {
@@ -130,20 +138,25 @@ form {
   background-color: var(--color-bg-elevated);
 }
 
-:global(.dark) .register-link {
-  color: #c8a878;
+:global(.dark .register-link) {
+  color: var(--color-text-secondary);
 }
 
-:global(.dark) .divider {
-  color: #c8a878;
+:global(.dark .register-link a) {
+  color: var(--color-link);
 }
 
-:global(.dark) .divider::before,
-:global(.dark) .divider::after {
-  border-bottom-color: #6e5435;
+:global(.dark .divider) {
+  color: var(--color-text-muted);
 }
 
-:global(.dark) .btn-google-login {
-  border-color: #6e5435;
+:global(.dark .divider::before),
+:global(.dark .divider::after) {
+  border-bottom-color: var(--color-border-strong);
+}
+
+:global(.dark .btn-google-login) {
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
 }
 </style>

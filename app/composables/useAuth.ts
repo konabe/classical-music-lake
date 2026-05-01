@@ -39,9 +39,12 @@ const PASSWORD_UPPERCASE_REGEX = /[A-Z]/;
 const PASSWORD_LOWERCASE_REGEX = /[a-z]/;
 const PASSWORD_DIGIT_REGEX = /\d/;
 
+export type RegisterErrorType = "email" | "password" | "general";
+
 export interface RegisterResult {
   success: boolean;
   error?: string;
+  errorType?: RegisterErrorType;
 }
 
 export type LoginErrorType = "email" | "password" | "credentials" | "not_confirmed" | "general";
@@ -111,19 +114,19 @@ export const useAuth = () => {
 
   const getPasswordValidationError = (password: string): string | null => {
     if (password === "") {
-      return "Password is required";
+      return "パスワードを入力してください";
     }
     if (password.length < PASSWORD_MIN_LENGTH) {
-      return `Password must be at least ${PASSWORD_MIN_LENGTH} characters long`;
+      return `パスワードは${PASSWORD_MIN_LENGTH}文字以上で入力してください`;
     }
     if (!PASSWORD_UPPERCASE_REGEX.test(password)) {
-      return "Password must contain at least one uppercase letter";
+      return "パスワードには大文字を1文字以上含めてください";
     }
     if (!PASSWORD_LOWERCASE_REGEX.test(password)) {
-      return "Password must contain at least one lowercase letter";
+      return "パスワードには小文字を1文字以上含めてください";
     }
     if (!PASSWORD_DIGIT_REGEX.test(password)) {
-      return "Password must contain at least one digit";
+      return "パスワードには数字を1文字以上含めてください";
     }
     return null;
   };
@@ -132,7 +135,8 @@ export const useAuth = () => {
     if (!validateEmail(email)) {
       return {
         success: false,
-        error: "Please enter a valid email address",
+        error: "有効なメールアドレスを入力してください",
+        errorType: "email",
       };
     }
 
@@ -141,6 +145,7 @@ export const useAuth = () => {
       return {
         success: false,
         error: passwordError,
+        errorType: "password",
       };
     }
 
@@ -160,7 +165,8 @@ export const useAuth = () => {
         const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          error: errorData.message ?? "Registration failed. Please try again.",
+          error: errorData.message ?? "登録に失敗しました。時間をおいて再度お試しください",
+          errorType: "general",
         };
       }
 
@@ -171,7 +177,10 @@ export const useAuth = () => {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+          error instanceof Error
+            ? error.message
+            : "ネットワークエラーが発生しました。時間をおいて再度お試しください",
+        errorType: "general",
       };
     }
   };
@@ -180,7 +189,7 @@ export const useAuth = () => {
     if (!validateEmail(email)) {
       return {
         success: false,
-        error: "Please enter a valid email address",
+        error: "有効なメールアドレスを入力してください",
         errorType: "email",
       };
     }
@@ -188,7 +197,7 @@ export const useAuth = () => {
     if (password === "") {
       return {
         success: false,
-        error: "Password is required",
+        error: "パスワードを入力してください",
         errorType: "password",
       };
     }
@@ -208,7 +217,7 @@ export const useAuth = () => {
           errorData.error === "UserNotConfirmed" ? "not_confirmed" : "credentials";
         return {
           success: false,
-          error: errorData.message ?? "Login failed. Please try again.",
+          error: errorData.message ?? "ログインに失敗しました。時間をおいて再度お試しください",
           errorType,
         };
       }
@@ -217,28 +226,28 @@ export const useAuth = () => {
       if (typeof data.accessToken !== "string" || data.accessToken.trim() === "") {
         return {
           success: false,
-          error: "Invalid session data received. Please try again.",
+          error: "セッション情報の取得に失敗しました。時間をおいて再度お試しください",
           errorType: "general",
         };
       }
       if (typeof data.idToken !== "string" || data.idToken.trim() === "") {
         return {
           success: false,
-          error: "Invalid session data received. Please try again.",
+          error: "セッション情報の取得に失敗しました。時間をおいて再度お試しください",
           errorType: "general",
         };
       }
       if (typeof data.refreshToken !== "string" || data.refreshToken.trim() === "") {
         return {
           success: false,
-          error: "Invalid session data received. Please try again.",
+          error: "セッション情報の取得に失敗しました。時間をおいて再度お試しください",
           errorType: "general",
         };
       }
       if (typeof data.expiresIn !== "number") {
         return {
           success: false,
-          error: "Invalid session data received. Please try again.",
+          error: "セッション情報の取得に失敗しました。時間をおいて再度お試しください",
           errorType: "general",
         };
       }
@@ -248,7 +257,7 @@ export const useAuth = () => {
       } catch {
         return {
           success: false,
-          error: "Failed to save session. Please try again.",
+          error: "セッションの保存に失敗しました。時間をおいて再度お試しください",
           errorType: "general",
         };
       }
@@ -261,7 +270,9 @@ export const useAuth = () => {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+          error instanceof Error
+            ? error.message
+            : "ネットワークエラーが発生しました。時間をおいて再度お試しください",
         errorType: "general",
       };
     }
@@ -283,7 +294,7 @@ export const useAuth = () => {
           VERIFY_EMAIL_ERROR_TYPE_MAP[errorData.error] ?? "general";
         return {
           success: false,
-          error: errorData.message ?? "Verification failed. Please try again.",
+          error: errorData.message ?? "確認に失敗しました。時間をおいて再度お試しください",
           errorType,
         };
       }
@@ -293,7 +304,9 @@ export const useAuth = () => {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+          error instanceof Error
+            ? error.message
+            : "ネットワークエラーが発生しました。時間をおいて再度お試しください",
         errorType: "general",
       };
     }
@@ -313,7 +326,8 @@ export const useAuth = () => {
         const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          error: errorData.message ?? "Failed to resend verification code. Please try again.",
+          error:
+            errorData.message ?? "確認コードの再送信に失敗しました。時間をおいて再度お試しください",
         };
       }
 
@@ -322,7 +336,9 @@ export const useAuth = () => {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "A network error occurred. Please try again.",
+          error instanceof Error
+            ? error.message
+            : "ネットワークエラーが発生しました。時間をおいて再度お試しください",
       };
     }
   };
