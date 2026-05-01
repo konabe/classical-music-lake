@@ -125,11 +125,11 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
   background: var(--color-border);
 }
 
-:global(.dark) .piece-thumbnail:focus-visible {
+:global(.dark .piece-thumbnail:focus-visible) {
   outline-color: #6e5a3d;
 }
 
-:global(.dark) .btn-detail {
+:global(.dark .btn-detail) {
   border-color: #6e5a3d;
 }
 

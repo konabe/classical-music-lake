@@ -252,11 +252,11 @@ function handleSubmit() {
   color: var(--color-on-primary);
 }
 
-:global(.dark) .btn-add-piece {
+:global(.dark .btn-add-piece) {
   background: #6a8fc5;
 }
 
-:global(.dark) .btn-add-piece:hover {
+:global(.dark .btn-add-piece:hover) {
   background: #7a9fd5;
 }
 </style>

@@ -143,20 +143,20 @@ input[type="text"]:focus {
   text-decoration: none;
 }
 
-:global(.dark) .description {
+:global(.dark .description) {
   color: #c8a878;
 }
 
-:global(.dark) .info-message {
+:global(.dark .info-message) {
   color: #d8e8c0;
   background-color: #2a5218;
 }
 
-:global(.dark) .resend-section {
+:global(.dark .resend-section) {
   color: #c8a878;
 }
 
-:global(.dark) .resend-button:disabled {
+:global(.dark .resend-button:disabled) {
   color: #6e5435;
 }
 </style>

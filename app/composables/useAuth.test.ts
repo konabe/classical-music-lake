@@ -100,45 +100,47 @@ describe("useAuth", () => {
       expect(getPasswordValidationError("ValidPassword123")).toBeNull();
     });
 
-    it("パスワードが空のとき 'Password is required' を返す", () => {
+    it("パスワードが空のとき入力を促すエラーメッセージを返す", () => {
       const { getPasswordValidationError } = useAuth();
-      expect(getPasswordValidationError("")).toBe("Password is required");
+      expect(getPasswordValidationError("")).toBe("パスワードを入力してください");
     });
 
     it("8文字未満のとき文字数エラーメッセージを返す", () => {
       const { getPasswordValidationError } = useAuth();
-      expect(getPasswordValidationError("Short1A")).toContain("8 characters");
+      expect(getPasswordValidationError("Short1A")).toContain("8文字以上");
     });
 
     it("大文字を含まないとき大文字エラーメッセージを返す", () => {
       const { getPasswordValidationError } = useAuth();
-      expect(getPasswordValidationError("lowercase123")).toContain("uppercase");
+      expect(getPasswordValidationError("lowercase123")).toContain("大文字");
     });
 
     it("小文字を含まないとき小文字エラーメッセージを返す", () => {
       const { getPasswordValidationError } = useAuth();
-      expect(getPasswordValidationError("UPPERCASE123")).toContain("lowercase");
+      expect(getPasswordValidationError("UPPERCASE123")).toContain("小文字");
     });
 
     it("数字を含まないとき数字エラーメッセージを返す", () => {
       const { getPasswordValidationError } = useAuth();
-      expect(getPasswordValidationError("NoNumbersHere")).toContain("digit");
+      expect(getPasswordValidationError("NoNumbersHere")).toContain("数字");
     });
   });
 
   describe("register", () => {
-    it("メールアドレスが無効なとき success: false を返す", async () => {
+    it("メールアドレスが無効なとき success: false と errorType: email を返す", async () => {
       const { register } = useAuth();
       const result = await register("invalid-email", "ValidPassword123");
       expect(result.success).toBe(false);
-      expect(result.error).toContain("email");
+      expect(result.errorType).toBe("email");
+      expect(result.error).toContain("メールアドレス");
     });
 
-    it("パスワードが無効なとき success: false を返す", async () => {
+    it("パスワードが無効なとき success: false と errorType: password を返す", async () => {
       const { register } = useAuth();
       const result = await register("user@example.com", "weak");
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.errorType).toBe("password");
+      expect(result.error).toContain("パスワード");
     });
 
     it("API 呼び出しが成功したとき success: true を返す", async () => {

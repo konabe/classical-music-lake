@@ -144,14 +144,15 @@ watch(
   padding: 2rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 720px) {
   .app-header {
-    padding: 0.75rem 0.75rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .app-header nav {
-    gap: 0.5rem;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    row-gap: 0.5rem;
   }
 
   .logo {
@@ -159,15 +160,21 @@ watch(
   }
 
   .logo-img {
-    height: 26px;
+    height: 24px;
   }
 
   .logo-text {
-    display: none;
+    font-size: 1.1rem;
   }
 
   .nav-links {
-    gap: 0.6rem;
+    order: 3;
+    flex-basis: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
   }
 
   .nav-links a,
@@ -176,16 +183,24 @@ watch(
   }
 
   .auth-links {
+    margin-left: auto;
     gap: 0.6rem;
   }
 
   .logout-button {
+    margin-left: auto;
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
   }
 
   .app-main {
     padding: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .logo-text {
+    display: none;
   }
 }
 </style>
