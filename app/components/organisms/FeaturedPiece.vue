@@ -28,7 +28,7 @@ const featured = computed(() => piecesWithVideo.value[currentIndex.value] ?? nul
 const canShuffle = computed(() => piecesWithVideo.value.length > 1);
 
 const shuffle = () => {
-  if (!canShuffle.value) {
+  if (canShuffle.value === false) {
     return;
   }
   let next = currentIndex.value;

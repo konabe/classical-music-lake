@@ -9,7 +9,7 @@ const usecase = createPieceUsecase();
 export const handler = createHandler(async (event) => {
   const { limit, exclusiveStartKey } = parseListQuery(
     event.queryStringParameters,
-    listPiecesQuerySchema
+    listPiecesQuerySchema,
   );
   const page = await usecase.list({ limit, exclusiveStartKey });
   return ok(page);

@@ -45,7 +45,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("email");
@@ -59,7 +59,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("email");
@@ -73,7 +73,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("email");
@@ -89,7 +89,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("password");
@@ -103,7 +103,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("password");
@@ -117,7 +117,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("password");
@@ -131,7 +131,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("password");
@@ -145,7 +145,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("password");
@@ -163,7 +163,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(201);
@@ -187,7 +187,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(400);
@@ -207,7 +207,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(400);
@@ -228,7 +228,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(500);
@@ -247,7 +247,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(429);
@@ -264,7 +264,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -277,7 +277,7 @@ describe("POST /auth/register", () => {
           path: "/auth/register",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });

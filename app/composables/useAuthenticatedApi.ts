@@ -48,7 +48,7 @@ export const useAuthenticatedApi = () => {
   // 同一リクエストで二重リトライは発生しない設計となっている。
   const doFetch = async (
     url: string,
-    options: { method?: string; headers?: Record<string, string>; body?: string }
+    options: { method?: string; headers?: Record<string, string>; body?: string },
   ): Promise<Response> => {
     try {
       return await fetch(url, {
@@ -59,14 +59,14 @@ export const useAuthenticatedApi = () => {
       throw new Error(
         error instanceof Error
           ? error.message
-          : "Network error occurred. Please check your connection."
+          : "Network error occurred. Please check your connection.",
       );
     }
   };
 
   const authenticatedFetch = async (
     url: string,
-    options: { method?: string; headers?: Record<string, string>; body?: string } = {}
+    options: { method?: string; headers?: Record<string, string>; body?: string } = {},
   ): Promise<Response> => {
     const response = await doFetch(url, options);
 

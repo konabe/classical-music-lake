@@ -20,7 +20,7 @@ describe("parseRequestBody", () => {
 
   it("文字列の場合は 400 を投げる", () => {
     expect(() => parseRequestBody<TestInput>("string")).toThrow(
-      "Request body must be a JSON object"
+      "Request body must be a JSON object",
     );
   });
 
@@ -103,13 +103,13 @@ describe("parseListQuery", () => {
 
   it("base64url として不正な cursor は 400 を投げる", () => {
     expect(() => parseListQuery({ cursor: "!!!invalid!!!" }, schema)).toThrow(
-      "cursor must be a base64url string"
+      "cursor must be a base64url string",
     );
   });
 
   it("バージョン不一致の cursor は 400 を投げる", () => {
     const cursor = Buffer.from(JSON.stringify({ v: 999, k: { id: "1" } }), "utf8").toString(
-      "base64url"
+      "base64url",
     );
     expect(() => parseListQuery({ cursor }, schema)).toThrow(/Unsupported cursor version/);
   });

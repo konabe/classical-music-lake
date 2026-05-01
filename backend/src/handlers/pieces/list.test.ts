@@ -70,7 +70,7 @@ describe("GET /pieces (list)", () => {
       await handler(
         makeEvent({ queryStringParameters: { limit: "20" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(mockRepo.findPage).toHaveBeenCalledWith({
@@ -144,7 +144,7 @@ describe("GET /pieces (list)", () => {
       await handler(
         makeEvent({ queryStringParameters: { cursor: nextCursor ?? "" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(mockRepo.findPage).toHaveBeenLastCalledWith({
@@ -159,7 +159,7 @@ describe("GET /pieces (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { limit: "0" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -168,7 +168,7 @@ describe("GET /pieces (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { limit: String(PIECES_PAGE_SIZE_MAX + 1) } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -177,7 +177,7 @@ describe("GET /pieces (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { limit: "abc" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -186,7 +186,7 @@ describe("GET /pieces (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { cursor: "!!!invalid!!!" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -196,19 +196,19 @@ describe("GET /pieces (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { cursor } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
 
     it("cursor のバージョンが未知の場合は 400 を返す", async () => {
       const cursor = Buffer.from(JSON.stringify({ v: 999, k: { id: "1" } }), "utf8").toString(
-        "base64url"
+        "base64url",
       );
       const result = await handler(
         makeEvent({ queryStringParameters: { cursor } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });

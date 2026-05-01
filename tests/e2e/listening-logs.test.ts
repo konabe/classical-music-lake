@@ -52,7 +52,7 @@ describe("鑑賞記録 E2E テスト", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify([]),
-        })
+        }),
       );
 
       await page.goto(url("/listening-logs"));
@@ -71,7 +71,7 @@ describe("鑑賞記録 E2E テスト", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify([testLog, testLog2]),
-        })
+        }),
       );
 
       await page.goto(url("/listening-logs"));
@@ -92,7 +92,7 @@ describe("鑑賞記録 E2E テスト", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify([testLog]),
-        })
+        }),
       );
 
       await page.goto(url("/listening-logs"));
@@ -111,7 +111,7 @@ describe("鑑賞記録 E2E テスト", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify([]),
-        })
+        }),
       );
 
       await page.goto(url("/listening-logs"));
@@ -153,7 +153,7 @@ describe("鑑賞記録 E2E テスト", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify(testLog),
-        })
+        }),
       );
 
       await page.goto(url("/listening-logs/e2e-test-id-001"));
@@ -172,7 +172,7 @@ describe("鑑賞記録 E2E テスト", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify(testLog),
-        })
+        }),
       );
 
       await page.goto(url("/listening-logs/e2e-test-id-001"));

@@ -20,7 +20,7 @@ export const useComposersPaginated = () => {
     putJson<Composer>(`${apiBase}/composers/${id}`, input);
 
   const pagination = usePaginatedList<Composer>((cursor) =>
-    fetchComposersPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_DEFAULT, cursor })
+    fetchComposersPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_DEFAULT, cursor }),
   );
 
   const createComposer = async (input: CreateComposerInput) => {
@@ -67,7 +67,7 @@ export const useComposersAll = () => {
       const res = await fetchComposersPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_MAX });
       if (res.nextCursor !== null) {
         throw new Error(
-          `useComposersAll: composers exceed single-scan limit (${COMPOSERS_PAGE_SIZE_MAX}). Switch to paginated/search UI.`
+          `useComposersAll: composers exceed single-scan limit (${COMPOSERS_PAGE_SIZE_MAX}). Switch to paginated/search UI.`,
         );
       }
       data.value = res.items;

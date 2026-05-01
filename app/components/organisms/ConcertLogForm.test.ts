@@ -35,7 +35,7 @@ describe("ConcertLogForm", () => {
     it("コンサート名入力欄が表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogForm);
       expect(
-        wrapper.find('input[placeholder="例: 〇〇交響楽団 定期演奏会 第123回"]').exists()
+        wrapper.find('input[placeholder="例: 〇〇交響楽団 定期演奏会 第123回"]').exists(),
       ).toBe(true);
     });
 

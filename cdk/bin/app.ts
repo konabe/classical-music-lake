@@ -11,7 +11,7 @@ const validStages: StageName[] = ["dev", "stg", "prod"];
 const rawStageName = process.env.STAGE_NAME ?? "prod";
 if (!validStages.includes(rawStageName as StageName)) {
   throw new Error(
-    `Invalid STAGE_NAME: "${rawStageName}". Must be one of: ${validStages.join(", ")}`
+    `Invalid STAGE_NAME: "${rawStageName}". Must be one of: ${validStages.join(", ")}`,
   );
 }
 

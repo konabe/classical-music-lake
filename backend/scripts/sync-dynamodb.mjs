@@ -76,7 +76,7 @@ async function batchWrite(tableName, writeRequests) {
       const result = await client.send(
         new BatchWriteItemCommand({
           RequestItems: { [tableName]: unprocessed },
-        })
+        }),
       );
 
       unprocessed = result.UnprocessedItems?.[tableName] ?? [];
@@ -85,7 +85,7 @@ async function batchWrite(tableName, writeRequests) {
         retries++;
         if (retries > 5) {
           throw new Error(
-            `BatchWriteItem: ${unprocessed.length} 件の処理に失敗しました（${retries} 回リトライ）`
+            `BatchWriteItem: ${unprocessed.length} 件の処理に失敗しました（${retries} 回リトライ）`,
           );
         }
         const waitMs = Math.pow(2, retries) * 100;
@@ -148,7 +148,7 @@ async function syncTable(sourceTable, destTable, keyAttributes, transform) {
   if (destItems.length > 0) {
     const sourceKeySet = new Set(sourceItems.map((item) => itemKey(item, keyAttributes)));
     const deleteTargets = destItems.filter(
-      (item) => !sourceKeySet.has(itemKey(item, keyAttributes))
+      (item) => !sourceKeySet.has(itemKey(item, keyAttributes)),
     );
 
     if (deleteTargets.length > 0) {

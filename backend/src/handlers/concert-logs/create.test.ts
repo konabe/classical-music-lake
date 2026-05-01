@@ -44,7 +44,7 @@ describe("POST /concert-logs (create)", () => {
       const result = await handler(
         makeEvent({ body, httpMethod: "POST", path: "/concert-logs" }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
@@ -61,11 +61,11 @@ describe("POST /concert-logs (create)", () => {
           path: "/concert-logs",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("venue must be a non-empty string");
-    }
+    },
   );
 
   it("venue が 200 文字を超える場合は 400 を返す", async () => {
@@ -76,7 +76,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("venue must be 200 characters or less");
@@ -90,11 +90,11 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe(
-      "conductor must be 100 characters or less"
+      "conductor must be 100 characters or less",
     );
   });
 
@@ -106,11 +106,11 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe(
-      "orchestra must be 100 characters or less"
+      "orchestra must be 100 characters or less",
     );
   });
 
@@ -122,7 +122,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("soloist must be 100 characters or less");
@@ -137,7 +137,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(201);
 
@@ -162,7 +162,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(201);
 
@@ -181,7 +181,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBeUUID();
@@ -196,7 +196,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.createdAt).toBe(body.updatedAt);
@@ -211,7 +211,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
 
     const savedItem = mockRepo.save.mock.calls[0][0];
@@ -227,7 +227,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.userId).toBe(TEST_USER_ID);
@@ -242,7 +242,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(500);
   });
@@ -260,7 +260,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(201);
     const body = JSON.parse(result?.body ?? "{}");
@@ -276,7 +276,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(201);
     const body = JSON.parse(result?.body ?? "{}");
@@ -291,7 +291,7 @@ describe("POST /concert-logs (create)", () => {
         path: "/concert-logs",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
   });

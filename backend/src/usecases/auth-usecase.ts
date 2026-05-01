@@ -18,7 +18,7 @@ const tryCognito = async <T>(
   context: AuthContext,
   successCode: number,
   successBodyFactory: (result: T) => unknown,
-  fn: () => Promise<T>
+  fn: () => Promise<T>,
 ): Promise<AuthResponse> => {
   try {
     const result = await fn();
@@ -40,7 +40,7 @@ export class AuthUsecase {
       "login",
       StatusCodes.OK,
       (tokens) => tokens,
-      () => this.repo.initiateAuth(email, password)
+      () => this.repo.initiateAuth(email, password),
     );
   }
 
@@ -51,7 +51,7 @@ export class AuthUsecase {
       () => ({
         message: "User created successfully. Please check your email to verify your account.",
       }),
-      () => this.repo.signUp(email, password)
+      () => this.repo.signUp(email, password),
     );
   }
 
@@ -60,7 +60,7 @@ export class AuthUsecase {
       "verify",
       StatusCodes.OK,
       () => ({ message: "Email confirmed successfully." }),
-      () => this.repo.confirmSignUp(email, code)
+      () => this.repo.confirmSignUp(email, code),
     );
   }
 
@@ -69,7 +69,7 @@ export class AuthUsecase {
       "refresh",
       StatusCodes.OK,
       (tokens) => tokens,
-      () => this.repo.refreshToken(token)
+      () => this.repo.refreshToken(token),
     );
   }
 
@@ -78,14 +78,14 @@ export class AuthUsecase {
       "resend",
       StatusCodes.OK,
       () => ({ message: "Verification code resent. Please check your email." }),
-      () => this.repo.resendConfirmationCode(email)
+      () => this.repo.resendConfirmationCode(email),
     );
   }
 
   async linkExternalProvider(
     userPoolId: string,
     email: string,
-    userName: string
+    userName: string,
   ): Promise<boolean> {
     const users = await this.repo.listUsersByEmail(userPoolId, email);
     const existingUser = users.find((u) => u.status === "CONFIRMED");
@@ -106,7 +106,7 @@ export class AuthUsecase {
       userPoolId,
       existingUser.username,
       providerName,
-      providerUserId
+      providerUserId,
     );
 
     return true;

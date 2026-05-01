@@ -8,7 +8,7 @@ import type { ConcertLogRepository } from "../domain/concert-log";
 export class DynamoDBConcertLogRepository implements ConcertLogRepository {
   async findById(id: ConcertLogId): Promise<ConcertLog | undefined> {
     const result = await dynamo.send(
-      new GetCommand({ TableName: TABLE_CONCERT_LOGS, Key: { id: id.value } })
+      new GetCommand({ TableName: TABLE_CONCERT_LOGS, Key: { id: id.value } }),
     );
     return result.Item as ConcertLog | undefined;
   }

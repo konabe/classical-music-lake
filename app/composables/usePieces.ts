@@ -34,7 +34,7 @@ export const usePiecesPaginated = () => {
   const apiBase = useApiBase();
   const { postPiece, putPiece } = usePieceMutations();
   const pagination = usePaginatedList<Piece>((cursor) =>
-    fetchPiecesPage(apiBase, { limit: PIECES_PAGE_SIZE_DEFAULT, cursor })
+    fetchPiecesPage(apiBase, { limit: PIECES_PAGE_SIZE_DEFAULT, cursor }),
   );
 
   const createPiece = async (input: CreatePieceInput) => {
@@ -87,7 +87,7 @@ export const usePiecesAll = () => {
           consecutiveEmpty += 1;
           if (consecutiveEmpty > PIECES_ALL_MAX_EMPTY_PAGES) {
             throw new Error(
-              `usePiecesAll: exceeded consecutive empty pages (${PIECES_ALL_MAX_EMPTY_PAGES})`
+              `usePiecesAll: exceeded consecutive empty pages (${PIECES_ALL_MAX_EMPTY_PAGES})`,
             );
           }
         } else {

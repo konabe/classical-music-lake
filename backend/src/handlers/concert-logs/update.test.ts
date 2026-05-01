@@ -64,7 +64,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent(undefined, JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
@@ -80,7 +80,7 @@ describe("PUT /concert-logs/:id (update)", () => {
       const result = await handler(
         makeEvent("abc-123", body, TEST_USER_ID),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
@@ -93,18 +93,18 @@ describe("PUT /concert-logs/:id (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ venue: whitespaceVenue }), TEST_USER_ID),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("venue must be a non-empty string");
-    }
+    },
   );
 
   it("venue が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "あ".repeat(201) }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("venue must be 200 characters or less");
@@ -114,11 +114,11 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ conductor: "あ".repeat(101) }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe(
-      "conductor must be 100 characters or less"
+      "conductor must be 100 characters or less",
     );
   });
 
@@ -126,7 +126,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ concertDate: "2024-01-15" }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
   });
@@ -136,7 +136,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), OTHER_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
     expect(mockRepo.update).not.toHaveBeenCalled();
@@ -147,7 +147,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
   });
@@ -164,7 +164,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
 
@@ -184,7 +184,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
   });
@@ -195,7 +195,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(409);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Item was updated by another request");
@@ -206,7 +206,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(500);
   });
@@ -224,7 +224,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [pieceId] }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}");
@@ -247,7 +247,7 @@ describe("PUT /concert-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [] }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}");

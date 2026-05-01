@@ -22,7 +22,7 @@ describe("PasswordInput", () => {
         props: { modelValue: "" },
       });
       expect(wrapper.find("button.toggle-button").attributes("aria-label")).toBe(
-        "パスワードを表示"
+        "パスワードを表示",
       );
     });
 
@@ -64,7 +64,7 @@ describe("PasswordInput", () => {
       });
       await wrapper.find("button.toggle-button").trigger("click");
       expect(wrapper.find("button.toggle-button").attributes("aria-label")).toBe(
-        "パスワードを非表示"
+        "パスワードを非表示",
       );
     });
 

@@ -44,7 +44,7 @@ describe("POST /auth/resend-verification-code", () => {
           path: "/auth/resend-verification-code",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -57,7 +57,7 @@ describe("POST /auth/resend-verification-code", () => {
           path: "/auth/resend-verification-code",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("email");
@@ -75,7 +75,7 @@ describe("POST /auth/resend-verification-code", () => {
           path: "/auth/resend-verification-code",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(200);
@@ -99,7 +99,7 @@ describe("POST /auth/resend-verification-code", () => {
           path: "/auth/resend-verification-code",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(400);
@@ -119,7 +119,7 @@ describe("POST /auth/resend-verification-code", () => {
           path: "/auth/resend-verification-code",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(400);
@@ -138,7 +138,7 @@ describe("POST /auth/resend-verification-code", () => {
           path: "/auth/resend-verification-code",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(429);
@@ -157,7 +157,7 @@ describe("POST /auth/resend-verification-code", () => {
           path: "/auth/resend-verification-code",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(500);

@@ -34,8 +34,8 @@ describe("encodeCursor / decodeCursor", () => {
         (key) => {
           const decoded = decodeCursor(encodeCursor(key));
           expect(decoded).toEqual(key);
-        }
-      )
+        },
+      ),
     );
   });
 
@@ -62,14 +62,14 @@ describe("encodeCursor / decodeCursor", () => {
     it("JSON は有効だが未知のバージョン番号の場合は InvalidCursorError を投げる", () => {
       const futureVersion = Buffer.from(
         JSON.stringify({ v: 999, k: { id: "1" } }),
-        "utf8"
+        "utf8",
       ).toString("base64url");
       expect(() => decodeCursor(futureVersion)).toThrow(InvalidCursorError);
     });
 
     it("JSON は有効だがバージョン番号が欠損している場合は InvalidCursorError を投げる", () => {
       const noVersion = Buffer.from(JSON.stringify({ k: { id: "1" } }), "utf8").toString(
-        "base64url"
+        "base64url",
       );
       expect(() => decodeCursor(noVersion)).toThrow(InvalidCursorError);
     });
@@ -81,7 +81,7 @@ describe("encodeCursor / decodeCursor", () => {
 
     it("k がオブジェクトでない場合は InvalidCursorError を投げる", () => {
       const badKey = Buffer.from(JSON.stringify({ v: 1, k: "not an object" }), "utf8").toString(
-        "base64url"
+        "base64url",
       );
       expect(() => decodeCursor(badKey)).toThrow(InvalidCursorError);
     });

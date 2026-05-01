@@ -23,7 +23,7 @@ const props = withDefaults(
     submitLabel: undefined,
     composers: () => [],
     composersPending: false,
-  }
+  },
 );
 
 const emit = defineEmits<{
@@ -31,7 +31,7 @@ const emit = defineEmits<{
 }>();
 
 const composerOptions = computed(() =>
-  props.composers.map((c) => ({ value: c.id, label: c.name }))
+  props.composers.map((c) => ({ value: c.id, label: c.name })),
 );
 
 const form = reactive({
@@ -55,18 +55,20 @@ watch(
     form.formation = initialValues?.formation ?? "";
     form.region = initialValues?.region ?? "";
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function handleSubmit() {
   emit("submit", {
     title: form.title,
     composerId: form.composerId,
-    videoUrl: form.videoUrl || undefined,
-    genre: (form.genre || undefined) as CreatePieceInput["genre"],
-    era: (form.era || undefined) as CreatePieceInput["era"],
-    formation: (form.formation || undefined) as CreatePieceInput["formation"],
-    region: (form.region || undefined) as CreatePieceInput["region"],
+    videoUrl: form.videoUrl === "" ? undefined : form.videoUrl,
+    genre: (form.genre === "" ? undefined : form.genre) as CreatePieceInput["genre"],
+    era: (form.era === "" ? undefined : form.era) as CreatePieceInput["era"],
+    formation: (form.formation === ""
+      ? undefined
+      : form.formation) as CreatePieceInput["formation"],
+    region: (form.region === "" ? undefined : form.region) as CreatePieceInput["region"],
   });
 }
 </script>

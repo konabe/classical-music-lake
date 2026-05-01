@@ -5,7 +5,7 @@ import type { ListeningLog } from "~/types";
 mockNuxtImport("usePiecesAll", () =>
   vi
     .fn()
-    .mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false), refresh: vi.fn() })
+    .mockReturnValue({ data: ref([]), error: ref(null), pending: ref(false), refresh: vi.fn() }),
 );
 
 const sampleLog: ListeningLog = {

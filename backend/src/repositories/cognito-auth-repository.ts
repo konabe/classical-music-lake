@@ -22,7 +22,7 @@ export class CognitoAuthRepository implements AuthRepository {
         Username: email,
         Password: password,
         UserAttributes: [{ Name: "email", Value: email }],
-      })
+      }),
     );
   }
 
@@ -36,7 +36,7 @@ export class CognitoAuthRepository implements AuthRepository {
           USERNAME: email,
           PASSWORD: password,
         },
-      })
+      }),
     );
     const result = response.AuthenticationResult;
     return {
@@ -55,7 +55,7 @@ export class CognitoAuthRepository implements AuthRepository {
         ClientId: env.cognitoClientId,
         Username: email,
         ConfirmationCode: code,
-      })
+      }),
     );
   }
 
@@ -65,7 +65,7 @@ export class CognitoAuthRepository implements AuthRepository {
       new ResendConfirmationCodeCommand({
         ClientId: env.cognitoClientId,
         Username: email,
-      })
+      }),
     );
   }
 
@@ -78,7 +78,7 @@ export class CognitoAuthRepository implements AuthRepository {
         AuthParameters: {
           REFRESH_TOKEN: token,
         },
-      })
+      }),
     );
     const result = response.AuthenticationResult;
     return {
@@ -91,14 +91,14 @@ export class CognitoAuthRepository implements AuthRepository {
 
   async listUsersByEmail(
     userPoolId: string,
-    email: string
+    email: string,
   ): Promise<{ username: string; status: string }[]> {
     const result = await cognito.send(
       new ListUsersCommand({
         UserPoolId: userPoolId,
         Filter: `email = "${email}"`,
         Limit: 1,
-      })
+      }),
     );
     return (result.Users ?? [])
       .filter((u) => u.Username !== undefined)
@@ -109,7 +109,7 @@ export class CognitoAuthRepository implements AuthRepository {
     userPoolId: string,
     destinationUsername: string,
     providerName: string,
-    providerUserId: string
+    providerUserId: string,
   ): Promise<void> {
     await cognito.send(
       new AdminLinkProviderForUserCommand({
@@ -124,7 +124,7 @@ export class CognitoAuthRepository implements AuthRepository {
           ProviderAttributeName: "Cognito_Subject",
           ProviderAttributeValue: providerUserId,
         },
-      })
+      }),
     );
   }
 }

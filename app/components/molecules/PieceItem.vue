@@ -15,7 +15,7 @@ const emit = defineEmits<{
 }>();
 
 const hasYouTubeThumbnail = computed(
-  () => props.piece.videoUrl !== undefined && isYouTubeUrl(props.piece.videoUrl)
+  () => props.piece.videoUrl !== undefined && isYouTubeUrl(props.piece.videoUrl),
 );
 
 const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイル`);

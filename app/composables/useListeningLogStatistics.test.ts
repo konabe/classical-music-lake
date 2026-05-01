@@ -58,7 +58,7 @@ describe("computeStatistics", () => {
         log({ id: "5", composer: "ブラームス" }),
         log({ id: "6", composer: "ブラームス" }),
       ],
-      { topComposerLimit: 2 }
+      { topComposerLimit: 2 },
     );
     expect(stats.topComposers).toEqual([
       { composer: "ブラームス", count: 3 },

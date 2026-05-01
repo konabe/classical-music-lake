@@ -60,8 +60,8 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
-        (composer) => fails(createListeningLogSchema.safeParse({ ...validLog, composer }))
-      )
+        (composer) => fails(createListeningLogSchema.safeParse({ ...validLog, composer })),
+      ),
     );
   });
 
@@ -74,24 +74,24 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
-        (piece) => fails(createListeningLogSchema.safeParse({ ...validLog, piece }))
-      )
+        (piece) => fails(createListeningLogSchema.safeParse({ ...validLog, piece })),
+      ),
     );
   });
 
   it("rating が 1〜5 の整数は常に有効", () => {
     fc.assert(
       fc.property(fc.integer({ min: 1, max: 5 }), (rating) =>
-        succeeds(createListeningLogSchema.safeParse({ ...validLog, rating }))
-      )
+        succeeds(createListeningLogSchema.safeParse({ ...validLog, rating })),
+      ),
     );
   });
 
   it("rating が 1〜5 の範囲外の整数は常にエラー", () => {
     fc.assert(
       fc.property(fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })), (rating) =>
-        fails(createListeningLogSchema.safeParse({ ...validLog, rating }))
-      )
+        fails(createListeningLogSchema.safeParse({ ...validLog, rating })),
+      ),
     );
   });
 
@@ -99,8 +99,8 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.integer().map((n) => n + 0.5),
-        (rating) => fails(createListeningLogSchema.safeParse({ ...validLog, rating }))
-      )
+        (rating) => fails(createListeningLogSchema.safeParse({ ...validLog, rating })),
+      ),
     );
   });
 
@@ -108,8 +108,8 @@ describe("createListeningLogSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 1001, maxLength: 2000 }).filter((s) => s.trim().length > 1000),
-        (memo) => fails(createListeningLogSchema.safeParse({ ...validLog, memo }))
-      )
+        (memo) => fails(createListeningLogSchema.safeParse({ ...validLog, memo })),
+      ),
     );
   });
 
@@ -169,8 +169,8 @@ describe("createPieceSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
-        (title) => fails(createPieceSchema.safeParse({ ...validPiece, title }))
-      )
+        (title) => fails(createPieceSchema.safeParse({ ...validPiece, title })),
+      ),
     );
   });
 
@@ -233,8 +233,8 @@ describe("registerSchema", () => {
   it("8 文字未満の password は常にエラー", () => {
     fc.assert(
       fc.property(fc.string({ minLength: 1, maxLength: 7 }), (password) =>
-        fails(registerSchema.safeParse({ ...validAuth, password }))
-      )
+        fails(registerSchema.safeParse({ ...validAuth, password })),
+      ),
     );
   });
 
@@ -242,8 +242,8 @@ describe("registerSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 8 }).filter((s) => !/[A-Z]/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
-      )
+        (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+      ),
     );
   });
 
@@ -251,8 +251,8 @@ describe("registerSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 8 }).filter((s) => !/[a-z]/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
-      )
+        (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+      ),
     );
   });
 
@@ -260,8 +260,8 @@ describe("registerSchema", () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 8 }).filter((s) => !/\d/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password }))
-      )
+        (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+      ),
     );
   });
 });
@@ -399,7 +399,7 @@ describe("listPiecesQuerySchema", () => {
         fc.property(fc.constantFrom("abc+", "abc/", "abc=", "abc!"), (invalid) => {
           const result = listPiecesQuerySchema.safeParse({ cursor: invalid });
           return fails(result);
-        })
+        }),
       );
     });
 
@@ -427,8 +427,8 @@ describe("listPiecesQuerySchema", () => {
           (limit) => {
             const result = listPiecesQuerySchema.safeParse({ limit });
             return succeeds(result);
-          }
-        )
+          },
+        ),
       );
     });
   });

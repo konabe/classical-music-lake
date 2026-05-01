@@ -3,7 +3,7 @@
  * Piece / Composer など、列挙型の定数配列をフォームの選択肢に流し込むときに使う。
  */
 export function toSelectOptions<T extends string>(
-  values: readonly T[]
+  values: readonly T[],
 ): { value: T; label: string }[] {
   return values.map((v) => ({ value: v, label: v }));
 }

@@ -39,13 +39,13 @@ describe("extractYouTubeVideoId", () => {
 describe("toYouTubeEmbedUrl", () => {
   it("youtube.com URL を embed URL に変換する", () => {
     expect(toYouTubeEmbedUrl("https://www.youtube.com/watch?v=abc123")).toBe(
-      "https://www.youtube.com/embed/abc123?enablejsapi=1&rel=0&fs=0"
+      "https://www.youtube.com/embed/abc123?enablejsapi=1&rel=0&fs=0",
     );
   });
 
   it("youtu.be URL を embed URL に変換する", () => {
     expect(toYouTubeEmbedUrl("https://youtu.be/abc123")).toBe(
-      "https://www.youtube.com/embed/abc123?enablejsapi=1&rel=0&fs=0"
+      "https://www.youtube.com/embed/abc123?enablejsapi=1&rel=0&fs=0",
     );
   });
 });

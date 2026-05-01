@@ -156,7 +156,7 @@ describe("useAuth", () => {
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com", password: "ValidPassword123" }),
-        })
+        }),
       );
     });
 
@@ -218,7 +218,7 @@ describe("useAuth", () => {
       expect(result.accessToken).toBe("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
       expect(localStorage.getItem(ID_TOKEN_KEY)).toBe("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...");
       expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBe(
-        "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi..."
+        "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIi...",
       );
       expect(localStorage.getItem(TOKEN_EXPIRES_AT_KEY)).not.toBeNull();
       expect(mockFetch).toHaveBeenCalledWith(
@@ -226,7 +226,7 @@ describe("useAuth", () => {
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com", password: "ValidPassword123" }),
-        })
+        }),
       );
     });
 
@@ -545,7 +545,7 @@ describe("useAuth", () => {
       mockFetch.mockReturnValue(
         new Promise((resolve) => {
           resolveFetch = resolve;
-        })
+        }),
       );
 
       const { refreshTokens, clearTokens } = useAuth();
@@ -587,7 +587,7 @@ describe("useAuth", () => {
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com", code: "123456" }),
-        })
+        }),
       );
     });
 
@@ -637,7 +637,7 @@ describe("useAuth", () => {
       loginWithGoogle();
 
       expect(globalThis.location.href).toContain(
-        "test.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize"
+        "test.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize",
       );
       expect(globalThis.location.href).toContain("identity_provider=Google");
       expect(globalThis.location.href).toContain("response_type=code");
@@ -663,7 +663,7 @@ describe("useAuth", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://test.auth.ap-northeast-1.amazoncognito.com/oauth2/token",
-        expect.objectContaining({ method: "POST" })
+        expect.objectContaining({ method: "POST" }),
       );
       expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBe("access-token");
       expect(localStorage.getItem(ID_TOKEN_KEY)).toBe("id-token");
@@ -704,7 +704,7 @@ describe("useAuth", () => {
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com" }),
-        })
+        }),
       );
     });
 

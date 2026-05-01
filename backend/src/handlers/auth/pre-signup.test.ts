@@ -68,13 +68,13 @@ describe("pre-signup", () => {
       expect(result).toEqual(event);
       expect(mockRepo.listUsersByEmail).toHaveBeenCalledWith(
         "ap-northeast-1_testPoolId",
-        "user@example.com"
+        "user@example.com",
       );
       expect(mockRepo.linkProviderForUser).toHaveBeenCalledWith(
         "ap-northeast-1_testPoolId",
         "existing-user",
         "Google",
-        "100749370741417953110"
+        "100749370741417953110",
       );
     });
 
@@ -83,7 +83,7 @@ describe("pre-signup", () => {
         { username: "existing-user", status: "CONFIRMED" },
       ]);
       mockRepo.linkProviderForUser.mockRejectedValueOnce(
-        new Error("SourceProviderName must match a Provider that is configured for the User Pool")
+        new Error("SourceProviderName must match a Provider that is configured for the User Pool"),
       );
 
       const event = makeEvent({ userName: "google_100749370741417953110" });

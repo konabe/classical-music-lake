@@ -30,15 +30,15 @@ watch(
     form.region = initialValues?.region ?? "";
     form.imageUrl = initialValues?.imageUrl ?? "";
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function handleSubmit() {
   emit("submit", {
     name: form.name,
-    era: (form.era || undefined) as CreateComposerInput["era"],
-    region: (form.region || undefined) as CreateComposerInput["region"],
-    imageUrl: form.imageUrl || undefined,
+    era: (form.era === "" ? undefined : form.era) as CreateComposerInput["era"],
+    region: (form.region === "" ? undefined : form.region) as CreateComposerInput["region"],
+    imageUrl: form.imageUrl === "" ? undefined : form.imageUrl,
   });
 }
 </script>

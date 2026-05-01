@@ -5,7 +5,7 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
-# Install / select Node.js 24 (package.json requires "node": ">=24.14.0")
+# Install / select Node.js 24 (package.json requires "node": ">=24.15.0")
 export NVM_DIR=/opt/nvm
 # shellcheck disable=SC1091
 . "$NVM_DIR/nvm.sh"
