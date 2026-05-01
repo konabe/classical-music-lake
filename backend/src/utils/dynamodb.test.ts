@@ -202,7 +202,7 @@ describe("putItemWithOptimisticLock", () => {
 
   it("ConditionalCheckFailedException が発生した場合は 409 を投げる", async () => {
     mockSend.mockRejectedValueOnce(
-      new ConditionalCheckFailedException({ message: "Condition failed", $metadata: {} })
+      new ConditionalCheckFailedException({ message: "Condition failed", $metadata: {} }),
     );
 
     await expect(
@@ -211,7 +211,7 @@ describe("putItemWithOptimisticLock", () => {
         item: { id: "x" },
         prevUpdatedAt: "prev",
         conflictMessage: "Custom was updated by another request",
-      })
+      }),
     ).rejects.toThrow("Custom was updated by another request");
   });
 
@@ -224,7 +224,7 @@ describe("putItemWithOptimisticLock", () => {
         item: { id: "x" },
         prevUpdatedAt: "prev",
         conflictMessage: "Whatever",
-      })
+      }),
     ).rejects.toThrow("DynamoDB connection error");
   });
 });
@@ -241,7 +241,7 @@ describe("updateItem", () => {
     mockSend.mockResolvedValueOnce({ Item: undefined });
 
     await expect(updateItem<TestItem>("test-table", "item-1", { name: "updated" })).rejects.toThrow(
-      "Item not found"
+      "Item not found",
     );
   });
 
@@ -280,11 +280,11 @@ describe("updateItem", () => {
     mockSend
       .mockResolvedValueOnce({ Item: existing })
       .mockRejectedValueOnce(
-        new ConditionalCheckFailedException({ message: "Condition failed", $metadata: {} })
+        new ConditionalCheckFailedException({ message: "Condition failed", $metadata: {} }),
       );
 
     await expect(updateItem("test-table", "item-1", {})).rejects.toThrow(
-      "Item was updated by another request"
+      "Item was updated by another request",
     );
   });
 
@@ -294,7 +294,7 @@ describe("updateItem", () => {
       .mockRejectedValueOnce(new Error("DynamoDB connection error"));
 
     await expect(updateItem("test-table", "item-1", {})).rejects.toThrow(
-      "DynamoDB connection error"
+      "DynamoDB connection error",
     );
   });
 });

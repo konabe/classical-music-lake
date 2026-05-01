@@ -8,7 +8,7 @@ import type { ComposerRepository } from "../domain/composer";
 export class DynamoDBComposerRepository implements ComposerRepository {
   async findById(id: ComposerId): Promise<Composer | undefined> {
     const result = await dynamo.send(
-      new GetCommand({ TableName: TABLE_COMPOSERS, Key: { id: id.value } })
+      new GetCommand({ TableName: TABLE_COMPOSERS, Key: { id: id.value } }),
     );
     return result.Item as Composer | undefined;
   }

@@ -169,7 +169,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
             override: true,
           },
         },
-      }
+      },
     );
 
     // Storybook 用セキュリティヘッダポリシー（X-Frame-Options を除外: iframe プレビューに必要）
@@ -194,7 +194,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
             override: true,
           },
         },
-      }
+      },
     );
 
     const distribution = new cloudfront.Distribution(this, "SpaDistribution", {
@@ -509,7 +509,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName(
-          "service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+          "service-role/AmazonAPIGatewayPushToCloudWatchLogs",
         ),
       ],
     });
@@ -676,35 +676,35 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     this.addCors(
       concertLogsResource,
       ["GET", "POST", "OPTIONS"],
-      ["Content-Type", "Authorization"]
+      ["Content-Type", "Authorization"],
     );
     this.addCors(
       concertLogResource,
       ["GET", "PUT", "DELETE", "OPTIONS"],
-      ["Content-Type", "Authorization"]
+      ["Content-Type", "Authorization"],
     );
     this.addCors(
       listeningLogsResource,
       ["GET", "POST", "OPTIONS"],
-      ["Content-Type", "Authorization"]
+      ["Content-Type", "Authorization"],
     );
     this.addCors(
       listeningLogResource,
       ["GET", "PUT", "DELETE", "OPTIONS"],
-      ["Content-Type", "Authorization"]
+      ["Content-Type", "Authorization"],
     );
     // 書き込み系（POST/PUT/DELETE）は Authorization ヘッダーが必要
     this.addCors(piecesResource, ["GET", "POST", "OPTIONS"], ["Content-Type", "Authorization"]);
     this.addCors(
       pieceResource,
       ["GET", "PUT", "DELETE", "OPTIONS"],
-      ["Content-Type", "Authorization"]
+      ["Content-Type", "Authorization"],
     );
     this.addCors(composersResource, ["GET", "POST", "OPTIONS"], ["Content-Type", "Authorization"]);
     this.addCors(
       composerResource,
       ["GET", "PUT", "DELETE", "OPTIONS"],
-      ["Content-Type", "Authorization"]
+      ["Content-Type", "Authorization"],
     );
     this.addCors(authRegisterResource, ["POST", "OPTIONS"]);
     this.addCors(authLoginResource, ["POST", "OPTIONS"]);
@@ -749,7 +749,7 @@ function handler(event) {
   }
   return request;
 }
-      `.trim()
+      `.trim(),
       ),
       runtime: cloudfront.FunctionRuntime.JS_2_0,
     });
@@ -768,7 +768,7 @@ function handler(event) {
             eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
           },
         ],
-      }
+      },
     );
 
     // NOTE: Storybook ファイルの S3 アップロードも GitHub Actions ワークフローで実行する。
@@ -969,7 +969,7 @@ function handler(event) {
   private addCors(
     resource: IResource,
     methods: string[],
-    allowHeaders: string[] = ["Content-Type"]
+    allowHeaders: string[] = ["Content-Type"],
   ): void {
     resource.addCorsPreflight({
       allowOrigins: this.corsAllowOrigins,

@@ -44,7 +44,7 @@ describe("POST /auth/refresh", () => {
           path: "/auth/refresh",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("refreshToken");
@@ -58,7 +58,7 @@ describe("POST /auth/refresh", () => {
           path: "/auth/refresh",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -80,7 +80,7 @@ describe("POST /auth/refresh", () => {
           path: "/auth/refresh",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(200);
@@ -107,7 +107,7 @@ describe("POST /auth/refresh", () => {
           path: "/auth/refresh",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(401);
@@ -128,7 +128,7 @@ describe("POST /auth/refresh", () => {
           path: "/auth/refresh",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(429);
@@ -149,7 +149,7 @@ describe("POST /auth/refresh", () => {
           path: "/auth/refresh",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(500);

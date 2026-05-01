@@ -104,7 +104,7 @@ describe("useComposersPaginated", () => {
             Authorization: "Bearer test-id-token",
             "Content-Type": "application/json",
           }),
-        })
+        }),
       );
     });
 
@@ -122,7 +122,7 @@ describe("useComposersPaginated", () => {
             Authorization: "Bearer test-id-token",
             "Content-Type": "application/json",
           }),
-        })
+        }),
       );
     });
 
@@ -138,13 +138,13 @@ describe("useComposersPaginated", () => {
           headers: expect.objectContaining({
             Authorization: "Bearer test-id-token",
           }),
-        })
+        }),
       );
     });
 
     it("createComposer が 401 を返したら throwResponseError がエラーにする", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 })
+        new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 }),
       );
       const c = useComposersPaginated();
       await expect(c.createComposer({ name: "x" })).rejects.toThrow();

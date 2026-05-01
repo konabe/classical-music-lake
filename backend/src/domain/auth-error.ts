@@ -99,7 +99,7 @@ export type AuthContext = "register" | "login" | "verify" | "refresh" | "resend"
 
 export const mapCognitoError = (
   errorName: string,
-  context: AuthContext
+  context: AuthContext,
 ): AuthErrorResponse | undefined => {
   // TooManyRequestsException は全コンテキスト共通
   if (errorName === "TooManyRequestsException") {

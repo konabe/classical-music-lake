@@ -9,7 +9,7 @@ const usecase = createComposerUsecase();
 export const handler = createHandler(async (event) => {
   const { limit, exclusiveStartKey } = parseListQuery(
     event.queryStringParameters,
-    listComposersQuerySchema
+    listComposersQuerySchema,
   );
   const page = await usecase.list({ limit, exclusiveStartKey });
   return ok(page);

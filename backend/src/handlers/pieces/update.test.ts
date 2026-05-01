@@ -33,7 +33,7 @@ type AuthMode = "admin" | "non-admin" | "none";
 function makeEvent(
   id?: string,
   body?: string | null,
-  auth: AuthMode = "admin"
+  auth: AuthMode = "admin",
 ): APIGatewayProxyEvent {
   const overrides: Partial<APIGatewayProxyEvent> = {
     body: body === undefined ? null : body,
@@ -74,7 +74,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent(undefined, JSON.stringify({ title: "新タイトル" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
@@ -99,18 +99,18 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ title: invalidTitle })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be a non-empty string");
-    }
+    },
   );
 
   it("title が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "あ".repeat(201) })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be 200 characters or less");
@@ -122,11 +122,11 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ composerId: invalidComposerId })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("composerId must be a valid UUID");
-    }
+    },
   );
 
   it("title を含まない更新は title のバリデーションをスキップする", async () => {
@@ -136,7 +136,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ composerId: OTHER_COMPOSER_ID })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
   });
@@ -146,7 +146,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ title: "新タイトル" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
   });
@@ -158,7 +158,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番", composerId: OTHER_COMPOSER_ID })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
 
@@ -176,7 +176,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}") as Piece;
     expect(new Date(body.updatedAt).getTime()).toBeGreaterThanOrEqual(before);
@@ -189,7 +189,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}") as Piece;
     expect(body.createdAt).toBe(existingPiece.createdAt);
@@ -202,7 +202,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}") as Piece;
     expect(body.id).toBe("abc-123");
@@ -211,13 +211,13 @@ describe("PUT /pieces/{id} (update)", () => {
   it("楽観的ロック競合時に 409 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWithOptimisticLock.mockRejectedValueOnce(
-      new createError.Conflict("Piece was updated by another request")
+      new createError.Conflict("Piece was updated by another request"),
     );
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(409);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Piece was updated by another request");
@@ -228,7 +228,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(500);
   });
@@ -240,7 +240,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ videoUrl: "https://www.youtube.com/watch?v=xyz" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}") as Piece;
@@ -254,7 +254,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ videoUrl: "" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}") as Piece;
@@ -274,10 +274,10 @@ describe("PUT /pieces/{id} (update)", () => {
             era: "古典派",
             formation: "管弦楽",
             region: "ドイツ・オーストリア",
-          })
+          }),
         ),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}") as Piece;
@@ -299,7 +299,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ genre: "協奏曲", era: "ロマン派" })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}") as Piece;
@@ -321,7 +321,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ genre: "", era: "", formation: "", region: "" })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}") as Piece;
@@ -338,7 +338,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ genre: "室内楽" })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}") as Piece;
@@ -350,7 +350,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ genre: "不正な値" })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -359,7 +359,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ era: "不正な値" })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -368,7 +368,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ formation: "不正な値" })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -377,7 +377,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ region: "不正な値" })),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -387,7 +387,7 @@ describe("PUT /pieces/{id} (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ videoUrl: "not-a-url" })),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrl must be a valid URL");
@@ -398,7 +398,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ title: "新タイトル" }), "non-admin"),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
@@ -410,7 +410,7 @@ describe("PUT /pieces/{id} (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ title: "新タイトル" }), "none"),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(mockRepo.findById).not.toHaveBeenCalled();

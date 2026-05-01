@@ -69,7 +69,7 @@ describe("GET /composers (list)", () => {
       await handler(
         makeEvent({ queryStringParameters: { limit: "20" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(mockRepo.findPage).toHaveBeenCalledWith({
@@ -109,7 +109,7 @@ describe("GET /composers (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { limit: "0" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -118,7 +118,7 @@ describe("GET /composers (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { limit: String(COMPOSERS_PAGE_SIZE_MAX + 1) } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -127,7 +127,7 @@ describe("GET /composers (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { limit: "abc" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -136,7 +136,7 @@ describe("GET /composers (list)", () => {
       const result = await handler(
         makeEvent({ queryStringParameters: { cursor: "!!!invalid!!!" } }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });

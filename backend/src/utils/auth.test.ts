@@ -49,27 +49,27 @@ describe("getUserGroups", () => {
 
   it("cognito:groups が配列形式の場合はそのまま返す", () => {
     expect(
-      getUserGroups(makeEvent({ claims: { sub: "u", "cognito:groups": ["admin", "editor"] } }))
+      getUserGroups(makeEvent({ claims: { sub: "u", "cognito:groups": ["admin", "editor"] } })),
     ).toEqual(["admin", "editor"]);
   });
 
   it("cognito:groups が配列の場合、文字列以外の要素は除外する", () => {
     expect(
       getUserGroups(
-        makeEvent({ claims: { sub: "u", "cognito:groups": ["admin", 42, null, "editor"] } })
-      )
+        makeEvent({ claims: { sub: "u", "cognito:groups": ["admin", 42, null, "editor"] } }),
+      ),
     ).toEqual(["admin", "editor"]);
   });
 
   it("cognito:groups がカンマ区切り文字列の場合は配列に分割する", () => {
     expect(
-      getUserGroups(makeEvent({ claims: { sub: "u", "cognito:groups": "admin,editor" } }))
+      getUserGroups(makeEvent({ claims: { sub: "u", "cognito:groups": "admin,editor" } })),
     ).toEqual(["admin", "editor"]);
   });
 
   it("cognito:groups の文字列分割時に前後の空白をトリムする", () => {
     expect(
-      getUserGroups(makeEvent({ claims: { sub: "u", "cognito:groups": " admin , editor " } }))
+      getUserGroups(makeEvent({ claims: { sub: "u", "cognito:groups": " admin , editor " } })),
     ).toEqual(["admin", "editor"]);
   });
 });
@@ -81,7 +81,7 @@ describe("isAdmin", () => {
 
   it("admin がカンマ区切り文字列に含まれる場合は true を返す", () => {
     expect(isAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": "editor,admin" } }))).toBe(
-      true
+      true,
     );
   });
 
@@ -101,19 +101,19 @@ describe("isAdmin", () => {
 describe("requireAdmin", () => {
   it("admin グループに所属している場合は throw しない", () => {
     expect(() =>
-      requireAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": ["admin"] } }))
+      requireAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": ["admin"] } })),
     ).not.toThrow();
   });
 
   it("admin グループに所属していない場合は 403 を投げる", () => {
     expect(() =>
-      requireAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": ["editor"] } }))
+      requireAdmin(makeEvent({ claims: { sub: "u", "cognito:groups": ["editor"] } })),
     ).toThrow("Admin privilege required");
   });
 
   it("cognito:groups が未設定の場合は 403 を投げる", () => {
     expect(() => requireAdmin(makeEvent({ claims: { sub: "u" } }))).toThrow(
-      "Admin privilege required"
+      "Admin privilege required",
     );
   });
 

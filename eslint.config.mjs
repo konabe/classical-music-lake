@@ -331,5 +331,5 @@ export default withNuxt(
         },
       ],
     },
-  }
+  },
 );

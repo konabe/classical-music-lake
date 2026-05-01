@@ -48,7 +48,7 @@ beforeEach(() => {
   mockRefresh.mockClear();
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => true),
   );
 });
 
@@ -92,7 +92,7 @@ describe("ListeningLogsPage（削除フロー結合）", () => {
   it("キャンセル時は deleteLog が呼ばれない", async () => {
     vi.stubGlobal(
       "confirm",
-      vi.fn(() => false)
+      vi.fn(() => false),
     );
     const wrapper = await mountSuspended(ListeningLogsPage);
     await wrapper.findAll(".btn-danger")[0].trigger("click");

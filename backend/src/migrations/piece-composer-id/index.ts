@@ -64,7 +64,7 @@ export type MigrationDeps = {
 
 export async function runMigration(
   deps: MigrationDeps,
-  event: MigrateEvent = {}
+  event: MigrateEvent = {},
 ): Promise<MigrateSummary> {
   const dryRun = event.dryRun === true;
   const [pieces, composers] = await Promise.all([deps.scanAllPieces(), deps.scanAllComposers()]);
@@ -161,7 +161,7 @@ function makeDefaultDeps(): MigrationDeps {
     let cursor: Record<string, unknown> | undefined;
     do {
       const result = await dynamo.send(
-        new ScanCommand({ TableName: tableName, ExclusiveStartKey: cursor })
+        new ScanCommand({ TableName: tableName, ExclusiveStartKey: cursor }),
       );
       items.push(...((result.Items ?? []) as T[]));
       cursor = result.LastEvaluatedKey as Record<string, unknown> | undefined;

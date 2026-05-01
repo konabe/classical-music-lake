@@ -134,7 +134,7 @@ describe("usePiecesPaginated", () => {
       mockDollarFetch.mockReturnValueOnce(
         new Promise<PageResult<Piece>>((resolve) => {
           resolvePage = resolve;
-        })
+        }),
       );
       const p = usePiecesPaginated();
       const first = p.loadMore();
@@ -218,7 +218,7 @@ describe("usePiecesPaginated", () => {
             Authorization: "Bearer test-id-token",
             "Content-Type": "application/json",
           }),
-        })
+        }),
       );
     });
 
@@ -236,17 +236,17 @@ describe("usePiecesPaginated", () => {
             Authorization: "Bearer test-id-token",
             "Content-Type": "application/json",
           }),
-        })
+        }),
       );
     });
 
     it("createPiece が 401 を返したら throwResponseError がエラーにする", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 })
+        new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 }),
       );
       const p = usePiecesPaginated();
       await expect(
-        p.createPiece({ title: "x", composerId: "00000000-0000-4000-8000-000000000001" })
+        p.createPiece({ title: "x", composerId: "00000000-0000-4000-8000-000000000001" }),
       ).rejects.toThrow();
     });
   });

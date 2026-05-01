@@ -89,7 +89,7 @@ describe("DynamoDB 統合テスト（concert-logs）", () => {
       await listHandler(
         makeEvent({ method: "GET", path: "/concert-logs", userId: TEST_USER_ID }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(QueryCommand).toHaveBeenCalledWith(
@@ -98,7 +98,7 @@ describe("DynamoDB 統合テスト（concert-logs）", () => {
           IndexName: "GSI1",
           KeyConditionExpression: "userId = :userId",
           ExpressionAttributeValues: { ":userId": TEST_USER_ID },
-        })
+        }),
       );
     });
   });
@@ -115,7 +115,7 @@ describe("DynamoDB 統合テスト（concert-logs）", () => {
           userId: TEST_USER_ID,
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(GetCommand).toHaveBeenCalledWith({
@@ -144,7 +144,7 @@ describe("DynamoDB 統合テスト（concert-logs）", () => {
           userId: TEST_USER_ID,
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(PutCommand).toHaveBeenCalledWith({
@@ -175,7 +175,7 @@ describe("DynamoDB 統合テスト（concert-logs）", () => {
           userId: TEST_USER_ID,
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(GetCommand).toHaveBeenCalledWith({

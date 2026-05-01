@@ -23,7 +23,7 @@ export function toPaginatedResult<T>(page: {
 export async function findByIdOrNotFound<T, I extends EntityId>(
   findById: (id: I) => Promise<T | undefined>,
   id: I,
-  entityName: string
+  entityName: string,
 ): Promise<T> {
   const item = await findById(id);
   if (item === undefined) {

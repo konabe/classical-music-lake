@@ -88,7 +88,7 @@ describe("PieceForm", () => {
       expect((titleInput.element as HTMLInputElement).value).toBe("交響曲第9番");
       expect((composerSelect.element as HTMLSelectElement).value).toBe(COMPOSER_ID_BEETHOVEN);
       expect((videoUrlInput.element as HTMLInputElement).value).toBe(
-        "https://www.youtube.com/watch?v=abc"
+        "https://www.youtube.com/watch?v=abc",
       );
     });
 
@@ -145,7 +145,7 @@ describe("PieceForm", () => {
       expect((wrapper.find("#era").element as HTMLSelectElement).value).toBe("古典派");
       expect((wrapper.find("#formation").element as HTMLSelectElement).value).toBe("管弦楽");
       expect((wrapper.find("#region").element as HTMLSelectElement).value).toBe(
-        "ドイツ・オーストリア"
+        "ドイツ・オーストリア",
       );
     });
 

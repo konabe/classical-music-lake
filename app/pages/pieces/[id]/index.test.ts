@@ -81,7 +81,7 @@ describe("PieceDetailPage", () => {
         rating: 5,
         isFavorite: true,
         memo: "最高",
-      })
+      }),
     );
   });
 });

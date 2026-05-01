@@ -35,7 +35,7 @@ beforeEach(() => {
   mockDeleteLog.mockClear();
   vi.stubGlobal(
     "confirm",
-    vi.fn(() => true)
+    vi.fn(() => true),
   );
 });
 
@@ -94,7 +94,7 @@ describe("ListeningLogDetailTemplate", () => {
     it("confirm でキャンセルすると deleteLog が呼ばれない", async () => {
       vi.stubGlobal(
         "confirm",
-        vi.fn(() => false)
+        vi.fn(() => false),
       );
       const wrapper = await mountSuspended(ListeningLogDetailTemplate, {
         props: { log: sampleLog },

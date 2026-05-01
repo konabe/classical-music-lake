@@ -49,7 +49,7 @@ describe("POST /pieces (create)", () => {
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, { body, httpMethod: "POST", path: "/pieces" }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
@@ -64,7 +64,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("title is required");
@@ -80,11 +80,11 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("title is required");
-    }
+    },
   );
 
   it("title が 200 文字を超える場合は 400 を返す", async () => {
@@ -95,7 +95,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("title must be 200 characters or less");
@@ -109,7 +109,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("composerId must be a valid UUID");
@@ -125,11 +125,11 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("composerId must be a valid UUID");
-    }
+    },
   );
 
   it("videoUrl が不正な URL の場合は 400 を返す", async () => {
@@ -140,7 +140,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrl must be a valid URL");
@@ -155,7 +155,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(201);
 
@@ -177,7 +177,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(201);
     const body = JSON.parse(result?.body ?? "{}");
@@ -193,7 +193,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBeUUID();
@@ -212,7 +212,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.createdAt).toBe(now.toISOString());
@@ -236,7 +236,7 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(201);
       const body = JSON.parse(result?.body ?? "{}");
@@ -255,7 +255,7 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(201);
       const body = JSON.parse(result?.body ?? "{}");
@@ -274,7 +274,7 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(201);
       const body = JSON.parse(result?.body ?? "{}");
@@ -292,7 +292,7 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -305,7 +305,7 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -318,7 +318,7 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -331,7 +331,7 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -346,7 +346,7 @@ describe("POST /pieces (create)", () => {
         path: "/pieces",
       }),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(500);
   });
@@ -360,7 +360,7 @@ describe("POST /pieces (create)", () => {
           path: "/pieces",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
@@ -371,7 +371,7 @@ describe("POST /pieces (create)", () => {
       const result = await handler(
         makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
@@ -383,10 +383,10 @@ describe("POST /pieces (create)", () => {
         makeAuthEvent(
           TEST_USER_ID,
           { body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" },
-          "viewer,editor"
+          "viewer,editor",
         ),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(mockRepo.save).not.toHaveBeenCalled();
@@ -398,10 +398,10 @@ describe("POST /pieces (create)", () => {
         makeAuthEvent(
           TEST_USER_ID,
           { body: JSON.stringify(validInput), httpMethod: "POST", path: "/pieces" },
-          "admin,editor"
+          "admin,editor",
         ),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(201);
     });

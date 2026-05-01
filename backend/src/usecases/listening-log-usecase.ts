@@ -45,7 +45,7 @@ export class ListeningLogUsecase {
   async update(
     id: ListeningLogId,
     input: Partial<ListeningLog>,
-    userId: UserId
+    userId: UserId,
   ): Promise<ListeningLog> {
     await this.loadOwnedEntity(id, userId);
     return this.repo.update(id, input);

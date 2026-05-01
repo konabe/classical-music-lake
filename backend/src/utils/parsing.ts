@@ -36,7 +36,7 @@ export interface ListQueryOutput {
  */
 export function parseListQuery(
   queryParams: Record<string, string | undefined> | null | undefined,
-  schema: ZodType<ListQueryInput>
+  schema: ZodType<ListQueryInput>,
 ): ListQueryOutput {
   const parsed = schema.safeParse(queryParams ?? {});
   if (!parsed.success) {

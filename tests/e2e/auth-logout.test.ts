@@ -17,7 +17,7 @@ describe("ユーザーログアウト E2E テスト", () => {
       await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
 
       await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+        route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
       );
 
       await page.goto(url("/listening-logs"));
@@ -45,7 +45,7 @@ describe("ユーザーログアウト E2E テスト", () => {
       await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
 
       await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+        route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
       );
 
       await page.goto(url("/listening-logs"));
@@ -66,7 +66,7 @@ describe("ユーザーログアウト E2E テスト", () => {
       await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
 
       await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+        route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
       );
 
       await page.goto(url("/listening-logs"));
@@ -86,7 +86,7 @@ describe("ユーザーログアウト E2E テスト", () => {
       await page.addInitScript(() => localStorage.setItem("accessToken", "fake-token-for-test"));
 
       await page.route("http://api.test/listening-logs", (route) =>
-        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+        route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
       );
 
       await page.goto(url("/listening-logs"));

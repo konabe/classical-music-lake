@@ -22,7 +22,7 @@ type LegacyPiece = {
 const makeLegacyPiece = (
   id: string,
   composer: string | undefined,
-  overrides: Partial<LegacyPiece> = {}
+  overrides: Partial<LegacyPiece> = {},
 ): LegacyPiece => ({
   id,
   title: `曲 ${id}`,
@@ -46,7 +46,7 @@ describe("runMigration", () => {
   const runWithFixtures = (
     pieces: LegacyPiece[],
     composers: Composer[],
-    options: { dryRun?: boolean } = {}
+    options: { dryRun?: boolean } = {},
   ) =>
     runMigration(
       {
@@ -55,7 +55,7 @@ describe("runMigration", () => {
         savePiece,
         saveComposer,
       },
-      options
+      options,
     );
 
   beforeEach(() => {

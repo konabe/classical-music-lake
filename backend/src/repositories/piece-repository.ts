@@ -15,7 +15,7 @@ import type { PieceRepository } from "../domain/piece";
 export class DynamoDBPieceRepository implements PieceRepository {
   async findById(id: PieceId): Promise<Piece | undefined> {
     const result = await dynamo.send(
-      new GetCommand({ TableName: TABLE_PIECES, Key: { id: id.value } })
+      new GetCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }),
     );
     return result.Item as Piece | undefined;
   }

@@ -85,7 +85,7 @@ mockNuxtImport("usePiecesAll", () =>
     error: ref(null),
     pending: ref(false),
     refresh: vi.fn(),
-  })
+  }),
 );
 
 mockNuxtImport("useComposersAll", () =>
@@ -94,7 +94,7 @@ mockNuxtImport("useComposersAll", () =>
     error: ref(null),
     pending: ref(false),
     refresh: vi.fn(),
-  })
+  }),
 );
 
 describe("ListeningLogForm", () => {

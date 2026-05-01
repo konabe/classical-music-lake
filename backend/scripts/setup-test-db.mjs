@@ -52,7 +52,7 @@ async function main() {
       AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }],
       KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
       BillingMode: "PAY_PER_REQUEST",
-    })
+    }),
   );
 
   console.log(`テーブルを作成しました: ${TABLE_NAME}`);

@@ -45,7 +45,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("email");
@@ -59,7 +59,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -74,7 +74,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toContain("password");
@@ -90,7 +90,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -103,7 +103,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
     });
@@ -126,7 +126,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(200);
@@ -154,7 +154,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(401);
@@ -175,7 +175,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(401);
@@ -196,7 +196,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(403);
@@ -217,7 +217,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(429);
@@ -238,7 +238,7 @@ describe("POST /auth/login", () => {
           path: "/auth/login",
         }),
         mockContext,
-        mockCallback
+        mockCallback,
       );
 
       expect(result?.statusCode).toBe(500);

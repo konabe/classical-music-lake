@@ -66,7 +66,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent(undefined, JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
@@ -82,7 +82,7 @@ describe("PUT /listening-logs/:id (update)", () => {
       const result = await handler(
         makeEvent("abc-123", body, TEST_USER_ID),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
@@ -95,11 +95,11 @@ describe("PUT /listening-logs/:id (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ rating: invalidRating }), TEST_USER_ID),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("rating must be between 1 and 5");
-    }
+    },
   );
 
   it.each(["   ", "\t", "\n"])(
@@ -108,22 +108,22 @@ describe("PUT /listening-logs/:id (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ composer: whitespaceComposer }), TEST_USER_ID),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be a non-empty string");
-    }
+    },
   );
 
   it("composer が 100 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ composer: "あ".repeat(101) }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe(
-      "composer must be 100 characters or less"
+      "composer must be 100 characters or less",
     );
   });
 
@@ -133,18 +133,18 @@ describe("PUT /listening-logs/:id (update)", () => {
       const result = await handler(
         makeEvent("abc-123", JSON.stringify({ piece: whitespacePiece }), TEST_USER_ID),
         mockContext,
-        mockCallback
+        mockCallback,
       );
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be a non-empty string");
-    }
+    },
   );
 
   it("piece が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ piece: "あ".repeat(201) }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be 200 characters or less");
@@ -154,7 +154,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ memo: "あ".repeat(1001) }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("memo must be 1000 characters or less");
@@ -164,7 +164,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ listenedAt: "2024-01-15" }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(400);
   });
@@ -174,7 +174,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), OTHER_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
     expect(mockRepo.update).not.toHaveBeenCalled();
@@ -186,7 +186,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
     expect(mockRepo.update).not.toHaveBeenCalled();
@@ -197,7 +197,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(404);
   });
@@ -213,7 +213,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ isFavorite: true }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
   });
@@ -231,7 +231,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4, isFavorite: true }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(200);
 
@@ -253,7 +253,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(new Date(body.updatedAt).getTime()).toBeGreaterThanOrEqual(before);
@@ -269,7 +269,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ id: "tampered-id", rating: 4 }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBe("abc-123");
@@ -281,7 +281,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(409);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Item was updated by another request");
@@ -292,7 +292,7 @@ describe("PUT /listening-logs/:id (update)", () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
-      mockCallback
+      mockCallback,
     );
     expect(result?.statusCode).toBe(500);
   });

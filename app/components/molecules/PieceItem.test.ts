@@ -192,7 +192,7 @@ describe("PieceItem", () => {
         props: { piece: samplePieceWithYouTubeUrl, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find("img.youtube-thumbnail").attributes("alt")).toBe(
-        "交響曲第9番 ニ短調 Op.125 の動画サムネイル"
+        "交響曲第9番 ニ短調 Op.125 の動画サムネイル",
       );
     });
 
@@ -201,7 +201,7 @@ describe("PieceItem", () => {
         props: { piece: samplePieceWithYouTubeUrl, composerName: "ベートーヴェン" },
       });
       expect(wrapper.find(".piece-thumbnail").attributes("aria-label")).toBe(
-        "交響曲第9番 ニ短調 Op.125 の動画を再生"
+        "交響曲第9番 ニ短調 Op.125 の動画を再生",
       );
     });
 
