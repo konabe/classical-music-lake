@@ -25,7 +25,7 @@ onMounted(async () => {
     return;
   }
   const result = await handleOAuthCallback(code);
-  if (result.success) {
+  if (result.success === true) {
     await router.push("/");
   } else {
     error.value = "ログインに失敗しました。もう一度お試しください。";

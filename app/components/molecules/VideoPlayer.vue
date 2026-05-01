@@ -32,7 +32,7 @@ const iframeId = `yt-player-${Math.random().toString(36).slice(2)}`; // NOSONAR:
 let player: YTPlayer | undefined;
 
 onMounted(() => {
-  if (!isYouTube.value) {
+  if (isYouTube.value === false) {
     return;
   }
 

@@ -4,11 +4,11 @@ const colorMode = useColorMode();
 const isDark = computed(() => colorMode.value === "dark");
 
 const toggle = () => {
-  colorMode.preference = isDark.value ? "light" : "dark";
+  colorMode.preference = isDark.value === true ? "light" : "dark";
 };
 
 const ariaLabel = computed(() =>
-  isDark.value ? "ライトモードに切り替え" : "ダークモードに切り替え",
+  isDark.value === true ? "ライトモードに切り替え" : "ダークモードに切り替え",
 );
 </script>
 

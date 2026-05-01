@@ -29,14 +29,17 @@ async function handleSubmit(code: string) {
 
   try {
     const verifyResult = await verifyEmail(email.value, code);
-    if (!verifyResult.success) {
-      error.value = verifyResult.error || "確認に失敗しました";
+    if (verifyResult.success === false) {
+      error.value =
+        verifyResult.error !== undefined && verifyResult.error !== ""
+          ? verifyResult.error
+          : "確認に失敗しました";
       return;
     }
 
     const loginResult = await login(email.value, password.value);
     sessionStorage.removeItem("pendingPassword");
-    if (!loginResult.success) {
+    if (loginResult.success === false) {
       error.value =
         "確認は完了しましたが、ログインに失敗しました。ログイン画面からログインしてください。";
       return;
@@ -55,10 +58,11 @@ async function handleResend() {
 
   try {
     const result = await resendVerificationCode(email.value);
-    if (result.success) {
+    if (result.success === true) {
       infoMessage.value = "認証コードを再送しました。メールをご確認ください。";
     } else {
-      error.value = result.error || "再送信に失敗しました";
+      error.value =
+        result.error !== undefined && result.error !== "" ? result.error : "再送信に失敗しました";
     }
   } finally {
     isLoading.value = false;

@@ -70,9 +70,18 @@ const md040Rule = {
   },
 };
 
+// Storybook プリセットは files 指定をプリセット側に委ねず、
+// 明示的に *.stories.* / .storybook 配下に限定する
+const storybookConfigs = storybook.configs["flat/recommended"].map((config) => ({
+  ...config,
+  files: config.files ?? [
+    "**/*.stories.@(ts|vue|js|jsx|mjs|cjs)",
+    "**/.storybook/**/*.@(ts|vue|js|mjs|cjs)",
+  ],
+}));
+
 export default withNuxt(
-  prettierConfig,
-  ...storybook.configs["flat/recommended"],
+  ...storybookConfigs,
   // pnpm catalog の整合性チェック。
   // 何を catalog 化するかは引き続き手動判断とし、
   // 既存の catalog: 参照と pnpm-workspace.yaml の整合性のみを検証する。
@@ -104,8 +113,13 @@ export default withNuxt(
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
-      "vue/component-name-in-template-casing": ["error", "PascalCase"],
       curly: ["error", "all"],
+    },
+  },
+  {
+    files: ["app/**/*.vue"],
+    rules: {
+      "vue/component-name-in-template-casing": ["error", "PascalCase"],
     },
   },
   {
@@ -116,11 +130,12 @@ export default withNuxt(
     },
   },
   {
-    files: ["app/**/*.ts", "backend/src/**/*.ts"],
+    files: ["app/**/*.ts", "app/**/*.vue", "backend/src/**/*.ts"],
     languageOptions: {
       parserOptions: {
         project: true,
         tsconfigRootDir: import.meta.dirname,
+        extraFileExtensions: [".vue"],
       },
     },
     rules: {
@@ -140,7 +155,7 @@ export default withNuxt(
     },
   },
   {
-    files: ["**/*.{ts,tsx,vue}"],
+    files: ["**/*.{ts,vue}"],
     rules: {
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
@@ -157,7 +172,7 @@ export default withNuxt(
   },
   // Nuxt 3 / vitest globals が自動インポートするものの明示的インポートを禁止
   {
-    files: ["app/**/*.{ts,tsx,vue}"],
+    files: ["app/**/*.{ts,vue}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -209,7 +224,7 @@ export default withNuxt(
   },
   // テストで toBeTruthy / toBeFalsy の使用を禁止（明示的なマッチャーを使うこと）
   {
-    files: ["**/*.test.ts", "**/*.spec.ts"],
+    files: ["**/*.test.ts"],
     plugins: { vitest },
     rules: {
       "vitest/no-restricted-matchers": [
@@ -247,11 +262,11 @@ export default withNuxt(
         {
           patterns: [
             {
-              group: ["**/domain/*"],
+              group: ["**/domain/*", "**/domain/**"],
               message: "handlers から domain への直接参照は禁止です。usecases を経由してください",
             },
             {
-              group: ["**/repositories/*"],
+              group: ["**/repositories/*", "**/repositories/**"],
               message:
                 "handlers から repositories への直接参照は禁止です。usecases を経由してください",
             },
@@ -294,11 +309,11 @@ export default withNuxt(
               message: "domain は純粋関数層です。usecases への参照は禁止です",
             },
             {
-              group: ["**/repositories/*"],
+              group: ["**/repositories/*", "**/repositories/**"],
               message: "domain は純粋関数層です。repositories への参照は禁止です",
             },
             {
-              group: ["**/utils/*"],
+              group: ["**/utils/*", "**/utils/**"],
               message: "domain は純粋関数層です。utils への参照は禁止です",
             },
           ],
@@ -323,7 +338,7 @@ export default withNuxt(
               message: "repositories から usecases への参照は禁止です",
             },
             {
-              group: ["**/domain/*"],
+              group: ["**/domain/*", "**/domain/**"],
               allowTypeImports: true,
               message: "repositories から domain への値参照は禁止です（type import は許可）",
             },
@@ -332,4 +347,6 @@ export default withNuxt(
       ],
     },
   },
+  // eslint-config-prettier は他の整形系ルールを上書き無効化するため、必ず最後に適用する
+  prettierConfig,
 );
