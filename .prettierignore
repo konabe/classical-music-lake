@@ -1,14 +1,13 @@
-.nuxt/
-.output/
-dist/
-coverage/
-node_modules/
-backend/node_modules/
-cdk/node_modules/
-package-lock.json
+# 方針: .gitignore と重複する除外パスはこちらには書かず .gitignore に寄せる。
+# Prettier は .gitignore を自動では読まないため、format スクリプトで
+# `--ignore-path .gitignore --ignore-path .prettierignore` を指定して両方を読み込む。
+# このファイルには「.gitignore には載らないが整形対象から外したいもの」だけを記載する。
+
+# pnpm の lockfile（コミット対象だが整形不要）
 pnpm-lock.yaml
+
+# Claude Code のプロジェクトディレクトリ（.gitignore は settings.local.json のみ無視）
 .claude/
-.playwright-mcp/
-.playwright-cli/
+
 # release-please が自動生成するため除外
 CHANGELOG.md
