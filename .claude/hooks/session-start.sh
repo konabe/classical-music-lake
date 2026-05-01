@@ -7,10 +7,12 @@ fi
 
 # Install / select Node.js 24 (package.json requires "node": ">=24.15.0")
 export NVM_DIR=/opt/nvm
+# nvm.sh は default alias が未解決の状態で読み込むと内部の nvm_auto が
+# return 3 で抜けるため、`set -e` の元では即死する。失敗を許容して読み込む。
 # shellcheck disable=SC1091
-. "$NVM_DIR/nvm.sh"
+. "$NVM_DIR/nvm.sh" || true
 
-if ! nvm ls 24 2>/dev/null | grep -q "v24\."; then
+if ! nvm version 24 >/dev/null 2>&1; then
   nvm install 24 --no-progress
 fi
 nvm use 24 >/dev/null
