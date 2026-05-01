@@ -26,62 +26,32 @@ const ariaLabel = computed(() => `${props.label}: ${props.value}`);
 }
 
 .kind-default {
-  background: #f0ebe0;
-  border-color: #e0d8cc;
-  color: #555;
+  background: var(--color-badge-default-bg);
+  border-color: var(--color-badge-default-border);
+  color: var(--color-badge-default-text);
 }
 
 .kind-genre {
-  background: #eef2fb;
-  border-color: #c9d5ec;
-  color: #2a3f6e;
+  background: var(--color-badge-genre-bg);
+  border-color: var(--color-badge-genre-border);
+  color: var(--color-badge-genre-text);
 }
 
 .kind-era {
-  background: #f4efe5;
-  border-color: #d9c9a8;
-  color: #6a5424;
+  background: var(--color-badge-era-bg);
+  border-color: var(--color-badge-era-border);
+  color: var(--color-badge-era-text);
 }
 
 .kind-formation {
-  background: #eaf2ec;
-  border-color: #c3d9c9;
-  color: #28623e;
+  background: var(--color-badge-formation-bg);
+  border-color: var(--color-badge-formation-border);
+  color: var(--color-badge-formation-text);
 }
 
 .kind-region {
-  background: #f8ecec;
-  border-color: #e6c9c9;
-  color: #7b3a3a;
-}
-
-:global(.dark) .kind-default {
-  background: #2a2820;
-  border-color: #3d3a30;
-  color: #c9c2b0;
-}
-
-:global(.dark) .kind-genre {
-  background: #1c2540;
-  border-color: #2c3e6b;
-  color: #b8c8e8;
-}
-
-:global(.dark) .kind-era {
-  background: #2a2418;
-  border-color: #4a3f25;
-  color: #d9c280;
-}
-
-:global(.dark) .kind-formation {
-  background: #1c2a1f;
-  border-color: #2e4a35;
-  color: #a8d6b0;
-}
-
-:global(.dark) .kind-region {
-  background: #2c1f1f;
-  border-color: #4a2c2c;
-  color: #e0a8a8;
+  background: var(--color-badge-region-bg);
+  border-color: var(--color-badge-region-border);
+  color: var(--color-badge-region-text);
 }
 </style>
