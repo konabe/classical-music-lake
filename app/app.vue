@@ -5,8 +5,6 @@
 </template>
 
 <style>
-@import "~/assets/css/theme.css";
-
 * {
   box-sizing: border-box;
   margin: 0;

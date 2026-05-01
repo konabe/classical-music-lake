@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     storageKey: "nocturne-color-mode",
   },
   components: [{ path: "~/components", pathPrefix: false }],
+  css: ["~/assets/css/theme.css"],
   typescript: {
     strict: true,
   },
