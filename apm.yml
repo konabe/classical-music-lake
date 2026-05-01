@@ -1,0 +1,5 @@
+name: classical-music-lake
+version: 1.0.0
+dependencies:
+  apm:
+    - anthropics/skills/skills/frontend-design#5128e1865d670f5d6c9cef000e6dfc4e951fb5b9
