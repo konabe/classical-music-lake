@@ -1,12 +1,12 @@
 <script setup lang="ts">
-defineProps<{
-  type?: "button" | "submit";
-  disabled?: boolean;
-}>();
+import type { CommonButtonProps, ButtonSlots } from "./button-props";
+
+defineProps<CommonButtonProps>();
+defineSlots<ButtonSlots>();
 </script>
 
 <template>
-  <button class="btn-danger" :type="type ?? 'button'" :disabled="disabled">
+  <button class="btn-danger" type="button" :disabled="disabled">
     <slot />
   </button>
 </template>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-defineProps<{
-  type?: "button" | "submit";
-  disabled?: boolean;
-}>();
+import type { SubmittableButtonProps, ButtonSlots } from "./button-props";
+
+defineProps<SubmittableButtonProps>();
+defineSlots<ButtonSlots>();
 </script>
 
 <template>

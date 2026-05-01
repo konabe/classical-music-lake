@@ -19,19 +19,11 @@ describe("ButtonDanger", () => {
   });
 
   describe("props による挙動の変化", () => {
-    it("デフォルトの type は button", async () => {
+    it("type は常に button 固定", async () => {
       const wrapper = await mountSuspended(ButtonDanger, {
         slots: { default: "削除" },
       });
       expect(wrapper.find("button").attributes("type")).toBe("button");
-    });
-
-    it("type=submit を渡せる", async () => {
-      const wrapper = await mountSuspended(ButtonDanger, {
-        props: { type: "submit" },
-        slots: { default: "送信" },
-      });
-      expect(wrapper.find("button").attributes("type")).toBe("submit");
     });
 
     it("disabled=true のとき button に disabled 属性が付く", async () => {
