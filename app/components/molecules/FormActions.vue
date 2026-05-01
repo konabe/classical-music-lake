@@ -11,7 +11,7 @@ const emit = defineEmits<{
 
 <template>
   <div class="form-actions">
-    <ButtonSecondary label="キャンセル" @click="emit('cancel')" />
+    <ButtonSecondary @click="emit('cancel')">キャンセル</ButtonSecondary>
     <ButtonPrimary type="submit" :disabled="isSubmitting">
       {{ submitLabel ?? "保存する" }}
     </ButtonPrimary>

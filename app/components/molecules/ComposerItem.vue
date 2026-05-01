@@ -30,8 +30,8 @@ const emit = defineEmits<{
     </div>
     <div class="composer-actions">
       <button type="button" class="btn-detail" @click="emit('detail')">詳細</button>
-      <ButtonSecondary label="編集" @click="emit('edit')" />
-      <ButtonDanger label="削除" @click="emit('delete')" />
+      <ButtonSecondary @click="emit('edit')">編集</ButtonSecondary>
+      <ButtonDanger @click="emit('delete')">削除</ButtonDanger>
     </div>
   </div>
 </template>

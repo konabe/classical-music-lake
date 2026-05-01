@@ -1,15 +1,14 @@
 <script setup lang="ts">
 defineProps<{
-  label: string;
-}>();
-
-const emit = defineEmits<{
-  click: [];
+  type?: "button" | "submit";
+  disabled?: boolean;
 }>();
 </script>
 
 <template>
-  <button type="button" class="btn-secondary" @click="emit('click')">{{ label }}</button>
+  <button class="btn-secondary" :type="type ?? 'button'" :disabled="disabled">
+    <slot />
+  </button>
 </template>
 
 <style scoped>
@@ -22,10 +21,20 @@ const emit = defineEmits<{
   font-size: 0.95rem;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background: var(--color-border-strong);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>
