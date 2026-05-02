@@ -24,7 +24,7 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
 </script>
 
 <template>
-  <article class="piece-item">
+  <article :class="['piece-item', { 'piece-item--no-thumb': !hasYouTubeThumbnail }]">
     <button
       v-if="hasYouTubeThumbnail"
       type="button"
@@ -89,6 +89,10 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
 
 .piece-item:hover::before {
   transform: translateY(-50%) scaleY(1);
+}
+
+.piece-item--no-thumb {
+  grid-template-columns: 1fr auto;
 }
 
 .piece-thumbnail {
