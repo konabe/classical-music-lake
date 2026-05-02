@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.7.0...classical-music-lake-v2.8.0) (2026-05-02)
+
+
+### Features
+
+* **composers:** 生年・没年フィールドを追加し一覧を生年昇順で表示 ([#630](https://github.com/konabe/classical-music-lake/issues/630)) ([d0400e7](https://github.com/konabe/classical-music-lake/commit/d0400e79fedfe7e1f01d1599d7846ae7e0140807))
+
 ## [2.7.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.6.0...classical-music-lake-v2.7.0) (2026-05-02)
 
 
