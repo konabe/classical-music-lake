@@ -23,9 +23,7 @@ const emit = defineEmits<{
       </div>
 
       <h2 class="log-title">
-        <NuxtLink :to="`/listening-logs/${listeningLog.id}`">
-          {{ listeningLog.piece }}
-        </NuxtLink>
+        <NuxtLink :to="`/listening-logs/${listeningLog.id}`">{{ listeningLog.piece }}</NuxtLink>
       </h2>
 
       <div class="log-rating">
@@ -124,7 +122,12 @@ const emit = defineEmits<{
 .log-title a {
   color: var(--color-text);
   text-decoration: none;
-  transition: color 0.25s ease;
+}
+
+.log-title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 
 .log-title a:hover {
@@ -160,6 +163,8 @@ const emit = defineEmits<{
   gap: 0.5rem;
   flex-shrink: 0;
   align-items: flex-end;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 720px) {

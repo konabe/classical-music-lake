@@ -38,7 +38,9 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
 
     <div class="piece-main">
       <p class="piece-composer smallcaps">{{ composerName }}</p>
-      <h2 class="piece-title">{{ piece.title }}</h2>
+      <h2 class="piece-title">
+        <NuxtLink :to="`/pieces/${piece.id}`">{{ piece.title }}</NuxtLink>
+      </h2>
       <div class="piece-category-wrapper">
         <PieceCategoryList :piece="piece" />
       </div>
@@ -91,6 +93,7 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
 
 .piece-thumbnail {
   position: relative;
+  z-index: 1;
   flex-shrink: 0;
   padding: 0;
   margin: 0;
@@ -165,6 +168,21 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
     "SOFT" 50;
 }
 
+.piece-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.piece-title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.piece-title a:hover {
+  color: var(--color-accent);
+}
+
 .piece-category-wrapper {
   margin-top: 0.4rem;
 }
@@ -174,6 +192,8 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
   gap: 0.6rem;
   flex-shrink: 0;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .btn-detail {

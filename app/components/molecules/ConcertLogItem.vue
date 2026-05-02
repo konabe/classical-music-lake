@@ -20,7 +20,9 @@ const emit = defineEmits<{
         <span class="log-venue smallcaps">{{ concertLog.venue }}</span>
       </div>
 
-      <h2 class="log-title">{{ concertLog.title }}</h2>
+      <h2 class="log-title">
+        <NuxtLink :to="`/concert-logs/${concertLog.id}`">{{ concertLog.title }}</NuxtLink>
+      </h2>
 
       <dl class="log-credits">
         <template v-if="concertLog.conductor">
@@ -120,6 +122,21 @@ const emit = defineEmits<{
     "SOFT" 50;
 }
 
+.log-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.log-title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.log-title a:hover {
+  color: var(--color-accent);
+}
+
 .log-credits {
   display: grid;
   grid-template-columns: minmax(80px, auto) 1fr;
@@ -145,6 +162,8 @@ const emit = defineEmits<{
   gap: 0.5rem;
   flex-shrink: 0;
   align-items: flex-end;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 720px) {
