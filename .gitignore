@@ -53,3 +53,10 @@ tmp/
 
 # Playwright CLI local snapshots
 .playwright-cli/
+
+
+# APM dependencies
+apm_modules/
+
+# APM が生成する GitHub Copilot 連携ディレクトリ（本プロジェクトでは Claude Code のみ利用）
+.github/skills/
