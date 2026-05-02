@@ -47,7 +47,6 @@ describe("ConcertLogDetail", () => {
         props: { log: sampleLog, pieces: [], composerNameById },
       });
       expect(wrapper.find("h1").text()).toBe("定期演奏会 第100回");
-      expect(wrapper.text()).toContain("会場");
       expect(wrapper.text()).toContain("サントリーホール");
     });
 
@@ -87,9 +86,9 @@ describe("ConcertLogDetail", () => {
           composerNameById,
         },
       });
-      expect(wrapper.text()).not.toContain("指揮者");
-      expect(wrapper.text()).not.toContain("オーケストラ");
-      expect(wrapper.text()).not.toContain("ソリスト");
+      expect(wrapper.text()).not.toContain("Conductor");
+      expect(wrapper.text()).not.toContain("Orchestra");
+      expect(wrapper.text()).not.toContain("Soloist");
     });
   });
 
@@ -115,14 +114,14 @@ describe("ConcertLogDetail", () => {
           composerNameById,
         },
       });
-      expect(wrapper.text()).toContain("プログラムなし");
+      expect(wrapper.text()).toContain("プログラムは記録されていません");
     });
 
     it("pieceIds が未設定の場合もプログラムなしメッセージが表示される", async () => {
       const wrapper = await mountSuspended(ConcertLogDetail, {
         props: { log: sampleLog, pieces: samplePieces, composerNameById },
       });
-      expect(wrapper.text()).toContain("プログラムなし");
+      expect(wrapper.text()).toContain("プログラムは記録されていません");
     });
   });
 });

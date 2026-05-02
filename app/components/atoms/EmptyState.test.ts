@@ -6,7 +6,7 @@ describe("EmptyState", () => {
     const wrapper = await mountSuspended(EmptyState, {
       slots: { default: "まだ記録がありません。" },
     });
-    expect(wrapper.text()).toBe("まだ記録がありません。");
+    expect(wrapper.find(".empty-text").text()).toBe("まだ記録がありません。");
   });
 
   it("empty-state クラスが存在する", async () => {

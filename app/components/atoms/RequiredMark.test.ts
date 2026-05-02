@@ -2,9 +2,9 @@ import { mountSuspended } from "@nuxt/test-utils/runtime";
 import RequiredMark from "./RequiredMark.vue";
 
 describe("RequiredMark", () => {
-  it("「必須」テキストが表示される", async () => {
+  it("「required」テキストが表示される", async () => {
     const wrapper = await mountSuspended(RequiredMark);
-    expect(wrapper.text()).toBe("必須");
+    expect(wrapper.text()).toBe("required");
   });
 
   it("required クラスが存在する", async () => {

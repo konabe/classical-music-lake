@@ -50,24 +50,25 @@ function handleSubmit() {
           required
         />
         <p class="password-requirements">
-          パスワードは8文字以上で、大文字・小文字・数字を含む必要があります
+          <em>—</em>
+          パスワードは 8 文字以上で、大文字・小文字・数字を含む必要があります
         </p>
       </FormGroup>
 
       <ButtonPrimary type="submit" :disabled="props.isLoading">
-        {{ props.isLoading ? "登録中..." : "登録" }}
+        {{ props.isLoading ? "Registering…" : "登録" }}
       </ButtonPrimary>
     </form>
 
     <div v-if="props.successMessage" class="success-message">
       <p>{{ props.successMessage }}</p>
-      <NuxtLink to="/auth/login">ログイン画面へ</NuxtLink>
+      <NuxtLink to="/auth/login">ログイン画面へ &rarr;</NuxtLink>
     </div>
 
     <div class="login-link">
       <p>
         既にアカウントをお持ちですか？
-        <NuxtLink to="/auth/login">ログイン</NuxtLink>
+        <NuxtLink to="/auth/login">ログイン &rarr;</NuxtLink>
       </p>
     </div>
   </AuthFormContainer>
@@ -81,30 +82,62 @@ form {
 }
 
 .password-requirements {
-  color: #7a5c38;
-  font-size: 0.875rem;
-  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.password-requirements em {
+  color: var(--color-accent);
+  font-style: italic;
+  font-family: var(--font-display);
 }
 
 .success-message {
-  background-color: #d8e8c0;
-  color: #2a5218;
-  padding: 1rem;
-  border-radius: 4px;
-  text-align: center;
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  border-left: 3px solid var(--color-accent);
+  color: var(--color-text);
+  padding: 1rem 1.2rem;
+  text-align: left;
+  font-family: var(--font-serif);
+  margin-top: 1rem;
+}
+
+.success-message p {
+  font-style: italic;
+  margin: 0 0 0.4rem;
 }
 
 .success-message a {
   display: inline-block;
-  margin-top: 0.5rem;
-  color: #2a5218;
-  text-decoration: underline;
+  color: var(--color-accent);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s ease;
+}
+
+.success-message a:hover {
+  border-bottom-color: var(--color-accent);
 }
 
 .login-link {
   text-align: center;
-  margin-top: 1rem;
-  color: #7a5c38;
+  margin-top: 1.4rem;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
 }
 
 .login-link p {
@@ -115,33 +148,15 @@ form {
 
 .login-link a {
   display: inline-block;
-  color: var(--color-primary-soft);
+  color: var(--color-accent);
   text-decoration: none;
   white-space: nowrap;
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s ease;
 }
 
 .login-link a:hover {
-  text-decoration: underline;
-}
-
-:global(.dark .password-requirements) {
-  color: #c8a878;
-}
-
-:global(.dark .success-message) {
-  background-color: #2a5218;
-  color: #d8e8c0;
-}
-
-:global(.dark .success-message a) {
-  color: #d8e8c0;
-}
-
-:global(.dark .login-link) {
-  color: var(--color-text-secondary);
-}
-
-:global(.dark .login-link a) {
-  color: var(--color-link);
+  border-bottom-color: var(--color-accent);
 }
 </style>

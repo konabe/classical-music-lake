@@ -18,41 +18,56 @@ const handleDelete = async () => {
 </script>
 
 <template>
-  <div>
-    <div class="page-header">
-      <NuxtLink to="/listening-logs" class="back-link">← 鑑賞記録一覧</NuxtLink>
+  <article class="log-detail">
+    <header class="log-detail-head">
+      <NuxtLink to="/listening-logs" class="back-link">
+        <span aria-hidden="true">&larr;</span>
+        <span class="smallcaps">Back to recordings</span>
+      </NuxtLink>
       <div class="actions">
         <ButtonSecondary @click="router.push(`/listening-logs/${props.log.id}/edit`)">
-          編集
+          Edit
         </ButtonSecondary>
-        <ButtonDanger @click="handleDelete">削除</ButtonDanger>
+        <ButtonDanger @click="handleDelete">Delete</ButtonDanger>
       </div>
-    </div>
+    </header>
 
     <ListeningLogDetail :log="log" />
-  </div>
+  </article>
 </template>
 
 <style scoped>
-.page-header {
+.log-detail {
+  margin-bottom: 4rem;
+}
+
+.log-detail-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   color: var(--color-text-muted);
   text-decoration: none;
-  font-size: 0.9rem;
+  transition:
+    color 0.25s ease,
+    gap 0.25s ease;
 }
 
 .back-link:hover {
-  color: var(--color-text-secondary);
+  color: var(--color-accent);
+  gap: 0.65rem;
 }
 
 .actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 </style>

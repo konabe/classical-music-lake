@@ -156,7 +156,7 @@ describe("PieceDetailTemplate", () => {
           composerName: "ベートーヴェン",
         },
       });
-      expect(wrapper.find(".kind-genre").text()).toBe("その他");
+      expect(wrapper.find(".kind-genre .badge-value").text()).toBe("その他");
     });
 
     it("genre が未設定の場合、ジャンルバッジが表示されない", async () => {
@@ -195,8 +195,8 @@ describe("PieceDetailTemplate", () => {
         },
       });
       expect(wrapper.find(".admin-actions").exists()).toBe(true);
-      expect(wrapper.find(".btn-secondary").exists()).toBe(true);
-      expect(wrapper.find(".btn-danger").exists()).toBe(true);
+      expect(wrapper.find("a.admin-link").exists()).toBe(true);
+      expect(wrapper.find(".admin-link--danger").exists()).toBe(true);
     });
 
     it("isAdmin が false のとき編集・削除ボタンが表示されない", async () => {
@@ -220,7 +220,7 @@ describe("PieceDetailTemplate", () => {
           composerName: "ベートーヴェン",
         },
       });
-      await wrapper.find(".btn-danger").trigger("click");
+      await wrapper.find(".admin-link--danger").trigger("click");
       expect(wrapper.emitted("delete")).toBeDefined();
     });
 
@@ -233,7 +233,7 @@ describe("PieceDetailTemplate", () => {
           composerName: "ベートーヴェン",
         },
       });
-      expect(wrapper.find(".btn-secondary").attributes("href")).toBe("/pieces/2/edit");
+      expect(wrapper.find("a.admin-link").attributes("href")).toBe("/pieces/2/edit");
     });
   });
 });

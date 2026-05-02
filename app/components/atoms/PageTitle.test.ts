@@ -16,10 +16,10 @@ describe("PageTitle", () => {
     expect(wrapper.find(".page-title").exists()).toBe(true);
   });
 
-  it("h1 要素として描画される", async () => {
+  it("h1 要素を含む", async () => {
     const wrapper = await mountSuspended(PageTitle, {
       slots: { default: "タイトル" },
     });
-    expect(wrapper.element.tagName.toLowerCase()).toBe("h1");
+    expect(wrapper.find("h1.page-title").exists()).toBe(true);
   });
 });

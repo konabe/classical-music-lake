@@ -3,43 +3,73 @@
  * @nuxtjs/color-mode により <html> に "light" / "dark" クラスが付与される
  * ============================================================ */
 
+:root {
+  /* ── Typography tokens（エディトリアル用） ── */
+  --font-display:
+    "Fraunces", "Cormorant Garamond", "Times New Roman", "YuMincho", "Hiragino Mincho ProN", serif;
+  --font-serif:
+    "Cormorant Garamond", "Fraunces", "Times New Roman", "YuMincho", "Hiragino Mincho ProN", serif;
+  --font-sans:
+    "Inter Tight", -apple-system, "Helvetica Neue", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  --font-numeric: "Fraunces", "Times New Roman", serif;
+
+  /* タイポトラッキング */
+  --tracking-tight: -0.02em;
+  --tracking-base: 0;
+  --tracking-wide: 0.08em;
+  --tracking-wider: 0.18em;
+  --tracking-widest: 0.32em;
+}
+
 :root,
 :root.light {
   color-scheme: light;
 
   /* 背景 */
-  --color-bg-base: #f8f4ed;
-  --color-bg-surface: #fff;
-  --color-bg-elevated: #f5f0e8;
+  --color-bg-base: #f4ecdb;
+  --color-bg-surface: #fbf6e9;
+  --color-bg-elevated: #f0e6cf;
   --color-bg-input: #faf3e0;
-  --color-bg-subtle: #eaeef4;
+  --color-bg-subtle: #ebe1c8;
+  --color-bg-paper: #f8f1de;
+  --color-bg-ink: #0a1226;
 
   /* テキスト */
-  --color-text: #1e2d5a;
-  --color-text-secondary: #333;
-  --color-text-muted: #666;
-  --color-text-faint: #888;
-  --color-text-disabled: #999;
+  --color-text: #131c38;
+  --color-text-secondary: #2a3251;
+  --color-text-muted: #5a5544;
+  --color-text-faint: #837b62;
+  --color-text-disabled: #aaa294;
 
   /* プライマリ（ネイビー） */
-  --color-primary: #1e2d5a;
+  --color-primary: #131c38;
   --color-primary-hover: #2a3f7e;
-  --color-primary-active: #152040;
+  --color-primary-active: #0a1020;
   --color-primary-soft: #2d2d50;
-  --color-on-primary: #fff;
+  --color-on-primary: #fbf6e9;
+
+  /* アクセント（シャンパンゴールド／ボルドー） */
+  --color-accent: #b08a3e;
+  --color-accent-hover: #c9a55a;
+  --color-accent-soft: #d8b876;
+  --color-accent-bg: #f0e3c2;
+  --color-bordeaux: #6e1f2b;
+  --color-bordeaux-soft: #8c3540;
 
   /* セカンダリ（補助グレー） */
   --color-secondary: #9aa5b4;
   --color-secondary-hover: #6b7a99;
 
   /* ボーダー */
-  --color-border: #e0d8cc;
-  --color-border-strong: #d4d9e3;
-  --color-border-subtle: #eaeef4;
+  --color-border: #d8cdb0;
+  --color-border-strong: #b8a888;
+  --color-border-subtle: #ebe1c8;
+  --color-hairline: rgba(19, 28, 56, 0.2);
+  --color-hairline-strong: rgba(19, 28, 56, 0.45);
 
   /* リンク */
-  --color-link: #1e2d5a;
-  --color-link-hover: #2a3f7e;
+  --color-link: #131c38;
+  --color-link-hover: #b08a3e;
 
   /* ステータス: エラー / 危険 */
   --color-danger: #c0392b;
@@ -59,9 +89,9 @@
   --color-warning-soft: #6a5424;
 
   /* ヘッダー */
-  --color-header-bg: #1e2d5a;
-  --color-header-text: #fff;
-  --color-header-text-muted: #9aa5b4;
+  --color-header-bg: #0a1226;
+  --color-header-text: #fbf6e9;
+  --color-header-text-muted: #b8a888;
 
   /* バッジ: デフォルト */
   --color-badge-default-bg: #f0ebe0;
@@ -101,25 +131,35 @@
   color-scheme: dark;
 
   /* 背景: ネイビー寄りのダークパレット */
-  --color-bg-base: #0f1729;
-  --color-bg-surface: #1a2547;
-  --color-bg-elevated: #243160;
+  --color-bg-base: #0a1020;
+  --color-bg-surface: #131c38;
+  --color-bg-elevated: #1c2649;
   --color-bg-input: #1a2547;
-  --color-bg-subtle: #243160;
+  --color-bg-subtle: #1c2649;
+  --color-bg-paper: #131c38;
+  --color-bg-ink: #f4ecdb;
 
   /* テキスト */
-  --color-text: #e3e8f1;
-  --color-text-secondary: #c5cce0;
-  --color-text-muted: #8b95a8;
-  --color-text-faint: #6b7593;
+  --color-text: #f0e8d2;
+  --color-text-secondary: #d8cdb0;
+  --color-text-muted: #a39c84;
+  --color-text-faint: #7c7563;
   --color-text-disabled: #555f7a;
 
   /* プライマリ（明るめのネイビーブルー） */
-  --color-primary: #4a6ba8;
-  --color-primary-hover: #5d80c0;
-  --color-primary-active: #3a5790;
+  --color-primary: #d8cdb0;
+  --color-primary-hover: #f0e8d2;
+  --color-primary-active: #b8a888;
   --color-primary-soft: #2c3e6b;
-  --color-on-primary: #fff;
+  --color-on-primary: #0a1020;
+
+  /* アクセント（シャンパンゴールド／ボルドー） */
+  --color-accent: #d4ad5c;
+  --color-accent-hover: #e6c378;
+  --color-accent-soft: #c9a55a;
+  --color-accent-bg: #2a2516;
+  --color-bordeaux: #b85968;
+  --color-bordeaux-soft: #8c3540;
 
   /* セカンダリ */
   --color-secondary: #6b7593;
@@ -127,12 +167,14 @@
 
   /* ボーダー */
   --color-border: #2c3e6b;
-  --color-border-strong: #3d5285;
-  --color-border-subtle: #243160;
+  --color-border-strong: #4a5a85;
+  --color-border-subtle: #1c2649;
+  --color-hairline: rgba(240, 232, 210, 0.18);
+  --color-hairline-strong: rgba(240, 232, 210, 0.38);
 
   /* リンク */
-  --color-link: #7da0d9;
-  --color-link-hover: #a3bce6;
+  --color-link: #d4ad5c;
+  --color-link-hover: #e6c378;
 
   /* ステータス: エラー / 危険 */
   --color-danger: #e57373;
@@ -152,9 +194,9 @@
   --color-warning-soft: #d9b74a;
 
   /* ヘッダー */
-  --color-header-bg: #0a1020;
-  --color-header-text: #f0f3f9;
-  --color-header-text-muted: #8b95a8;
+  --color-header-bg: #060a18;
+  --color-header-text: #f0e8d2;
+  --color-header-text-muted: #a39c84;
 
   /* バッジ: デフォルト */
   --color-badge-default-bg: #2a2820;

@@ -7,33 +7,41 @@ defineSlots<ButtonSlots>();
 
 <template>
   <button class="btn-danger" type="button" :disabled="disabled">
-    <slot />
+    <span class="btn-danger-label">
+      <slot />
+    </span>
   </button>
 </template>
 
 <style scoped>
 .btn-danger {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
-  border: 1px solid var(--color-danger-border);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  background: transparent;
+  color: var(--color-bordeaux);
+  border: 1px solid var(--color-bordeaux);
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: var(--color-danger-bg-strong);
+  background: var(--color-bordeaux);
+  color: var(--color-bg-paper);
 }
 
 .btn-danger:focus-visible {
-  outline: 2px solid var(--color-danger);
-  outline-offset: 2px;
+  outline: 1px solid var(--color-bordeaux);
+  outline-offset: 3px;
 }
 
 .btn-danger:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 </style>

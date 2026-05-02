@@ -240,25 +240,25 @@ describe("ListeningLogForm", () => {
   describe("楽曲選択", () => {
     it("楽曲選択セレクトボックスが表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      expect(wrapper.find("select.piece-select").exists()).toBe(true);
+      expect(wrapper.find("select#piece-select").exists()).toBe(true);
     });
 
     it("「選択しない」オプションが含まれる", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const options = wrapper.findAll("select.piece-select option");
+      const options = wrapper.findAll("select#piece-select option");
       expect(options[0].text()).toBe("選択しない");
     });
 
     it("楽曲一覧がオプションに表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const options = wrapper.findAll("select.piece-select option");
+      const options = wrapper.findAll("select#piece-select option");
       expect(options[1].text()).toBe("交響曲第9番 / ベートーヴェン");
       expect(options[2].text()).toBe("魔笛 / モーツァルト");
     });
 
     it("楽曲を選択すると曲名・作曲家が自動入力される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select.piece-select");
+      const select = wrapper.find("select#piece-select");
       await select.setValue("piece-1");
 
       const composerInput = wrapper.find('input[placeholder="例: ベートーヴェン"]');
@@ -269,7 +269,7 @@ describe("ListeningLogForm", () => {
 
     it("「選択しない」を選ぶと曲名・作曲家がクリアされる", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select.piece-select");
+      const select = wrapper.find("select#piece-select");
 
       await select.setValue("piece-1");
       await select.setValue("");
@@ -289,28 +289,28 @@ describe("ListeningLogForm", () => {
 
     it("videoUrl ありの曲を選択すると動画プレイヤーが表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select.piece-select");
+      const select = wrapper.find("select#piece-select");
       await select.setValue("piece-3");
       expect(wrapper.find(".video-player").exists()).toBe(true);
     });
 
     it("表示された動画は選択した曲の URL を使用する", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select.piece-select");
+      const select = wrapper.find("select#piece-select");
       await select.setValue("piece-3");
       expect(wrapper.find("iframe").attributes("src")).toContain("video123");
     });
 
     it("videoUrl なしの曲を選択しても動画プレイヤーは表示されない", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select.piece-select");
+      const select = wrapper.find("select#piece-select");
       await select.setValue("piece-1");
       expect(wrapper.find(".video-player").exists()).toBe(false);
     });
 
     it("別の曲（videoUrl あり）に選択を変えると動画が切り替わる", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select.piece-select");
+      const select = wrapper.find("select#piece-select");
 
       await select.setValue("piece-3");
       expect(wrapper.find("iframe").attributes("src")).toContain("video123");
@@ -321,7 +321,7 @@ describe("ListeningLogForm", () => {
 
     it("「選択しない」にすると動画が非表示になる", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select.piece-select");
+      const select = wrapper.find("select#piece-select");
 
       await select.setValue("piece-3");
       expect(wrapper.find(".video-player").exists()).toBe(true);

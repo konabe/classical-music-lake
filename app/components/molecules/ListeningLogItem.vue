@@ -13,81 +13,145 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="log-item">
+  <article class="log-item">
     <div class="log-main">
-      <div class="log-title">
+      <div class="log-meta">
         <FavoriteIndicator :is-favorite="listeningLog.isFavorite" />
+        <span class="log-composer smallcaps">{{ listeningLog.composer }}</span>
+        <span class="log-rule" aria-hidden="true" />
+        <time class="log-date smallcaps numeric">{{ formatDate(listeningLog.listenedAt) }}</time>
+      </div>
+
+      <h2 class="log-title">
         <NuxtLink :to="`/listening-logs/${listeningLog.id}`">
           {{ listeningLog.piece }}
         </NuxtLink>
-      </div>
-      <div class="log-meta">
-        <span>{{ listeningLog.composer }}</span>
-      </div>
-      <div class="log-sub">
+      </h2>
+
+      <div class="log-rating">
         <RatingDisplay :rating="listeningLog.rating" />
-        <span class="date">{{ formatDate(listeningLog.listenedAt) }}</span>
       </div>
-      <p v-if="listeningLog.memo" class="log-memo">{{ listeningLog.memo }}</p>
+
+      <p v-if="listeningLog.memo" class="log-memo">
+        <span class="memo-quote" aria-hidden="true">&ldquo;</span>
+        {{ listeningLog.memo }}
+        <span class="memo-quote" aria-hidden="true">&rdquo;</span>
+      </p>
     </div>
+
     <div class="log-actions">
-      <ButtonSecondary @click="emit('edit')">編集</ButtonSecondary>
-      <ButtonDanger @click="emit('delete')">削除</ButtonDanger>
+      <ButtonSecondary @click="emit('edit')">Edit</ButtonSecondary>
+      <ButtonDanger @click="emit('delete')">Delete</ButtonDanger>
     </div>
-  </div>
+  </article>
 </template>
 
 <style scoped>
 .log-item {
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-secondary);
-  border-radius: 10px;
-  padding: 1.2rem 1.5rem;
+  position: relative;
+  background: var(--color-bg-paper);
+  border-bottom: 1px solid var(--color-hairline);
+  padding: 1.6rem 0.5rem 1.6rem 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  transition: background 0.25s ease;
+}
+
+.log-item:hover {
+  background: var(--color-bg-elevated);
+}
+
+.log-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  height: 60%;
+  width: 2px;
+  background: var(--color-accent);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.log-item:hover::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+.log-main {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.log-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.log-composer {
+  color: var(--color-bordeaux);
+}
+:root.dark .log-composer {
+  color: var(--color-accent);
+}
+
+.log-rule {
+  width: 1.5rem;
+  height: 1px;
+  background: var(--color-hairline-strong);
+}
+
+.log-date {
+  color: var(--color-text-muted);
 }
 
 .log-title {
-  font-size: 1.1rem;
-  font-weight: bold;
-  margin-bottom: 0.3rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(1.3rem, 2.4vw, 1.65rem);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-tight);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 50;
 }
 
 .log-title a {
   color: var(--color-text);
   text-decoration: none;
+  transition: color 0.25s ease;
 }
 
 .log-title a:hover {
-  text-decoration: underline;
+  color: var(--color-accent);
 }
 
-.log-meta {
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 0.3rem;
-}
-
-.log-sub {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.9rem;
-  margin-bottom: 0.3rem;
-}
-
-.date {
-  color: var(--color-text-disabled);
+.log-rating {
+  margin-top: 0.1rem;
 }
 
 .log-memo {
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
-  margin-top: 0.5rem;
+  font-family: var(--font-serif);
   font-style: italic;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 1.55;
+  padding-left: 1rem;
+  border-left: 1px solid var(--color-hairline-strong);
+  max-width: 50em;
+  margin-top: 0.25rem;
+}
+
+.memo-quote {
+  font-family: var(--font-display);
+  color: var(--color-accent);
+  font-style: italic;
+  font-size: 1.2em;
 }
 
 .log-actions {
@@ -95,5 +159,16 @@ const emit = defineEmits<{
   flex-direction: column;
   gap: 0.5rem;
   flex-shrink: 0;
+  align-items: flex-end;
+}
+
+@media (max-width: 720px) {
+  .log-item {
+    grid-template-columns: 1fr;
+  }
+  .log-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
 }
 </style>

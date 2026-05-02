@@ -77,14 +77,14 @@ describe("ComposerItem", () => {
       const wrapper = await mountSuspended(ComposerItem, {
         props: { composer: sampleComposerWithCategories },
       });
-      expect(wrapper.find(".kind-era").text()).toBe("古典派");
+      expect(wrapper.find(".kind-era .badge-value").text()).toBe("古典派");
     });
 
     it("region が設定されている場合、地域バッジが表示される", async () => {
       const wrapper = await mountSuspended(ComposerItem, {
         props: { composer: sampleComposerWithCategories },
       });
-      expect(wrapper.find(".kind-region").text()).toBe("ドイツ・オーストリア");
+      expect(wrapper.find(".kind-region .badge-value").text()).toBe("ドイツ・オーストリア");
     });
 
     it("全カテゴリが未設定の場合、バッジが一切表示されない", async () => {

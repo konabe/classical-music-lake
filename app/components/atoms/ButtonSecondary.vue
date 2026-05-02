@@ -7,34 +7,44 @@ defineSlots<ButtonSlots>();
 
 <template>
   <button class="btn-secondary" type="button" :disabled="disabled">
-    <slot />
+    <span class="btn-secondary-label">
+      <slot />
+    </span>
   </button>
 </template>
 
 <style scoped>
 .btn-secondary {
-  background: var(--color-bg-subtle);
+  background: transparent;
   color: var(--color-text);
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.95rem;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid var(--color-hairline-strong);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--color-border-strong);
+  background: var(--color-bg-elevated);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .btn-secondary:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  outline: 1px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
 .btn-secondary:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 </style>

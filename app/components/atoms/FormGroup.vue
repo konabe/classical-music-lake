@@ -10,8 +10,8 @@ defineProps<{
 <template>
   <div class="form-group">
     <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-    <label :for="inputId">
-      {{ label }}
+    <label class="form-label" :for="inputId">
+      <span class="form-label-text">{{ label }}</span>
       <RequiredMark v-if="required" />
     </label>
     <slot />
@@ -23,11 +23,22 @@ defineProps<{
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
-label {
-  font-weight: 500;
-  color: var(--color-text-secondary);
+.form-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.form-label-text {
+  display: inline-block;
 }
 </style>

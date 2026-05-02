@@ -16,25 +16,25 @@ describe("ListeningLogFilter", () => {
       const wrapper = await mountSuspended(ListeningLogFilter, {
         props: { modelValue: { ...initialState }, isActive: false },
       });
-      expect(wrapper.text()).toContain("キーワード");
-      expect(wrapper.text()).toContain("評価");
-      expect(wrapper.text()).toContain("お気に入りのみ");
-      expect(wrapper.text()).toContain("期間（開始）");
-      expect(wrapper.text()).toContain("期間（終了）");
+      expect(wrapper.text()).toContain("Keyword");
+      expect(wrapper.text()).toContain("Rating");
+      expect(wrapper.text()).toContain("Favorites only");
+      expect(wrapper.text()).toContain("From");
+      expect(wrapper.text()).toContain("To");
     });
 
     it("isActive が false のとき条件クリアボタンを表示しない", async () => {
       const wrapper = await mountSuspended(ListeningLogFilter, {
         props: { modelValue: { ...initialState }, isActive: false },
       });
-      expect(wrapper.text()).not.toContain("条件をクリア");
+      expect(wrapper.text()).not.toContain("Clear filter");
     });
 
     it("isActive が true のとき条件クリアボタンを表示する", async () => {
       const wrapper = await mountSuspended(ListeningLogFilter, {
         props: { modelValue: { ...initialState, keyword: "X" }, isActive: true },
       });
-      expect(wrapper.text()).toContain("条件をクリア");
+      expect(wrapper.text()).toContain("Clear filter");
     });
   });
 

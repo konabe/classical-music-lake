@@ -32,11 +32,11 @@ describe("ListeningLogStatistics", () => {
       const wrapper = await mountSuspended(ListeningLogStatistics, {
         props: { statistics: populatedStats },
       });
-      expect(wrapper.text()).toContain("総鑑賞数");
+      expect(wrapper.text()).toContain("Total entries");
       expect(wrapper.text()).toContain("10");
-      expect(wrapper.text()).toContain("お気に入り");
+      expect(wrapper.text()).toContain("Favorites");
       expect(wrapper.text()).toContain("4");
-      expect(wrapper.text()).toContain("平均評価");
+      expect(wrapper.text()).toContain("Average rating");
       expect(wrapper.text()).toContain("4.20");
     });
 
@@ -65,11 +65,11 @@ describe("ListeningLogStatistics", () => {
       expect(wrapper.text()).toContain("まだ鑑賞記録がありません");
     });
 
-    it("total が 0 のとき平均評価は - 表示", async () => {
+    it("total が 0 のとき平均評価は — 表示", async () => {
       const wrapper = await mountSuspended(ListeningLogStatistics, {
         props: { statistics: emptyStats },
       });
-      expect(wrapper.text()).toContain("-");
+      expect(wrapper.text()).toContain("—");
     });
   });
 });

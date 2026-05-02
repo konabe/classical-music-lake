@@ -16,10 +16,10 @@ describe("ComposersTemplate", () => {
     expect(wrapper.find("a[href='/composers/new']").exists()).toBe(false);
   });
 
-  it("タイトルが '作曲家マスタ' と表示される", async () => {
+  it("タイトルが '作曲家' と表示される", async () => {
     const wrapper = await mountSuspended(ComposersTemplate, {
       props: { composers: [], error: null, pending: false, hasMore: false, isAdmin: true },
     });
-    expect(wrapper.text()).toContain("作曲家マスタ");
+    expect(wrapper.find("h1.masthead-title").text()).toContain("作曲家");
   });
 });

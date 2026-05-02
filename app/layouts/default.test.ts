@@ -33,14 +33,14 @@ describe("DefaultLayout - 未ログイン時", () => {
     const wrapper = await mountSuspended(DefaultLayout);
     const link = wrapper.find('a[href="/auth/user-register"]');
     expect(link.exists()).toBe(true);
-    expect(link.text()).toBe("新規登録");
+    expect(link.text()).toBe("Register");
   });
 
   it("「ログイン」リンクが表示される", async () => {
     const wrapper = await mountSuspended(DefaultLayout);
     const link = wrapper.find('a[href="/auth/login"]');
     expect(link.exists()).toBe(true);
-    expect(link.text()).toBe("ログイン");
+    expect(link.text()).toBe("Sign in");
   });
 
   it("「ログアウト」ボタンが表示されない", async () => {
@@ -58,21 +58,21 @@ describe("DefaultLayout - ナビゲーションリンク", () => {
     const wrapper = await mountSuspended(DefaultLayout);
     const link = wrapper.find('a[href="/listening-logs"]');
     expect(link.exists()).toBe(true);
-    expect(link.text()).toBe("鑑賞記録");
+    expect(link.find(".nav-label").text()).toBe("鑑賞記録");
   });
 
   it("「楽曲マスタ」リンクが表示される", async () => {
     const wrapper = await mountSuspended(DefaultLayout);
     const link = wrapper.find('a[href="/pieces"]');
     expect(link.exists()).toBe(true);
-    expect(link.text()).toBe("楽曲マスタ");
+    expect(link.find(".nav-label").text()).toBe("楽曲");
   });
 
   it("「コンサート記録」リンクが表示される", async () => {
     const wrapper = await mountSuspended(DefaultLayout);
     const link = wrapper.find('a[href="/concert-logs"]');
     expect(link.exists()).toBe(true);
-    expect(link.text()).toBe("コンサート記録");
+    expect(link.find(".nav-label").text()).toBe("演奏会");
   });
 });
 

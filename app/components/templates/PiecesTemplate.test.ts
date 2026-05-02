@@ -28,7 +28,7 @@ describe("PiecesTemplate", () => {
     const wrapper = await mountSuspended(PiecesTemplate, {
       props: { ...baseProps, isAdmin: false },
     });
-    expect(wrapper.text()).toContain("楽曲マスタ");
+    expect(wrapper.find("h1.masthead-title").text()).toContain("楽曲");
   });
 
   it("isAdmin が true のとき新規追加ボタンが表示される", async () => {

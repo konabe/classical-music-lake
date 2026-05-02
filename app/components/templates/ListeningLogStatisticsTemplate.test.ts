@@ -16,7 +16,7 @@ describe("ListeningLogStatisticsTemplate", () => {
     const wrapper = await mountSuspended(ListeningLogStatisticsTemplate, {
       props: { statistics: stats },
     });
-    expect(wrapper.text()).toContain("鑑賞統計");
+    expect(wrapper.text()).toContain("統計");
   });
 
   it("一覧へ戻るリンクが表示される", async () => {

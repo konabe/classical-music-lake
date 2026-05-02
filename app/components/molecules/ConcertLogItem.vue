@@ -12,68 +12,131 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="log-item">
+  <article class="log-item">
     <div class="log-main">
-      <div class="log-title">
-        {{ concertLog.title }}
-      </div>
-      <div class="log-venue">{{ concertLog.venue }}</div>
       <div class="log-meta">
-        <span class="date">{{ formatDate(concertLog.concertDate) }}</span>
+        <time class="log-date smallcaps numeric">{{ formatDate(concertLog.concertDate) }}</time>
+        <span class="log-rule" aria-hidden="true" />
+        <span class="log-venue smallcaps">{{ concertLog.venue }}</span>
       </div>
-      <div v-if="concertLog.conductor" class="log-sub conductor">
-        指揮: {{ concertLog.conductor }}
-      </div>
-      <div v-if="concertLog.orchestra" class="log-sub">
-        {{ concertLog.orchestra }}
-      </div>
-      <div v-if="concertLog.soloist" class="log-sub">ソリスト: {{ concertLog.soloist }}</div>
+
+      <h2 class="log-title">{{ concertLog.title }}</h2>
+
+      <dl class="log-credits">
+        <template v-if="concertLog.conductor">
+          <dt class="smallcaps">Conductor</dt>
+          <dd>{{ concertLog.conductor }}</dd>
+        </template>
+        <template v-if="concertLog.orchestra">
+          <dt class="smallcaps">Orchestra</dt>
+          <dd>{{ concertLog.orchestra }}</dd>
+        </template>
+        <template v-if="concertLog.soloist">
+          <dt class="smallcaps">Soloist</dt>
+          <dd>{{ concertLog.soloist }}</dd>
+        </template>
+      </dl>
     </div>
+
     <div class="log-actions">
-      <ButtonSecondary @click="emit('detail')">詳細</ButtonSecondary>
+      <ButtonSecondary @click="emit('detail')">Read</ButtonSecondary>
     </div>
-  </div>
+  </article>
 </template>
 
 <style scoped>
 .log-item {
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-secondary);
-  border-radius: 10px;
-  padding: 1.2rem 1.5rem;
+  position: relative;
+  background: var(--color-bg-paper);
+  border-bottom: 1px solid var(--color-hairline);
+  padding: 1.6rem 0.5rem 1.6rem 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  transition: background 0.25s ease;
+}
+
+.log-item:hover {
+  background: var(--color-bg-elevated);
+}
+
+.log-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  height: 60%;
+  width: 2px;
+  background: var(--color-accent);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.log-item:hover::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+.log-main {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.log-title {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: var(--color-text);
-  margin-bottom: 0.3rem;
-}
-
-.log-venue {
-  font-size: 0.95rem;
-  color: var(--color-text-secondary);
-  margin-bottom: 0.2rem;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
 .log-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.log-date {
+  color: var(--color-bordeaux);
+}
+:root.dark .log-date {
+  color: var(--color-accent);
+}
+
+.log-rule {
+  width: 1.5rem;
+  height: 1px;
+  background: var(--color-hairline-strong);
+}
+
+.log-venue {
   color: var(--color-text-muted);
-  font-size: 0.9rem;
-  margin-bottom: 0.3rem;
 }
 
-.date {
-  color: var(--color-text-disabled);
+.log-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+  line-height: 1.18;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 50;
 }
 
-.log-sub {
-  font-size: 0.9rem;
+.log-credits {
+  display: grid;
+  grid-template-columns: minmax(80px, auto) 1fr;
+  gap: 0.3rem 1rem;
+  margin-top: 0.4rem;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
   color: var(--color-text-secondary);
-  margin-top: 0.2rem;
+}
+
+.log-credits dt {
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+}
+
+.log-credits dd {
+  font-style: italic;
 }
 
 .log-actions {
@@ -81,5 +144,16 @@ const emit = defineEmits<{
   flex-direction: column;
   gap: 0.5rem;
   flex-shrink: 0;
+  align-items: flex-end;
+}
+
+@media (max-width: 720px) {
+  .log-item {
+    grid-template-columns: 1fr;
+  }
+  .log-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
 }
 </style>

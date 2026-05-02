@@ -14,46 +14,84 @@ const ariaLabel = computed(() => `${props.label}: ${props.value}`);
 </script>
 
 <template>
-  <span class="category-badge" :class="kindClass" :aria-label="ariaLabel">{{ value }}</span>
+  <span class="category-badge" :class="kindClass" :aria-label="ariaLabel">
+    <span class="badge-mark" aria-hidden="true">&middot;</span>
+    <span class="badge-value">{{ value }}</span>
+  </span>
 </template>
 
 <style scoped>
 .category-badge {
-  display: inline-block;
-  border-radius: 4px;
-  padding: 0.15rem 0.55rem;
-  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   line-height: 1.4;
-  border: 1px solid transparent;
+  border: 1px solid;
+  background: transparent;
+}
+
+.badge-mark {
+  font-size: 0.85rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.badge-value {
+  font-size: 0.68rem;
 }
 
 .kind-default {
-  background: var(--color-badge-default-bg);
-  border-color: var(--color-badge-default-border);
-  color: var(--color-badge-default-text);
+  border-color: var(--color-hairline-strong);
+  color: var(--color-text-muted);
+}
+
+.kind-default .badge-mark {
+  color: var(--color-text-faint);
 }
 
 .kind-genre {
-  background: var(--color-badge-genre-bg);
-  border-color: var(--color-badge-genre-border);
-  color: var(--color-badge-genre-text);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+:root.dark .kind-genre {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.kind-genre .badge-mark {
+  color: var(--color-accent);
 }
 
 .kind-era {
-  background: var(--color-badge-era-bg);
-  border-color: var(--color-badge-era-border);
-  color: var(--color-badge-era-text);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.kind-era .badge-mark {
+  color: var(--color-accent-soft);
 }
 
 .kind-formation {
-  background: var(--color-badge-formation-bg);
-  border-color: var(--color-badge-formation-border);
-  color: var(--color-badge-formation-text);
+  border-color: var(--color-bordeaux);
+  color: var(--color-bordeaux);
+}
+:root.dark .kind-formation {
+  border-color: var(--color-bordeaux);
+  color: var(--color-bordeaux);
+}
+.kind-formation .badge-mark {
+  color: var(--color-bordeaux-soft);
 }
 
 .kind-region {
-  background: var(--color-badge-region-bg);
-  border-color: var(--color-badge-region-border);
-  color: var(--color-badge-region-text);
+  border-color: var(--color-text-muted);
+  color: var(--color-text-secondary);
+}
+.kind-region .badge-mark {
+  color: var(--color-text-faint);
 }
 </style>
