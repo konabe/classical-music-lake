@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.8.0...classical-music-lake-v2.9.0) (2026-05-02)
+
+
+### Features
+
+* **ui:** 一覧アイテムの背景全体をタップで詳細ページへ遷移できるよう変更 ([#632](https://github.com/konabe/classical-music-lake/issues/632)) ([72ce095](https://github.com/konabe/classical-music-lake/commit/72ce0958f39651de2805fb3d9135b609ce0559e4))
+
 ## [2.8.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.7.0...classical-music-lake-v2.8.0) (2026-05-02)
 
 
