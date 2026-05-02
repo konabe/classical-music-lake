@@ -237,8 +237,10 @@ export default withNuxt(
     },
   },
   // Markdown: コードブロックに言語タグがない場合に警告 (MD040)
+  // .claude/skills/ 配下は APM が同期する第三者管理のファイルのためチェック対象外
   {
     files: ["**/*.md"],
+    ignores: [".claude/skills/**/*.md"],
     plugins: {
       local: { rules: { md040: md040Rule } },
     },

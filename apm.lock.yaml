@@ -13,3 +13,13 @@ dependencies:
       - .claude/skills/frontend-design
       - .github/skills/frontend-design
     content_hash: sha256:063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67
+  - repo_url: vercel-labs/agent-skills
+    host: github.com
+    resolved_commit: ce3e64e468f8fa09a2d075d102771838061fdac0
+    virtual_path: skills/web-design-guidelines
+    is_virtual: true
+    package_type: claude_skill
+    deployed_files:
+      - .claude/skills/web-design-guidelines
+      - .github/skills/web-design-guidelines
+    content_hash: sha256:a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a
