@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.6.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.5.0...classical-music-lake-v2.6.0) (2026-05-02)
+
+
+### Features
+
+* **ui:** フロントエンド全画面を Editorial Quarterly 風にリデザイン ([#624](https://github.com/konabe/classical-music-lake/issues/624)) ([f0d5803](https://github.com/konabe/classical-music-lake/commit/f0d5803b2905a720eef99cf2020db0cc6f7c4a5b))
+* パッケージマネージャ APM を導入し frontend-design skill を追加 ([#623](https://github.com/konabe/classical-music-lake/issues/623)) ([add4ea5](https://github.com/konabe/classical-music-lake/commit/add4ea52dfe354d78eaaada940693788e815835d))
+
+
+### Bug Fixes
+
+* **ui:** 探索的レビューで見つけた UI 問題をまとめて修正 ([#622](https://github.com/konabe/classical-music-lake/issues/622)) ([c94f9f3](https://github.com/konabe/classical-music-lake/commit/c94f9f3685c35f1b759da2134aba5b02627fc9e7))
+
+
+### Code Refactoring
+
+* **atoms:** カテゴリーバッジの色を theme.css のセマンティックトークンに移行 ([#620](https://github.com/konabe/classical-music-lake/issues/620)) ([6352b55](https://github.com/konabe/classical-music-lake/commit/6352b55e4a03aac966dfab63f2dc196d0f644689))
+
 ## [2.5.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.4.1...classical-music-lake-v2.5.0) (2026-05-01)
 
 
