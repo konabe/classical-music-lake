@@ -32,7 +32,9 @@ const lifespan = computed(() => formatLifespan(props.composer.birthYear, props.c
     </div>
 
     <div class="composer-main">
-      <h2 class="composer-name">{{ composer.name }}</h2>
+      <h2 class="composer-name">
+        <NuxtLink :to="`/composers/${composer.id}`">{{ composer.name }}</NuxtLink>
+      </h2>
       <div v-if="lifespan" class="composer-lifespan smallcaps numeric">{{ lifespan }}</div>
       <div class="composer-category-wrapper">
         <ComposerCategoryList :composer="composer" />
@@ -131,6 +133,17 @@ const lifespan = computed(() => formatLifespan(props.composer.birthYear, props.c
     "SOFT" 50;
 }
 
+.composer-name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.composer-name a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
 .composer-lifespan {
   color: var(--color-text-muted);
   font-size: 0.75rem;
@@ -146,6 +159,8 @@ const lifespan = computed(() => formatLifespan(props.composer.birthYear, props.c
   gap: 0.6rem;
   flex-shrink: 0;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .btn-detail {
