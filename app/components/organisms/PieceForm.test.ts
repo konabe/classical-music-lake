@@ -44,17 +44,17 @@ describe("PieceForm", () => {
       });
       const titleInput = wrapper.find("#title");
       const composerSelect = wrapper.find("#composerId");
-      const videoUrlInput = wrapper.find("#videoUrl");
+      const videoUrlInput = wrapper.find("#videoUrls-0");
       expect((titleInput.element as HTMLInputElement).value).toBe("");
       expect((composerSelect.element as HTMLSelectElement).value).toBe("");
       expect((videoUrlInput.element as HTMLInputElement).value).toBe("");
     });
 
-    it("動画 URL 入力フィールドが表示される", async () => {
+    it("動画 URL 入力フィールドが少なくとも 1 つ表示される", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: { composers: mockComposers },
       });
-      expect(wrapper.find("#videoUrl").exists()).toBe(true);
+      expect(wrapper.find("#videoUrls-0").exists()).toBe(true);
     });
 
     it("composers から作曲家セレクトのオプションが生成される", async () => {
@@ -77,18 +77,41 @@ describe("PieceForm", () => {
           initialValues: {
             title: "交響曲第9番",
             composerId: COMPOSER_ID_BEETHOVEN,
-            videoUrl: "https://www.youtube.com/watch?v=abc",
+            videoUrls: ["https://www.youtube.com/watch?v=abc"],
           },
         },
       });
 
       const titleInput = wrapper.find("#title");
       const composerSelect = wrapper.find("#composerId");
-      const videoUrlInput = wrapper.find("#videoUrl");
+      const videoUrlInput = wrapper.find("#videoUrls-0");
       expect((titleInput.element as HTMLInputElement).value).toBe("交響曲第9番");
       expect((composerSelect.element as HTMLSelectElement).value).toBe(COMPOSER_ID_BEETHOVEN);
       expect((videoUrlInput.element as HTMLInputElement).value).toBe(
         "https://www.youtube.com/watch?v=abc",
+      );
+    });
+
+    it("複数の videoUrls が初期値として展開される", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: {
+          composers: mockComposers,
+          initialValues: {
+            title: "交響曲第9番",
+            composerId: COMPOSER_ID_BEETHOVEN,
+            videoUrls: [
+              "https://www.youtube.com/watch?v=abc",
+              "https://www.youtube.com/watch?v=def",
+            ],
+          },
+        },
+      });
+
+      expect((wrapper.find("#videoUrls-0").element as HTMLInputElement).value).toBe(
+        "https://www.youtube.com/watch?v=abc",
+      );
+      expect((wrapper.find("#videoUrls-1").element as HTMLInputElement).value).toBe(
+        "https://www.youtube.com/watch?v=def",
       );
     });
 
@@ -99,7 +122,7 @@ describe("PieceForm", () => {
 
       const titleInput = wrapper.find("#title");
       const composerSelect = wrapper.find("#composerId");
-      const videoUrlInput = wrapper.find("#videoUrl");
+      const videoUrlInput = wrapper.find("#videoUrls-0");
       expect((titleInput.element as HTMLInputElement).value).toBe("魔笛");
       expect((composerSelect.element as HTMLSelectElement).value).toBe("");
       expect((videoUrlInput.element as HTMLInputElement).value).toBe("");
@@ -183,7 +206,7 @@ describe("PieceForm", () => {
           initialValues: {
             title: "交響曲第9番",
             composerId: COMPOSER_ID_BEETHOVEN,
-            videoUrl: "https://www.youtube.com/watch?v=abc",
+            videoUrls: ["https://www.youtube.com/watch?v=abc"],
           },
         },
       });
@@ -194,7 +217,48 @@ describe("PieceForm", () => {
       const emittedData = emitted![0][0] as Record<string, unknown>;
       expect(emittedData.title).toBe("交響曲第9番");
       expect(emittedData.composerId).toBe(COMPOSER_ID_BEETHOVEN);
-      expect(emittedData.videoUrl).toBe("https://www.youtube.com/watch?v=abc");
+      expect(emittedData.videoUrls).toEqual(["https://www.youtube.com/watch?v=abc"]);
+    });
+
+    it("空の動画 URL は trim されて送信から除外され、全て空なら undefined", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: {
+          composers: mockComposers,
+          initialValues: {
+            title: "交響曲第9番",
+            composerId: COMPOSER_ID_BEETHOVEN,
+          },
+        },
+      });
+
+      await wrapper.find("form").trigger("submit.prevent");
+      const emitted = wrapper.emitted("submit");
+      const emittedData = emitted![0][0] as Record<string, unknown>;
+      expect(emittedData.videoUrls).toBeUndefined();
+    });
+
+    it("複数の動画 URL を配列として送信できる", async () => {
+      const wrapper = await mountSuspended(PieceForm, {
+        props: {
+          composers: mockComposers,
+          initialValues: {
+            title: "交響曲第9番",
+            composerId: COMPOSER_ID_BEETHOVEN,
+            videoUrls: [
+              "https://www.youtube.com/watch?v=abc",
+              "https://www.youtube.com/watch?v=def",
+            ],
+          },
+        },
+      });
+
+      await wrapper.find("form").trigger("submit.prevent");
+      const emitted = wrapper.emitted("submit");
+      const emittedData = emitted![0][0] as Record<string, unknown>;
+      expect(emittedData.videoUrls).toEqual([
+        "https://www.youtube.com/watch?v=abc",
+        "https://www.youtube.com/watch?v=def",
+      ]);
     });
 
     it("カテゴリ付きのフォームデータが submit イベントに含まれる", async () => {

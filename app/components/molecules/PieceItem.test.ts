@@ -24,17 +24,25 @@ const samplePieceWithCategories: Piece = {
 
 const samplePieceWithYouTubeUrl: Piece = {
   ...samplePiece,
-  videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  videoUrls: ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
 };
 
 const samplePieceWithShortYouTubeUrl: Piece = {
   ...samplePiece,
-  videoUrl: "https://youtu.be/dQw4w9WgXcQ",
+  videoUrls: ["https://youtu.be/dQw4w9WgXcQ"],
 };
 
 const samplePieceWithNonYouTubeUrl: Piece = {
   ...samplePiece,
-  videoUrl: "https://example.com/video.mp4",
+  videoUrls: ["https://example.com/video.mp4"],
+};
+
+const samplePieceWithMultipleYouTubeUrls: Piece = {
+  ...samplePiece,
+  videoUrls: [
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://www.youtube.com/watch?v=abc123",
+  ],
 };
 
 const globalComponents = { global: { components: { ButtonSecondary, ButtonDanger } } };
@@ -171,20 +179,24 @@ describe("PieceItem", () => {
       expect(wrapper.find("img.youtube-thumbnail").exists()).toBe(shouldExist);
     };
 
-    it("videoUrl が YouTube URL の場合、サムネイル領域が表示される", async () => {
+    it("videoUrls の最初の要素が YouTube URL の場合、サムネイル領域が表示される", async () => {
       await expectThumbnailVisible(samplePieceWithYouTubeUrl, true);
     });
 
-    it("videoUrl が短縮形式の YouTube URL の場合、サムネイル領域が表示される", async () => {
+    it("videoUrls の最初の要素が短縮形式の YouTube URL の場合、サムネイル領域が表示される", async () => {
       await expectThumbnailVisible(samplePieceWithShortYouTubeUrl, true);
     });
 
-    it("videoUrl が未設定の場合、サムネイル領域が表示されない", async () => {
+    it("videoUrls が未設定の場合、サムネイル領域が表示されない", async () => {
       await expectThumbnailVisible(samplePiece, false);
     });
 
-    it("videoUrl が YouTube 以外の URL の場合、サムネイル領域が表示されない", async () => {
+    it("videoUrls の最初の要素が YouTube 以外の URL の場合、サムネイル領域が表示されない", async () => {
       await expectThumbnailVisible(samplePieceWithNonYouTubeUrl, false);
+    });
+
+    it("videoUrls に複数の YouTube URL が含まれる場合、サムネイル領域が表示される", async () => {
+      await expectThumbnailVisible(samplePieceWithMultipleYouTubeUrls, true);
     });
 
     it("サムネイル画像に曲名を含む alt 属性が設定されている", async () => {

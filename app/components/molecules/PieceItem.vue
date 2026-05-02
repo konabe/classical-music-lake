@@ -14,8 +14,10 @@ const emit = defineEmits<{
   play: [];
 }>();
 
+const firstVideoUrl = computed(() => props.piece.videoUrls?.[0]);
+
 const hasYouTubeThumbnail = computed(
-  () => props.piece.videoUrl !== undefined && isYouTubeUrl(props.piece.videoUrl),
+  () => firstVideoUrl.value !== undefined && isYouTubeUrl(firstVideoUrl.value),
 );
 
 const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイル`);
@@ -30,7 +32,7 @@ const thumbnailAlt = computed(() => `${props.piece.title} の動画サムネイ�
       :aria-label="`${piece.title} の動画を再生`"
       @click="emit('play')"
     >
-      <YouTubeThumbnail :video-url="piece.videoUrl" :alt="thumbnailAlt" />
+      <YouTubeThumbnail :video-url="firstVideoUrl" :alt="thumbnailAlt" />
       <span class="thumb-play" aria-hidden="true">&#9658;</span>
     </button>
 

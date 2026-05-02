@@ -16,7 +16,7 @@ const makePiece = (overrides: Partial<Piece> = {}): Piece => ({
   id: "piece-1",
   title: "ピアノ協奏曲第1番 変ロ短調 Op.23",
   composerId: COMPOSER_ID_TCHAIKOVSKY,
-  videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  videoUrls: ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
   createdAt: "2024-01-01T00:00:00Z",
   updatedAt: "2024-01-01T00:00:00Z",
   ...overrides,

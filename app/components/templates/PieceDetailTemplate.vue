@@ -61,11 +61,20 @@ const shortId = computed(() => {
         </div>
       </header>
 
-      <template v-if="piece.videoUrl">
+      <template v-if="piece.videoUrls && piece.videoUrls.length > 0">
         <section class="piece-stage">
-          <span class="stage-tag smallcaps">Performance</span>
-          <div class="stage-frame">
-            <VideoPlayer :video-url="piece.videoUrl" @play="hasStartedPlaying = true" />
+          <span class="stage-tag smallcaps">
+            Performance{{ piece.videoUrls.length > 1 ? "s" : "" }}
+          </span>
+          <div
+            v-for="(url, index) in piece.videoUrls"
+            :key="`${piece.id}-${index}`"
+            class="stage-frame"
+          >
+            <p v-if="piece.videoUrls.length > 1" class="stage-index smallcaps numeric">
+              N&deg; {{ String(index + 1).padStart(2, "0") }}
+            </p>
+            <VideoPlayer :video-url="url" @play="hasStartedPlaying = true" />
           </div>
         </section>
 
@@ -226,8 +235,13 @@ const shortId = computed(() => {
 .piece-stage {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1.4rem;
   margin-bottom: 3rem;
+}
+
+.stage-index {
+  margin: 0 0 0.6rem;
+  color: var(--color-text-muted);
 }
 
 .stage-tag {

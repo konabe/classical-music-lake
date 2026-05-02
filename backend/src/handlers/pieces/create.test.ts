@@ -132,10 +132,10 @@ describe("POST /pieces (create)", () => {
     },
   );
 
-  it("videoUrl が不正な URL の場合は 400 を返す", async () => {
+  it("videoUrls の要素に不正な URL が含まれる場合は 400 を返す", async () => {
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
-        body: JSON.stringify({ ...validInput, videoUrl: "not-a-url" }),
+        body: JSON.stringify({ ...validInput, videoUrls: ["not-a-url"] }),
         httpMethod: "POST",
         path: "/pieces",
       }),
@@ -143,10 +143,10 @@ describe("POST /pieces (create)", () => {
       mockCallback,
     );
     expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrl must be a valid URL");
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrls must contain valid URLs");
   });
 
-  it("videoUrl なしで正常に作成して 201 を返す", async () => {
+  it("videoUrls なしで正常に作成して 201 を返す", async () => {
     mockRepo.save.mockResolvedValueOnce();
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
@@ -165,14 +165,18 @@ describe("POST /pieces (create)", () => {
     expect(body.composerId).toBe(TEST_COMPOSER_ID);
     expect(body.createdAt).toBeDefined();
     expect(body.updatedAt).toBeDefined();
-    expect(body.videoUrl).toBeUndefined();
+    expect(body.videoUrls).toBeUndefined();
   });
 
-  it("有効な videoUrl を指定して作成できる", async () => {
+  it("有効な videoUrls を指定して作成できる", async () => {
     mockRepo.save.mockResolvedValueOnce();
+    const urls = [
+      "https://www.youtube.com/watch?v=abc123",
+      "https://www.youtube.com/watch?v=def456",
+    ];
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
-        body: JSON.stringify({ ...validInput, videoUrl: "https://www.youtube.com/watch?v=abc123" }),
+        body: JSON.stringify({ ...validInput, videoUrls: urls }),
         httpMethod: "POST",
         path: "/pieces",
       }),
@@ -181,7 +185,7 @@ describe("POST /pieces (create)", () => {
     );
     expect(result?.statusCode).toBe(201);
     const body = JSON.parse(result?.body ?? "{}");
-    expect(body.videoUrl).toBe("https://www.youtube.com/watch?v=abc123");
+    expect(body.videoUrls).toEqual(urls);
   });
 
   it("作成アイテムに UUID が付与される", async () => {

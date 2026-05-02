@@ -147,16 +147,24 @@ describe("createPieceSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("videoUrl は省略可能", () => {
+  it("videoUrls は省略可能", () => {
     const result = createPieceSchema.safeParse(validPiece);
     expect(result.success).toBe(true);
   });
 
-  it("有効な videoUrl を受け付ける", () => {
+  it("有効な videoUrls を受け付ける", () => {
     const result = createPieceSchema.safeParse({
       ...validPiece,
-      videoUrl: "https://www.youtube.com/watch?v=abc123",
+      videoUrls: [
+        "https://www.youtube.com/watch?v=abc123",
+        "https://www.youtube.com/watch?v=def456",
+      ],
     });
+    expect(result.success).toBe(true);
+  });
+
+  it("空配列の videoUrls を受け付ける", () => {
+    const result = createPieceSchema.safeParse({ ...validPiece, videoUrls: [] });
     expect(result.success).toBe(true);
   });
 
@@ -184,8 +192,19 @@ describe("createPieceSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("videoUrl が無効な URL の場合はエラー", () => {
-    const result = createPieceSchema.safeParse({ ...validPiece, videoUrl: "not-a-url" });
+  it("videoUrls の要素に無効な URL が含まれる場合はエラー", () => {
+    const result = createPieceSchema.safeParse({
+      ...validPiece,
+      videoUrls: ["https://www.youtube.com/watch?v=abc", "not-a-url"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("videoUrls の要素数が上限（10 件）を超える場合はエラー", () => {
+    const result = createPieceSchema.safeParse({
+      ...validPiece,
+      videoUrls: Array.from({ length: 11 }, (_, i) => `https://www.youtube.com/watch?v=abc${i}`),
+    });
     expect(result.success).toBe(false);
   });
 });
@@ -196,14 +215,14 @@ describe("updatePieceSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("videoUrl に空文字を渡すと削除フラグとして受け付ける", () => {
-    const result = updatePieceSchema.safeParse({ videoUrl: "" });
+  it("videoUrls に空配列を渡すと削除フラグとして受け付ける", () => {
+    const result = updatePieceSchema.safeParse({ videoUrls: [] });
     expect(result.success).toBe(true);
   });
 
-  it("videoUrl に有効な URL を渡せる", () => {
+  it("videoUrls に有効な URL の配列を渡せる", () => {
     const result = updatePieceSchema.safeParse({
-      videoUrl: "https://www.youtube.com/watch?v=abc",
+      videoUrls: ["https://www.youtube.com/watch?v=abc"],
     });
     expect(result.success).toBe(true);
   });

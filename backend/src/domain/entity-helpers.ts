@@ -1,8 +1,9 @@
 type BaseEntityFields = { id: string; createdAt: string; updatedAt: string };
 
 /**
- * 既存エンティティ props に更新入力をマージし、クリア可能フィールドに空文字が渡された場合は
- * そのキーを削除（= DynamoDB の属性削除）する。id / createdAt は不変、updatedAt は常に現在時刻に更新。
+ * 既存エンティティ props に更新入力をマージし、クリア可能フィールドにクリア指示
+ * （空文字 `""` または空配列 `[]`）が渡された場合はそのキーを削除（= DynamoDB の属性削除）する。
+ * id / createdAt は不変、updatedAt は常に現在時刻に更新。
  */
 export function buildUpdateProps<TProps extends BaseEntityFields>(
   current: TProps,
@@ -17,6 +18,17 @@ export function buildUpdateProps<TProps extends BaseEntityFields>(
     updatedAt: new Date().toISOString(),
   };
   return Object.fromEntries(
-    Object.entries(merged).filter(([key, value]) => !clearableFields.includes(key) || value !== ""),
+    Object.entries(merged).filter(([key, value]) => {
+      if (!clearableFields.includes(key)) {
+        return true;
+      }
+      if (value === "") {
+        return false;
+      }
+      if (Array.isArray(value) && value.length === 0) {
+        return false;
+      }
+      return true;
+    }),
   ) as TProps;
 }
