@@ -6,15 +6,11 @@ import type { CreateComposerInput } from "~/types";
 const mockCreateComposer = vi.fn();
 
 vi.mock("~/composables/useComposers", () => ({
-  useComposersPaginated: () => ({
-    items: ref([]),
-    nextCursor: ref(null),
+  useComposersAll: () => ({
+    data: ref(null),
     pending: ref(false),
     error: ref(null),
-    hasMore: ref(true),
-    loadMore: vi.fn(),
-    reset: vi.fn(),
-    retry: vi.fn(),
+    refresh: vi.fn(),
     createComposer: mockCreateComposer,
     updateComposer: vi.fn(),
     deleteComposer: vi.fn(),

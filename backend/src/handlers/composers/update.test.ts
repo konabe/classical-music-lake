@@ -187,6 +187,47 @@ describe("PUT /composers/{id} (update)", () => {
     expect(body.imageUrl).toBe("https://upload.wikimedia.org/wikipedia/commons/6/6f/Beethoven.jpg");
   });
 
+  it("birthYear と deathYear を追加して更新できる", async () => {
+    mockRepo.findById.mockResolvedValueOnce(existingComposer);
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ birthYear: 1770, deathYear: 1827 })),
+      mockContext,
+      mockCallback,
+    );
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}") as Composer;
+    expect(body.birthYear).toBe(1770);
+    expect(body.deathYear).toBe(1827);
+  });
+
+  it("birthYear を null で送信すると削除される", async () => {
+    const existing: Composer = { ...existingComposer, birthYear: 1770, deathYear: 1827 };
+    mockRepo.findById.mockResolvedValueOnce(existing);
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ birthYear: null, deathYear: null })),
+      mockContext,
+      mockCallback,
+    );
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}") as Composer;
+    expect(body.birthYear).toBeUndefined();
+    expect(body.deathYear).toBeUndefined();
+  });
+
+  it("birthYear が非整数の場合は 400 を返す", async () => {
+    const result = await handler(
+      makeEvent("abc-123", JSON.stringify({ birthYear: 1770.5 })),
+      mockContext,
+      mockCallback,
+    );
+    expect(result?.statusCode).toBe(400);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("birthYear must be an integer");
+  });
+
   it("imageUrl を空文字で送信すると削除される", async () => {
     const existing: Composer = {
       ...existingComposer,

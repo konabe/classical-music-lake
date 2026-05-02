@@ -95,6 +95,29 @@ describe("ComposerItem", () => {
     });
   });
 
+  describe("生没年表示", () => {
+    it("birthYear と deathYear がある場合は en dash でつないで表示する", async () => {
+      const wrapper = await mountSuspended(ComposerItem, {
+        props: { composer: { ...sampleComposer, birthYear: 1770, deathYear: 1827 } },
+      });
+      expect(wrapper.find(".composer-lifespan").text()).toBe("1770–1827");
+    });
+
+    it("birthYear のみの場合は没年側を空にする", async () => {
+      const wrapper = await mountSuspended(ComposerItem, {
+        props: { composer: { ...sampleComposer, birthYear: 1958 } },
+      });
+      expect(wrapper.find(".composer-lifespan").text()).toBe("1958–");
+    });
+
+    it("両方未指定の場合は表示されない", async () => {
+      const wrapper = await mountSuspended(ComposerItem, {
+        props: { composer: sampleComposer },
+      });
+      expect(wrapper.find(".composer-lifespan").exists()).toBe(false);
+    });
+  });
+
   describe("画像表示", () => {
     it("imageUrl が設定されている場合、サムネイルが表示される", async () => {
       const wrapper = await mountSuspended(ComposerItem, {

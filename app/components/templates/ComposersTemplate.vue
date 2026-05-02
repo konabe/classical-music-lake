@@ -5,7 +5,6 @@ const props = defineProps<{
   composers: Composer[];
   error: Error | null;
   pending: boolean;
-  hasMore: boolean;
   isAdmin: boolean;
 }>();
 
@@ -13,7 +12,6 @@ const emit = defineEmits<{
   detail: [composer: Composer];
   edit: [composer: Composer];
   delete: [composer: Composer];
-  loadMore: [];
   retry: [];
 }>();
 
@@ -46,17 +44,18 @@ const composerCount = computed(() => props.composers.length);
       </div>
     </header>
 
-    <ComposerListInfinite
+    <ComposerList
       :composers="props.composers"
       :error="props.error"
-      :pending="props.pending"
-      :has-more="props.hasMore"
       @detail="emit('detail', $event)"
       @edit="emit('edit', $event)"
       @delete="emit('delete', $event)"
-      @load-more="emit('loadMore')"
-      @retry="emit('retry')"
     />
+    <output v-if="props.pending" class="list-status" aria-live="polite">読み込み中…</output>
+    <output v-else-if="props.error" class="list-status list-status--error" aria-live="polite">
+      <span>取得に失敗しました。</span>
+      <button type="button" class="btn-retry" @click="emit('retry')">再試行</button>
+    </output>
   </div>
 </template>
 
@@ -147,5 +146,35 @@ const composerCount = computed(() => props.composers.length);
 
 .masthead-actions {
   margin-top: 0.4rem;
+}
+
+.list-status {
+  display: block;
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
+.list-status--error {
+  color: var(--color-danger);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-retry {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-danger);
+  background: var(--color-bg-surface);
+  color: var(--color-danger);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-retry:hover {
+  background: var(--color-danger-bg);
 }
 </style>

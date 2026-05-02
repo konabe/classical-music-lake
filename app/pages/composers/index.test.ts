@@ -3,79 +3,65 @@ import { flushPromises } from "@vue/test-utils";
 import ComposersPage from "./index.vue";
 import type { Composer } from "~/types";
 
-const { sampleComposers, mockLoadMore, mockReset, mockRetry, mockDeleteComposer } = vi.hoisted(
-  () => {
-    const sampleComposers: Composer[] = [
-      {
-        id: "composer-1",
-        name: "ベートーヴェン",
-        createdAt: "2024-01-01T00:00:00.000Z",
-        updatedAt: "2024-01-01T00:00:00.000Z",
-      },
-    ];
-    return {
-      sampleComposers,
-      mockLoadMore: vi.fn(),
-      mockReset: vi.fn(),
-      mockRetry: vi.fn(),
-      mockDeleteComposer: vi.fn(),
-    };
-  },
-);
+const { sampleComposers, mockRefresh, mockDeleteComposer } = vi.hoisted(() => {
+  const sampleComposers: Composer[] = [
+    {
+      id: "composer-1",
+      name: "ベートーヴェン",
+      birthYear: 1770,
+      deathYear: 1827,
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+    {
+      id: "composer-2",
+      name: "バッハ",
+      birthYear: 1685,
+      deathYear: 1750,
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+    {
+      id: "composer-3",
+      name: "未確定",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    },
+  ];
+  return {
+    sampleComposers,
+    mockRefresh: vi.fn(),
+    mockDeleteComposer: vi.fn(),
+  };
+});
 
-const composersItems = ref<Composer[]>([]);
+const composersData = ref<Composer[] | null>(null);
 const composersPending = ref<boolean>(false);
 const composersError = ref<Error | null>(null);
-const composersHasMore = ref<boolean>(true);
 
-mockNuxtImport("useComposersPaginated", () =>
+mockNuxtImport("useComposersAll", () =>
   vi.fn(() => ({
-    items: composersItems,
-    nextCursor: ref(null),
+    data: composersData,
     pending: composersPending,
     error: composersError,
-    hasMore: composersHasMore,
-    loadMore: mockLoadMore,
-    reset: mockReset,
-    retry: mockRetry,
+    refresh: mockRefresh,
     createComposer: vi.fn(),
     updateComposer: vi.fn(),
     deleteComposer: mockDeleteComposer,
   })),
 );
 
-const mockFetch = vi.fn();
-
-const observeCallbacks: Array<(entries: Array<{ isIntersecting: boolean }>) => void> = [];
-class MockIntersectionObserver {
-  callback: (entries: Array<{ isIntersecting: boolean }>) => void;
-  constructor(callback: (entries: Array<{ isIntersecting: boolean }>) => void) {
-    this.callback = callback;
-    observeCallbacks.push(callback);
-  }
-  observe = vi.fn();
-  unobserve = vi.fn();
-  disconnect = vi.fn();
-}
-
 beforeEach(() => {
-  mockLoadMore.mockClear();
-  mockReset.mockClear();
-  mockRetry.mockClear();
+  mockRefresh.mockClear();
   mockDeleteComposer.mockClear();
-  mockFetch.mockClear();
-  composersItems.value = [...sampleComposers];
+  composersData.value = [...sampleComposers];
   composersPending.value = false;
   composersError.value = null;
-  composersHasMore.value = true;
-  observeCallbacks.length = 0;
-  vi.stubGlobal("$fetch", mockFetch);
   vi.stubGlobal(
     "confirm",
     vi.fn(() => true),
   );
   vi.stubGlobal("alert", vi.fn());
-  vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 });
 
 describe("ComposersPage", () => {
@@ -83,27 +69,38 @@ describe("ComposersPage", () => {
     it("作曲家一覧が表示される", async () => {
       const wrapper = await mountSuspended(ComposersPage);
       await flushPromises();
-      expect(wrapper.findAllComponents({ name: "ComposerItem" })).toHaveLength(1);
+      expect(wrapper.findAllComponents({ name: "ComposerItem" })).toHaveLength(3);
     });
 
-    it("マウント時に loadMore が呼ばれる（初回ロード）", async () => {
+    it("マウント時に refresh が呼ばれる（初回ロード）", async () => {
       await mountSuspended(ComposersPage);
       await flushPromises();
-      expect(mockLoadMore).toHaveBeenCalled();
+      expect(mockRefresh).toHaveBeenCalled();
     });
 
-    it("hasMore=false 時は末尾到達メッセージが表示される", async () => {
-      composersHasMore.value = false;
+    it("生年昇順でソートされ、生年未登録は末尾に並ぶ", async () => {
       const wrapper = await mountSuspended(ComposersPage);
       await flushPromises();
-      expect(wrapper.text()).toContain("これ以上ありません");
+      const items = wrapper.findAllComponents({ name: "ComposerItem" });
+      expect(items[0]?.props("composer").name).toBe("バッハ"); // 1685
+      expect(items[1]?.props("composer").name).toBe("ベートーヴェン"); // 1770
+      expect(items[2]?.props("composer").name).toBe("未確定"); // 生年なし → 末尾
     });
 
     it("pending=true 時はローディングが表示される", async () => {
       composersPending.value = true;
+      composersData.value = [];
       const wrapper = await mountSuspended(ComposersPage);
       await flushPromises();
       expect(wrapper.text()).toContain("読み込み中");
+    });
+
+    it("error 時はエラー表示と再試行ボタンが表示される", async () => {
+      composersError.value = new Error("network");
+      composersData.value = [];
+      const wrapper = await mountSuspended(ComposersPage);
+      await flushPromises();
+      expect(wrapper.text()).toContain("取得に失敗しました");
     });
   });
 
@@ -114,7 +111,8 @@ describe("ComposersPage", () => {
       await flushPromises();
       await wrapper.find(".btn-danger").trigger("click");
       await flushPromises();
-      expect(mockDeleteComposer).toHaveBeenCalledWith("composer-1");
+      // 生年昇順なので先頭はバッハ
+      expect(mockDeleteComposer).toHaveBeenCalledWith("composer-2");
     });
 
     it("削除キャンセル時は deleteComposer が呼ばれない", async () => {

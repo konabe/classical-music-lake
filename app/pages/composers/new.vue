@@ -3,7 +3,7 @@ import type { CreateComposerInput } from "~/types";
 
 definePageMeta({ middleware: ["admin"] });
 
-const { createComposer } = useComposersPaginated();
+const { createComposer } = useComposersAll();
 const { error, handleSubmit } = useSubmitHandler<CreateComposerInput>({
   submit: (values) => createComposer(values),
   redirectTo: "/composers",

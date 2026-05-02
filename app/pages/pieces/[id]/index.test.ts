@@ -32,7 +32,6 @@ vi.mock("~/composables/usePieces", () => ({
 }));
 
 vi.mock("~/composables/useComposers", () => ({
-  useComposersPaginated: vi.fn(),
   useComposer: vi.fn(),
   useComposersAll: () => ({
     data: ref(sampleComposers),

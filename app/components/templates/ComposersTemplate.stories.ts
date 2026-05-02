@@ -21,13 +21,13 @@ const sample: Composer[] = [
 ];
 
 export const AsAdmin: Story = {
-  args: { composers: sample, error: null, pending: false, hasMore: false, isAdmin: true },
+  args: { composers: sample, error: null, pending: false, isAdmin: true },
 };
 
 export const AsVisitor: Story = {
-  args: { composers: sample, error: null, pending: false, hasMore: false, isAdmin: false },
+  args: { composers: sample, error: null, pending: false, isAdmin: false },
 };
 
 export const Empty: Story = {
-  args: { composers: [], error: null, pending: false, hasMore: false, isAdmin: true },
+  args: { composers: [], error: null, pending: false, isAdmin: true },
 };
