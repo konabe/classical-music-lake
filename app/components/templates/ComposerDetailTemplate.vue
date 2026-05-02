@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Composer } from "~/types";
 
-defineProps<{
+const props = defineProps<{
   composer: Composer | null;
   error: Error | null;
   isAdmin: boolean;
@@ -10,11 +10,19 @@ defineProps<{
 const emit = defineEmits<{
   delete: [composer: Composer];
 }>();
+
+const shortId = computed(() => {
+  if (props.composer === null) return "";
+  return props.composer.id.slice(0, 6).toUpperCase();
+});
 </script>
 
 <template>
-  <div>
-    <NuxtLink to="/composers" class="back-link">← 作曲家一覧</NuxtLink>
+  <article class="composer-detail">
+    <NuxtLink to="/composers" class="back-link">
+      <span aria-hidden="true">&larr;</span>
+      <span class="smallcaps">Back to composers</span>
+    </NuxtLink>
 
     <ErrorMessage
       v-if="error"
@@ -23,108 +31,223 @@ const emit = defineEmits<{
     />
 
     <template v-else-if="composer">
-      <div class="composer-header">
-        <img
-          v-if="composer.imageUrl"
-          :src="composer.imageUrl"
-          :alt="composer.name"
-          class="composer-image"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-        />
-        <div class="composer-name">{{ composer.name }}</div>
-        <div class="composer-category-wrapper">
-          <ComposerCategoryList :composer="composer" />
-        </div>
-        <div v-if="isAdmin" class="admin-actions">
-          <NuxtLink :to="`/composers/${composer.id}/edit`" class="btn-secondary">編集</NuxtLink>
-          <button class="btn-danger" @click="emit('delete', composer)">削除</button>
-        </div>
+      <div class="composer-grid">
+        <aside v-if="composer.imageUrl" class="composer-portrait">
+          <figure class="portrait-frame">
+            <img
+              :src="composer.imageUrl"
+              :alt="composer.name"
+              class="composer-image"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+            />
+            <figcaption class="portrait-caption smallcaps">Portrait</figcaption>
+          </figure>
+        </aside>
+
+        <header class="composer-masthead">
+          <div class="composer-meta">
+            <span class="meta-tag smallcaps">III / Composers</span>
+            <span class="meta-rule" aria-hidden="true" />
+            <span class="meta-id smallcaps numeric">N&deg; {{ shortId }}</span>
+          </div>
+
+          <h1 class="composer-name">{{ composer.name }}</h1>
+
+          <div class="composer-category-wrapper">
+            <ComposerCategoryList :composer="composer" />
+          </div>
+
+          <div v-if="isAdmin" class="admin-actions">
+            <NuxtLink :to="`/composers/${composer.id}/edit`" class="admin-link">
+              <span class="smallcaps">Edit</span>
+            </NuxtLink>
+            <span class="admin-sep" aria-hidden="true">/</span>
+            <button class="admin-link admin-link--danger" @click="emit('delete', composer)">
+              <span class="smallcaps">Delete</span>
+            </button>
+          </div>
+        </header>
       </div>
     </template>
-  </div>
+  </article>
 </template>
 
 <style scoped>
+.composer-detail {
+  margin-bottom: 4rem;
+}
+
 .back-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   color: var(--color-text-muted);
   text-decoration: none;
-  font-size: 0.9rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  transition:
+    color 0.25s ease,
+    gap 0.25s ease;
 }
 
 .back-link:hover {
-  color: var(--color-text-secondary);
+  color: var(--color-accent);
+  gap: 0.65rem;
 }
 
-.composer-header {
-  margin-bottom: 1.5rem;
+.composer-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.composer-grid:has(.composer-masthead:only-child) {
+  grid-template-columns: 1fr;
+}
+
+.composer-portrait {
+  position: sticky;
+  top: 2rem;
+}
+
+.portrait-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .composer-image {
-  max-width: 240px;
-  max-height: 320px;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 6px;
-  margin-bottom: 1rem;
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border: 1px solid var(--color-hairline-strong);
   background: var(--color-bg-elevated);
+  filter: grayscale(0.15) sepia(0.05);
+  transition: filter 0.5s ease;
+}
+
+.composer-image:hover {
+  filter: none;
+}
+
+.portrait-caption {
+  color: var(--color-text-faint);
+  text-align: center;
+}
+
+.composer-masthead {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-hairline-strong);
+}
+
+.composer-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.meta-tag {
+  color: var(--color-bordeaux);
+}
+:root.dark .meta-tag {
+  color: var(--color-accent);
+}
+
+.meta-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-hairline);
+}
+
+.meta-id {
+  color: var(--color-text-muted);
 }
 
 .composer-name {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
   color: var(--color-text);
-  margin-bottom: 0.3rem;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 60,
+    "WONK" 1;
 }
 
 .composer-category-wrapper {
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
 }
 
 .admin-actions {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.9rem;
   margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--color-hairline);
 }
 
-.btn-secondary {
-  display: inline-block;
-  padding: 0.4rem 1rem;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary);
-  border-radius: 4px;
-  font-size: 0.9rem;
+.admin-link {
+  background: transparent;
+  border: none;
+  padding: 0.3rem 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  position: relative;
   text-decoration: none;
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    color 0.2s;
+  transition: color 0.25s ease;
 }
 
-.btn-secondary:hover {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+.admin-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s ease;
 }
 
-.btn-danger {
-  padding: 0.4rem 1rem;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger);
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    color 0.2s;
+.admin-link:hover {
+  color: var(--color-accent);
 }
 
-.btn-danger:hover {
-  background: var(--color-danger);
-  color: var(--color-on-primary);
+.admin-link:hover::after {
+  width: 100%;
+}
+
+.admin-link--danger:hover {
+  color: var(--color-bordeaux);
+}
+:root.dark .admin-link--danger:hover {
+  color: var(--color-bordeaux);
+}
+
+.admin-sep {
+  color: var(--color-text-faint);
+  font-family: var(--font-display);
+  font-style: italic;
+}
+
+@media (max-width: 760px) {
+  .composer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .composer-portrait {
+    position: relative;
+    top: 0;
+    max-width: 240px;
+  }
 }
 </style>

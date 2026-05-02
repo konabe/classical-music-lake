@@ -23,23 +23,23 @@ describe("ComposerDetailTemplate", () => {
     const wrapper = await mountSuspended(ComposerDetailTemplate, {
       props: { composer: sample, error: null, isAdmin: true },
     });
-    expect(wrapper.find(".btn-secondary").exists()).toBe(true);
-    expect(wrapper.find(".btn-danger").exists()).toBe(true);
+    expect(wrapper.find("a.admin-link").exists()).toBe(true);
+    expect(wrapper.find(".admin-link--danger").exists()).toBe(true);
   });
 
   it("非管理者の場合、編集・削除ボタンが表示されない", async () => {
     const wrapper = await mountSuspended(ComposerDetailTemplate, {
       props: { composer: sample, error: null, isAdmin: false },
     });
-    expect(wrapper.find(".btn-secondary").exists()).toBe(false);
-    expect(wrapper.find(".btn-danger").exists()).toBe(false);
+    expect(wrapper.find("a.admin-link").exists()).toBe(false);
+    expect(wrapper.find(".admin-link--danger").exists()).toBe(false);
   });
 
   it("削除ボタンクリックで delete イベントが emit される", async () => {
     const wrapper = await mountSuspended(ComposerDetailTemplate, {
       props: { composer: sample, error: null, isAdmin: true },
     });
-    await wrapper.find(".btn-danger").trigger("click");
+    await wrapper.find(".admin-link--danger").trigger("click");
     expect(wrapper.emitted("delete")).toBeDefined();
   });
 

@@ -120,7 +120,7 @@ describe("PieceItem", () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePieceWithCategories, composerName: "ベートーヴェン" },
       });
-      expect(wrapper.find(".kind-genre").text()).toBe("交響曲");
+      expect(wrapper.find(".kind-genre .badge-value").text()).toBe("交響曲");
     });
 
     it("genre が未設定の場合、ジャンルバッジが表示されない", async () => {
@@ -134,7 +134,7 @@ describe("PieceItem", () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePieceWithCategories, composerName: "ベートーヴェン" },
       });
-      expect(wrapper.find(".kind-era").text()).toBe("ロマン派");
+      expect(wrapper.find(".kind-era .badge-value").text()).toBe("ロマン派");
     });
 
     it("era が未設定の場合、時代バッジが表示されない", async () => {
@@ -148,10 +148,10 @@ describe("PieceItem", () => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece: samplePieceWithCategories, composerName: "ベートーヴェン" },
       });
-      expect(wrapper.find(".kind-genre").text()).toBe("交響曲");
-      expect(wrapper.find(".kind-era").text()).toBe("ロマン派");
-      expect(wrapper.find(".kind-formation").text()).toBe("管弦楽");
-      expect(wrapper.find(".kind-region").text()).toBe("ドイツ・オーストリア");
+      expect(wrapper.find(".kind-genre .badge-value").text()).toBe("交響曲");
+      expect(wrapper.find(".kind-era .badge-value").text()).toBe("ロマン派");
+      expect(wrapper.find(".kind-formation .badge-value").text()).toBe("管弦楽");
+      expect(wrapper.find(".kind-region .badge-value").text()).toBe("ドイツ・オーストリア");
     });
 
     it("全カテゴリが未設定の場合、バッジが一切表示されない", async () => {

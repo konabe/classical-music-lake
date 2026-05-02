@@ -29,63 +29,88 @@ function handleSubmit() {
 
 <template>
   <form class="quick-log-form" @submit.prevent="handleSubmit">
-    <div class="piece-info">
-      <span class="piece-info-label">作曲家</span>
-      <span class="piece-info-value">{{ composer }}</span>
-    </div>
-    <div class="piece-info">
-      <span class="piece-info-label">曲名</span>
-      <span class="piece-info-value">{{ piece }}</span>
-    </div>
+    <dl class="piece-info-grid">
+      <div class="piece-info-row">
+        <dt class="smallcaps">Composer</dt>
+        <dd class="piece-info-value">{{ composer }}</dd>
+      </div>
+      <div class="piece-info-row">
+        <dt class="smallcaps">Piece</dt>
+        <dd class="piece-info-value">{{ piece }}</dd>
+      </div>
+    </dl>
 
-    <FormGroup label="評価">
+    <FormGroup label="Rating">
       <RatingSelector v-model="rating" />
     </FormGroup>
 
     <div class="form-group">
       <label class="checkbox-label" for="is-favorite">
         <input id="is-favorite" v-model="isFavorite" type="checkbox" />
-        お気に入り
+        <span class="checkbox-text">Mark as favorite</span>
       </label>
     </div>
 
-    <FormGroup label="感想・メモ" input-id="memo">
-      <textarea id="memo" v-model="memo" rows="4" placeholder="自由に感想を書いてください..." />
+    <FormGroup label="Notes" input-id="memo">
+      <textarea id="memo" v-model="memo" rows="4" placeholder="自由に感想を書いてください…" />
     </FormGroup>
 
-    <div v-if="saved" class="success-message">保存しました！</div>
+    <div v-if="saved" class="success-message">
+      <span aria-hidden="true">&check;</span> 保存しました
+    </div>
 
-    <ButtonPrimary type="submit">記録する</ButtonPrimary>
+    <div class="form-action">
+      <ButtonPrimary type="submit">記録する</ButtonPrimary>
+    </div>
   </form>
 </template>
 
 <style scoped>
 .quick-log-form {
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-secondary);
-  border-radius: 12px;
-  padding: 2rem;
+  background: var(--color-bg-paper);
+  border: 1px solid var(--color-hairline);
+  padding: clamp(1.5rem, 3vw, 2.4rem);
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 1.4rem;
+  position: relative;
 }
 
-.piece-info {
+.quick-log-form::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-accent);
+  opacity: 0.6;
+}
+
+.piece-info-grid {
   display: flex;
-  gap: 0.8rem;
-  align-items: baseline;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-hairline);
 }
 
-.piece-info-label {
-  font-size: 0.85rem;
+.piece-info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.piece-info-row dt {
+  min-width: 6rem;
   color: var(--color-text-muted);
-  min-width: 4rem;
 }
 
 .piece-info-value {
-  font-size: 1rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.05rem;
   color: var(--color-text);
-  font-weight: bold;
 }
 
 .form-group {
@@ -95,31 +120,63 @@ function handleSubmit() {
 }
 
 .checkbox-label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: normal;
+  gap: 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-text);
   cursor: pointer;
 }
 
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.checkbox-text {
+  letter-spacing: 0.02em;
+}
+
 textarea {
-  border: 1px solid var(--color-secondary);
-  border-radius: 6px;
-  padding: 0.6rem 0.8rem;
+  border: none;
+  border-bottom: 1px solid var(--color-hairline-strong);
+  border-radius: 0;
+  padding: 0.6rem 0.1rem;
   font-size: 0.95rem;
-  font-family: inherit;
-  background: var(--color-bg-input);
-  transition: border-color 0.2s;
+  font-family: var(--font-serif);
+  background: transparent;
+  color: var(--color-text);
+  transition: border-color 0.25s ease;
+  resize: vertical;
+}
+
+textarea::placeholder {
+  font-style: italic;
+  color: var(--color-text-faint);
 }
 
 textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-bottom-color: var(--color-accent);
 }
 
 .success-message {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
   color: var(--color-success);
-  font-size: 0.95rem;
-  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.form-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
 }
 </style>

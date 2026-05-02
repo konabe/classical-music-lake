@@ -24,7 +24,7 @@ const emit = defineEmits<{
       >作曲家が登録されていません。最初の作曲家を追加しましょう。</EmptyState
     >
 
-    <ul v-else class="composer-list">
+    <ul v-else class="composer-list stagger-children">
       <li v-for="composer in composers" :key="composer.id">
         <ComposerItem
           :composer="composer"
@@ -40,14 +40,9 @@ const emit = defineEmits<{
 <style scoped>
 .composer-list {
   list-style: none;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-@media (min-width: 1024px) {
-  .composer-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--color-hairline);
 }
 </style>

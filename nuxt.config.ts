@@ -21,7 +21,17 @@ export default defineNuxtConfig({
     storageKey: "nocturne-color-mode",
   },
   components: [{ path: "~/components", pathPrefix: false }],
-  css: ["~/assets/css/theme.css"],
+  css: ["~/assets/css/fonts.css", "~/assets/css/theme.css"],
+  app: {
+    head: {
+      link: [
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+      ],
+    },
+    pageTransition: { name: "page", mode: "out-in" },
+    layoutTransition: { name: "page", mode: "out-in" },
+  },
   typescript: {
     strict: true,
   },

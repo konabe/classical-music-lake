@@ -54,22 +54,23 @@ function handleSubmit() {
       <ErrorMessage v-if="props.errors.general" :message="props.errors.general" :center="true" />
 
       <ButtonPrimary type="submit" :disabled="props.isLoading">
-        {{ props.isLoading ? "ログイン中..." : "ログイン" }}
+        {{ props.isLoading ? "Signing in…" : "ログイン" }}
       </ButtonPrimary>
     </form>
 
     <div class="divider">
-      <span>または</span>
+      <span class="smallcaps">Or</span>
     </div>
 
     <button type="button" class="btn-google-login" @click="emit('googleLogin')">
-      Google でログイン
+      <span class="g-mark" aria-hidden="true">G</span>
+      <span class="g-label">Google でログイン</span>
     </button>
 
     <div class="register-link">
       <p>
         アカウントをお持ちでない方は
-        <NuxtLink to="/auth/user-register">新規登録</NuxtLink>
+        <NuxtLink to="/auth/user-register">新規登録 &rarr;</NuxtLink>
       </p>
     </div>
   </AuthFormContainer>
@@ -82,10 +83,73 @@ form {
   gap: 1.5rem;
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--color-text-muted);
+  gap: 0.8rem;
+  margin: 1.5rem 0 1.2rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.btn-google-login {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--color-hairline-strong);
+  background-color: transparent;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.btn-google-login:hover {
+  background-color: var(--color-bg-elevated);
+  border-color: var(--color-accent);
+}
+
+.g-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-accent);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--color-accent);
+  letter-spacing: 0;
+}
+
+.g-label {
+  font-weight: 600;
+}
+
 .register-link {
   text-align: center;
-  margin-top: 1rem;
-  color: #7a5c38;
+  margin-top: 1.4rem;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
 }
 
 .register-link p {
@@ -96,67 +160,15 @@ form {
 
 .register-link a {
   display: inline-block;
-  color: var(--color-primary-soft);
+  color: var(--color-accent);
   text-decoration: none;
   white-space: nowrap;
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s ease;
 }
 
 .register-link a:hover {
-  text-decoration: underline;
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: #7a5c38;
-  gap: 0.75rem;
-  margin: 1.25rem 0;
-  font-size: 0.85rem;
-}
-
-.divider::before,
-.divider::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid #d4c5b0;
-}
-
-.btn-google-login {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #d4c5b0;
-  border-radius: 4px;
-  background-color: var(--color-bg-surface);
-  color: var(--color-primary-soft);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.btn-google-login:hover {
-  background-color: var(--color-bg-elevated);
-}
-
-:global(.dark .register-link) {
-  color: var(--color-text-secondary);
-}
-
-:global(.dark .register-link a) {
-  color: var(--color-link);
-}
-
-:global(.dark .divider) {
-  color: var(--color-text-muted);
-}
-
-:global(.dark .divider::before),
-:global(.dark .divider::after) {
-  border-bottom-color: var(--color-border-strong);
-}
-
-:global(.dark .btn-google-login) {
-  border-color: var(--color-border-strong);
-  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
 }
 </style>

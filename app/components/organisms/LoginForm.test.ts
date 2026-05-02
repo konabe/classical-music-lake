@@ -33,11 +33,11 @@ describe("LoginForm", () => {
       expect(wrapper.find("button[type='submit']").text()).toBe("ログイン");
     });
 
-    it("isLoading=true のとき「ログイン中...」ボタンが表示される", async () => {
+    it("isLoading=true のとき「Signing in…」ボタンが表示される", async () => {
       const wrapper = await mountSuspended(LoginForm, {
         props: { isLoading: true, errors: defaultErrors },
       });
-      expect(wrapper.find("button[type='submit']").text()).toBe("ログイン中...");
+      expect(wrapper.find("button[type='submit']").text()).toBe("Signing in…");
     });
 
     it("isLoading=true のとき送信ボタンが disabled になる", async () => {

@@ -10,11 +10,11 @@ describe("CategoryBadge", () => {
       expect(wrapper.find(".category-badge").exists()).toBe(true);
     });
 
-    it("value のみが表示される", async () => {
+    it("value がテキストに含まれる", async () => {
       const wrapper = await mountSuspended(CategoryBadge, {
         props: { label: "ジャンル", value: "交響曲" },
       });
-      expect(wrapper.text()).toBe("交響曲");
+      expect(wrapper.find(".badge-value").text()).toBe("交響曲");
     });
 
     it("label と value は aria-label として連結される", async () => {

@@ -2,79 +2,152 @@
 import { formatDatetime } from "~/utils/date";
 import type { ListeningLog } from "~/types";
 
-defineProps<{
+const props = defineProps<{
   log: ListeningLog;
 }>();
+
+const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
 </script>
 
 <template>
   <article class="log-detail">
-    <header>
-      <h1>
+    <header class="log-detail-head">
+      <div class="log-meta">
+        <span class="meta-tag smallcaps">I / Recording</span>
+        <span class="meta-rule" aria-hidden="true" />
+        <span class="meta-id smallcaps numeric">N&deg; {{ shortId }}</span>
+      </div>
+
+      <p class="log-composer smallcaps">
         <FavoriteIndicator :is-favorite="log.isFavorite" />
-        {{ log.piece }}
-      </h1>
+        {{ log.composer }}
+      </p>
+
+      <h1 class="log-title">{{ log.piece }}</h1>
+
+      <div class="log-rating-row">
+        <RatingDisplay :rating="log.rating" />
+        <span class="meta-rule" aria-hidden="true" />
+        <time class="smallcaps numeric">{{ formatDatetime(log.listenedAt) }}</time>
+      </div>
     </header>
 
-    <dl class="detail-list">
-      <dt>作曲家</dt>
-      <dd>{{ log.composer }}</dd>
-
-      <dt>鑑賞日時</dt>
-      <dd>{{ formatDatetime(log.listenedAt) }}</dd>
-
-      <dt>評価</dt>
-      <dd><RatingDisplay :rating="log.rating" /></dd>
-    </dl>
-
     <section v-if="log.memo" class="memo">
-      <h2>感想・メモ</h2>
-      <p>{{ log.memo }}</p>
+      <span class="memo-tag smallcaps">Notes</span>
+      <p class="memo-body">{{ log.memo }}</p>
     </section>
   </article>
 </template>
 
 <style scoped>
 .log-detail {
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-secondary);
-  border-radius: 12px;
-  padding: 2rem;
-  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
 }
 
-.log-detail header {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-secondary);
+.log-detail-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-hairline-strong);
 }
 
-.log-detail h1 {
-  font-size: 1.8rem;
+.log-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.meta-tag {
+  color: var(--color-bordeaux);
+}
+:root.dark .meta-tag {
+  color: var(--color-accent);
+}
+
+.meta-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-hairline);
+}
+
+.meta-id {
+  color: var(--color-text-muted);
+}
+
+.log-composer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-bordeaux);
+  margin-top: 0.4rem;
+}
+:root.dark .log-composer {
+  color: var(--color-accent);
+}
+
+.log-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-tight);
   color: var(--color-text);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 60,
+    "WONK" 1;
 }
 
-.detail-list {
-  display: grid;
-  grid-template-columns: 8rem 1fr;
-  gap: 0.6rem 1rem;
-  margin-bottom: 1.5rem;
+.log-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.4rem;
 }
 
-dt {
-  font-weight: bold;
-  color: var(--color-text-faint);
-  font-size: 0.9rem;
+.log-rating-row time {
+  color: var(--color-text-muted);
 }
 
-.memo h2 {
-  font-size: 1rem;
-  color: var(--color-text-faint);
-  margin-bottom: 0.5rem;
+.memo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  max-width: 38em;
 }
 
-.memo p {
-  line-height: 1.7;
-  color: var(--color-text-secondary);
+.memo-tag {
+  color: var(--color-bordeaux);
+}
+:root.dark .memo-tag {
+  color: var(--color-accent);
+}
+
+.memo-body {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  line-height: 1.75;
+  color: var(--color-text);
+  font-style: italic;
+  padding-left: 1.4rem;
+  border-left: 1px solid var(--color-accent);
+  position: relative;
+}
+
+.memo-body::before {
+  content: "\201C";
+  position: absolute;
+  left: -0.4em;
+  top: -0.6em;
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  color: var(--color-accent);
+  opacity: 0.5;
+  font-style: italic;
+  line-height: 1;
 }
 </style>

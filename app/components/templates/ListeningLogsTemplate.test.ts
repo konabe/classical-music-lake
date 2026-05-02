@@ -79,7 +79,7 @@ describe("ListeningLogsTemplate", () => {
           filterState: { ...emptyFilter, keyword: "ベー" },
         },
       });
-      expect(wrapper.text()).toContain("1 / 5 件を表示中");
+      expect(wrapper.text()).toContain("Showing 1 of 5 entries");
     });
 
     it("ListeningLogFilter からの reset イベントを伝搬する", async () => {

@@ -82,7 +82,35 @@
 | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `video.ts`     | YouTube URL の判定（`isYouTubeUrl`）、動画 ID 抽出（`extractYouTubeVideoId`）、埋め込み URL 変換（`toYouTubeEmbedUrl`） |
 
-#### テーマ（ライト/ダークモード）
+#### デザインシステム — Editorial Quarterly
+
+ヴィンテージ雑誌（The New Yorker / Le Monde diplomatique）の佇まいを参考にしたエディトリアル路線。ネイビー × アイボリー × シャンパンゴールドを基調に、ボルドーを補助アクセントに据える。
+
+##### タイポグラフィ
+
+- **ディスプレイ**: [`Fraunces`](https://fonts.google.com/specimen/Fraunces) — 1900 年代のオールドスタイルセリフ復刻。可変軸 `opsz` / `SOFT` / `WONK` でクラシック寄り〜エキセントリックを切替
+- **本文・UI**: [`Inter Tight`](https://fonts.google.com/specimen/Inter+Tight) — 情報密度の高い UI 用、`Inter` のコンパクト版
+- **引用・装飾**: [`Cormorant Garamond`](https://fonts.google.com/specimen/Cormorant+Garamond) — 19 世紀 Garamond 復刻、抒情性のある引用やキャプションに
+- **読み込み**: `app/assets/css/fonts.css` で Google Fonts を `@import`、`nuxt.config.ts` の `app.head` で `https://fonts.googleapis.com` への `preconnect` を設定
+- **トークン**: `theme.css` の `:root` で `--font-display` / `--font-serif` / `--font-sans` / `--font-numeric` と `--tracking-tight` 〜 `--tracking-widest` を定義
+- **`.smallcaps` / `.numeric`**: `app.vue` のグローバルクラス。雑誌風キャプションとタブラー数字の出力に使用
+
+##### カラーパレット（Editorial）
+
+- **背景（ライト）**: アイボリー系 `--color-bg-base: #f4ecdb` / `--color-bg-paper: #f8f1de` / `--color-bg-ink: #0a1226`（インキ用の濃紺）
+- **背景（ダーク）**: ネイビー系 `--color-bg-base: #0a1020` / `--color-bg-paper: #131c38` / `--color-bg-ink: #f4ecdb`（暗背景の反転インキ＝アイボリー）
+- **アクセント**: シャンパンゴールド `--color-accent`（light: `#b08a3e` / dark: `#d4ad5c`）、ボルドー `--color-bordeaux`（light: `#6e1f2b` / dark: `#b85968`）
+- **罫線**: `--color-hairline` / `--color-hairline-strong`（半透明の極細線、雑誌の組版的な区切りに使用）
+- **紙のテクスチャ**: `app.vue` の `body::before` で repeating-linear-gradient + radial-gradient の重ね合わせで紙の繊維感を再現
+
+##### モーション
+
+- **ページ遷移**: `nuxt.config.ts` の `app.pageTransition` / `layoutTransition` で `name: "page"` を指定。`app.vue` で `.page-enter-active` / `.page-leave-active` を CSS 定義（フェード + 微小なリフト）
+- **stagger reveal**: `.stagger-children` クラスを `<ul>` / グリッドに付けると、子要素が順次フェードイン（`@keyframes stagger-up`、最大 11 件目まで `animation-delay`）
+- **micro-interactions**: ナビゲーションのアンダーライン伸長、Item の左サイドゴールドバー、CTA の `letter-spacing` 拡張等
+- **アクセシビリティ**: `prefers-reduced-motion: reduce` でスクロールスムーズとアニメーションを無効化
+
+##### テーマ（ライト/ダークモード）
 
 - **モジュール**: [`@nuxtjs/color-mode`](https://color-mode.nuxtjs.org/) を採用。`<html>` ルート要素に `light` / `dark` クラスを付与する
 - **設定**（`nuxt.config.ts`）:
@@ -90,10 +118,19 @@
   - `fallback: "light"` — システム検出に失敗した場合のデフォルト
   - `classSuffix: ""` — クラス名を `light` / `dark`（接尾辞なし）に統一
   - `storageKey: "nocturne-color-mode"` — ユーザー選択を localStorage に保存
-- **カラーパレット定義**: `app/assets/css/theme.css` で `:root.light` / `:root.dark` ごとに CSS 変数（`--color-bg-base`、`--color-text`、`--color-primary` など意味的トークン）を定義し、各コンポーネントは `var(--xxx)` 経由で参照する
-- **ダークモードのカラーキー**: ネイビー寄りパレット（背景は `#0f1729`、サーフェスは `#1a2547`、プライマリは `#4a6ba8`）
+- **カラーパレット定義**: `app/assets/css/theme.css` で `:root.light` / `:root.dark` ごとに CSS 変数（`--color-bg-base`、`--color-text`、`--color-primary`、`--color-accent`、`--color-bordeaux` 等意味的トークン）を定義し、各コンポーネントは `var(--xxx)` 経由で参照する
 - **切替 UI**: `ThemeToggle` atom（月/太陽アイコンの円形ボタン）をヘッダー右端に配置。`default` レイアウトと `auth` レイアウトの両方で利用可能
 - **永続化**: ユーザー選択は localStorage に保存され、リロード後も維持される
+
+##### マストヘッド
+
+`default` レイアウトでは雑誌のマストヘッドを模した 2 段ヘッダーを採用:
+
+- **上段**: 号数表示（"VOL. V · MAY · 2026"、当月をローマ数字 + 英語月名に変換）、誌名サブタイトル（"A Quarterly of Classical Listening"）、緯度経度（35°41′N · 139°41′E）、テーマトグル
+- **中段**: ロゴ "Nocturne ♯" + ナンバリング付きナビゲーション（"01 鑑賞記録 / 02 楽曲 / 03 作曲家 / 04 演奏会"）+ 認証 (Sign in / Register / Sign out)
+- **アクセント**: 上下にゴールドのヘアライン（`linear-gradient` で両端をフェード）、ナビ現在地はゴールドのアンダーライン
+
+`auth` レイアウトは別マストヘッド + 4 隅ゴールドコーナー枠の `AuthFormContainer` + サイドマーク "Nº01" + フットノート「a quarterly of classical listening」を配置
 
 #### バックエンド
 

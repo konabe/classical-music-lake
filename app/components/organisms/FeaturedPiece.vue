@@ -41,10 +41,12 @@ const shuffle = () => {
 
 <template>
   <div class="featured">
-    <div class="featured-header">
-      <h2 class="featured-heading">今日の一曲</h2>
+    <div class="featured-meta">
+      <span class="meta-tag smallcaps">Now playing</span>
+      <span class="meta-rule" aria-hidden="true" />
       <button v-if="canShuffle && !loading" class="shuffle-btn" type="button" @click="shuffle">
-        ↺ 別の曲を見る
+        <span aria-hidden="true">&#x2934;</span>
+        <span>Shuffle</span>
       </button>
     </div>
 
@@ -52,15 +54,21 @@ const shuffle = () => {
       <div class="loading-pulse" />
     </div>
 
-    <div v-else-if="!featured" class="featured-empty">動画付きの楽曲がまだ登録されていません</div>
+    <div v-else-if="!featured" class="featured-empty">
+      <p class="empty-quote">&ldquo;A song unsung is silence.&rdquo;</p>
+      <p class="empty-help">動画付きの楽曲がまだ登録されていません</p>
+    </div>
 
     <div v-else class="featured-content">
-      <VideoPlayer :key="featured.id" :video-url="featured.videoUrl!" />
+      <div class="featured-video">
+        <VideoPlayer :key="featured.id" :video-url="featured.videoUrl!" />
+      </div>
       <div class="piece-info">
-        <p class="piece-title">《{{ featured.title }}》</p>
         <p class="piece-composer">
           {{ (props.composerNameById ?? {})[featured.composerId] ?? "(不明な作曲家)" }}
         </p>
+        <p class="piece-title">{{ featured.title }}</p>
+        <p class="piece-attr smallcaps">a piece selected for you tonight</p>
       </div>
     </div>
   </div>
@@ -68,42 +76,54 @@ const shuffle = () => {
 
 <style scoped>
 .featured {
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-strong);
-  border-radius: 16px;
-  padding: 1.75rem;
-}
-
-.featured-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
+  flex-direction: column;
+  gap: 1.4rem;
 }
 
-.featured-heading {
-  font-size: 1.1rem;
-  color: var(--color-text);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+.featured-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.meta-tag {
+  color: var(--color-bordeaux);
+  font-weight: 700;
+}
+:root.dark .meta-tag {
+  color: var(--color-accent);
+}
+
+.meta-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-hairline);
 }
 
 .shuffle-btn {
-  background: none;
-  border: 1px solid var(--color-secondary);
-  border-radius: 6px;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  color: var(--color-secondary-hover);
+  background: transparent;
+  border: 1px solid var(--color-hairline-strong);
+  color: var(--color-text-muted);
+  padding: 0.45rem 0.95rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   transition:
-    border-color 0.2s,
-    color 0.2s;
+    border-color 0.25s ease,
+    color 0.25s ease,
+    background 0.25s ease;
 }
 
 .shuffle-btn:hover {
-  border-color: var(--color-text);
-  color: var(--color-text);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .featured-loading {
@@ -112,15 +132,14 @@ const shuffle = () => {
 
 .loading-pulse {
   width: 100%;
-  height: 200px;
+  aspect-ratio: 16 / 9;
   background: linear-gradient(
     90deg,
     var(--color-bg-subtle) 25%,
-    var(--color-border-strong) 50%,
+    var(--color-border) 50%,
     var(--color-bg-subtle) 75%
   );
   background-size: 200% 100%;
-  border-radius: 8px;
   animation: pulse 1.5s infinite;
 }
 
@@ -134,33 +153,88 @@ const shuffle = () => {
 }
 
 .featured-empty {
-  padding: 3rem;
-  text-align: center;
-  color: var(--color-text-faint);
-  font-size: 0.95rem;
-}
-
-.featured-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.piece-info {
+  padding: 3rem 1rem;
   text-align: center;
 }
 
-.piece-title {
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: var(--color-text);
+.empty-quote {
+  font-family: var(--font-display);
   font-style: italic;
+  font-size: 1.6rem;
+  color: var(--color-text);
+  line-height: 1.3;
+  margin-bottom: 0.4rem;
+  font-variation-settings: "opsz" 144;
+}
+
+.empty-help {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--color-text-faint);
   letter-spacing: 0.04em;
 }
 
+.featured-content {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.8rem;
+  align-items: center;
+}
+
+.featured-video {
+  width: 100%;
+}
+
+.piece-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem;
+  border-left: 1px solid var(--color-hairline);
+}
+
 .piece-composer {
-  font-size: 0.9rem;
-  color: var(--color-secondary-hover);
-  margin-top: 0.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.piece-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+  color: var(--color-text);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-tight);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 60;
+}
+
+.piece-attr {
+  margin-top: 0.6rem;
+  color: var(--color-text-faint);
+  font-family: var(--font-serif);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+@media (max-width: 760px) {
+  .featured-content {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+  .piece-info {
+    border-left: none;
+    border-top: 1px solid var(--color-hairline);
+    padding: 1.2rem 0 0;
+  }
 }
 </style>

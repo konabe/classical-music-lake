@@ -33,11 +33,11 @@ describe("UserRegisterForm", () => {
       expect(wrapper.find("button[type='submit']").text()).toBe("登録");
     });
 
-    it("isLoading=true のとき「登録中...」ボタンが表示される", async () => {
+    it("isLoading=true のとき「Registering…」ボタンが表示される", async () => {
       const wrapper = await mountSuspended(UserRegisterForm, {
         props: { isLoading: true, errors: defaultErrors, successMessage: "" },
       });
-      expect(wrapper.find("button[type='submit']").text()).toBe("登録中...");
+      expect(wrapper.find("button[type='submit']").text()).toBe("Registering…");
     });
 
     it("successMessage が設定されているとき表示される", async () => {

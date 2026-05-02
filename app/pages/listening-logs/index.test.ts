@@ -107,7 +107,7 @@ describe("ListeningLogsPage（検索フィルタ結合）", () => {
     await keywordInput.setValue("モーツァルト");
     await flushPromises();
     expect(wrapper.findAll(".btn-danger")).toHaveLength(1);
-    expect(wrapper.text()).toContain("1 / 2 件を表示中");
+    expect(wrapper.text()).toContain("Showing 1 of 2 entries");
   });
 
   it("条件をクリアすると全件に戻る", async () => {

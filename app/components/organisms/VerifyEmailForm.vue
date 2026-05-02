@@ -31,34 +31,39 @@ function handleResend() {
 <template>
   <AuthFormContainer title="メールアドレス確認">
     <p class="description">
-      <strong>{{ props.email }}</strong> に送信された認証コードを入力してください。
+      <strong class="description-email">{{ props.email }}</strong>
+      <br />
+      に送信された認証コードを入力してください。
     </p>
 
     <form @submit.prevent="handleSubmit">
-      <div class="form-group">
-        <label for="code">認証コード</label>
+      <FormGroup label="認証コード" input-id="code" required>
         <input
           id="code"
           v-model="code"
           type="text"
-          placeholder="例: 123456"
+          class="code-input"
+          placeholder="123456"
           autocomplete="one-time-code"
           required
         />
         <ErrorMessage v-if="props.error" :message="props.error" data-testid="error-message" />
-      </div>
+      </FormGroup>
 
-      <p v-if="props.infoMessage" class="info-message">{{ props.infoMessage }}</p>
+      <p v-if="props.infoMessage" class="info-message">
+        <span class="info-mark smallcaps">Sent</span>
+        {{ props.infoMessage }}
+      </p>
 
       <ButtonPrimary type="submit" :disabled="props.isLoading">
-        {{ props.isLoading ? "確認中..." : "確認する" }}
+        {{ props.isLoading ? "Verifying…" : "確認する" }}
       </ButtonPrimary>
     </form>
 
     <div class="resend-section">
       <p>コードが届きませんか？</p>
       <button type="button" class="resend-button" :disabled="props.isLoading" @click="handleResend">
-        再送信
+        <span class="smallcaps">Resend code</span>
       </button>
     </div>
   </AuthFormContainer>
@@ -67,9 +72,20 @@ function handleResend() {
 <style scoped>
 .description {
   text-align: center;
-  color: #7a5c38;
+  color: var(--color-text-muted);
   margin-bottom: 1.5rem;
+  font-family: var(--font-serif);
+  font-style: italic;
   font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.description-email {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--color-accent);
+  font-size: 1.05rem;
+  font-weight: 500;
 }
 
 form {
@@ -78,85 +94,81 @@ form {
   gap: 1.5rem;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-label {
-  font-weight: 500;
+.code-input {
+  border: none;
+  border-bottom: 1px solid var(--color-hairline-strong);
+  border-radius: 0;
+  padding: 0.7rem 0.1rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.6rem;
+  letter-spacing: 0.4em;
+  background: transparent;
   color: var(--color-text);
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.25s ease;
 }
 
-input[type="text"] {
-  padding: 0.75rem;
-  border: 1px solid var(--color-secondary);
-  border-radius: 4px;
-  font-size: 1rem;
-  background: var(--color-bg-input);
-  transition: border-color 0.2s;
+.code-input::placeholder {
+  color: var(--color-text-faint);
+  font-style: italic;
 }
 
-input[type="text"]:focus {
+.code-input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-bottom-color: var(--color-accent);
 }
 
 .info-message {
-  color: #2a5218;
-  background-color: #d8e8c0;
-  padding: 0.75rem;
-  border-radius: 4px;
+  border-left: 3px solid var(--color-accent);
+  padding: 0.6rem 0.8rem;
+  font-family: var(--font-serif);
+  font-style: italic;
   font-size: 0.9rem;
+  color: var(--color-text-secondary);
   margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.info-mark {
+  color: var(--color-accent);
+  font-style: normal;
 }
 
 .resend-section {
   text-align: center;
-  margin-top: 1.5rem;
-  color: #7a5c38;
+  margin-top: 1.4rem;
+  color: var(--color-text-muted);
 }
 
 .resend-section p {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
+  font-family: var(--font-serif);
+  font-style: italic;
   font-size: 0.9rem;
 }
 
 .resend-button {
   background: none;
   border: none;
-  color: var(--color-primary-soft);
-  font-size: 0.9rem;
-  text-decoration: underline;
+  color: var(--color-accent);
   cursor: pointer;
-  padding: 0;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s ease;
 }
 
 .resend-button:hover:not(:disabled) {
-  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
 }
 
 .resend-button:disabled {
-  color: #a89070;
+  color: var(--color-text-disabled);
   cursor: not-allowed;
-  text-decoration: none;
-}
-
-:global(.dark .description) {
-  color: #c8a878;
-}
-
-:global(.dark .info-message) {
-  color: #d8e8c0;
-  background-color: #2a5218;
-}
-
-:global(.dark .resend-section) {
-  color: #c8a878;
-}
-
-:global(.dark .resend-button:disabled) {
-  color: #6e5435;
 }
 </style>

@@ -34,7 +34,7 @@ describe("HomeTemplate", () => {
         props: { pieces: [], loading: false, isAdmin: true },
         global: { stubs },
       });
-      expect(wrapper.find(".admin-section").exists()).toBe(true);
+      expect(wrapper.find(".editorial-desk").exists()).toBe(true);
       expect(wrapper.find('a[href="/pieces/new"]').exists()).toBe(true);
     });
 
@@ -43,7 +43,7 @@ describe("HomeTemplate", () => {
         props: { pieces: [], loading: false, isAdmin: false },
         global: { stubs },
       });
-      expect(wrapper.find(".admin-section").exists()).toBe(false);
+      expect(wrapper.find(".editorial-desk").exists()).toBe(false);
     });
   });
 });

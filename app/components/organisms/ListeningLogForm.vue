@@ -55,21 +55,30 @@ function handleSubmit() {
 <template>
   <form class="log-form" @submit.prevent="handleSubmit">
     <FormGroup label="鑑賞日時" input-id="listened-at" required>
-      <input id="listened-at" v-model="form.listenedAt" type="datetime-local" required />
+      <input
+        id="listened-at"
+        v-model="form.listenedAt"
+        type="datetime-local"
+        class="native-input"
+        required
+      />
     </FormGroup>
 
     <FormGroup label="楽曲マスタから選択" input-id="piece-select">
-      <select
-        id="piece-select"
-        class="piece-select"
-        :disabled="piecesPending"
-        @change="handlePieceSelect"
-      >
-        <option value="">{{ piecesPending ? "読み込み中..." : "選択しない" }}</option>
-        <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
-          {{ piece.title }} / {{ composerNameById[piece.composerId] ?? "(不明)" }}
-        </option>
-      </select>
+      <div class="select-wrap">
+        <select
+          id="piece-select"
+          class="native-select"
+          :disabled="piecesPending"
+          @change="handlePieceSelect"
+        >
+          <option value="">{{ piecesPending ? "読み込み中…" : "選択しない" }}</option>
+          <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
+            {{ piece.title }} / {{ composerNameById[piece.composerId] ?? "(不明)" }}
+          </option>
+        </select>
+        <span class="select-caret" aria-hidden="true">&#x25BE;</span>
+      </div>
     </FormGroup>
 
     <VideoPlayer v-if="selectedVideoUrl" :video-url="selectedVideoUrl" />
@@ -95,7 +104,7 @@ function handleSubmit() {
     <div class="form-group">
       <label class="checkbox-label" for="is-favorite">
         <input id="is-favorite" v-model="form.isFavorite" type="checkbox" />
-        お気に入り
+        <span class="checkbox-text smallcaps">Mark as favorite</span>
       </label>
     </div>
 
@@ -104,7 +113,8 @@ function handleSubmit() {
         id="memo"
         v-model="form.memo"
         rows="4"
-        placeholder="自由に感想を書いてください..."
+        class="native-textarea"
+        placeholder="自由に感想を書いてください…"
       />
     </FormGroup>
 
@@ -114,20 +124,25 @@ function handleSubmit() {
 
 <style scoped>
 .log-form {
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-secondary);
-  border-radius: 12px;
-  padding: 2rem;
+  background: transparent;
+  border: none;
+  padding: 0;
   max-width: 720px;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 1.6rem;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.2rem;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-group {
@@ -136,29 +151,79 @@ function handleSubmit() {
   gap: 0.4rem;
 }
 
-input[type="datetime-local"],
-textarea,
-select {
-  border: 1px solid var(--color-secondary);
-  border-radius: 6px;
-  padding: 0.6rem 0.8rem;
+/* native input/select/textarea — エディトリアル罫線スタイル */
+.native-input,
+.native-textarea,
+.native-select {
+  border: none;
+  border-bottom: 1px solid var(--color-hairline-strong);
+  border-radius: 0;
+  padding: 0.55rem 0.1rem;
   font-size: 0.95rem;
-  font-family: inherit;
-  background: var(--color-bg-input);
-  transition: border-color 0.2s;
+  font-family: var(--font-sans);
+  background: transparent;
+  color: var(--color-text);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.25s ease;
+  font-variant-numeric: tabular-nums;
 }
 
-input:focus,
-textarea:focus {
+.native-textarea {
+  font-family: var(--font-serif);
+  resize: vertical;
+}
+
+.native-textarea::placeholder,
+.native-input::placeholder {
+  color: var(--color-text-faint);
+  font-style: italic;
+}
+
+.native-input:focus,
+.native-textarea:focus,
+.native-select:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-bottom-color: var(--color-accent);
+}
+
+.select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.native-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 1.6rem;
+  cursor: pointer;
+}
+
+.select-caret {
+  position: absolute;
+  right: 0.3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--color-accent);
+  font-size: 0.85rem;
 }
 
 .checkbox-label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: normal;
+  gap: 0.6rem;
   cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.checkbox-text {
+  color: var(--color-text-muted);
 }
 </style>

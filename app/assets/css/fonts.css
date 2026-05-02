@@ -1,0 +1,10 @@
+/* ============================================================
+ * Editorial typography — Fraunces (display) / Inter Tight (body) / Cormorant Garamond (accent)
+ *
+ * Fraunces: 1900s old-style serif revival (Frere-Jones にインスパイア)
+ *           可変軸 SOFT/WONK でクラシック寄り～エキセントリックを切替可能
+ * Inter Tight: Inter のコンパクト版。情報密度の高い UI 用
+ * Cormorant Garamond: 19世紀 Garamond リバイバル。引用やキャプションの抒情性に
+ * ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300..700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap");

@@ -14,7 +14,7 @@ const router = useRouter();
       >まだ記録がありません。最初のコンサート記録を追加しましょう。</EmptyState
     >
 
-    <ul v-else class="log-list">
+    <ul v-else class="log-list stagger-children">
       <li v-for="log in logs" :key="log.id">
         <ConcertLogItem :concert-log="log" @detail="router.push(`/concert-logs/${log.id}`)" />
       </li>
@@ -27,6 +27,7 @@ const router = useRouter();
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0;
+  border-top: 1px solid var(--color-hairline);
 }
 </style>
