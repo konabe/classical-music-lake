@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import type { Composer } from "~/types";
+import type { Composer, Piece } from "~/types";
 
 const props = defineProps<{
   composer: Composer | null;
   error: Error | null;
   isAdmin: boolean;
+  pieces: Piece[];
+  piecesError: Error | null;
+  piecesPending: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -15,6 +18,8 @@ const shortId = computed(() => {
   if (props.composer === null) return "";
   return props.composer.id.slice(0, 6).toUpperCase();
 });
+
+const pieceCount = computed(() => props.pieces.length);
 </script>
 
 <template>
@@ -69,6 +74,43 @@ const shortId = computed(() => {
           </div>
         </header>
       </div>
+
+      <section class="works-section" aria-labelledby="works-heading">
+        <header class="works-masthead">
+          <span class="works-tag smallcaps">Works</span>
+          <span class="works-rule" aria-hidden="true" />
+          <span class="works-count smallcaps numeric">
+            {{ pieceCount.toString().padStart(2, "0") }}
+            {{ pieceCount === 1 ? "piece" : "pieces" }}
+          </span>
+        </header>
+
+        <h2 id="works-heading" class="works-title">
+          <span class="works-title-jp">楽曲</span>
+          <span class="works-title-en"><em>Œuvres</em></span>
+        </h2>
+
+        <ErrorMessage
+          v-if="piecesError"
+          message="楽曲一覧の取得に失敗しました。時間をおいて再度お試しください。"
+          variant="block"
+        />
+        <p v-else-if="piecesPending && pieces.length === 0" class="works-status">読み込み中…</p>
+        <EmptyState v-else-if="pieces.length === 0">
+          この作曲家の楽曲はまだ登録されていません。
+        </EmptyState>
+        <ol v-else class="works-list stagger-children">
+          <li v-for="(piece, index) in pieces" :key="piece.id" class="works-item">
+            <span class="works-index smallcaps numeric">
+              N&deg; {{ (index + 1).toString().padStart(2, "0") }}
+            </span>
+            <NuxtLink :to="`/pieces/${piece.id}`" class="works-link">
+              <span class="works-piece-title">{{ piece.title }}</span>
+            </NuxtLink>
+            <PieceCategoryList :piece="piece" class="works-categories" />
+          </li>
+        </ol>
+      </section>
     </template>
   </article>
 </template>
@@ -238,6 +280,119 @@ const shortId = computed(() => {
   font-style: italic;
 }
 
+.works-section {
+  margin-top: 3rem;
+}
+
+.works-masthead {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+.works-tag {
+  color: var(--color-bordeaux);
+}
+:root.dark .works-tag {
+  color: var(--color-accent);
+}
+
+.works-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-hairline);
+}
+
+.works-count {
+  color: var(--color-text-muted);
+}
+
+.works-title {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  margin: 0 0 1.5rem;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30;
+}
+
+.works-title-jp {
+  font-style: normal;
+  font-weight: 400;
+}
+
+.works-title-en {
+  color: var(--color-accent);
+  font-style: italic;
+  font-size: 0.7em;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 100,
+    "WONK" 1;
+}
+
+.works-status {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
+.works-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-hairline);
+}
+
+.works-item {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  align-items: baseline;
+  gap: 0.5rem 1.2rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.works-index {
+  color: var(--color-text-faint);
+}
+
+.works-link {
+  text-decoration: none;
+  color: var(--color-text);
+  transition: color 0.25s ease;
+}
+
+.works-link:hover {
+  color: var(--color-accent);
+}
+
+.works-piece-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-tight);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 50;
+}
+
+.works-categories {
+  grid-column: 2;
+}
+
 @media (max-width: 760px) {
   .composer-grid {
     grid-template-columns: 1fr;
@@ -248,6 +403,18 @@ const shortId = computed(() => {
     position: relative;
     top: 0;
     max-width: 240px;
+  }
+
+  .works-item {
+    grid-template-columns: 1fr;
+  }
+
+  .works-index {
+    display: block;
+  }
+
+  .works-categories {
+    grid-column: 1;
   }
 }
 </style>

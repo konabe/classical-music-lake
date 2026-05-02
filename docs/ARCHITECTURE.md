@@ -257,6 +257,21 @@ classical-music-lake/
   → ブラウザに返却 → /concert-logs へ遷移
 ```
 
+### 作曲家詳細取得（楽曲一覧付き）
+
+```text
+ブラウザ (/composers/[id])
+  → useComposer(id) で Composer を取得
+  → GET /prod/composers/{id}
+  → API Gateway（認証不要）
+  → Lambda (get.ts) → DynamoDB GetItem
+  → 200 OK + Composer オブジェクト
+  → usePiecesAll() で楽曲を全件取得
+  → composerId が一致する楽曲のみクライアントサイドで絞り込み
+  → ComposerDetailTemplate で「Works」セクションに演奏順インデックス付きで表示
+  ※ サーバー API には composerId による絞り込みパラメータなし（クライアント絞り込み）
+```
+
 ### コンサート記録詳細取得
 
 ```text
