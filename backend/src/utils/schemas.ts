@@ -45,6 +45,12 @@ const pieceFormationSchema = z.enum(PIECE_FORMATIONS);
 
 const pieceRegionSchema = z.enum(PIECE_REGIONS);
 
+const PIECE_VIDEO_URLS_MAX = 10;
+
+const videoUrlsSchema = z
+  .array(z.url("videoUrls must contain valid URLs"))
+  .max(PIECE_VIDEO_URLS_MAX, `videoUrls must contain at most ${PIECE_VIDEO_URLS_MAX} URLs`);
+
 export const createPieceSchema = z.object({
   title: z
     .string({ error: () => "title is required" })
@@ -52,7 +58,7 @@ export const createPieceSchema = z.object({
     .min(1, "title is required")
     .max(200, "title must be 200 characters or less"),
   composerId: z.uuid("composerId must be a valid UUID"),
-  videoUrl: z.url("videoUrl must be a valid URL").optional(),
+  videoUrls: videoUrlsSchema.optional(),
   genre: pieceGenreSchema.optional(),
   era: pieceEraSchema.optional(),
   formation: pieceFormationSchema.optional(),
@@ -67,7 +73,8 @@ export const updatePieceSchema = z.object({
     .max(200, "title must be 200 characters or less")
     .optional(),
   composerId: z.uuid("composerId must be a valid UUID").optional(),
-  videoUrl: z.union([z.url("videoUrl must be a valid URL"), z.literal("")]).optional(),
+  // 空配列 `[]` を送るとフィールド全体が削除される（`buildUpdateProps` がクリア指示として扱う）
+  videoUrls: videoUrlsSchema.optional(),
   genre: z.union([pieceGenreSchema, z.literal("")]).optional(),
   era: z.union([pieceEraSchema, z.literal("")]).optional(),
   formation: z.union([pieceFormationSchema, z.literal("")]).optional(),

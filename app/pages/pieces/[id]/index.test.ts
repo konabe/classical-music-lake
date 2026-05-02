@@ -11,7 +11,7 @@ const samplePiece: Piece = {
   id: "piece-1",
   title: "交響曲第9番",
   composerId: COMPOSER_ID,
-  videoUrl: "https://www.youtube.com/watch?v=abc123",
+  videoUrls: ["https://www.youtube.com/watch?v=abc123"],
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 };

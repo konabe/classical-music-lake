@@ -32,7 +32,7 @@ const { mockPieces, mockComposers } = vi.hoisted(() => {
       id: "piece-3",
       title: "展覧会の絵",
       composerId: MUSSORGSKY,
-      videoUrl: "https://www.youtube.com/watch?v=video123",
+      videoUrls: ["https://www.youtube.com/watch?v=video123"],
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
@@ -40,7 +40,7 @@ const { mockPieces, mockComposers } = vi.hoisted(() => {
       id: "piece-4",
       title: "春の祭典",
       composerId: STRAVINSKY,
-      videoUrl: "https://www.youtube.com/watch?v=video456",
+      videoUrls: ["https://www.youtube.com/watch?v=video456"],
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
@@ -287,7 +287,7 @@ describe("ListeningLogForm", () => {
       expect(wrapper.find(".video-player").exists()).toBe(false);
     });
 
-    it("videoUrl ありの曲を選択すると動画プレイヤーが表示される", async () => {
+    it("videoUrls ありの曲を選択すると動画プレイヤーが表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
       const select = wrapper.find("select#piece-select");
       await select.setValue("piece-3");
@@ -301,14 +301,14 @@ describe("ListeningLogForm", () => {
       expect(wrapper.find("iframe").attributes("src")).toContain("video123");
     });
 
-    it("videoUrl なしの曲を選択しても動画プレイヤーは表示されない", async () => {
+    it("videoUrls なしの曲を選択しても動画プレイヤーは表示されない", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
       const select = wrapper.find("select#piece-select");
       await select.setValue("piece-1");
       expect(wrapper.find(".video-player").exists()).toBe(false);
     });
 
-    it("別の曲（videoUrl あり）に選択を変えると動画が切り替わる", async () => {
+    it("別の曲（videoUrls あり）に選択を変えると動画が切り替わる", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
       const select = wrapper.find("select#piece-select");
 

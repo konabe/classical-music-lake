@@ -6,7 +6,20 @@ const pieceWithVideo: Piece = {
   id: "1",
   title: "交響曲第9番 ニ短調 Op.125",
   composerId: "00000000-0000-4000-8000-000000000001",
-  videoUrl: "https://www.youtube.com/watch?v=abc123",
+  videoUrls: ["https://www.youtube.com/watch?v=abc123"],
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
+};
+
+const pieceWithMultipleVideos: Piece = {
+  id: "4",
+  title: "交響曲第9番 ニ短調 Op.125",
+  composerId: "00000000-0000-4000-8000-000000000001",
+  videoUrls: [
+    "https://www.youtube.com/watch?v=abc123",
+    "https://www.youtube.com/watch?v=def456",
+    "https://www.youtube.com/watch?v=ghi789",
+  ],
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
@@ -32,7 +45,7 @@ const pieceWithoutVideo: Piece = {
 };
 
 describe("PieceDetailTemplate", () => {
-  describe("videoUrl あり", () => {
+  describe("videoUrls あり（単一）", () => {
     it("曲名が表示される", async () => {
       const wrapper = await mountSuspended(PieceDetailTemplate, {
         props: {
@@ -94,7 +107,35 @@ describe("PieceDetailTemplate", () => {
     });
   });
 
-  describe("videoUrl なし", () => {
+  describe("videoUrls 複数", () => {
+    it("動画 URL の数だけ VideoPlayer が表示される", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithMultipleVideos,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+        },
+      });
+      expect(wrapper.findAll(".video-player").length).toBe(3);
+    });
+
+    it("動画ごとに序数（N° 01 等）が表示される", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithMultipleVideos,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+        },
+      });
+      expect(wrapper.text()).toContain("N° 01");
+      expect(wrapper.text()).toContain("N° 02");
+      expect(wrapper.text()).toContain("N° 03");
+    });
+  });
+
+  describe("videoUrls なし", () => {
     it("曲名が表示される", async () => {
       const wrapper = await mountSuspended(PieceDetailTemplate, {
         props: {

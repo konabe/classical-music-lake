@@ -37,7 +37,22 @@ export const WithInitialValues: Story = {
     initialValues: {
       title: "交響曲第9番",
       composerId: COMPOSER_ID_BEETHOVEN,
-      videoUrl: "https://www.youtube.com/watch?v=abc123",
+      videoUrls: ["https://www.youtube.com/watch?v=abc123"],
+    },
+  },
+};
+
+export const WithMultipleVideoUrls: Story = {
+  args: {
+    composers,
+    initialValues: {
+      title: "交響曲第9番",
+      composerId: COMPOSER_ID_BEETHOVEN,
+      videoUrls: [
+        "https://www.youtube.com/watch?v=abc123",
+        "https://www.youtube.com/watch?v=def456",
+        "https://www.youtube.com/watch?v=ghi789",
+      ],
     },
   },
 };
