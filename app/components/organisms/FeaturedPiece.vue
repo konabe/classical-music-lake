@@ -7,7 +7,9 @@ const props = defineProps<{
   composerNameById: Record<string, string>;
 }>();
 
-const piecesWithVideo = computed(() => props.pieces.filter((p) => p.videoUrl !== undefined));
+const piecesWithVideo = computed(() =>
+  props.pieces.filter((p) => p.videoUrls !== undefined && p.videoUrls.length > 0),
+);
 
 const currentIndex = ref(0);
 
@@ -61,7 +63,7 @@ const shuffle = () => {
 
     <div v-else class="featured-content">
       <div class="featured-video">
-        <VideoPlayer :key="featured.id" :video-url="featured.videoUrl!" />
+        <VideoPlayer :key="featured.id" :video-url="featured.videoUrls![0]" />
       </div>
       <div class="piece-info">
         <p class="piece-composer">

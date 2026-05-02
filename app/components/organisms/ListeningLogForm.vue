@@ -44,7 +44,7 @@ function handlePieceSelect(e: Event) {
   form.piece = found?.title ?? "";
   form.composer =
     found?.composerId !== undefined ? (composerNameById.value[found.composerId] ?? "") : "";
-  selectedVideoUrl.value = found?.videoUrl;
+  selectedVideoUrl.value = found?.videoUrls?.[0];
 }
 
 function handleSubmit() {

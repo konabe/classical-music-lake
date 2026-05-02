@@ -54,7 +54,20 @@ export const WithPartialCategories: Story = {
 
 export const WithYouTubeThumbnail: Story = {
   args: {
-    piece: { ...samplePiece, videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+    piece: { ...samplePiece, videoUrls: ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"] },
+    composerName: "ベートーヴェン",
+  },
+};
+
+export const WithMultipleYouTubeUrls: Story = {
+  args: {
+    piece: {
+      ...samplePiece,
+      videoUrls: [
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "https://www.youtube.com/watch?v=abc123",
+      ],
+    },
     composerName: "ベートーヴェン",
   },
 };
@@ -63,7 +76,7 @@ export const WithYouTubeThumbnailAndCategories: Story = {
   args: {
     piece: {
       ...samplePiece,
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      videoUrls: ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
       genre: "交響曲",
       era: "ロマン派",
       formation: "管弦楽",

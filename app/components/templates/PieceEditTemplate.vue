@@ -31,7 +31,7 @@ const emit = defineEmits<{
         :initial-values="{
           title: piece?.title,
           composerId: piece?.composerId,
-          videoUrl: piece?.videoUrl,
+          videoUrls: piece?.videoUrls,
         }"
         :composers="composers"
         :composers-pending="composersPending"

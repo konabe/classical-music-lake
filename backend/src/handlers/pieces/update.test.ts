@@ -60,9 +60,9 @@ const existingPiece: Piece = {
 
 const OTHER_COMPOSER_ID = "00000000-0000-4000-8000-000000000002";
 
-const existingPieceWithVideoUrl: Piece = {
+const existingPieceWithVideoUrls: Piece = {
   ...existingPiece,
-  videoUrl: "https://www.youtube.com/watch?v=abc123",
+  videoUrls: ["https://www.youtube.com/watch?v=abc123"],
 };
 
 describe("PUT /pieces/{id} (update)", () => {
@@ -233,32 +233,33 @@ describe("PUT /pieces/{id} (update)", () => {
     expect(result?.statusCode).toBe(500);
   });
 
-  it("videoUrl を追加して更新できる", async () => {
+  it("videoUrls を追加して更新できる", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
 
+    const urls = ["https://www.youtube.com/watch?v=xyz", "https://www.youtube.com/watch?v=qrs"];
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ videoUrl: "https://www.youtube.com/watch?v=xyz" })),
+      makeEvent("abc-123", JSON.stringify({ videoUrls: urls })),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}") as Piece;
-    expect(body.videoUrl).toBe("https://www.youtube.com/watch?v=xyz");
+    expect(body.videoUrls).toEqual(urls);
   });
 
-  it("videoUrl を空文字で送信すると削除される", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPieceWithVideoUrl);
+  it("videoUrls を空配列で送信すると削除される", async () => {
+    mockRepo.findById.mockResolvedValueOnce(existingPieceWithVideoUrls);
     mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ videoUrl: "" })),
+      makeEvent("abc-123", JSON.stringify({ videoUrls: [] })),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}") as Piece;
-    expect(body.videoUrl).toBeUndefined();
+    expect(body.videoUrls).toBeUndefined();
   });
 
   describe("カテゴリフィールド", () => {
@@ -383,14 +384,14 @@ describe("PUT /pieces/{id} (update)", () => {
     });
   });
 
-  it("videoUrl が不正な URL の場合は 400 を返す", async () => {
+  it("videoUrls の要素に不正な URL が含まれる場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ videoUrl: "not-a-url" })),
+      makeEvent("abc-123", JSON.stringify({ videoUrls: ["not-a-url"] })),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrl must be a valid URL");
+    expect(JSON.parse(result?.body ?? "{}").message).toBe("videoUrls must contain valid URLs");
   });
 
   describe("認可", () => {

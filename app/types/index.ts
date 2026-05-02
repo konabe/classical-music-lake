@@ -46,7 +46,7 @@ export interface Piece {
   id: string;
   title: string;
   composerId: string; // 作曲家マスタ（Composer）の id 参照
-  videoUrl?: string;
+  videoUrls?: string[]; // 動画 URL の配列（演奏比較用に複数登録可）
   genre?: PieceGenre;
   era?: PieceEra;
   formation?: PieceFormation;

@@ -17,7 +17,20 @@ const pieceWithVideo: Piece = {
   id: "1",
   title: "交響曲第9番 ニ短調 Op.125",
   composerId: COMPOSER_ID_BEETHOVEN,
-  videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  videoUrls: ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
+};
+
+const pieceWithMultipleVideos: Piece = {
+  id: "5",
+  title: "交響曲第9番 ニ短調 Op.125",
+  composerId: COMPOSER_ID_BEETHOVEN,
+  videoUrls: [
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://www.youtube.com/watch?v=abc123",
+    "https://www.youtube.com/watch?v=def456",
+  ],
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
@@ -44,6 +57,15 @@ export const WithVideoAdmin: Story = {
     piece: pieceWithVideo,
     error: null,
     isAdmin: true,
+    composerName: "ベートーヴェン",
+  },
+};
+
+export const WithMultipleVideos: Story = {
+  args: {
+    piece: pieceWithMultipleVideos,
+    error: null,
+    isAdmin: false,
     composerName: "ベートーヴェン",
   },
 };
