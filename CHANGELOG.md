@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.7.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.6.0...classical-music-lake-v2.7.0) (2026-05-02)
+
+
+### Features
+
+* **composers:** 作曲家詳細ページに楽曲一覧を表示 ([#628](https://github.com/konabe/classical-music-lake/issues/628)) ([bad4bf8](https://github.com/konabe/classical-music-lake/commit/bad4bf828d4b3ec8efe3eebd793c60a0e0cfa765))
+* 楽曲マスタの動画 URL を複数登録可能に変更 ([#626](https://github.com/konabe/classical-music-lake/issues/626)) ([8158514](https://github.com/konabe/classical-music-lake/commit/8158514c191ead93f3bb18c1461c8382c2147c65))
+
 ## [2.6.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.5.0...classical-music-lake-v2.6.0) (2026-05-02)
 
 
