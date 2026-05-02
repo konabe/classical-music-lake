@@ -239,6 +239,68 @@ describe("POST /composers (create)", () => {
       expect(result?.statusCode).toBe(400);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("imageUrl must be a valid URL");
     });
+
+    it("birthYear と deathYear を指定して作成できる", async () => {
+      mockRepo.save.mockResolvedValueOnce();
+      const result = await handler(
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify({ ...validInput, birthYear: 1770, deathYear: 1827 }),
+          httpMethod: "POST",
+          path: "/composers",
+        }),
+        mockContext,
+        mockCallback,
+      );
+      expect(result?.statusCode).toBe(201);
+      const body = JSON.parse(result?.body ?? "{}");
+      expect(body.birthYear).toBe(1770);
+      expect(body.deathYear).toBe(1827);
+    });
+
+    it("birthYear のみ指定（存命作曲家）で作成できる", async () => {
+      mockRepo.save.mockResolvedValueOnce();
+      const result = await handler(
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify({ ...validInput, birthYear: 1958 }),
+          httpMethod: "POST",
+          path: "/composers",
+        }),
+        mockContext,
+        mockCallback,
+      );
+      expect(result?.statusCode).toBe(201);
+      const body = JSON.parse(result?.body ?? "{}");
+      expect(body.birthYear).toBe(1958);
+      expect(body.deathYear).toBeUndefined();
+    });
+
+    it("birthYear が非整数の場合は 400 を返す", async () => {
+      const result = await handler(
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify({ ...validInput, birthYear: 1770.5 }),
+          httpMethod: "POST",
+          path: "/composers",
+        }),
+        mockContext,
+        mockCallback,
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("birthYear must be an integer");
+    });
+
+    it("birthYear が範囲外の場合は 400 を返す", async () => {
+      const result = await handler(
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify({ ...validInput, birthYear: 99999 }),
+          httpMethod: "POST",
+          path: "/composers",
+        }),
+        mockContext,
+        mockCallback,
+      );
+      expect(result?.statusCode).toBe(400);
+      expect(JSON.parse(result?.body ?? "{}").message).toContain("birthYear must be between");
+    });
   });
 
   it("Repository エラー時に 500 を返す", async () => {

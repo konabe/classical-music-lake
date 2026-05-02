@@ -4,7 +4,7 @@ import type { Composer } from "~/types";
 const route = useRoute();
 const composerId = computed(() => route.params.id as string);
 const { data: composer, error } = await useComposer(() => composerId.value);
-const { deleteComposer } = useComposersPaginated();
+const { deleteComposer } = useComposersAll();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 

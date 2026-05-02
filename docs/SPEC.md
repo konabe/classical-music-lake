@@ -12,7 +12,7 @@
 - **視聴ログの検索・統計**: クライアントサイド絞り込みと、件数・評価分布・作曲家ランキング・月別トレンドの集計表示
 - **コンサート記録管理**: 会場・指揮者・オーケストラ・ソリスト・プログラム（楽曲マスタ参照）
 - **楽曲マスタ管理**: 楽曲の登録・編集・削除（管理者のみ）
-- **作曲家マスタ管理**: 作曲家の登録・編集・削除（管理者のみ）。詳細ページではその作曲家の楽曲一覧（クライアントサイド絞り込み）も表示
+- **作曲家マスタ管理**: 作曲家の登録・編集・削除（管理者のみ）。生没年を登録すると一覧は生年昇順（古い順）で表示され、未登録は末尾に並ぶ。詳細ページではその作曲家の楽曲一覧（クライアントサイド絞り込み）も表示
 - **ユーザー登録**: メールアドレス＋パスワード（メール確認付き）／Google OAuth（Cognito Hosted UI）
 
 ### 1.3 想定ユーザー
@@ -48,20 +48,20 @@
 
 #### フロントエンド Composables
 
-| Composable                  | 役割                                                                                                                                                       |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useApiBase`                | API Gateway のベース URL を返す                                                                                                                            |
-| `useCognitoConfig`          | Cognito Hosted UI のドメインとクライアント ID を返す                                                                                                       |
-| `useAuth`                   | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback・isAdmin）                         |
-| `usePieces`                 | 曲一覧を取得する                                                                                                                                           |
-| `useRatingDisplay`          | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                                                         |
-| `useConcertLogs`            | コンサート記録の一覧取得（`list`）・作成（`create`）・更新（`update`）・削除（`deleteLog`）。401 時にトークンリフレッシュを自動試行                        |
-| `useConcertLog`             | 特定のコンサート記録を id で取得する（詳細ページ用）                                                                                                       |
-| `useComposersPaginated`     | 作曲家マスタ一覧のカーソル型ページング / 無限スクロール取得・作成・更新                                                                                    |
-| `useComposer`               | 特定の作曲家を id で取得する（詳細ページ用）                                                                                                               |
-| `useSubmitHandler`          | フォーム送信時の `try/catch` とエラーメッセージ設定・成功後の `navigateTo` 遷移を共通化する                                                                |
-| `useListeningLogFilter`     | 視聴ログ一覧のクライアントサイド絞り込み状態（キーワード／評価／お気に入りのみ／開始日／終了日）を管理し、フィルタ済みリストと `isActive` / `reset` を返す |
-| `useListeningLogStatistics` | 視聴ログ配列から総数・お気に入り数・平均評価・評価分布・作曲家ランキング（既定 5 件）・月別トレンド（既定直近 12 ヶ月）を計算する                          |
+| Composable                  | 役割                                                                                                                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useApiBase`                | API Gateway のベース URL を返す                                                                                                                                               |
+| `useCognitoConfig`          | Cognito Hosted UI のドメインとクライアント ID を返す                                                                                                                          |
+| `useAuth`                   | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback・isAdmin）                                            |
+| `usePieces`                 | 曲一覧を取得する                                                                                                                                                              |
+| `useRatingDisplay`          | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                                                                            |
+| `useConcertLogs`            | コンサート記録の一覧取得（`list`）・作成（`create`）・更新（`update`）・削除（`deleteLog`）。401 時にトークンリフレッシュを自動試行                                           |
+| `useConcertLog`             | 特定のコンサート記録を id で取得する（詳細ページ用）                                                                                                                          |
+| `useComposersAll`           | 作曲家マスタ一覧を 1 回の Scan で全件取得（`COMPOSERS_PAGE_SIZE_MAX=1000` 想定）し、作成・更新・削除の書き込み系もまとめて提供する。書き込み成功時は内部で `refresh()` を実行 |
+| `useComposer`               | 特定の作曲家を id で取得する（詳細ページ用）                                                                                                                                  |
+| `useSubmitHandler`          | フォーム送信時の `try/catch` とエラーメッセージ設定・成功後の `navigateTo` 遷移を共通化する                                                                                   |
+| `useListeningLogFilter`     | 視聴ログ一覧のクライアントサイド絞り込み状態（キーワード／評価／お気に入りのみ／開始日／終了日）を管理し、フィルタ済みリストと `isActive` / `reset` を返す                    |
+| `useListeningLogStatistics` | 視聴ログ配列から総数・お気に入り数・平均評価・評価分布・作曲家ランキング（既定 5 件）・月別トレンド（既定直近 12 ヶ月）を計算する                                             |
 
 #### フロントエンド レイアウト
 
@@ -184,12 +184,14 @@ interface Composer {
   era?: PieceEra; // 任意、楽曲マスタと共通の定数を流用
   region?: PieceRegion; // 任意、楽曲マスタと共通の定数を流用
   imageUrl?: string; // 任意、URL 形式（Wikimedia Commons 等のパブリックドメイン画像を想定）
+  birthYear?: number; // 任意、整数（西暦。BC は負数）。範囲は -3000 〜 9999
+  deathYear?: number; // 任意、整数。存命作曲家は未指定
   createdAt: string;
   updatedAt: string;
 }
 ```
 
-> 任意項目（`era` / `region` / `imageUrl`）は更新時に空文字を送信するとフィールドが削除される。
+> 任意項目（`era` / `region` / `imageUrl`）は更新時に空文字を送信するとフィールドが削除される。`birthYear` / `deathYear` は更新時に `null` を送信するとフィールドが削除される。
 
 ### 3.4 コンサート記録 (ConcertLog)
 
@@ -298,6 +300,8 @@ interface ConcertLog {
 ### 4.6 作曲家マスタ API（`/composers`）
 
 楽曲マスタ API と同様の構造。認可ルール・カーソル型ページング仕様も同等（`limit` の最大値は 1000）。書き込み API の更新時に楽観的ロックが失敗すると `409 Conflict` + `{ "message": "Composer was updated by another request" }`。
+
+> 一覧画面（フロント）は `useComposersAll` で 1 ページ（最大 1000 件）取得し、`birthYear` 昇順（生年未登録は末尾、name 昇順で安定化）にクライアントサイドでソートする。サーバー側にはソート順の保証がないため、件数が `useComposersAll` の上限を超える場合はサーバー側ソート（GSI 追加）への移行を要する。
 
 ### 4.7 共通エラーレスポンス
 
@@ -507,13 +511,14 @@ cd cdk && pnpm install && cdk bootstrap && cdk deploy
 
 ID 以外のドメイン概念も不変条件を VO で保証する。すべて `backend/src/domain/value-objects/` 配下。
 
-| クラス         | 不変条件                      | 利用箇所                                       |
-| -------------- | ----------------------------- | ---------------------------------------------- |
-| `Rating`       | 1〜5 の整数                   | `ListeningLogEntity.props.rating`              |
-| `PieceTitle`   | 非空・最大 200 文字           | `PieceEntity.props.title`                      |
-| `ComposerName` | 非空・最大 100 文字           | `ComposerEntity.props.name`                    |
-| `Venue`        | 非空・最大 200 文字           | `ConcertLogEntity.props.venue`                 |
-| `Url`          | WHATWG URL パーサーで形式検証 | `Piece.videoUrls` 各要素 / `Composer.imageUrl` |
+| クラス         | 不変条件                                    | 利用箇所                                             |
+| -------------- | ------------------------------------------- | ---------------------------------------------------- |
+| `Rating`       | 1〜5 の整数                                 | `ListeningLogEntity.props.rating`                    |
+| `PieceTitle`   | 非空・最大 200 文字                         | `PieceEntity.props.title`                            |
+| `ComposerName` | 非空・最大 100 文字                         | `ComposerEntity.props.name`                          |
+| `Venue`        | 非空・最大 200 文字                         | `ConcertLogEntity.props.venue`                       |
+| `Url`          | WHATWG URL パーサーで形式検証               | `Piece.videoUrls` 各要素 / `Composer.imageUrl`       |
+| `Year`         | -3000〜9999 の整数（西暦。BC は負数で表現） | `ComposerEntity.props.birthYear` / `props.deathYear` |
 
 - 生成は `Xxx.of(value)`。範囲外・文字列以外・空文字・形式不正は `RangeError` / `TypeError` を投げる
 - テキスト系 VO は `value.trim()` を内部適用。最大長は Zod スキーマと数値を揃え二重検証
@@ -529,7 +534,7 @@ ID 以外のドメイン概念も不変条件を VO で保証する。すべて 
 - 認証は メール+パスワード ／ Google OAuth（Hosted UI）のみ。Apple Sign-In・MFA 未対応
 - サーバー側全文検索なし（DynamoDB Scan のみ）。視聴ログのみ `useListeningLogFilter` でクライアント絞り込み
 - 統計はクライアント集計のみ（`useListeningLogStatistics`）
-- ページネーションは楽曲マスタ・作曲家マスタのみカーソル型対応。視聴ログ・コンサート記録は未対応
+- ページネーションは楽曲マスタのみカーソル型対応。作曲家マスタは API は `limit/cursor` を受け取るが、フロントは件数規模が小さい前提で `useComposersAll`（1 回の Scan で全件取得 + 生年昇順クライアントソート）を採用しページング UI は持たない。視聴ログ・コンサート記録は未対応
 - 画像アップロード未対応（テキストベースのみ）
 
 ### 9.2 将来的な拡張

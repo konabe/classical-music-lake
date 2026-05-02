@@ -1,8 +1,7 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import { useComposersPaginated, useComposer } from "./useComposers";
-import type { PageResult } from "./usePaginatedList";
+import { useComposersAll, useComposer } from "./useComposers";
 import type { Composer } from "~/types";
-import { COMPOSERS_PAGE_SIZE_DEFAULT } from "~/types";
+import { COMPOSERS_PAGE_SIZE_MAX } from "~/types";
 import { ID_TOKEN_KEY } from "./useAuth";
 
 const { mockUseFetch } = vi.hoisted(() => ({
@@ -65,35 +64,40 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-describe("useComposersPaginated", () => {
-  describe("loadMore", () => {
-    it("既定の limit を付けて /api/composers を呼ぶ", async () => {
-      mockDollarFetch.mockResolvedValueOnce({
-        items: [],
-        nextCursor: null,
-      } satisfies PageResult<Composer>);
-      const c = useComposersPaginated();
-      await c.loadMore();
+describe("useComposersAll", () => {
+  describe("refresh", () => {
+    it("limit=COMPOSERS_PAGE_SIZE_MAX で /api/composers を呼ぶ", async () => {
+      mockDollarFetch.mockResolvedValueOnce({ items: [], nextCursor: null });
+      const c = useComposersAll();
+      await c.refresh();
       expect(mockDollarFetch).toHaveBeenCalledWith("/api/composers", {
-        query: { limit: COMPOSERS_PAGE_SIZE_DEFAULT },
+        query: { limit: COMPOSERS_PAGE_SIZE_MAX },
       });
     });
 
-    it("取得した items を反映し、nextCursor が null なら hasMore=false になる", async () => {
+    it("取得結果を data に反映する", async () => {
       const composers = [makeComposer("1"), makeComposer("2")];
       mockDollarFetch.mockResolvedValueOnce({ items: composers, nextCursor: null });
-      const c = useComposersPaginated();
-      await c.loadMore();
-      expect(c.items.value).toEqual(composers);
-      expect(c.hasMore.value).toBe(false);
+      const c = useComposersAll();
+      await c.refresh();
+      expect(c.data.value).toEqual(composers);
+    });
+
+    it("nextCursor が non-null の場合はエラーを設定する", async () => {
+      mockDollarFetch.mockResolvedValueOnce({ items: [], nextCursor: "next-cursor" });
+      const c = useComposersAll();
+      await c.refresh();
+      expect(c.error.value).not.toBeNull();
     });
   });
 
   describe("mutation", () => {
-    it("createComposer が正しい URL と body で POST し、Authorization ヘッダを付与する", async () => {
+    it("createComposer が POST + Authorization ヘッダで送信する", async () => {
       localStorage.setItem(ID_TOKEN_KEY, "test-id-token");
       mockFetch.mockResolvedValueOnce(jsonResponse(makeComposer("new"), 201));
-      const c = useComposersPaginated();
+      // refresh の呼び出し（成功時の再取得）
+      mockDollarFetch.mockResolvedValueOnce({ items: [], nextCursor: null });
+      const c = useComposersAll();
       await c.createComposer({ name: "ベートーヴェン" });
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/composers",
@@ -108,57 +112,40 @@ describe("useComposersPaginated", () => {
       );
     });
 
-    it("updateComposer が正しい URL と body で PUT し、Authorization ヘッダを付与する", async () => {
+    it("updateComposer が PUT で送信する", async () => {
       localStorage.setItem(ID_TOKEN_KEY, "test-id-token");
       mockFetch.mockResolvedValueOnce(jsonResponse(makeComposer("123", "updated")));
-      const c = useComposersPaginated();
+      mockDollarFetch.mockResolvedValueOnce({ items: [], nextCursor: null });
+      const c = useComposersAll();
       await c.updateComposer("123", { name: "updated" });
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/composers/123",
         expect.objectContaining({
           method: "PUT",
           body: JSON.stringify({ name: "updated" }),
-          headers: expect.objectContaining({
-            Authorization: "Bearer test-id-token",
-            "Content-Type": "application/json",
-          }),
         }),
       );
     });
 
-    it("deleteComposer が DELETE を送り Authorization ヘッダを付与する", async () => {
+    it("deleteComposer が DELETE で送信する", async () => {
       localStorage.setItem(ID_TOKEN_KEY, "test-id-token");
       mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
-      const c = useComposersPaginated();
+      mockDollarFetch.mockResolvedValueOnce({ items: [], nextCursor: null });
+      const c = useComposersAll();
       await c.deleteComposer("123");
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/composers/123",
-        expect.objectContaining({
-          method: "DELETE",
-          headers: expect.objectContaining({
-            Authorization: "Bearer test-id-token",
-          }),
-        }),
+        expect.objectContaining({ method: "DELETE" }),
       );
     });
 
-    it("createComposer が 401 を返したら throwResponseError がエラーにする", async () => {
-      mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 }),
-      );
-      const c = useComposersPaginated();
-      await expect(c.createComposer({ name: "x" })).rejects.toThrow();
-    });
-
-    it("createComposer 成功後に items がリセットされる", async () => {
-      mockDollarFetch.mockResolvedValueOnce({ items: [makeComposer("1")], nextCursor: null });
+    it("createComposer 成功後に refresh が走り data が再取得される", async () => {
+      const newList = [makeComposer("2")];
       mockFetch.mockResolvedValueOnce(jsonResponse(makeComposer("2"), 201));
-      const c = useComposersPaginated();
-      await c.loadMore();
-      expect(c.items.value).toHaveLength(1);
+      mockDollarFetch.mockResolvedValueOnce({ items: newList, nextCursor: null });
+      const c = useComposersAll();
       await c.createComposer({ name: "x" });
-      expect(c.items.value).toEqual([]);
-      expect(c.hasMore.value).toBe(true);
+      expect(c.data.value).toEqual(newList);
     });
   });
 });

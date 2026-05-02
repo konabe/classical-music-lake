@@ -7,7 +7,7 @@ const route = useRoute();
 const id = computed(() => route.params.id as string);
 
 const { data: composer, error: fetchError } = await useComposer(() => id.value);
-const { updateComposer } = useComposersPaginated();
+const { updateComposer } = useComposersAll();
 const { error, handleSubmit } = useSubmitHandler<UpdateComposerInput>({
   submit: (values) => updateComposer(id.value, values),
   redirectTo: "/composers",

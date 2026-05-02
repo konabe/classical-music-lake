@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Composer, Piece } from "~/types";
+import { formatLifespan } from "~/utils/lifespan";
 
 const props = defineProps<{
   composer: Composer | null;
@@ -20,6 +21,10 @@ const shortId = computed(() => {
 });
 
 const pieceCount = computed(() => props.pieces.length);
+
+const lifespan = computed(() =>
+  props.composer === null ? "" : formatLifespan(props.composer.birthYear, props.composer.deathYear),
+);
 </script>
 
 <template>
@@ -58,6 +63,8 @@ const pieceCount = computed(() => props.pieces.length);
           </div>
 
           <h1 class="composer-name">{{ composer.name }}</h1>
+
+          <p v-if="lifespan" class="composer-lifespan smallcaps numeric">{{ lifespan }}</p>
 
           <div class="composer-category-wrapper">
             <ComposerCategoryList :composer="composer" />
@@ -221,6 +228,13 @@ const pieceCount = computed(() => props.pieces.length);
     "opsz" 144,
     "SOFT" 60,
     "WONK" 1;
+}
+
+.composer-lifespan {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  letter-spacing: var(--tracking-wide);
 }
 
 .composer-category-wrapper {

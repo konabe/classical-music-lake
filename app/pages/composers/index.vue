@@ -2,11 +2,24 @@
 import type { Composer } from "~/types";
 
 const router = useRouter();
-const { items, pending, error, hasMore, loadMore, retry, deleteComposer } = useComposersPaginated();
+const { data, pending, error, refresh, deleteComposer } = useComposersAll();
 const { isAdmin } = useAuth();
 const isAdminUser = isAdmin();
 
-void loadMore();
+void refresh();
+
+// 生年昇順（古い順）。生年未登録は末尾。
+const sortedComposers = computed<Composer[]>(() => {
+  const items = data.value ?? [];
+  return [...items].sort((a, b) => {
+    const aHas = a.birthYear !== undefined;
+    const bHas = b.birthYear !== undefined;
+    if (!aHas && !bHas) return a.name.localeCompare(b.name);
+    if (!aHas) return 1;
+    if (!bHas) return -1;
+    return (a.birthYear as number) - (b.birthYear as number);
+  });
+});
 
 function handleDetail(composer: Composer) {
   router.push(`/composers/${composer.id}`);
@@ -22,7 +35,6 @@ async function handleDelete(composer: Composer) {
   }
   try {
     await deleteComposer(composer.id);
-    await loadMore();
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "削除に失敗しました。もう一度お試しください。";
@@ -33,15 +45,13 @@ async function handleDelete(composer: Composer) {
 
 <template>
   <ComposersTemplate
-    :composers="items"
+    :composers="sortedComposers"
     :error="error"
     :pending="pending"
-    :has-more="hasMore"
     :is-admin="isAdminUser"
     @detail="handleDetail"
     @edit="handleEdit"
     @delete="handleDelete"
-    @load-more="loadMore"
-    @retry="retry"
+    @retry="refresh"
   />
 </template>

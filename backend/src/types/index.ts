@@ -93,9 +93,15 @@ export interface Composer {
   era?: PieceEra; // 時代（楽曲マスタと共通の定数を流用）
   region?: PieceRegion; // 地域（楽曲マスタと共通の定数を流用）
   imageUrl?: string; // 肖像画像の URL（Wikimedia Commons 等のパブリックドメイン画像を想定）
+  birthYear?: number; // 生年（西暦の整数。BC は負数）
+  deathYear?: number; // 没年（任意。存命の場合は未指定）
   createdAt: string;
   updatedAt: string;
 }
 
 export type CreateComposerInput = Omit<Composer, "id" | "createdAt" | "updatedAt">;
-export type UpdateComposerInput = Partial<CreateComposerInput>;
+// `birthYear` / `deathYear` は更新時に `null` を送ると当該フィールドが削除される（buildUpdateProps の挙動）。
+export type UpdateComposerInput = Partial<Omit<CreateComposerInput, "birthYear" | "deathYear">> & {
+  birthYear?: number | null;
+  deathYear?: number | null;
+};

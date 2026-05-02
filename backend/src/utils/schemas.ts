@@ -141,6 +141,29 @@ export const createConcertLogSchema = z.object({
 
 export const updateConcertLogSchema = createConcertLogSchema.partial();
 
+const COMPOSER_YEAR_MIN = -3000;
+const COMPOSER_YEAR_MAX = 9999;
+
+const birthYearSchema = z
+  .number({ error: () => "birthYear must be an integer" })
+  .int({ message: "birthYear must be an integer" })
+  .min(COMPOSER_YEAR_MIN, {
+    message: `birthYear must be between ${COMPOSER_YEAR_MIN} and ${COMPOSER_YEAR_MAX}`,
+  })
+  .max(COMPOSER_YEAR_MAX, {
+    message: `birthYear must be between ${COMPOSER_YEAR_MIN} and ${COMPOSER_YEAR_MAX}`,
+  });
+
+const deathYearSchema = z
+  .number({ error: () => "deathYear must be an integer" })
+  .int({ message: "deathYear must be an integer" })
+  .min(COMPOSER_YEAR_MIN, {
+    message: `deathYear must be between ${COMPOSER_YEAR_MIN} and ${COMPOSER_YEAR_MAX}`,
+  })
+  .max(COMPOSER_YEAR_MAX, {
+    message: `deathYear must be between ${COMPOSER_YEAR_MIN} and ${COMPOSER_YEAR_MAX}`,
+  });
+
 export const createComposerSchema = z.object({
   name: z
     .string({ error: () => "name is required" })
@@ -150,6 +173,8 @@ export const createComposerSchema = z.object({
   era: pieceEraSchema.optional(),
   region: pieceRegionSchema.optional(),
   imageUrl: z.url("imageUrl must be a valid URL").optional(),
+  birthYear: birthYearSchema.optional(),
+  deathYear: deathYearSchema.optional(),
 });
 
 export const updateComposerSchema = z.object({
@@ -162,6 +187,9 @@ export const updateComposerSchema = z.object({
   era: z.union([pieceEraSchema, z.literal("")]).optional(),
   region: z.union([pieceRegionSchema, z.literal("")]).optional(),
   imageUrl: z.union([z.url("imageUrl must be a valid URL"), z.literal("")]).optional(),
+  // null を送るとフィールドが削除される（`buildUpdateProps` がクリア指示として扱う）
+  birthYear: birthYearSchema.nullable().optional(),
+  deathYear: deathYearSchema.nullable().optional(),
 });
 
 /**

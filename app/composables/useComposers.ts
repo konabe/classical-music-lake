@@ -1,61 +1,23 @@
-import { COMPOSERS_PAGE_SIZE_DEFAULT, COMPOSERS_PAGE_SIZE_MAX } from "~/types";
+import { COMPOSERS_PAGE_SIZE_MAX } from "~/types";
 import type { Composer, CreateComposerInput, UpdateComposerInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
-import { fetchCursorPage, usePaginatedList } from "./usePaginatedList";
+import { fetchCursorPage } from "./usePaginatedList";
 
 const fetchComposersPage = (apiBase: string, options: { limit: number; cursor?: string }) =>
   fetchCursorPage<Composer>(`${apiBase}/composers`, options);
 
 /**
- * 作曲家マスタ一覧の無限スクロール / カーソル型ページング用 composable。
- */
-export const useComposersPaginated = () => {
-  const apiBase = useApiBase();
-  const { postJson, putJson, deleteResource } = useAuthenticatedApi();
-
-  const postComposer = (input: CreateComposerInput): Promise<Composer> =>
-    postJson<Composer>(`${apiBase}/composers`, input);
-
-  const putComposer = (id: string, input: UpdateComposerInput): Promise<Composer> =>
-    putJson<Composer>(`${apiBase}/composers/${id}`, input);
-
-  const pagination = usePaginatedList<Composer>((cursor) =>
-    fetchComposersPage(apiBase, { limit: COMPOSERS_PAGE_SIZE_DEFAULT, cursor }),
-  );
-
-  const createComposer = async (input: CreateComposerInput) => {
-    const result = await postComposer(input);
-    pagination.reset();
-    return result;
-  };
-
-  const updateComposer = async (id: string, input: UpdateComposerInput) => {
-    const result = await putComposer(id, input);
-    pagination.reset();
-    return result;
-  };
-
-  const deleteComposer = async (id: string) => {
-    await deleteResource(`${apiBase}/composers/${id}`);
-    pagination.reset();
-  };
-
-  return { ...pagination, createComposer, updateComposer, deleteComposer };
-};
-
-export const useComposer = (id: () => string) => {
-  const apiBase = useApiBase();
-  return useFetch<Composer>(() => `${apiBase}/composers/${id()}`);
-};
-
-/**
- * 作曲家マスタを 1 回の Scan（limit={@link COMPOSERS_PAGE_SIZE_MAX}）で取得するヘルパー。
- * Composer は数十件規模の小さいマスタであることを前提とし、ページングは行わない。
+ * 作曲家マスタを 1 回の Scan（limit={@link COMPOSERS_PAGE_SIZE_MAX}）で取得する composable。
+ * Composer は数十件規模の小さいマスタ前提でページングは行わない。
  * 1 ページに収まらなかった場合（`nextCursor !== null`）は想定を超えたデータ量としてエラーを投げ、
  * 呼び出し元に検索 UI への切り替えを促す。
+ *
+ * 書き込み系（`createComposer` / `updateComposer` / `deleteComposer`）も併設し、
+ * 成功時は内部で `refresh()` をトリガーする。
  */
 export const useComposersAll = () => {
   const apiBase = useApiBase();
+  const { postJson, putJson, deleteResource } = useAuthenticatedApi();
   const data = ref<Composer[] | null>(null);
   const pending = ref<boolean>(false);
   const error = ref<Error | null>(null);
@@ -78,5 +40,27 @@ export const useComposersAll = () => {
     }
   };
 
-  return { data, pending, error, refresh };
+  const createComposer = async (input: CreateComposerInput): Promise<Composer> => {
+    const result = await postJson<Composer>(`${apiBase}/composers`, input);
+    await refresh();
+    return result;
+  };
+
+  const updateComposer = async (id: string, input: UpdateComposerInput): Promise<Composer> => {
+    const result = await putJson<Composer>(`${apiBase}/composers/${id}`, input);
+    await refresh();
+    return result;
+  };
+
+  const deleteComposer = async (id: string): Promise<void> => {
+    await deleteResource(`${apiBase}/composers/${id}`);
+    await refresh();
+  };
+
+  return { data, pending, error, refresh, createComposer, updateComposer, deleteComposer };
+};
+
+export const useComposer = (id: () => string) => {
+  const apiBase = useApiBase();
+  return useFetch<Composer>(() => `${apiBase}/composers/${id()}`);
 };

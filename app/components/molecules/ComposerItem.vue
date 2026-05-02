@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Composer } from "~/types";
+import { formatLifespan } from "~/utils/lifespan";
 
-defineProps<{
+const props = defineProps<{
   composer: Composer;
 }>();
 
@@ -10,6 +11,8 @@ const emit = defineEmits<{
   delete: [];
   detail: [];
 }>();
+
+const lifespan = computed(() => formatLifespan(props.composer.birthYear, props.composer.deathYear));
 </script>
 
 <template>
@@ -30,6 +33,7 @@ const emit = defineEmits<{
 
     <div class="composer-main">
       <h2 class="composer-name">{{ composer.name }}</h2>
+      <div v-if="lifespan" class="composer-lifespan smallcaps numeric">{{ lifespan }}</div>
       <div class="composer-category-wrapper">
         <ComposerCategoryList :composer="composer" />
       </div>
@@ -125,6 +129,12 @@ const emit = defineEmits<{
   font-variation-settings:
     "opsz" 144,
     "SOFT" 50;
+}
+
+.composer-lifespan {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  letter-spacing: var(--tracking-wide);
 }
 
 .composer-category-wrapper {

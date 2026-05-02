@@ -81,4 +81,40 @@ describe("ComposerForm", () => {
       expect(emittedData.region).toBeUndefined();
     });
   });
+
+  describe("生年・没年", () => {
+    it("初期値が input に反映される", async () => {
+      const wrapper = await mountSuspended(ComposerForm, {
+        props: {
+          initialValues: { name: "ベートーヴェン", birthYear: 1770, deathYear: 1827 },
+        },
+      });
+      expect((wrapper.find("#birth-year").element as HTMLInputElement).value).toBe("1770");
+      expect((wrapper.find("#death-year").element as HTMLInputElement).value).toBe("1827");
+    });
+
+    it("入力した生年・没年が submit に number として含まれる", async () => {
+      const wrapper = await mountSuspended(ComposerForm, {
+        props: {
+          initialValues: { name: "ベートーヴェン", birthYear: 1770, deathYear: 1827 },
+        },
+      });
+      await wrapper.find("form").trigger("submit.prevent");
+      const emitted = wrapper.emitted("submit");
+      const emittedData = emitted![0][0] as Record<string, unknown>;
+      expect(emittedData.birthYear).toBe(1770);
+      expect(emittedData.deathYear).toBe(1827);
+    });
+
+    it("未入力の生年・没年は undefined として送信される", async () => {
+      const wrapper = await mountSuspended(ComposerForm, {
+        props: { initialValues: { name: "ベートーヴェン" } },
+      });
+      await wrapper.find("form").trigger("submit.prevent");
+      const emitted = wrapper.emitted("submit");
+      const emittedData = emitted![0][0] as Record<string, unknown>;
+      expect(emittedData.birthYear).toBeUndefined();
+      expect(emittedData.deathYear).toBeUndefined();
+    });
+  });
 });
