@@ -47,23 +47,23 @@ describe("ListeningLogDetail", () => {
     });
   });
 
-  describe("作曲家リンク", () => {
-    it("composerId が指定されると作曲家詳細へのリンクが表示される", async () => {
+  describe("楽曲リンク", () => {
+    it("pieceId が指定されると楽曲詳細へのリンクが表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogDetail, {
-        props: { log: sampleLog, composerId: "composer-1" },
+        props: { log: sampleLog, pieceId: "piece-1" },
       });
-      const link = wrapper.find(".composer-link");
+      const link = wrapper.find(".piece-link");
       expect(link.exists()).toBe(true);
-      expect(link.attributes("href")).toBe("/composers/composer-1");
-      expect(link.text()).toContain("ベートーヴェン");
+      expect(link.attributes("href")).toBe("/pieces/piece-1");
+      expect(link.text()).toContain("交響曲第9番 ニ短調 Op.125");
     });
 
-    it("composerId が未指定だとリンクは表示されずテキストとして表示される", async () => {
+    it("pieceId が未指定だとリンクは表示されずテキストとして表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogDetail, {
         props: { log: sampleLog },
       });
-      expect(wrapper.find(".composer-link").exists()).toBe(false);
-      expect(wrapper.text()).toContain("ベートーヴェン");
+      expect(wrapper.find(".piece-link").exists()).toBe(false);
+      expect(wrapper.text()).toContain("交響曲第9番 ニ短調 Op.125");
     });
   });
 });

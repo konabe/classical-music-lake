@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
 import ListeningLogDetailPage from "./index.vue";
-import type { Composer, ListeningLog } from "~/types";
+import type { Composer, ListeningLog, Piece } from "~/types";
 
 vi.mock("~/composables/useAuth", () => ({
   ACCESS_TOKEN_KEY: "accessToken",
@@ -31,6 +31,16 @@ const sampleComposers: Composer[] = [
   },
 ];
 
+const samplePieces: Piece[] = [
+  {
+    id: "piece-symphony-9",
+    title: "交響曲第9番 ニ短調 Op.125",
+    composerId: "composer-beethoven",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+];
+
 vi.mock("~/composables/useListeningLogs", () => ({
   useListeningLog: () => ({ data: ref(sampleLog), error: null, pending: false }),
   useListeningLogs: () => ({
@@ -48,6 +58,17 @@ vi.mock("~/composables/useComposers", () => ({
   useComposer: vi.fn(),
   useComposersAll: () => ({
     data: ref(sampleComposers),
+    error: ref(null),
+    pending: ref(false),
+    refresh: vi.fn().mockResolvedValue(undefined),
+  }),
+}));
+
+vi.mock("~/composables/usePieces", () => ({
+  usePiece: vi.fn(),
+  usePiecesPaginated: vi.fn(),
+  usePiecesAll: () => ({
+    data: ref(samplePieces),
     error: ref(null),
     pending: ref(false),
     refresh: vi.fn().mockResolvedValue(undefined),

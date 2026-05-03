@@ -43,9 +43,9 @@ export const WithMemo: Story = {
   },
 };
 
-export const WithComposerLink: Story = {
+export const WithPieceLink: Story = {
   args: {
     log: baseLog,
-    composerId: "composer-1",
+    pieceId: "piece-1",
   },
 };

@@ -4,7 +4,7 @@ import type { ListeningLog } from "~/types";
 
 const props = defineProps<{
   log: ListeningLog;
-  composerId?: string;
+  pieceId?: string;
 }>();
 
 const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
@@ -21,13 +21,15 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
 
       <p class="log-composer smallcaps">
         <FavoriteIndicator :is-favorite="log.isFavorite" />
-        <NuxtLink v-if="composerId" :to="`/composers/${composerId}`" class="composer-link">
-          {{ log.composer }}
-        </NuxtLink>
-        <template v-else>{{ log.composer }}</template>
+        {{ log.composer }}
       </p>
 
-      <h1 class="log-title">{{ log.piece }}</h1>
+      <h1 class="log-title">
+        <NuxtLink v-if="pieceId" :to="`/pieces/${pieceId}`" class="piece-link">
+          {{ log.piece }}
+        </NuxtLink>
+        <template v-else>{{ log.piece }}</template>
+      </h1>
 
       <div class="log-rating-row">
         <RatingDisplay :rating="log.rating" />
@@ -92,7 +94,7 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
   color: var(--color-accent);
 }
 
-.composer-link {
+.piece-link {
   color: inherit;
   text-decoration: none;
   border-bottom: 1px solid var(--color-hairline);
@@ -101,7 +103,7 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
     border-color 0.25s ease;
 }
 
-.composer-link:hover {
+.piece-link:hover {
   color: var(--color-accent);
   border-bottom-color: var(--color-accent);
 }
