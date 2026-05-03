@@ -220,7 +220,7 @@ describe("PieceForm", () => {
       expect(emittedData.videoUrls).toEqual(["https://www.youtube.com/watch?v=abc"]);
     });
 
-    it("空の動画 URL は trim されて送信から除外され、全て空なら undefined", async () => {
+    it("空の動画 URL は trim されて送信から除外され、全て空なら空配列", async () => {
       const wrapper = await mountSuspended(PieceForm, {
         props: {
           composers: mockComposers,
@@ -234,7 +234,7 @@ describe("PieceForm", () => {
       await wrapper.find("form").trigger("submit.prevent");
       const emitted = wrapper.emitted("submit");
       const emittedData = emitted![0][0] as Record<string, unknown>;
-      expect(emittedData.videoUrls).toBeUndefined();
+      expect(emittedData.videoUrls).toEqual([]);
     });
 
     it("複数の動画 URL を配列として送信できる", async () => {
