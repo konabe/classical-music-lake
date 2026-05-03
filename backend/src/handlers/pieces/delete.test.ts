@@ -13,11 +13,17 @@ import {
 } from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
+  saveWork: vi.fn(),
+  saveWorkWithOptimisticLock: vi.fn(),
+  removeWorkCascade: vi.fn(),
+  findRootById: vi.fn(),
+  findRootPage: vi.fn(),
   findById: vi.fn(),
-  findAll: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
+  findChildren: vi.fn(),
+  saveMovement: vi.fn(),
+  saveMovementWithOptimisticLock: vi.fn(),
+  removeMovement: vi.fn(),
+  replaceMovements: vi.fn(),
 }));
 
 vi.mock("../../repositories/piece-repository", () => ({
@@ -55,21 +61,21 @@ describe("DELETE /pieces/{id} (delete)", () => {
   });
 
   it("正常に削除して 204 を返す", async () => {
-    mockRepo.remove.mockResolvedValueOnce();
+    mockRepo.removeWorkCascade.mockResolvedValueOnce(undefined);
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
   });
 
-  it("正しい id で Repository.remove を呼び出す", async () => {
-    mockRepo.remove.mockResolvedValueOnce();
+  it("正しい id で Repository.removeWorkCascade を呼び出す", async () => {
+    mockRepo.removeWorkCascade.mockResolvedValueOnce(undefined);
     await handler(makeEvent("test-id-123"), mockContext, mockCallback);
 
-    expect(mockRepo.remove).toHaveBeenCalledWith(PieceId.from("test-id-123"));
+    expect(mockRepo.removeWorkCascade).toHaveBeenCalledWith(PieceId.from("test-id-123"));
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.remove.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.removeWorkCascade.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });
@@ -83,13 +89,13 @@ describe("DELETE /pieces/{id} (delete)", () => {
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockRepo.remove).not.toHaveBeenCalled();
+      expect(mockRepo.removeWorkCascade).not.toHaveBeenCalled();
     });
 
     it("認証クレームがない場合は 403 を返し、削除しない", async () => {
       const result = await handler(makeEvent("test-id-123", "none"), mockContext, mockCallback);
       expect(result?.statusCode).toBe(403);
-      expect(mockRepo.remove).not.toHaveBeenCalled();
+      expect(mockRepo.removeWorkCascade).not.toHaveBeenCalled();
     });
   });
 });

@@ -7,12 +7,17 @@ import { PIECES_PAGE_SIZE_DEFAULT, PIECES_PAGE_SIZE_MAX } from "../../types";
 import type { Paginated, Piece } from "../../types";
 
 const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
+  saveWork: vi.fn(),
+  saveWorkWithOptimisticLock: vi.fn(),
+  removeWorkCascade: vi.fn(),
+  findRootById: vi.fn(),
+  findRootPage: vi.fn(),
   findById: vi.fn(),
-  findAll: vi.fn(),
-  findPage: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
+  findChildren: vi.fn(),
+  saveMovement: vi.fn(),
+  saveMovementWithOptimisticLock: vi.fn(),
+  removeMovement: vi.fn(),
+  replaceMovements: vi.fn(),
 }));
 
 vi.mock("../../repositories/piece-repository", () => ({
@@ -31,7 +36,7 @@ describe("GET /pieces (list)", () => {
 
   describe("正常系", () => {
     it("空の場合は items=[], nextCursor=null を返す", async () => {
-      mockRepo.findPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
+      mockRepo.findRootPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
 
       const result = await handler(makeEvent(), mockContext, mockCallback);
 
@@ -43,7 +48,7 @@ describe("GET /pieces (list)", () => {
 
     it("Repository から取得したアイテムを items に入れて返す", async () => {
       const pieces = [makePiece("1", "交響曲第9番"), makePiece("2", "アイーダ")];
-      mockRepo.findPage.mockResolvedValueOnce({ items: pieces, lastEvaluatedKey: undefined });
+      mockRepo.findRootPage.mockResolvedValueOnce({ items: pieces, lastEvaluatedKey: undefined });
 
       const result = await handler(makeEvent(), mockContext, mockCallback);
 
@@ -53,19 +58,19 @@ describe("GET /pieces (list)", () => {
       expect(body.nextCursor).toBeNull();
     });
 
-    it("limit 未指定の場合は既定値で findPage を呼ぶ", async () => {
-      mockRepo.findPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
+    it("limit 未指定の場合は既定値で findRootPage を呼ぶ", async () => {
+      mockRepo.findRootPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
 
       await handler(makeEvent(), mockContext, mockCallback);
 
-      expect(mockRepo.findPage).toHaveBeenCalledWith({
+      expect(mockRepo.findRootPage).toHaveBeenCalledWith({
         limit: PIECES_PAGE_SIZE_DEFAULT,
         exclusiveStartKey: undefined,
       });
     });
 
-    it("limit クエリを指定すると数値変換して findPage に渡す", async () => {
-      mockRepo.findPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
+    it("limit クエリを指定すると数値変換して findRootPage に渡す", async () => {
+      mockRepo.findRootPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
 
       await handler(
         makeEvent({ queryStringParameters: { limit: "20" } }),
@@ -73,26 +78,26 @@ describe("GET /pieces (list)", () => {
         mockCallback,
       );
 
-      expect(mockRepo.findPage).toHaveBeenCalledWith({
+      expect(mockRepo.findRootPage).toHaveBeenCalledWith({
         limit: 20,
         exclusiveStartKey: undefined,
       });
     });
 
-    it("cursor クエリを指定するとデコードして exclusiveStartKey として findPage に渡す", async () => {
-      mockRepo.findPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
+    it("cursor クエリを指定するとデコードして exclusiveStartKey として findRootPage に渡す", async () => {
+      mockRepo.findRootPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
       const cursor = encodeCursor({ id: "piece-prev" });
 
       await handler(makeEvent({ queryStringParameters: { cursor } }), mockContext, mockCallback);
 
-      expect(mockRepo.findPage).toHaveBeenCalledWith({
+      expect(mockRepo.findRootPage).toHaveBeenCalledWith({
         limit: PIECES_PAGE_SIZE_DEFAULT,
         exclusiveStartKey: { id: "piece-prev" },
       });
     });
 
     it("LastEvaluatedKey がある場合はエンコードして nextCursor に入れて返す", async () => {
-      mockRepo.findPage.mockResolvedValueOnce({
+      mockRepo.findRootPage.mockResolvedValueOnce({
         items: [makePiece("1", "a")],
         lastEvaluatedKey: { id: "piece-1" },
       });
@@ -105,7 +110,7 @@ describe("GET /pieces (list)", () => {
     });
 
     it("LastEvaluatedKey なしの場合は nextCursor が null", async () => {
-      mockRepo.findPage.mockResolvedValueOnce({
+      mockRepo.findRootPage.mockResolvedValueOnce({
         items: [makePiece("1", "a")],
         lastEvaluatedKey: undefined,
       });
@@ -117,7 +122,7 @@ describe("GET /pieces (list)", () => {
     });
 
     it("LastEvaluatedKey があるが Items が空でも nextCursor を返す", async () => {
-      mockRepo.findPage.mockResolvedValueOnce({
+      mockRepo.findRootPage.mockResolvedValueOnce({
         items: [],
         lastEvaluatedKey: { id: "piece-x" },
       });
@@ -130,7 +135,7 @@ describe("GET /pieces (list)", () => {
     });
 
     it("ラウンドトリップ: 前ページの nextCursor を次リクエストの cursor として利用できる", async () => {
-      mockRepo.findPage.mockResolvedValueOnce({
+      mockRepo.findRootPage.mockResolvedValueOnce({
         items: [makePiece("1", "a")],
         lastEvaluatedKey: { id: "piece-1" },
       });
@@ -139,7 +144,7 @@ describe("GET /pieces (list)", () => {
       const { nextCursor } = parseBody(firstResult);
       expect(nextCursor).not.toBeNull();
 
-      mockRepo.findPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
+      mockRepo.findRootPage.mockResolvedValueOnce({ items: [], lastEvaluatedKey: undefined });
 
       await handler(
         makeEvent({ queryStringParameters: { cursor: nextCursor ?? "" } }),
@@ -147,7 +152,7 @@ describe("GET /pieces (list)", () => {
         mockCallback,
       );
 
-      expect(mockRepo.findPage).toHaveBeenLastCalledWith({
+      expect(mockRepo.findRootPage).toHaveBeenLastCalledWith({
         limit: PIECES_PAGE_SIZE_DEFAULT,
         exclusiveStartKey: { id: "piece-1" },
       });
@@ -214,7 +219,7 @@ describe("GET /pieces (list)", () => {
     });
 
     it("Repository エラー時に 500 を返す", async () => {
-      mockRepo.findPage.mockRejectedValueOnce(new Error("DynamoDB error"));
+      mockRepo.findRootPage.mockRejectedValueOnce(new Error("DynamoDB error"));
       const result = await handler(makeEvent(), mockContext, mockCallback);
       expect(result?.statusCode).toBe(500);
     });
