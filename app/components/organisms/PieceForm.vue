@@ -87,7 +87,7 @@ function handleSubmit() {
   emit("submit", {
     title: form.title,
     composerId: form.composerId,
-    videoUrls: trimmedVideoUrls.length === 0 ? undefined : trimmedVideoUrls,
+    videoUrls: trimmedVideoUrls.length === 0 ? [] : trimmedVideoUrls,
     genre: (form.genre === "" ? undefined : form.genre) as CreatePieceInput["genre"],
     era: (form.era === "" ? undefined : form.era) as CreatePieceInput["era"],
     formation: (form.formation === ""
