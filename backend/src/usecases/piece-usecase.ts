@@ -1,10 +1,4 @@
-import {
-  applyPieceUpdate,
-  PieceMovementEntity,
-  PieceWorkEntity,
-  createPieceComponent,
-  reconstructPieceComponent,
-} from "../domain/piece";
+import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
 import { PieceId } from "../domain/value-objects/ids";
 import { DynamoDBPieceRepository } from "../repositories/piece-repository";
@@ -28,7 +22,7 @@ export class PieceUsecase {
   constructor(private readonly repo: PieceRepository) {}
 
   async create(input: CreatePieceInput): Promise<Piece> {
-    const entity = createPieceComponent(input);
+    const entity = PieceComponent.create(input);
     const plain = entity.toPlain();
     if (entity instanceof PieceWorkEntity) {
       await this.repo.saveWork(plain as PieceWork);
@@ -51,8 +45,8 @@ export class PieceUsecase {
 
   async update(id: PieceId, input: UpdatePieceInput): Promise<Piece> {
     const current = await findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
-    const entity = reconstructPieceComponent(current);
-    const updated = applyPieceUpdate(entity, input);
+    const entity = PieceComponent.reconstruct(current);
+    const updated = PieceComponent.applyUpdate(entity, input);
     const plain = updated.toPlain();
     if (updated instanceof PieceWorkEntity) {
       await this.repo.saveWorkWithOptimisticLock(plain as PieceWork, current.updatedAt);

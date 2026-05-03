@@ -86,6 +86,9 @@ type PieceMovementProps = EntityProps<PieceId> & {
  * - `kind` は具象クラスで literal 型として実装する（判別共用体のタグ）。
  * - `title` / `videoUrls` は両方が共通で持つ。
  * - `toPlain()` は派生クラスで実装する（戻り値の判別共用体型を保つため）。
+ * - `kind` に基づいて Work / Movement を振り分けるファクトリ（`create` / `reconstruct` /
+ *   `applyUpdate`）を static メソッドとして集約する。トップレベル関数を増やさず、
+ *   コンポジット階層のエントリポイントを Component 自身に閉じ込める。
  */
 export abstract class PieceComponent<
   TProps extends EntityProps<PieceId> & { title: PieceTitle; videoUrls?: Url[] },
@@ -101,6 +104,47 @@ export abstract class PieceComponent<
   }
 
   abstract toPlain(): Piece;
+
+  /**
+   * `CreatePieceInput` から適切な Entity を生成するファクトリ。
+   * 判別共用体の `kind` で分岐する。
+   */
+  static create(input: CreatePieceInput): PieceWorkEntity | PieceMovementEntity {
+    if (input.kind === "work") {
+      return PieceWorkEntity.create(input);
+    }
+    return PieceMovementEntity.create(input);
+  }
+
+  /**
+   * DTO（判別共用体 `Piece`）から Entity を再構築するファクトリ。
+   */
+  static reconstruct(data: Piece): PieceWorkEntity | PieceMovementEntity {
+    if (data.kind === "work") {
+      return PieceWorkEntity.reconstruct(data);
+    }
+    return PieceMovementEntity.reconstruct(data);
+  }
+
+  /**
+   * 既存 Entity に対して `UpdatePieceInput` を適用する。
+   * 既存 Entity の kind と入力の kind が一致しない場合は例外を投げる
+   * （Work ↔ Movement の昇格・降格は本 PR ではサポートしない）。
+   */
+  static applyUpdate(
+    current: PieceWorkEntity | PieceMovementEntity,
+    input: UpdatePieceInput,
+  ): PieceWorkEntity | PieceMovementEntity {
+    if (current instanceof PieceWorkEntity && input.kind === "work") {
+      return current.mergeUpdate(input);
+    }
+    if (current instanceof PieceMovementEntity && input.kind === "movement") {
+      return current.mergeUpdate(input);
+    }
+    throw new TypeError(
+      `Piece kind mismatch: cannot update ${current.kind} with input of kind=${input.kind}`,
+    );
+  }
 }
 
 export class PieceWorkEntity extends PieceComponent<PieceWorkProps> {
@@ -215,47 +259,4 @@ export class PieceMovementEntity extends PieceComponent<PieceMovementProps> {
       updatedAt: this.props.updatedAt,
     };
   }
-}
-
-/**
- * `CreatePieceInput` から適切な Entity を生成するファクトリ。
- * 判別共用体の `kind` で分岐する。
- */
-export function createPieceComponent(
-  input: CreatePieceInput,
-): PieceWorkEntity | PieceMovementEntity {
-  if (input.kind === "work") {
-    return PieceWorkEntity.create(input);
-  }
-  return PieceMovementEntity.create(input);
-}
-
-/**
- * DTO（判別共用体 `Piece`）から Entity を再構築するファクトリ。
- */
-export function reconstructPieceComponent(data: Piece): PieceWorkEntity | PieceMovementEntity {
-  if (data.kind === "work") {
-    return PieceWorkEntity.reconstruct(data);
-  }
-  return PieceMovementEntity.reconstruct(data);
-}
-
-/**
- * 既存 Entity に対して `UpdatePieceInput` を適用する。
- * 既存 Entity の kind と入力の kind が一致しない場合は例外を投げる
- * （Work ↔ Movement の昇格・降格は本 PR ではサポートしない）。
- */
-export function applyPieceUpdate(
-  current: PieceWorkEntity | PieceMovementEntity,
-  input: UpdatePieceInput,
-): PieceWorkEntity | PieceMovementEntity {
-  if (current instanceof PieceWorkEntity && input.kind === "work") {
-    return current.mergeUpdate(input);
-  }
-  if (current instanceof PieceMovementEntity && input.kind === "movement") {
-    return current.mergeUpdate(input);
-  }
-  throw new TypeError(
-    `Piece kind mismatch: cannot update ${current.kind} with input of kind=${input.kind}`,
-  );
 }

@@ -1,12 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import {
-  applyPieceUpdate,
-  createPieceComponent,
-  PieceMovementEntity,
-  PieceWorkEntity,
-  reconstructPieceComponent,
-} from "./piece";
+import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "./piece";
 import { PieceId } from "./value-objects/ids";
 import type { CreateMovementInput, CreateWorkInput, PieceMovement, PieceWork } from "../types";
 
@@ -161,19 +155,19 @@ describe("equals", () => {
   });
 });
 
-describe("createPieceComponent / reconstructPieceComponent", () => {
+describe("PieceComponent.create / PieceComponent.reconstruct", () => {
   it("kind=work の入力からは PieceWorkEntity を返す", () => {
-    const entity = createPieceComponent(makeWorkInput());
+    const entity = PieceComponent.create(makeWorkInput());
     expect(entity).toBeInstanceOf(PieceWorkEntity);
   });
 
   it("kind=movement の入力からは PieceMovementEntity を返す", () => {
-    const entity = createPieceComponent(makeMovementInput());
+    const entity = PieceComponent.create(makeMovementInput());
     expect(entity).toBeInstanceOf(PieceMovementEntity);
   });
 
   it("reconstruct も kind に応じた Entity を返す", () => {
-    const w = reconstructPieceComponent({
+    const w = PieceComponent.reconstruct({
       kind: "work",
       id: "1",
       title: "x",
@@ -181,7 +175,7 @@ describe("createPieceComponent / reconstructPieceComponent", () => {
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
     });
-    const m = reconstructPieceComponent({
+    const m = PieceComponent.reconstruct({
       kind: "movement",
       id: "2",
       parentId: PARENT_ID,
@@ -195,21 +189,25 @@ describe("createPieceComponent / reconstructPieceComponent", () => {
   });
 });
 
-describe("applyPieceUpdate", () => {
+describe("PieceComponent.applyUpdate", () => {
   it("Work に Work 入力を適用できる", () => {
     const entity = PieceWorkEntity.create(makeWorkInput());
-    const updated = applyPieceUpdate(entity, { kind: "work", title: "new" });
+    const updated = PieceComponent.applyUpdate(entity, { kind: "work", title: "new" });
     expect(updated).toBeInstanceOf(PieceWorkEntity);
     expect(updated.toPlain().title).toBe("new");
   });
 
   it("Work に Movement 入力を適用すると例外", () => {
     const entity = PieceWorkEntity.create(makeWorkInput());
-    expect(() => applyPieceUpdate(entity, { kind: "movement", title: "new" })).toThrow(TypeError);
+    expect(() => PieceComponent.applyUpdate(entity, { kind: "movement", title: "new" })).toThrow(
+      TypeError,
+    );
   });
 
   it("Movement に Work 入力を適用すると例外", () => {
     const entity = PieceMovementEntity.create(makeMovementInput());
-    expect(() => applyPieceUpdate(entity, { kind: "work", title: "new" })).toThrow(TypeError);
+    expect(() => PieceComponent.applyUpdate(entity, { kind: "work", title: "new" })).toThrow(
+      TypeError,
+    );
   });
 });
