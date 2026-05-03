@@ -156,6 +156,19 @@ classical-music-lake/
   → ブラウザに返却
 ```
 
+### 視聴ログ詳細取得（作曲家マスタへのリンク付き）
+
+```text
+ブラウザ (/listening-logs/[id])
+  → useListeningLog(id) で ListeningLog を取得
+  → GET /prod/listening-logs/{id}
+  → useComposersAll() で作曲家マスタを全件取得
+  → log.composer（自由入力文字列）と一致する Composer.name を検索
+  → 一致した場合のみ ListeningLogDetail に composerId を渡し、作曲家名を /composers/{id} へのリンクとして表示
+  → 一致しない場合は plain text で表示
+  ※ 視聴ログには composerId フィールドが無いため、name の完全一致でクライアントサイド解決
+```
+
 ### 視聴ログ検索フィルタ（クライアントサイド）
 
 ```text

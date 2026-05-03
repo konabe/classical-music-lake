@@ -3,6 +3,7 @@ import type { ListeningLog } from "~/types";
 
 const props = defineProps<{
   log: ListeningLog;
+  composerId?: string;
 }>();
 
 const router = useRouter();
@@ -32,7 +33,7 @@ const handleDelete = async () => {
       </div>
     </header>
 
-    <ListeningLogDetail :log="log" />
+    <ListeningLogDetail :log="log" :composer-id="composerId" />
   </article>
 </template>
 

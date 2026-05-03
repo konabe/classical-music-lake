@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
 import ListeningLogDetailPage from "./index.vue";
-import type { ListeningLog } from "~/types";
+import type { Composer, ListeningLog } from "~/types";
 
 vi.mock("~/composables/useAuth", () => ({
   ACCESS_TOKEN_KEY: "accessToken",
@@ -22,8 +22,17 @@ const sampleLog: ListeningLog = {
   updatedAt: "2024-03-01T14:00:00.000Z",
 };
 
+const sampleComposers: Composer[] = [
+  {
+    id: "composer-beethoven",
+    name: "ベートーヴェン",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+];
+
 vi.mock("~/composables/useListeningLogs", () => ({
-  useListeningLog: () => ({ data: sampleLog, error: null, pending: false }),
+  useListeningLog: () => ({ data: ref(sampleLog), error: null, pending: false }),
   useListeningLogs: () => ({
     data: null,
     error: null,
@@ -32,6 +41,16 @@ vi.mock("~/composables/useListeningLogs", () => ({
     create: vi.fn(),
     update: vi.fn(),
     deleteLog: mockDeleteLog,
+  }),
+}));
+
+vi.mock("~/composables/useComposers", () => ({
+  useComposer: vi.fn(),
+  useComposersAll: () => ({
+    data: ref(sampleComposers),
+    error: ref(null),
+    pending: ref(false),
+    refresh: vi.fn().mockResolvedValue(undefined),
   }),
 }));
 

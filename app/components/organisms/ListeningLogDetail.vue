@@ -4,6 +4,7 @@ import type { ListeningLog } from "~/types";
 
 const props = defineProps<{
   log: ListeningLog;
+  composerId?: string;
 }>();
 
 const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
@@ -20,7 +21,10 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
 
       <p class="log-composer smallcaps">
         <FavoriteIndicator :is-favorite="log.isFavorite" />
-        {{ log.composer }}
+        <NuxtLink v-if="composerId" :to="`/composers/${composerId}`" class="composer-link">
+          {{ log.composer }}
+        </NuxtLink>
+        <template v-else>{{ log.composer }}</template>
       </p>
 
       <h1 class="log-title">{{ log.piece }}</h1>
@@ -86,6 +90,20 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
 }
 :root.dark .log-composer {
   color: var(--color-accent);
+}
+
+.composer-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-hairline);
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.composer-link:hover {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
 }
 
 .log-title {
