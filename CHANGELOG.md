@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.10.0...classical-music-lake-v2.10.1) (2026-05-03)
+
+
+### Bug Fixes
+
+* **pieces:** 動画 URL を全削除したときに空配列を送信するよう修正 ([#636](https://github.com/konabe/classical-music-lake/issues/636)) ([3ff4c00](https://github.com/konabe/classical-music-lake/commit/3ff4c00bc205958504515afa3ecba570816ba67b))
+
 ## [2.10.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.9.0...classical-music-lake-v2.10.0) (2026-05-02)
 
 
