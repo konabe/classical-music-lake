@@ -1,9 +1,10 @@
-import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
 import { PieceId } from "../domain/value-objects/ids";
 import { DynamoDBPieceRepository } from "../repositories/piece-repository";
 import type { CreatePieceInput, Paginated, Piece, PieceWork, UpdatePieceInput } from "../types";
-import { findByIdOrNotFound, toPaginatedResult } from "./helpers";
+import { findByIdOrNotFound } from "./helpers";
+import { MovementUsecase } from "./movement-usecase";
+import { WorkUsecase } from "./work-usecase";
 
 // handlers 層は domain へ直接アクセスできないため、ID 値オブジェクトを usecase 層経由で公開する
 export { PieceId };
@@ -11,54 +12,59 @@ export { PieceId };
 const ENTITY_NAME = "Piece";
 
 /**
- * 楽曲マスタのユースケース。
+ * 楽曲マスタの kind 横断ファサード。
  *
- * - PR1 時点で公開している API は引き続き Work（親楽曲）のみを対象とする
- *   （`list` は `findRootPage` で Work だけを列挙、`get`/`update`/`delete` も Work 限定）。
- * - 内部ではドメインの Composite モデル（Work / Movement）と新リポジトリ I/F を利用する。
- * - Movement 系のエンドポイントは PR2 以降で追加する。
+ * - 既存の `/pieces` ハンドラ群はこの facade 経由で {@link WorkUsecase} に委譲する。
+ *   create / update のみ `kind=movement` 入力を {@link MovementUsecase} へ振り分けるが、
+ *   list / get / delete は Work のみを対象とする（Movement の取り扱いは PR3 で
+ *   専用エンドポイントへ分離する想定）。
+ * - {@link getNode} は kind を問わずに単体取得するファサードメソッドで、PR3 の
+ *   root 取得 API（Work + Movement のアグリゲート）から利用する。
  */
 export class PieceUsecase {
-  constructor(private readonly repo: PieceRepository) {}
+  constructor(
+    private readonly workUsecase: WorkUsecase,
+    private readonly movementUsecase: MovementUsecase,
+    private readonly repo: PieceRepository,
+  ) {}
 
   async create(input: CreatePieceInput): Promise<Piece> {
-    const entity = PieceComponent.create(input);
-    const plain = entity.toPlain();
-    if (entity instanceof PieceWorkEntity) {
-      await this.repo.saveWork(plain as PieceWork);
-    } else if (entity instanceof PieceMovementEntity) {
-      await this.repo.saveMovement(entity.toPlain());
-    }
-    return plain;
+    return input.kind === "work"
+      ? this.workUsecase.create(input)
+      : this.movementUsecase.create(input);
   }
 
   async list(options: {
     limit: number;
     exclusiveStartKey?: Record<string, unknown>;
-  }): Promise<Paginated<Piece>> {
-    return toPaginatedResult(await this.repo.findRootPage(options));
+  }): Promise<Paginated<PieceWork>> {
+    return this.workUsecase.list(options);
   }
 
-  async get(id: PieceId): Promise<Piece> {
-    return findByIdOrNotFound((id) => this.repo.findRootById(id), id, ENTITY_NAME);
+  async get(id: PieceId): Promise<PieceWork> {
+    return this.workUsecase.get(id);
   }
 
   async update(id: PieceId, input: UpdatePieceInput): Promise<Piece> {
-    const current = await findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
-    const entity = PieceComponent.reconstruct(current);
-    const updated = PieceComponent.applyUpdate(entity, input);
-    const plain = updated.toPlain();
-    if (updated instanceof PieceWorkEntity) {
-      await this.repo.saveWorkWithOptimisticLock(plain as PieceWork, current.updatedAt);
-    } else {
-      await this.repo.saveMovementWithOptimisticLock(updated.toPlain(), current.updatedAt);
-    }
-    return plain;
+    return input.kind === "work"
+      ? this.workUsecase.update(id, input)
+      : this.movementUsecase.update(id, input);
   }
 
   async delete(id: PieceId): Promise<void> {
-    await this.repo.removeWorkCascade(id);
+    await this.workUsecase.delete(id);
+  }
+
+  /**
+   * kind を問わず単体取得する。Work でも Movement でも返す。
+   * 見つからなければ `404 Not Found` を投げる。PR3 で root アグリゲート API から利用する。
+   */
+  async getNode(id: PieceId): Promise<Piece> {
+    return findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
   }
 }
 
-export const createPieceUsecase = () => new PieceUsecase(new DynamoDBPieceRepository());
+export const createPieceUsecase = (): PieceUsecase => {
+  const repo = new DynamoDBPieceRepository();
+  return new PieceUsecase(new WorkUsecase(repo), new MovementUsecase(repo), repo);
+};

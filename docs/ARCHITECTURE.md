@@ -406,12 +406,11 @@ classical-music-lake/
   - `PieceWorkEntity extends PieceComponent`: 親楽曲。`composerId: ComposerId` と楽曲カテゴリ（`genre` / `era` / `formation` / `region`）を持つ
   - `PieceMovementEntity extends PieceComponent`: 楽章。`parentId: PieceId` で Work を参照、`index: MovementIndex`（0..999）で演奏順を表す
 - **リポジトリ I/F**: `PieceRepository` は **root（Work）操作と子（Movement）操作を明確に分ける**
-  - root 限定列挙: `findRootById` / `findRootPage` は Work のみを返す（Movement は除外）
-  - kind を問わず単体取得: `findById(id)` は Work / Movement のいずれも返す（更新フローで使用）
-  - Movement 一覧は **アグリゲートとして root を取得する API**（PR2 で追加予定。Work と
-    Movements をまとめて返す）に集約する。子要素単独の列挙クエリ（`findChildren`）は
-    持たない（独立に呼ぶユースケースが無いため）
-  - カスケード: `removeWorkCascade(id)` は Work 削除時に配下 Movement もまとめて削除する想定
-  - `replaceMovements(workId, movements)` で Movement 集合をアトミック置換（PR3 で実装）
+  - root 限定列挙: `findRootById` / `findRootPage` は Work のみを返す（Movement は除外）。`findRootById` は `kind=movement` のレコードや `parentId` を持つ壊れたレコードも除外する
+  - kind を問わず単体取得: `findById(id)` は Work / Movement のいずれも返す（更新フローおよびファサードの `getNode` で使用）
+  - 子列挙: `DynamoDBPieceRepository.findChildren(parentId)` は `parentId-index-index` GSI を Query して Movement を `index` 昇順で全件取得する（`Limit` 無し、ページが続く限り回収）。集合操作内部からのみ使用する想定で、I/F には公開しない
+  - カスケード: `removeWorkCascade(id)` は `findChildren` で配下 Movement を取得し、TransactWriteItems で Work + Movement を一括 Delete する。子が無ければ単発 Delete に縮退
+  - `replaceMovements(workId, movements)` は `findChildren` で得た既存子の Delete + 新規子の Put を 1 つの TransactWriteItems にまとめて実行（`MOVEMENTS_PER_WORK_MAX = 64` に従えば 100 アクション上限内に収まる）
+- **ユースケース層**: `WorkUsecase`（Work 専用 CRUD）と `MovementUsecase`（Movement 専用 CRUD + `replaceMovements`）を分離し、`PieceUsecase` ファサードが `kind` で振り分ける。`PieceUsecase.getNode(id)` は Work / Movement を問わずに単体取得する kind 横断のファサードメソッドで、PR3 の root アグリゲート API から利用する
 - **バリデーション**: `createPieceSchema` / `updatePieceSchema` は `z.discriminatedUnion("kind", [...])` で Work / Movement を判別する。両 Work / Movement のオブジェクトは `.strict()` で未知フィールドを拒否し、Work に `parentId` / `index` を、Movement に `composerId` / カテゴリ系を含めると 400 を返す
-- **PR1 時点の挙動**: 既存 API のレスポンスに `kind: "work"` が増える以外は互換。Movement 専用エンドポイントは追加していない。`DynamoDBPieceRepository` は既存レコード（`kind` を持たない）を読み込み時に `kind: "work"` で正規化することで後方互換を保つ。Movement の永続化は PR2、Movement 集合の REST エンドポイント追加は PR3 で行う
+- **PR2 時点の挙動**: 既存 `/pieces` REST エンドポイントの公開仕様は不変（参照系は Work のみ、`POST` は `kind` で Work/Movement 両対応）。`DynamoDBPieceRepository` は `kind` 欠落レコードを読み込み時に `kind: "work"` として正規化することで後方互換を保つ。Movement 専用 REST エンドポイント（一覧 / 集合置換）は PR3 で追加する

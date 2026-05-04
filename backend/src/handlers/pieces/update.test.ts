@@ -139,7 +139,7 @@ describe("PUT /pieces/{id} (update)", () => {
   );
 
   it("title を含まない更新は title のバリデーションをスキップする", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
@@ -151,7 +151,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(undefined);
+    mockRepo.findRootById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", work({ title: "新タイトル" })),
       mockContext,
@@ -161,7 +161,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("正常更新して 200 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
@@ -179,7 +179,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("updatedAt が更新されること", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const before = new Date(existingPiece.updatedAt).getTime();
@@ -193,7 +193,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("createdAt は上書きされない", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
@@ -206,7 +206,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("id は上書きされない", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
@@ -219,7 +219,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWorkWithOptimisticLock.mockRejectedValueOnce(
       new createError.Conflict("Piece was updated by another request"),
     );
@@ -234,7 +234,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.findRootById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", work({ title: "交響曲第5番" })),
       mockContext,
@@ -244,7 +244,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("videoUrls を追加して更新できる", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
     mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const urls = ["https://www.youtube.com/watch?v=xyz", "https://www.youtube.com/watch?v=qrs"];
@@ -259,7 +259,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("videoUrls を空配列で送信すると削除される", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPieceWithVideoUrls);
+    mockRepo.findRootById.mockResolvedValueOnce(existingPieceWithVideoUrls);
     mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
@@ -274,7 +274,7 @@ describe("PUT /pieces/{id} (update)", () => {
 
   describe("カテゴリフィールド", () => {
     it("カテゴリを追加して更新できる", async () => {
-      mockRepo.findById.mockResolvedValueOnce(existingPiece);
+      mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
       mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
@@ -304,7 +304,7 @@ describe("PUT /pieces/{id} (update)", () => {
         genre: "交響曲",
         era: "古典派",
       };
-      mockRepo.findById.mockResolvedValueOnce(existingWithCategory);
+      mockRepo.findRootById.mockResolvedValueOnce(existingWithCategory);
       mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
@@ -326,7 +326,7 @@ describe("PUT /pieces/{id} (update)", () => {
         formation: "管弦楽",
         region: "ドイツ・オーストリア",
       };
-      mockRepo.findById.mockResolvedValueOnce(existingWithCategory);
+      mockRepo.findRootById.mockResolvedValueOnce(existingWithCategory);
       mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
@@ -343,7 +343,7 @@ describe("PUT /pieces/{id} (update)", () => {
     });
 
     it("一部のカテゴリのみ更新できる", async () => {
-      mockRepo.findById.mockResolvedValueOnce(existingPiece);
+      mockRepo.findRootById.mockResolvedValueOnce(existingPiece);
       mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
@@ -413,7 +413,7 @@ describe("PUT /pieces/{id} (update)", () => {
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockRepo.findById).not.toHaveBeenCalled();
+      expect(mockRepo.findRootById).not.toHaveBeenCalled();
       expect(mockRepo.saveWorkWithOptimisticLock).not.toHaveBeenCalled();
     });
 
@@ -424,7 +424,7 @@ describe("PUT /pieces/{id} (update)", () => {
         mockCallback,
       );
       expect(result?.statusCode).toBe(403);
-      expect(mockRepo.findById).not.toHaveBeenCalled();
+      expect(mockRepo.findRootById).not.toHaveBeenCalled();
       expect(mockRepo.saveWorkWithOptimisticLock).not.toHaveBeenCalled();
     });
   });

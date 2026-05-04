@@ -133,10 +133,10 @@ interface ListeningLog {
 ### 3.2 楽曲マスタ (Piece — Composite)
 
 - **テーブル名**: `classical-music-pieces`
-- **PK**: `id` (String)
+- **PK**: `id` (String) / **GSI: `parentId-index-index`**: `parentId`（PK、String）+ `index`（SK、Number）— Work 配下の Movement を演奏順に列挙する
 - **削除ポリシー**: 全環境 RETAIN
 
-楽曲は `kind` で判別されるコンポジット（Work / Movement）として扱う。Work は親楽曲、Movement は楽章であり、同じ DynamoDB テーブルに格納する（PR1 時点では Movement レコードは未作成。kind 不明な既存データは読み込み時に `kind: "work"` を補完する互換ロジックを `DynamoDBPieceRepository` に持つ）。
+楽曲は `kind` で判別されるコンポジット（Work / Movement）として扱う。Work は親楽曲、Movement は楽章であり、同じ DynamoDB テーブルに格納する。`kind` が欠落している既存レコードは `DynamoDBPieceRepository` の読み込み時に透過的に `kind: "work"` を補完する。Movement の永続化（`saveMovement` / `replaceMovements` / `removeWorkCascade` のカスケード削除）は PR2 で実装済み。Movement 専用 REST エンドポイントは PR3 で追加する。
 
 ```typescript
 type PieceGenre =
@@ -189,6 +189,7 @@ type Piece = PieceWork | PieceMovement;
 > - 2026-04: `composer`（自由入力）→ `composerId`（参照）。旧データは `backend/src/migrations/piece-composer-id/index.ts` で一括変換（`MigrationsStack` に分離。詳細は `docs/OPERATIONS.md`）
 > - 2026-05: `videoUrl`（単一）→ `videoUrls`（配列）。`DynamoDBPieceRepository` の読み込み時に透過的に正規化されるため、明示的な移行 Lambda は持たない
 > - 2026-05: `Piece` を Composite（`PieceWork` / `PieceMovement`）に再設計（PR1）。既存レコードは `kind` を持たないため、`DynamoDBPieceRepository` が読み込み時に `kind: "work"` を補完する。書き込み時は常に `kind` を含める。Movement の永続化と専用エンドポイントは PR2 / PR3 で追加する
+> - 2026-05: `kind` 属性を導入し、`parentId-index-index` GSI を追加（PR2）。`DynamoDBPieceRepository` は `kind` 欠落レコードを読み込み時に `kind: "work"` として透過的に正規化するため、データ移行 Lambda は不要。GSI は `parentId`（PK、String）+ `index`（SK、Number）で `findChildren(parentId)` の Query / `replaceMovements` の既存子削除 / `removeWorkCascade` のカスケード削除に使用する。**PR3 デプロイ前に GSI が ACTIVE になっていることを CloudWatch で確認すること**
 
 > **任意項目の更新**: Work では `era` / `genre` / `formation` / `region` を空文字で送信するとフィールドが削除される。`videoUrls` は空配列 `[]` で削除（Work / Movement 共通）。
 
