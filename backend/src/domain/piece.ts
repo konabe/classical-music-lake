@@ -27,8 +27,10 @@ const MOVEMENT_CLEARABLE_FIELDS = ["videoUrls"] as const;
  * リポジトリ I/F。Composite 構造に合わせて root（Work）操作と子（Movement）操作を明確に分ける。
  *
  * - root 限定列挙: `findRootById` / `findRootPage` は Work のみを返す（Movement は除外）
- * - 子クエリ: `findChildren(parentId)` で特定 Work 配下の Movement を列挙
  * - `removeWorkCascade(id)`: Work 削除時に配下 Movement もまとめて削除
+ * - Movement 単体取得は `findById`（kind-agnostic）で行う。Work 配下の Movement 一覧は
+ *   PR2 で root を取得する API（アグリゲートとして Work と Movement をまとめて返す）を
+ *   追加して提供する想定。子要素単独の列挙クエリ（旧 `findChildren`）は持たない
  * - `replaceMovements(workId, movements)`: Movement 集合をアトミックに置換（PR3 で使用）
  *
  * 実装は PR2 で行う（PR1 では型のみ宣言）。
@@ -47,8 +49,6 @@ export type PieceRepository = {
 
   /** kind を問わず id で取得する。Work でも Movement でも返す。 */
   findById(id: PieceId): Promise<Piece | undefined>;
-  /** 指定 Work 配下の Movement を index 昇順で返す。 */
-  findChildren(parentId: PieceId): Promise<PieceMovement[]>;
   saveMovement(movement: PieceMovement): Promise<void>;
   saveMovementWithOptimisticLock(movement: PieceMovement, prevUpdatedAt: string): Promise<void>;
   removeMovement(id: PieceId): Promise<void>;

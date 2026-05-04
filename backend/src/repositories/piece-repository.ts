@@ -87,7 +87,8 @@ export class DynamoDBPieceRepository implements PieceRepository {
 
   async removeWorkCascade(id: PieceId): Promise<void> {
     // PR1 時点では Movement が DB に存在しないため、Work 単体の削除と等価。
-    // PR2 で findChildren の実装と合わせて子レコードのカスケード削除を有効化する。
+    // PR2 で root 取得（Work + Movements をアグリゲートで返す API）と合わせて
+    // 子レコードのカスケード削除を有効化する。
     await dynamo.send(new DeleteCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }));
   }
 
@@ -96,13 +97,6 @@ export class DynamoDBPieceRepository implements PieceRepository {
       new GetCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }),
     );
     return readPiece(result.Item as Piece | undefined);
-  }
-
-  async findChildren(_parentId: PieceId): Promise<PieceMovement[]> {
-    // PR1 時点では Movement の永続化を行わないため空配列。
-    // PR2 で GSI（parentId + index）を追加して実装する。
-    void _parentId;
-    return [];
   }
 
   async saveMovement(movement: PieceMovement): Promise<void> {

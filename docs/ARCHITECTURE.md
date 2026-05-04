@@ -407,7 +407,10 @@ classical-music-lake/
   - `PieceMovementEntity extends PieceComponent`: 楽章。`parentId: PieceId` で Work を参照、`index: MovementIndex`（0..999）で演奏順を表す
 - **リポジトリ I/F**: `PieceRepository` は **root（Work）操作と子（Movement）操作を明確に分ける**
   - root 限定列挙: `findRootById` / `findRootPage` は Work のみを返す（Movement は除外）
-  - 子クエリ: `findChildren(parentId)` で特定 Work 配下の Movement を列挙
+  - kind を問わず単体取得: `findById(id)` は Work / Movement のいずれも返す（更新フローで使用）
+  - Movement 一覧は **アグリゲートとして root を取得する API**（PR2 で追加予定。Work と
+    Movements をまとめて返す）に集約する。子要素単独の列挙クエリ（`findChildren`）は
+    持たない（独立に呼ぶユースケースが無いため）
   - カスケード: `removeWorkCascade(id)` は Work 削除時に配下 Movement もまとめて削除する想定
   - `replaceMovements(workId, movements)` で Movement 集合をアトミック置換（PR3 で実装）
 - **バリデーション**: `createPieceSchema` / `updatePieceSchema` は `z.discriminatedUnion("kind", [...])` で Work / Movement を判別する。両 Work / Movement のオブジェクトは `.strict()` で未知フィールドを拒否し、Work に `parentId` / `index` を、Movement に `composerId` / カテゴリ系を含めると 400 を返す
