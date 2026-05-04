@@ -1,9 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { normalizeLegacyVideoUrl } from "./piece-repository";
+import { DynamoDBPieceRepository } from "./piece-repository";
 import type { Piece } from "../types";
 
+const normalizeLegacyVideoUrl = DynamoDBPieceRepository.normalizeLegacyVideoUrl;
+
 const basePiece: Piece = {
+  kind: "work",
   id: "piece-1",
   title: "交響曲第9番",
   composerId: "00000000-0000-4000-8000-000000000001",

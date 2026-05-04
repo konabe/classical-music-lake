@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import createError from "http-errors";
-import type { Piece } from "../../types";
+import type { Piece, PieceWork } from "../../types";
 
 import { handler } from "./update";
 import {
@@ -15,11 +15,16 @@ import {
 } from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
+  saveWork: vi.fn(),
+  saveWorkWithOptimisticLock: vi.fn(),
+  removeWorkCascade: vi.fn(),
+  findRootById: vi.fn(),
+  findRootPage: vi.fn(),
   findById: vi.fn(),
-  findAll: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
+  saveMovement: vi.fn(),
+  saveMovementWithOptimisticLock: vi.fn(),
+  removeMovement: vi.fn(),
+  replaceMovements: vi.fn(),
 }));
 
 vi.mock("../../repositories/piece-repository", () => ({
@@ -50,7 +55,8 @@ function makeEvent(
   return makeBaseEvent(overrides);
 }
 
-const existingPiece: Piece = {
+const existingPiece: PieceWork = {
+  kind: "work",
   id: "abc-123",
   title: "交響曲第9番",
   composerId: TEST_COMPOSER_ID,
@@ -60,10 +66,13 @@ const existingPiece: Piece = {
 
 const OTHER_COMPOSER_ID = "00000000-0000-4000-8000-000000000002";
 
-const existingPieceWithVideoUrls: Piece = {
+const existingPieceWithVideoUrls: PieceWork = {
   ...existingPiece,
   videoUrls: ["https://www.youtube.com/watch?v=abc123"],
 };
+
+const work = (overrides: Record<string, unknown> = {}) =>
+  JSON.stringify({ kind: "work", ...overrides });
 
 describe("PUT /pieces/{id} (update)", () => {
   beforeEach(() => {
@@ -72,7 +81,7 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("id がない場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent(undefined, JSON.stringify({ title: "新タイトル" })),
+      makeEvent(undefined, work({ title: "新タイトル" })),
       mockContext,
       mockCallback,
     );
@@ -97,7 +106,7 @@ describe("PUT /pieces/{id} (update)", () => {
     "title が空または空白のみ（%j）の場合は 400 を返す",
     async (invalidTitle) => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ title: invalidTitle })),
+        makeEvent("abc-123", work({ title: invalidTitle })),
         mockContext,
         mockCallback,
       );
@@ -108,7 +117,7 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("title が 200 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "あ".repeat(201) })),
+      makeEvent("abc-123", work({ title: "あ".repeat(201) })),
       mockContext,
       mockCallback,
     );
@@ -120,7 +129,7 @@ describe("PUT /pieces/{id} (update)", () => {
     "composerId が UUID 形式でない（%j）場合は 400 を返す",
     async (invalidComposerId) => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ composerId: invalidComposerId })),
+        makeEvent("abc-123", work({ composerId: invalidComposerId })),
         mockContext,
         mockCallback,
       );
@@ -131,10 +140,10 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("title を含まない更新は title のバリデーションをスキップする", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ composerId: OTHER_COMPOSER_ID })),
+      makeEvent("abc-123", work({ composerId: OTHER_COMPOSER_ID })),
       mockContext,
       mockCallback,
     );
@@ -144,7 +153,7 @@ describe("PUT /pieces/{id} (update)", () => {
   it("アイテムが存在しない場合は 404 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
-      makeEvent("not-found-id", JSON.stringify({ title: "新タイトル" })),
+      makeEvent("not-found-id", work({ title: "新タイトル" })),
       mockContext,
       mockCallback,
     );
@@ -153,28 +162,29 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("正常更新して 200 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番", composerId: OTHER_COMPOSER_ID })),
+      makeEvent("abc-123", work({ title: "交響曲第5番", composerId: OTHER_COMPOSER_ID })),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(200);
 
     const body = JSON.parse(result?.body ?? "{}") as Piece;
+    expect(body.kind).toBe("work");
     expect(body.id).toBe("abc-123");
     expect(body.title).toBe("交響曲第5番");
-    expect(body.composerId).toBe(OTHER_COMPOSER_ID);
+    expect((body as PieceWork).composerId).toBe(OTHER_COMPOSER_ID);
   });
 
   it("updatedAt が更新されること", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const before = new Date(existingPiece.updatedAt).getTime();
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
+      makeEvent("abc-123", work({ title: "交響曲第5番" })),
       mockContext,
       mockCallback,
     );
@@ -184,10 +194,10 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("createdAt は上書きされない", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
+      makeEvent("abc-123", work({ title: "交響曲第5番" })),
       mockContext,
       mockCallback,
     );
@@ -197,10 +207,10 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("id は上書きされない", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
+      makeEvent("abc-123", work({ title: "交響曲第5番" })),
       mockContext,
       mockCallback,
     );
@@ -210,12 +220,12 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("楽観的ロック競合時に 409 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWithOptimisticLock.mockRejectedValueOnce(
+    mockRepo.saveWorkWithOptimisticLock.mockRejectedValueOnce(
       new createError.Conflict("Piece was updated by another request"),
     );
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
+      makeEvent("abc-123", work({ title: "交響曲第5番" })),
       mockContext,
       mockCallback,
     );
@@ -226,7 +236,7 @@ describe("PUT /pieces/{id} (update)", () => {
   it("Repository エラー時に 500 を返す", async () => {
     mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ title: "交響曲第5番" })),
+      makeEvent("abc-123", work({ title: "交響曲第5番" })),
       mockContext,
       mockCallback,
     );
@@ -235,11 +245,11 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("videoUrls を追加して更新できる", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const urls = ["https://www.youtube.com/watch?v=xyz", "https://www.youtube.com/watch?v=qrs"];
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ videoUrls: urls })),
+      makeEvent("abc-123", work({ videoUrls: urls })),
       mockContext,
       mockCallback,
     );
@@ -250,10 +260,10 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("videoUrls を空配列で送信すると削除される", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingPieceWithVideoUrls);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ videoUrls: [] })),
+      makeEvent("abc-123", work({ videoUrls: [] })),
       mockContext,
       mockCallback,
     );
@@ -265,12 +275,12 @@ describe("PUT /pieces/{id} (update)", () => {
   describe("カテゴリフィールド", () => {
     it("カテゴリを追加して更新できる", async () => {
       mockRepo.findById.mockResolvedValueOnce(existingPiece);
-      mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+      mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
         makeEvent(
           "abc-123",
-          JSON.stringify({
+          work({
             genre: "交響曲",
             era: "古典派",
             formation: "管弦楽",
@@ -281,7 +291,7 @@ describe("PUT /pieces/{id} (update)", () => {
         mockCallback,
       );
       expect(result?.statusCode).toBe(200);
-      const body = JSON.parse(result?.body ?? "{}") as Piece;
+      const body = JSON.parse(result?.body ?? "{}") as PieceWork;
       expect(body.genre).toBe("交響曲");
       expect(body.era).toBe("古典派");
       expect(body.formation).toBe("管弦楽");
@@ -289,27 +299,27 @@ describe("PUT /pieces/{id} (update)", () => {
     });
 
     it("カテゴリを変更して更新できる", async () => {
-      const existingWithCategory: Piece = {
+      const existingWithCategory: PieceWork = {
         ...existingPiece,
         genre: "交響曲",
         era: "古典派",
       };
       mockRepo.findById.mockResolvedValueOnce(existingWithCategory);
-      mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+      mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ genre: "協奏曲", era: "ロマン派" })),
+        makeEvent("abc-123", work({ genre: "協奏曲", era: "ロマン派" })),
         mockContext,
         mockCallback,
       );
       expect(result?.statusCode).toBe(200);
-      const body = JSON.parse(result?.body ?? "{}") as Piece;
+      const body = JSON.parse(result?.body ?? "{}") as PieceWork;
       expect(body.genre).toBe("協奏曲");
       expect(body.era).toBe("ロマン派");
     });
 
     it("カテゴリを空文字で送信すると削除される", async () => {
-      const existingWithCategory: Piece = {
+      const existingWithCategory: PieceWork = {
         ...existingPiece,
         genre: "交響曲",
         era: "古典派",
@@ -317,15 +327,15 @@ describe("PUT /pieces/{id} (update)", () => {
         region: "ドイツ・オーストリア",
       };
       mockRepo.findById.mockResolvedValueOnce(existingWithCategory);
-      mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+      mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ genre: "", era: "", formation: "", region: "" })),
+        makeEvent("abc-123", work({ genre: "", era: "", formation: "", region: "" })),
         mockContext,
         mockCallback,
       );
       expect(result?.statusCode).toBe(200);
-      const body = JSON.parse(result?.body ?? "{}") as Piece;
+      const body = JSON.parse(result?.body ?? "{}") as PieceWork;
       expect(body.genre).toBeUndefined();
       expect(body.era).toBeUndefined();
       expect(body.formation).toBeUndefined();
@@ -334,22 +344,22 @@ describe("PUT /pieces/{id} (update)", () => {
 
     it("一部のカテゴリのみ更新できる", async () => {
       mockRepo.findById.mockResolvedValueOnce(existingPiece);
-      mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+      mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ genre: "室内楽" })),
+        makeEvent("abc-123", work({ genre: "室内楽" })),
         mockContext,
         mockCallback,
       );
       expect(result?.statusCode).toBe(200);
-      const body = JSON.parse(result?.body ?? "{}") as Piece;
+      const body = JSON.parse(result?.body ?? "{}") as PieceWork;
       expect(body.genre).toBe("室内楽");
       expect(body.era).toBeUndefined();
     });
 
     it("genre に不正な値を指定すると 400 を返す", async () => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ genre: "不正な値" })),
+        makeEvent("abc-123", work({ genre: "不正な値" })),
         mockContext,
         mockCallback,
       );
@@ -358,7 +368,7 @@ describe("PUT /pieces/{id} (update)", () => {
 
     it("era に不正な値を指定すると 400 を返す", async () => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ era: "不正な値" })),
+        makeEvent("abc-123", work({ era: "不正な値" })),
         mockContext,
         mockCallback,
       );
@@ -367,7 +377,7 @@ describe("PUT /pieces/{id} (update)", () => {
 
     it("formation に不正な値を指定すると 400 を返す", async () => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ formation: "不正な値" })),
+        makeEvent("abc-123", work({ formation: "不正な値" })),
         mockContext,
         mockCallback,
       );
@@ -376,7 +386,7 @@ describe("PUT /pieces/{id} (update)", () => {
 
     it("region に不正な値を指定すると 400 を返す", async () => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ region: "不正な値" })),
+        makeEvent("abc-123", work({ region: "不正な値" })),
         mockContext,
         mockCallback,
       );
@@ -386,7 +396,7 @@ describe("PUT /pieces/{id} (update)", () => {
 
   it("videoUrls の要素に不正な URL が含まれる場合は 400 を返す", async () => {
     const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ videoUrls: ["not-a-url"] })),
+      makeEvent("abc-123", work({ videoUrls: ["not-a-url"] })),
       mockContext,
       mockCallback,
     );
@@ -397,25 +407,25 @@ describe("PUT /pieces/{id} (update)", () => {
   describe("認可", () => {
     it("admin グループに属さないユーザーは 403 を返し、データを更新しない", async () => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ title: "新タイトル" }), "non-admin"),
+        makeEvent("abc-123", work({ title: "新タイトル" }), "non-admin"),
         mockContext,
         mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
       expect(mockRepo.findById).not.toHaveBeenCalled();
-      expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+      expect(mockRepo.saveWorkWithOptimisticLock).not.toHaveBeenCalled();
     });
 
     it("認証クレームがない場合は 403 を返し、データを更新しない", async () => {
       const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ title: "新タイトル" }), "none"),
+        makeEvent("abc-123", work({ title: "新タイトル" }), "none"),
         mockContext,
         mockCallback,
       );
       expect(result?.statusCode).toBe(403);
       expect(mockRepo.findById).not.toHaveBeenCalled();
-      expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+      expect(mockRepo.saveWorkWithOptimisticLock).not.toHaveBeenCalled();
     });
   });
 });
