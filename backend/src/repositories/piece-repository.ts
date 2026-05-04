@@ -5,59 +5,61 @@ import type { PieceId } from "../domain/value-objects/ids";
 import type { Piece, PieceMovement, PieceWork } from "../types";
 import { dynamo, putItemWithOptimisticLock, scanPage, TABLE_PIECES } from "../utils/dynamodb";
 
-/**
- * 旧データ（`videoUrl: string`）を新スキーマ（`videoUrls: string[]`）へ正規化する。
- * 1 楽曲に複数動画を持てるようにフィールド名を変更したため、未マイグレーションのレコード
- * を読み込んだ時点で透過的に変換する（書き込みは常に新スキーマのみで行うので、上書きで自然に消える）。
- */
 type LegacyVideoUrlPiece = Piece & { videoUrl?: string };
 
-export function normalizeLegacyVideoUrl(item: Piece | undefined): Piece | undefined {
-  if (item === undefined) {
-    return undefined;
-  }
-  const legacy = item as LegacyVideoUrlPiece;
-  if (legacy.videoUrl === undefined) {
-    return item;
-  }
-  const { videoUrl, ...rest } = legacy;
-  if (rest.videoUrls === undefined && typeof videoUrl === "string" && videoUrl !== "") {
-    return { ...rest, videoUrls: [videoUrl] } as Piece;
-  }
-  return rest as Piece;
-}
-
-/**
- * 既存 DB レコード（`kind` を持たない）を Composite モデルに合わせて補完する。
- * 既存データは全て Work として扱う（Movement は PR2 以降で書き込みを開始）。
- */
-function normalizeKind(item: Piece | undefined): Piece | undefined {
-  if (item === undefined) {
-    return undefined;
-  }
-  const candidate = item as Partial<Piece> & Record<string, unknown>;
-  if (candidate.kind === "work" || candidate.kind === "movement") {
-    return item;
-  }
-  return { ...(item as object), kind: "work" } as Piece;
-}
-
-function readPiece(item: Piece | undefined): Piece | undefined {
-  return normalizeKind(normalizeLegacyVideoUrl(item));
-}
-
-function isWork(piece: Piece | undefined): piece is PieceWork {
-  return piece !== undefined && piece.kind === "work";
-}
-
-function isMovement(piece: Piece | undefined): piece is PieceMovement {
-  return piece !== undefined && piece.kind === "movement";
-}
-
 export class DynamoDBPieceRepository implements PieceRepository {
+  /**
+   * 旧データ（`videoUrl: string`）を新スキーマ（`videoUrls: string[]`）へ正規化する。
+   * 1 楽曲に複数動画を持てるようにフィールド名を変更したため、未マイグレーションのレコード
+   * を読み込んだ時点で透過的に変換する（書き込みは常に新スキーマのみで行うので、上書きで自然に消える）。
+   */
+  static normalizeLegacyVideoUrl(item: Piece | undefined): Piece | undefined {
+    if (item === undefined) {
+      return undefined;
+    }
+    const legacy = item as LegacyVideoUrlPiece;
+    if (legacy.videoUrl === undefined) {
+      return item;
+    }
+    const { videoUrl, ...rest } = legacy;
+    if (rest.videoUrls === undefined && typeof videoUrl === "string" && videoUrl !== "") {
+      return { ...rest, videoUrls: [videoUrl] } as Piece;
+    }
+    return rest as Piece;
+  }
+
+  /**
+   * 既存 DB レコード（`kind` を持たない）を Composite モデルに合わせて補完する。
+   * 既存データは全て Work として扱う（Movement は PR2 以降で書き込みを開始）。
+   */
+  private static normalizeKind(item: Piece | undefined): Piece | undefined {
+    if (item === undefined) {
+      return undefined;
+    }
+    const candidate = item as Partial<Piece> & Record<string, unknown>;
+    if (candidate.kind === "work" || candidate.kind === "movement") {
+      return item;
+    }
+    return { ...(item as object), kind: "work" } as Piece;
+  }
+
+  private static readPiece(item: Piece | undefined): Piece | undefined {
+    return DynamoDBPieceRepository.normalizeKind(
+      DynamoDBPieceRepository.normalizeLegacyVideoUrl(item),
+    );
+  }
+
+  private static isWork(piece: Piece | undefined): piece is PieceWork {
+    return piece !== undefined && piece.kind === "work";
+  }
+
+  private static isMovement(piece: Piece | undefined): piece is PieceMovement {
+    return piece !== undefined && piece.kind === "movement";
+  }
+
   async findRootById(id: PieceId): Promise<PieceWork | undefined> {
     const piece = await this.findById(id);
-    return isWork(piece) ? piece : undefined;
+    return DynamoDBPieceRepository.isWork(piece) ? piece : undefined;
   }
 
   async findRootPage(options: {
@@ -65,7 +67,9 @@ export class DynamoDBPieceRepository implements PieceRepository {
     exclusiveStartKey?: Record<string, unknown>;
   }): Promise<{ items: PieceWork[]; lastEvaluatedKey?: Record<string, unknown> }> {
     const result = await scanPage<Piece>(TABLE_PIECES, options);
-    const items = result.items.map((item) => readPiece(item)).filter(isWork);
+    const items = result.items
+      .map((item) => DynamoDBPieceRepository.readPiece(item))
+      .filter(DynamoDBPieceRepository.isWork);
     return {
       items,
       lastEvaluatedKey: result.lastEvaluatedKey,
@@ -96,7 +100,7 @@ export class DynamoDBPieceRepository implements PieceRepository {
     const result = await dynamo.send(
       new GetCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }),
     );
-    return readPiece(result.Item as Piece | undefined);
+    return DynamoDBPieceRepository.readPiece(result.Item as Piece | undefined);
   }
 
   async saveMovement(movement: PieceMovement): Promise<void> {
@@ -117,7 +121,7 @@ export class DynamoDBPieceRepository implements PieceRepository {
 
   async removeMovement(id: PieceId): Promise<void> {
     const item = await this.findById(id);
-    if (!isMovement(item)) {
+    if (!DynamoDBPieceRepository.isMovement(item)) {
       return;
     }
     await dynamo.send(new DeleteCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }));

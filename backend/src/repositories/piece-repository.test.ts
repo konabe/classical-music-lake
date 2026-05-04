@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 
-import { normalizeLegacyVideoUrl } from "./piece-repository";
+import { DynamoDBPieceRepository } from "./piece-repository";
 import type { Piece } from "../types";
+
+const normalizeLegacyVideoUrl = DynamoDBPieceRepository.normalizeLegacyVideoUrl;
 
 const basePiece: Piece = {
   kind: "work",
