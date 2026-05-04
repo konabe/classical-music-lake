@@ -107,23 +107,37 @@ export abstract class PieceComponent<
 
   /**
    * `CreatePieceInput` から適切な Entity を生成するファクトリ。
-   * 判別共用体の `kind` で分岐する。
+   * 判別共用体の `kind` で分岐する。`default` 節は `never` 型で網羅性をコンパイル時検証し、
+   * 想定外の `kind` が渡された場合は例外を投げる。
    */
   static create(input: CreatePieceInput): PieceWorkEntity | PieceMovementEntity {
-    if (input.kind === "work") {
-      return PieceWorkEntity.create(input);
+    switch (input.kind) {
+      case "work":
+        return PieceWorkEntity.create(input);
+      case "movement":
+        return PieceMovementEntity.create(input);
+      default: {
+        const exhaustive: never = input;
+        throw new TypeError(`Unknown piece kind: ${JSON.stringify(exhaustive)}`);
+      }
     }
-    return PieceMovementEntity.create(input);
   }
 
   /**
    * DTO（判別共用体 `Piece`）から Entity を再構築するファクトリ。
+   * `default` 節は `never` 型で網羅性をコンパイル時検証する。
    */
   static reconstruct(data: Piece): PieceWorkEntity | PieceMovementEntity {
-    if (data.kind === "work") {
-      return PieceWorkEntity.reconstruct(data);
+    switch (data.kind) {
+      case "work":
+        return PieceWorkEntity.reconstruct(data);
+      case "movement":
+        return PieceMovementEntity.reconstruct(data);
+      default: {
+        const exhaustive: never = data;
+        throw new TypeError(`Unknown piece kind: ${JSON.stringify(exhaustive)}`);
+      }
     }
-    return PieceMovementEntity.reconstruct(data);
   }
 
   /**
