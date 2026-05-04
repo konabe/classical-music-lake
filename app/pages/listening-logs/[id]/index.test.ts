@@ -22,6 +22,8 @@ const sampleLog: ListeningLog = {
   updatedAt: "2024-03-01T14:00:00.000Z",
 };
 
+const initialPieceId = sampleLog.pieceId;
+
 const sampleComposers: Composer[] = [
   {
     id: "composer-beethoven",
@@ -77,6 +79,7 @@ vi.mock("~/composables/usePieces", () => ({
 
 beforeEach(() => {
   mockDeleteLog.mockClear();
+  sampleLog.pieceId = initialPieceId;
   vi.stubGlobal(
     "confirm",
     vi.fn(() => true),
@@ -114,5 +117,21 @@ describe("ListeningLogDetailPage（結合）", () => {
     const wrapper = await mountSuspended(ListeningLogDetailPage);
     await wrapper.find(".btn-danger").trigger("click");
     expect(mockDeleteLog).not.toHaveBeenCalled();
+  });
+
+  describe("楽曲マスタへのリンク解決", () => {
+    it("log.pieceId が設定されていればそれを使ってリンクが表示される", async () => {
+      sampleLog.pieceId = "piece-from-log";
+      const wrapper = await mountSuspended(ListeningLogDetailPage);
+      const link = wrapper.find(".piece-link");
+      expect(link.attributes("href")).toBe("/pieces/piece-from-log");
+    });
+
+    it("log.pieceId が無い場合は曲名+作曲家名の一致でリンクが解決される", async () => {
+      sampleLog.pieceId = undefined;
+      const wrapper = await mountSuspended(ListeningLogDetailPage);
+      const link = wrapper.find(".piece-link");
+      expect(link.attributes("href")).toBe("/pieces/piece-symphony-9");
+    });
   });
 });

@@ -30,12 +30,32 @@ export const createListeningLogSchema = z.object({
     .trim()
     .min(1, "piece must be a non-empty string")
     .max(200, "piece must be 200 characters or less"),
+  pieceId: z.uuid("pieceId must be a valid UUID").optional(),
   rating: ratingSchema,
   isFavorite: z.boolean(),
   memo: z.string().trim().max(1000, "memo must be 1000 characters or less").optional(),
 });
 
-export const updateListeningLogSchema = createListeningLogSchema.partial();
+export const updateListeningLogSchema = z.object({
+  listenedAt: z.iso.datetime({ offset: false }).optional(),
+  composer: z
+    .string()
+    .trim()
+    .min(1, "composer must be a non-empty string")
+    .max(100, "composer must be 100 characters or less")
+    .optional(),
+  piece: z
+    .string()
+    .trim()
+    .min(1, "piece must be a non-empty string")
+    .max(200, "piece must be 200 characters or less")
+    .optional(),
+  // 空文字 `""` を送るとフィールド全体が削除される（`buildUpdateProps` がクリア指示として扱う）
+  pieceId: z.union([z.uuid("pieceId must be a valid UUID"), z.literal("")]).optional(),
+  rating: ratingSchema.optional(),
+  isFavorite: z.boolean().optional(),
+  memo: z.string().trim().max(1000, "memo must be 1000 characters or less").optional(),
+});
 
 const pieceGenreSchema = z.enum(PIECE_GENRES);
 

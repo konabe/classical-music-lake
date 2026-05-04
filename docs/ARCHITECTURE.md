@@ -162,12 +162,23 @@ classical-music-lake/
 ブラウザ (/listening-logs/[id])
   → useListeningLog(id) で ListeningLog を取得
   → GET /prod/listening-logs/{id}
-  → usePiecesAll() で楽曲マスタ・useComposersAll() で作曲家マスタを並列取得
-  → 楽曲マスタから「title === log.piece」かつ
-    「Composer.name（composerId 解決後）=== log.composer」の楽曲を検索
-  → 一致した場合のみ ListeningLogDetail に pieceId を渡し、曲名を /pieces/{id} へのリンクとして表示
-  → 一致しない場合は plain text で表示
-  ※ 視聴ログには pieceId / composerId が無いため、曲名 + 作曲家名の完全一致でクライアントサイド解決
+  1. log.pieceId が設定されていれば、それを使って /pieces/{pieceId} へリンク
+  2. 設定が無い場合（旧データ互換）は usePiecesAll() / useComposersAll() を並列取得し、
+     「Piece.title === log.piece」かつ「Composer.name === log.composer」の楽曲を検索してフォールバック
+  3. どちらでも解決できなければ曲名は plain text で表示
+```
+
+### 視聴ログ作成・更新（pieceId 付き）
+
+```text
+楽曲マスタから記録（QuickLogForm / 楽曲詳細ページ）:
+  → POST /prod/listening-logs に pieceId を含めて送信（楽曲マスタの id を信頼ソースとして固定）
+
+自由入力フォーム（/listening-logs/new、/listening-logs/[id]/edit）:
+  → 「楽曲マスタから選択」ドロップダウンを選ぶと pieceId が自動設定され、曲名・作曲家名も同期される
+  → 「選択しない」を選ぶと曲名・作曲家名はクリアされ、pieceId も undefined となる
+  → 編集時に既存の pieceId を解除したい場合は、フォーム側で pieceId="" として送信し、
+    バックエンドの buildUpdateProps が DynamoDB 属性を REMOVE する
 ```
 
 ### 視聴ログ検索フィルタ（クライアントサイド）
