@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import type { Piece, Rating } from "~/types";
+import { formatDate } from "~/utils/date";
+import type { ListeningLog, Piece, Rating } from "~/types";
 
 const props = defineProps<{
   piece: Piece | null;
   error: Error | null;
   isAdmin: boolean;
   composerName: string;
+  listeningLogs?: ListeningLog[];
 }>();
 
 const emit = defineEmits<{
@@ -19,6 +21,9 @@ const shortId = computed(() => {
   if (props.piece === null) return "";
   return props.piece.id.slice(0, 6).toUpperCase();
 });
+
+const logs = computed<ListeningLog[]>(() => props.listeningLogs ?? []);
+const logCount = computed(() => logs.value.length);
 </script>
 
 <template>
@@ -91,6 +96,41 @@ const shortId = computed(() => {
           />
         </section>
       </template>
+
+      <section v-if="logCount > 0" class="piece-listenings" aria-labelledby="listenings-heading">
+        <header class="listenings-masthead">
+          <span class="listenings-tag smallcaps">Listening records</span>
+          <span class="listenings-rule" aria-hidden="true" />
+          <span class="listenings-count smallcaps numeric">
+            {{ logCount.toString().padStart(2, "0") }}
+            {{ logCount === 1 ? "entry" : "entries" }}
+          </span>
+        </header>
+
+        <h2 id="listenings-heading" class="listenings-title">
+          <span class="listenings-title-jp">あなたの鑑賞記録</span>
+          <span class="listenings-title-en"><em>Écoutes</em></span>
+        </h2>
+
+        <ol class="listenings-list stagger-children">
+          <li v-for="(log, index) in logs" :key="log.id" class="listenings-item">
+            <span class="listenings-index smallcaps numeric">
+              N&deg; {{ (index + 1).toString().padStart(2, "0") }}
+            </span>
+            <NuxtLink :to="`/listening-logs/${log.id}`" class="listenings-link">
+              <span class="listenings-meta">
+                <FavoriteIndicator :is-favorite="log.isFavorite" />
+                <time class="listenings-date smallcaps numeric">
+                  {{ formatDate(log.listenedAt) }}
+                </time>
+                <span class="listenings-rule-mini" aria-hidden="true" />
+                <RatingDisplay :rating="log.rating" />
+              </span>
+              <span v-if="log.memo" class="listenings-memo">{{ log.memo }}</span>
+            </NuxtLink>
+          </li>
+        </ol>
+      </section>
     </template>
   </article>
 </template>
@@ -313,5 +353,142 @@ const shortId = computed(() => {
 
 .quicklog-meta {
   color: var(--color-text-muted);
+}
+
+.piece-listenings {
+  margin-top: 3rem;
+}
+
+.listenings-masthead {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+.listenings-tag {
+  color: var(--color-bordeaux);
+}
+:root.dark .listenings-tag {
+  color: var(--color-accent);
+}
+
+.listenings-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-hairline);
+}
+
+.listenings-count {
+  color: var(--color-text-muted);
+}
+
+.listenings-title {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  margin: 0 0 1.5rem;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30;
+}
+
+.listenings-title-jp {
+  font-style: normal;
+  font-weight: 400;
+}
+
+.listenings-title-en {
+  color: var(--color-accent);
+  font-style: italic;
+  font-size: 0.7em;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 100,
+    "WONK" 1;
+}
+
+.listenings-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-hairline);
+}
+
+.listenings-item {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  align-items: baseline;
+  gap: 0.5rem 1.2rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.listenings-index {
+  color: var(--color-text-faint);
+}
+
+.listenings-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: color 0.25s ease;
+}
+
+.listenings-link:hover {
+  color: var(--color-accent);
+}
+
+.listenings-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.listenings-date {
+  color: var(--color-text-muted);
+}
+
+.listenings-rule-mini {
+  width: 1.5rem;
+  height: 1px;
+  background: var(--color-hairline-strong);
+}
+
+.listenings-memo {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 1.55;
+  padding-left: 1rem;
+  border-left: 1px solid var(--color-hairline-strong);
+  max-width: 50em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  .listenings-item {
+    grid-template-columns: 1fr;
+  }
+
+  .listenings-index {
+    display: block;
+  }
 }
 </style>

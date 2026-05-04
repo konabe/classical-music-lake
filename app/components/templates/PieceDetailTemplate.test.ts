@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceDetailTemplate from "./PieceDetailTemplate.vue";
-import type { Piece } from "~/types";
+import type { ListeningLog, Piece } from "~/types";
 
 const pieceWithVideo: Piece = {
   id: "1",
@@ -275,6 +275,115 @@ describe("PieceDetailTemplate", () => {
         },
       });
       expect(wrapper.find("a.admin-link").attributes("href")).toBe("/pieces/2/edit");
+    });
+  });
+
+  describe("鑑賞記録一覧", () => {
+    const sampleLogs: ListeningLog[] = [
+      {
+        id: "log-1",
+        userId: "user-1",
+        listenedAt: "2024-03-10T12:00:00.000Z",
+        composer: "モーツァルト",
+        piece: "魔笛",
+        rating: 5,
+        isFavorite: true,
+        memo: "夜の女王のアリアが圧巻",
+        createdAt: "2024-03-10T12:00:00.000Z",
+        updatedAt: "2024-03-10T12:00:00.000Z",
+      },
+      {
+        id: "log-2",
+        userId: "user-1",
+        listenedAt: "2024-02-01T08:30:00.000Z",
+        composer: "モーツァルト",
+        piece: "魔笛",
+        rating: 4,
+        isFavorite: false,
+        createdAt: "2024-02-01T08:30:00.000Z",
+        updatedAt: "2024-02-01T08:30:00.000Z",
+      },
+    ];
+
+    it("listeningLogs を渡すと Listening records セクションが表示される", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "モーツァルト",
+          listeningLogs: sampleLogs,
+        },
+      });
+      expect(wrapper.find(".piece-listenings").exists()).toBe(true);
+      expect(wrapper.text()).toContain("あなたの鑑賞記録");
+    });
+
+    it("各鑑賞記録が詳細ページへのリンクを持つ", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "モーツァルト",
+          listeningLogs: sampleLogs,
+        },
+      });
+      const links = wrapper.findAll(".listenings-link");
+      expect(links.length).toBe(2);
+      expect(links[0].attributes("href")).toBe("/listening-logs/log-1");
+      expect(links[1].attributes("href")).toBe("/listening-logs/log-2");
+    });
+
+    it("件数表示が件数に応じて切り替わる（複数件は entries）", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "モーツァルト",
+          listeningLogs: sampleLogs,
+        },
+      });
+      expect(wrapper.find(".listenings-count").text()).toContain("entries");
+    });
+
+    it("件数表示が件数に応じて切り替わる（1件は entry）", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "モーツァルト",
+          listeningLogs: [sampleLogs[0]],
+        },
+      });
+      expect(wrapper.find(".listenings-count").text()).toContain("entry");
+    });
+
+    it("listeningLogs が空配列の場合、Listening records セクションが表示されない", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "モーツァルト",
+          listeningLogs: [],
+        },
+      });
+      expect(wrapper.find(".piece-listenings").exists()).toBe(false);
+    });
+
+    it("listeningLogs が未指定の場合、Listening records セクションが表示されない", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "モーツァルト",
+        },
+      });
+      expect(wrapper.find(".piece-listenings").exists()).toBe(false);
     });
   });
 });
