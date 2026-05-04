@@ -137,6 +137,7 @@ describe("updateListeningLogSchema", () => {
 });
 
 const validPiece = {
+  kind: "work" as const,
   title: "交響曲第9番",
   composerId: "00000000-0000-4000-8000-000000000001",
 };
@@ -210,26 +211,37 @@ describe("createPieceSchema", () => {
 });
 
 describe("updatePieceSchema", () => {
-  it("すべてのフィールドが省略可能", () => {
-    const result = updatePieceSchema.safeParse({});
+  it("kind=work のみで他のフィールドは省略可能", () => {
+    const result = updatePieceSchema.safeParse({ kind: "work" });
     expect(result.success).toBe(true);
   });
 
+  it("kind が無いと判別失敗で 400", () => {
+    const result = updatePieceSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+
   it("videoUrls に空配列を渡すと削除フラグとして受け付ける", () => {
-    const result = updatePieceSchema.safeParse({ videoUrls: [] });
+    const result = updatePieceSchema.safeParse({ kind: "work", videoUrls: [] });
     expect(result.success).toBe(true);
   });
 
   it("videoUrls に有効な URL の配列を渡せる", () => {
     const result = updatePieceSchema.safeParse({
+      kind: "work",
       videoUrls: ["https://www.youtube.com/watch?v=abc"],
     });
     expect(result.success).toBe(true);
   });
 
   it("title が空白のみの場合はエラー", () => {
-    const result = updatePieceSchema.safeParse({ title: "   " });
+    const result = updatePieceSchema.safeParse({ kind: "work", title: "   " });
     expect(result.success).toBe(false);
+  });
+
+  it("kind=movement で title だけ更新できる", () => {
+    const result = updatePieceSchema.safeParse({ kind: "movement", title: "Allegro" });
+    expect(result.success).toBe(true);
   });
 });
 

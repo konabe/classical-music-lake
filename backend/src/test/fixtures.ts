@@ -22,6 +22,7 @@ export const makeLog = (
 export const TEST_COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 
 export const makePiece = (id: string, title: string, composerId?: string): Piece => ({
+  kind: "work",
   id,
   title,
   composerId: composerId ?? TEST_COMPOSER_ID,

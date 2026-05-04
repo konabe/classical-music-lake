@@ -1,5 +1,8 @@
 import { z } from "zod";
 import {
+  MOVEMENT_INDEX_MAX,
+  MOVEMENT_INDEX_MIN,
+  MOVEMENTS_PER_WORK_MAX,
   PIECE_ERAS,
   PIECE_FORMATIONS,
   PIECE_GENRES,
@@ -51,21 +54,58 @@ const videoUrlsSchema = z
   .array(z.url("videoUrls must contain valid URLs"))
   .max(PIECE_VIDEO_URLS_MAX, `videoUrls must contain at most ${PIECE_VIDEO_URLS_MAX} URLs`);
 
-export const createPieceSchema = z.object({
-  title: z
-    .string({ error: () => "title is required" })
-    .trim()
-    .min(1, "title is required")
-    .max(200, "title must be 200 characters or less"),
-  composerId: z.uuid("composerId must be a valid UUID"),
-  videoUrls: videoUrlsSchema.optional(),
-  genre: pieceGenreSchema.optional(),
-  era: pieceEraSchema.optional(),
-  formation: pieceFormationSchema.optional(),
-  region: pieceRegionSchema.optional(),
-});
+// Work（親楽曲）の作成スキーマ。Movement 専用の `parentId` / `index` は `.strict()` により拒否される。
+export const createWorkSchema = z
+  .object({
+    kind: z.literal("work"),
+    title: z
+      .string({ error: () => "title is required" })
+      .trim()
+      .min(1, "title is required")
+      .max(200, "title must be 200 characters or less"),
+    composerId: z.uuid("composerId must be a valid UUID"),
+    videoUrls: videoUrlsSchema.optional(),
+    genre: pieceGenreSchema.optional(),
+    era: pieceEraSchema.optional(),
+    formation: pieceFormationSchema.optional(),
+    region: pieceRegionSchema.optional(),
+  })
+  .strict();
 
-export const updatePieceSchema = z.object({
+// Movement（楽章）の作成スキーマ。Work 専用の composerId / categories は `.strict()` により拒否される。
+export const createMovementSchema = z
+  .object({
+    kind: z.literal("movement"),
+    parentId: z.uuid("parentId must be a valid UUID"),
+    index: z
+      .number({ error: () => "index must be an integer" })
+      .int({ message: "index must be an integer" })
+      .min(MOVEMENT_INDEX_MIN, {
+        message: `index must be between ${MOVEMENT_INDEX_MIN} and ${MOVEMENT_INDEX_MAX}`,
+      })
+      .max(MOVEMENT_INDEX_MAX, {
+        message: `index must be between ${MOVEMENT_INDEX_MIN} and ${MOVEMENT_INDEX_MAX}`,
+      }),
+    title: z
+      .string({ error: () => "title is required" })
+      .trim()
+      .min(1, "title is required")
+      .max(200, "title must be 200 characters or less"),
+    videoUrls: videoUrlsSchema.optional(),
+  })
+  .strict();
+
+/**
+ * 楽曲マスタ作成スキーマ（判別共用体）。リクエストには `kind` を必ず含める。
+ */
+export const createPieceSchema = z.discriminatedUnion("kind", [
+  createWorkSchema,
+  createMovementSchema,
+]);
+
+// Update 用は `.partial()` で全フィールド任意化したうえで `kind` のみ literal で必須に戻す（PartialBy しない）。
+export const updateWorkSchema = z.object({
+  kind: z.literal("work"),
   title: z
     .string()
     .trim()
@@ -73,12 +113,70 @@ export const updatePieceSchema = z.object({
     .max(200, "title must be 200 characters or less")
     .optional(),
   composerId: z.uuid("composerId must be a valid UUID").optional(),
-  // 空配列 `[]` を送るとフィールド全体が削除される（`buildUpdateProps` がクリア指示として扱う）
   videoUrls: videoUrlsSchema.optional(),
   genre: z.union([pieceGenreSchema, z.literal("")]).optional(),
   era: z.union([pieceEraSchema, z.literal("")]).optional(),
   formation: z.union([pieceFormationSchema, z.literal("")]).optional(),
   region: z.union([pieceRegionSchema, z.literal("")]).optional(),
+});
+
+export const updateMovementSchema = z.object({
+  kind: z.literal("movement"),
+  parentId: z.uuid("parentId must be a valid UUID").optional(),
+  index: z
+    .number({ error: () => "index must be an integer" })
+    .int({ message: "index must be an integer" })
+    .min(MOVEMENT_INDEX_MIN, {
+      message: `index must be between ${MOVEMENT_INDEX_MIN} and ${MOVEMENT_INDEX_MAX}`,
+    })
+    .max(MOVEMENT_INDEX_MAX, {
+      message: `index must be between ${MOVEMENT_INDEX_MIN} and ${MOVEMENT_INDEX_MAX}`,
+    })
+    .optional(),
+  title: z
+    .string()
+    .trim()
+    .min(1, "title must be a non-empty string")
+    .max(200, "title must be 200 characters or less")
+    .optional(),
+  videoUrls: videoUrlsSchema.optional(),
+});
+
+export const updatePieceSchema = z.discriminatedUnion("kind", [
+  updateWorkSchema,
+  updateMovementSchema,
+]);
+
+/**
+ * Work 配下の Movement 集合を一括置換するための入力スキーマ（PR3 で実エンドポイントを追加する用途）。
+ * - `kind` は不要。常に movement 集合として扱う。
+ * - 1 Work あたりの最大件数は {@link MOVEMENTS_PER_WORK_MAX}。
+ */
+export const replaceMovementsSchema = z.object({
+  movements: z
+    .array(
+      z.object({
+        index: z
+          .number()
+          .int({ message: "index must be an integer" })
+          .min(MOVEMENT_INDEX_MIN, {
+            message: `index must be between ${MOVEMENT_INDEX_MIN} and ${MOVEMENT_INDEX_MAX}`,
+          })
+          .max(MOVEMENT_INDEX_MAX, {
+            message: `index must be between ${MOVEMENT_INDEX_MIN} and ${MOVEMENT_INDEX_MAX}`,
+          }),
+        title: z
+          .string()
+          .trim()
+          .min(1, "title must be a non-empty string")
+          .max(200, "title must be 200 characters or less"),
+        videoUrls: videoUrlsSchema.optional(),
+      }),
+    )
+    .max(
+      MOVEMENTS_PER_WORK_MAX,
+      `movements must contain at most ${MOVEMENTS_PER_WORK_MAX} entries`,
+    ),
 });
 
 const emailSchema = z.email("email must be a valid email address").trim();
