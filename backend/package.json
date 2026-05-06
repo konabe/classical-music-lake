@@ -23,7 +23,7 @@
     "@aws-sdk/lib-dynamodb": "^3.1038.0",
     "@middy/core": "^7.3.3",
     "@middy/http-cors": "^7.3.3",
-    "@middy/http-error-handler": "^7.3.3",
+    "@middy/http-error-handler": "^7.4.0",
     "@middy/http-json-body-parser": "^7.3.3",
     "@middy/http-response-serializer": "^7.3.3",
     "http-errors": "^2.0.1",
