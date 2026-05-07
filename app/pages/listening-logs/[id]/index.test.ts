@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
 import ListeningLogDetailPage from "./index.vue";
-import type { Composer, ListeningLog, Piece } from "~/types";
+import type { ListeningLog } from "~/types";
 
 vi.mock("~/composables/useAuth", () => ({
   ACCESS_TOKEN_KEY: "accessToken",
@@ -24,25 +24,6 @@ const sampleLog: ListeningLog = {
 
 const initialPieceId = sampleLog.pieceId;
 
-const sampleComposers: Composer[] = [
-  {
-    id: "composer-beethoven",
-    name: "ベートーヴェン",
-    createdAt: "2024-01-01T00:00:00.000Z",
-    updatedAt: "2024-01-01T00:00:00.000Z",
-  },
-];
-
-const samplePieces: Piece[] = [
-  {
-    id: "piece-symphony-9",
-    title: "交響曲第9番 ニ短調 Op.125",
-    composerId: "composer-beethoven",
-    createdAt: "2024-01-01T00:00:00.000Z",
-    updatedAt: "2024-01-01T00:00:00.000Z",
-  },
-];
-
 vi.mock("~/composables/useListeningLogs", () => ({
   useListeningLog: () => ({ data: ref(sampleLog), error: null, pending: false }),
   useListeningLogs: () => ({
@@ -53,27 +34,6 @@ vi.mock("~/composables/useListeningLogs", () => ({
     create: vi.fn(),
     update: vi.fn(),
     deleteLog: mockDeleteLog,
-  }),
-}));
-
-vi.mock("~/composables/useComposers", () => ({
-  useComposer: vi.fn(),
-  useComposersAll: () => ({
-    data: ref(sampleComposers),
-    error: ref(null),
-    pending: ref(false),
-    refresh: vi.fn().mockResolvedValue(undefined),
-  }),
-}));
-
-vi.mock("~/composables/usePieces", () => ({
-  usePiece: vi.fn(),
-  usePiecesPaginated: vi.fn(),
-  usePiecesAll: () => ({
-    data: ref(samplePieces),
-    error: ref(null),
-    pending: ref(false),
-    refresh: vi.fn().mockResolvedValue(undefined),
   }),
 }));
 
@@ -119,19 +79,18 @@ describe("ListeningLogDetailPage（結合）", () => {
     expect(mockDeleteLog).not.toHaveBeenCalled();
   });
 
-  describe("楽曲マスタへのリンク解決", () => {
-    it("log.pieceId が設定されていればそれを使ってリンクが表示される", async () => {
+  describe("楽曲マスタへのリンク", () => {
+    it("log.pieceId が設定されていればリンクが表示される", async () => {
       sampleLog.pieceId = "piece-from-log";
       const wrapper = await mountSuspended(ListeningLogDetailPage);
       const link = wrapper.find(".piece-link");
       expect(link.attributes("href")).toBe("/pieces/piece-from-log");
     });
 
-    it("log.pieceId が無い場合は曲名+作曲家名の一致でリンクが解決される", async () => {
+    it("log.pieceId が未設定の場合はリンクが表示されない", async () => {
       sampleLog.pieceId = undefined;
       const wrapper = await mountSuspended(ListeningLogDetailPage);
-      const link = wrapper.find(".piece-link");
-      expect(link.attributes("href")).toBe("/pieces/piece-symphony-9");
+      expect(wrapper.find(".piece-link").exists()).toBe(false);
     });
   });
 });

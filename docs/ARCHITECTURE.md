@@ -162,10 +162,7 @@ classical-music-lake/
 ブラウザ (/listening-logs/[id])
   → useListeningLog(id) で ListeningLog を取得
   → GET /prod/listening-logs/{id}
-  1. log.pieceId が設定されていれば、それを使って /pieces/{pieceId} へリンク
-  2. 設定が無い場合（旧データ互換）は usePiecesAll() / useComposersAll() を並列取得し、
-     「Piece.title === log.piece」かつ「Composer.name === log.composer」の楽曲を検索してフォールバック
-  3. どちらでも解決できなければ曲名は plain text で表示
+  → log.pieceId が設定されていれば /pieces/{pieceId} へリンク、未設定なら曲名は plain text で表示
 ```
 
 ### 視聴ログ作成・更新（pieceId 付き）

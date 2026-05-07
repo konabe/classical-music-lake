@@ -45,7 +45,6 @@ export const WithMemo: Story = {
 
 export const WithPieceLink: Story = {
   args: {
-    log: baseLog,
-    pieceId: "piece-1",
+    log: { ...baseLog, pieceId: "piece-1" },
   },
 };

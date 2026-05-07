@@ -48,9 +48,9 @@ describe("ListeningLogDetail", () => {
   });
 
   describe("楽曲リンク", () => {
-    it("pieceId が指定されると楽曲詳細へのリンクが表示される", async () => {
+    it("log.pieceId が設定されていると楽曲詳細へのリンクが表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogDetail, {
-        props: { log: sampleLog, pieceId: "piece-1" },
+        props: { log: { ...sampleLog, pieceId: "piece-1" } },
       });
       const link = wrapper.find(".piece-link");
       expect(link.exists()).toBe(true);
@@ -58,7 +58,7 @@ describe("ListeningLogDetail", () => {
       expect(link.text()).toContain("交響曲第9番 ニ短調 Op.125");
     });
 
-    it("pieceId が未指定だとリンクは表示されずテキストとして表示される", async () => {
+    it("log.pieceId が未設定だとリンクは表示されずテキストとして表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogDetail, {
         props: { log: sampleLog },
       });

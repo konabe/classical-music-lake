@@ -4,7 +4,6 @@ import type { ListeningLog } from "~/types";
 
 const props = defineProps<{
   log: ListeningLog;
-  pieceId?: string;
 }>();
 
 const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
@@ -25,7 +24,7 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
       </p>
 
       <h1 class="log-title">
-        <NuxtLink v-if="pieceId" :to="`/pieces/${pieceId}`" class="piece-link">
+        <NuxtLink v-if="log.pieceId" :to="`/pieces/${log.pieceId}`" class="piece-link">
           {{ log.piece }}
         </NuxtLink>
         <template v-else>{{ log.piece }}</template>
