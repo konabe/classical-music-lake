@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Composer, CreatePieceInput } from "~/types";
+import type { Composer, CreatePieceInput, CreateWorkInput } from "~/types";
 import { PIECE_ERAS, PIECE_FORMATIONS, PIECE_GENRES, PIECE_REGIONS } from "~/types";
 import { toSelectOptions } from "~/utils/select-options";
 
@@ -15,7 +15,7 @@ const VIDEO_URLS_MAX = 10;
 
 const props = withDefaults(
   defineProps<{
-    initialValues?: Partial<CreatePieceInput>;
+    initialValues?: Partial<CreateWorkInput>;
     submitLabel?: string;
     composers?: Composer[];
     composersPending?: boolean;
@@ -84,17 +84,17 @@ function removeVideoUrl(index: number) {
 
 function handleSubmit() {
   const trimmedVideoUrls = form.videoUrls.map((url) => url.trim()).filter((url) => url.length > 0);
-  emit("submit", {
+  const values: CreateWorkInput = {
+    kind: "work",
     title: form.title,
     composerId: form.composerId,
     videoUrls: trimmedVideoUrls.length === 0 ? [] : trimmedVideoUrls,
-    genre: (form.genre === "" ? undefined : form.genre) as CreatePieceInput["genre"],
-    era: (form.era === "" ? undefined : form.era) as CreatePieceInput["era"],
-    formation: (form.formation === ""
-      ? undefined
-      : form.formation) as CreatePieceInput["formation"],
-    region: (form.region === "" ? undefined : form.region) as CreatePieceInput["region"],
-  });
+    genre: (form.genre === "" ? undefined : form.genre) as CreateWorkInput["genre"],
+    era: (form.era === "" ? undefined : form.era) as CreateWorkInput["era"],
+    formation: (form.formation === "" ? undefined : form.formation) as CreateWorkInput["formation"],
+    region: (form.region === "" ? undefined : form.region) as CreateWorkInput["region"],
+  };
+  emit("submit", values);
 }
 </script>
 

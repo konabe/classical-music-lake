@@ -32,6 +32,26 @@ export const PIECE_REGIONS = [
 ] as const;
 export type PieceRegion = (typeof PIECE_REGIONS)[number];
 
+/**
+ * 楽曲マスタ（コンポジット）の種別。
+ * - "work": 親楽曲（Work）。composerId・カテゴリを持つ独立した楽曲レコード。
+ * - "movement": 楽章（Movement）。Work 配下の子要素で `parentId`・`index` を持つ。
+ */
+export const PIECE_KINDS = ["work", "movement"] as const;
+export type PieceKind = (typeof PIECE_KINDS)[number];
+
+/**
+ * 1 つの Work に紐付けられる Movement の最大数。
+ * UI / バリデーションの双方で参照する。
+ */
+export const MOVEMENTS_PER_WORK_MAX = 64;
+
+/**
+ * Movement の `index` 値（演奏順）の許容範囲。0 始まり。
+ */
+export const MOVEMENT_INDEX_MIN = 0;
+export const MOVEMENT_INDEX_MAX = 999;
+
 // ページネーション設定（楽曲マスタ一覧）
 export const PIECES_PAGE_SIZE_MIN = 1;
 export const PIECES_PAGE_SIZE_MAX = 100;

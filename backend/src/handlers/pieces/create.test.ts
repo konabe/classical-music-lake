@@ -12,11 +12,16 @@ import {
 } from "../../test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
+  saveWork: vi.fn(),
+  saveWorkWithOptimisticLock: vi.fn(),
+  removeWorkCascade: vi.fn(),
+  findRootById: vi.fn(),
+  findRootPage: vi.fn(),
   findById: vi.fn(),
-  findAll: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
+  saveMovement: vi.fn(),
+  saveMovementWithOptimisticLock: vi.fn(),
+  removeMovement: vi.fn(),
+  replaceMovements: vi.fn(),
 }));
 
 vi.mock("../../repositories/piece-repository", () => ({
@@ -26,6 +31,7 @@ vi.mock("../../repositories/piece-repository", () => ({
 }));
 
 const validInput = {
+  kind: "work" as const,
   title: "交響曲第9番",
   composerId: TEST_COMPOSER_ID,
 };
@@ -59,7 +65,7 @@ describe("POST /pieces (create)", () => {
   it("title がない場合は 400 を返す", async () => {
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
-        body: JSON.stringify({ composer: "ベートーヴェン" }),
+        body: JSON.stringify({ kind: "work", composerId: TEST_COMPOSER_ID }),
         httpMethod: "POST",
         path: "/pieces",
       }),
@@ -104,7 +110,7 @@ describe("POST /pieces (create)", () => {
   it("composerId がない場合は 400 を返す", async () => {
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
-        body: JSON.stringify({ title: "交響曲第9番" }),
+        body: JSON.stringify({ kind: "work", title: "交響曲第9番" }),
         httpMethod: "POST",
         path: "/pieces",
       }),
@@ -147,7 +153,7 @@ describe("POST /pieces (create)", () => {
   });
 
   it("videoUrls なしで正常に作成して 201 を返す", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.saveWork.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -160,6 +166,7 @@ describe("POST /pieces (create)", () => {
     expect(result?.statusCode).toBe(201);
 
     const body = JSON.parse(result?.body ?? "{}");
+    expect(body.kind).toBe("work");
     expect(body.id).toBeDefined();
     expect(body.title).toBe("交響曲第9番");
     expect(body.composerId).toBe(TEST_COMPOSER_ID);
@@ -169,7 +176,7 @@ describe("POST /pieces (create)", () => {
   });
 
   it("有効な videoUrls を指定して作成できる", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.saveWork.mockResolvedValueOnce(undefined);
     const urls = [
       "https://www.youtube.com/watch?v=abc123",
       "https://www.youtube.com/watch?v=def456",
@@ -189,7 +196,7 @@ describe("POST /pieces (create)", () => {
   });
 
   it("作成アイテムに UUID が付与される", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.saveWork.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -208,7 +215,7 @@ describe("POST /pieces (create)", () => {
     vi.useFakeTimers();
     vi.setSystemTime(now);
 
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.saveWork.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -226,7 +233,7 @@ describe("POST /pieces (create)", () => {
 
   describe("カテゴリフィールド", () => {
     it("全カテゴリを指定して作成できる", async () => {
-      mockRepo.save.mockResolvedValueOnce();
+      mockRepo.saveWork.mockResolvedValueOnce(undefined);
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({
@@ -251,7 +258,7 @@ describe("POST /pieces (create)", () => {
     });
 
     it("カテゴリなしで作成できる（後方互換性）", async () => {
-      mockRepo.save.mockResolvedValueOnce();
+      mockRepo.saveWork.mockResolvedValueOnce(undefined);
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify(validInput),
@@ -270,7 +277,7 @@ describe("POST /pieces (create)", () => {
     });
 
     it("一部のカテゴリのみ指定して作成できる", async () => {
-      mockRepo.save.mockResolvedValueOnce();
+      mockRepo.saveWork.mockResolvedValueOnce(undefined);
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, genre: "協奏曲", era: "ロマン派" }),
@@ -341,8 +348,54 @@ describe("POST /pieces (create)", () => {
     });
   });
 
+  describe("Movement 作成", () => {
+    it("kind=movement で作成して 201 を返す", async () => {
+      mockRepo.saveMovement.mockResolvedValueOnce(undefined);
+      const parentId = "00000000-0000-4000-8000-0000000000aa";
+      const result = await handler(
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify({
+            kind: "movement",
+            parentId,
+            index: 0,
+            title: "第1楽章",
+          }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback,
+      );
+      expect(result?.statusCode).toBe(201);
+      const body = JSON.parse(result?.body ?? "{}");
+      expect(body.kind).toBe("movement");
+      expect(body.parentId).toBe(parentId);
+      expect(body.index).toBe(0);
+      expect(body.title).toBe("第1楽章");
+    });
+
+    it("kind=movement で composerId を指定すると 400（判別失敗）", async () => {
+      const result = await handler(
+        makeAdminEvent(TEST_USER_ID, {
+          body: JSON.stringify({
+            kind: "movement",
+            parentId: "00000000-0000-4000-8000-0000000000aa",
+            index: 0,
+            title: "第1楽章",
+            composerId: TEST_COMPOSER_ID,
+          }),
+          httpMethod: "POST",
+          path: "/pieces",
+        }),
+        mockContext,
+        mockCallback,
+      );
+      expect(result?.statusCode).toBe(400);
+    });
+  });
+
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.save.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.saveWork.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -368,7 +421,7 @@ describe("POST /pieces (create)", () => {
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockRepo.save).not.toHaveBeenCalled();
+      expect(mockRepo.saveWork).not.toHaveBeenCalled();
     });
 
     it("認証クレームがない場合は 403 を返し、データを保存しない", async () => {
@@ -379,7 +432,7 @@ describe("POST /pieces (create)", () => {
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockRepo.save).not.toHaveBeenCalled();
+      expect(mockRepo.saveWork).not.toHaveBeenCalled();
     });
 
     it("cognito:groups がカンマ区切り文字列で admin を含まない場合は 403", async () => {
@@ -393,11 +446,11 @@ describe("POST /pieces (create)", () => {
         mockCallback,
       );
       expect(result?.statusCode).toBe(403);
-      expect(mockRepo.save).not.toHaveBeenCalled();
+      expect(mockRepo.saveWork).not.toHaveBeenCalled();
     });
 
     it("cognito:groups がカンマ区切り文字列で admin を含む場合は 201", async () => {
-      mockRepo.save.mockResolvedValueOnce();
+      mockRepo.saveWork.mockResolvedValueOnce(undefined);
       const result = await handler(
         makeAuthEvent(
           TEST_USER_ID,

@@ -192,12 +192,11 @@ describe("DynamoDB 統合テスト", () => {
     });
   });
 
-  describe("update: GetCommand（userId 確認）→ GetCommand（楽観的ロック）→ PutCommand の順で呼ばれる", () => {
+  describe("update: GetCommand（userId 確認）→ PutCommand（楽観的ロック）の順で呼ばれる", () => {
     it("既存アイテム取得後に更新アイテムを保存する", async () => {
       mockSend
         .mockResolvedValueOnce({ Item: testLog }) // GetCommand (userId 確認)
-        .mockResolvedValueOnce({ Item: testLog }) // GetCommand (updateItem 内)
-        .mockResolvedValueOnce({}); // PutCommand
+        .mockResolvedValueOnce({}); // PutCommand (saveWithOptimisticLock)
 
       await updateHandler(
         makeEvent({
@@ -211,7 +210,7 @@ describe("DynamoDB 統合テスト", () => {
         mockCallback,
       );
 
-      expect(GetCommand).toHaveBeenCalledTimes(2);
+      expect(GetCommand).toHaveBeenCalledTimes(1);
       expect(PutCommand).toHaveBeenCalledTimes(1);
 
       const putArg = vi.mocked(PutCommand).mock.calls[0][0];

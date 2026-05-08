@@ -156,6 +156,28 @@ classical-music-lake/
   → ブラウザに返却
 ```
 
+### 視聴ログ詳細取得（楽曲マスタへのリンク付き）
+
+```text
+ブラウザ (/listening-logs/[id])
+  → useListeningLog(id) で ListeningLog を取得
+  → GET /prod/listening-logs/{id}
+  → log.pieceId が設定されていれば /pieces/{pieceId} へリンク、未設定なら曲名は plain text で表示
+```
+
+### 視聴ログ作成・更新（pieceId 付き）
+
+```text
+楽曲マスタから記録（QuickLogForm / 楽曲詳細ページ）:
+  → POST /prod/listening-logs に pieceId を含めて送信（楽曲マスタの id を信頼ソースとして固定）
+
+自由入力フォーム（/listening-logs/new、/listening-logs/[id]/edit）:
+  → 「楽曲マスタから選択」ドロップダウンを選ぶと pieceId が自動設定され、曲名・作曲家名も同期される
+  → 「選択しない」を選ぶと曲名・作曲家名はクリアされ、pieceId も undefined となる
+  → 編集時に既存の pieceId を解除したい場合は、フォーム側で pieceId="" として送信し、
+    バックエンドの buildUpdateProps が DynamoDB 属性を REMOVE する
+```
+
 ### 視聴ログ検索フィルタ（クライアントサイド）
 
 ```text
@@ -413,3 +435,21 @@ classical-music-lake/
 
 - **理由**: フロントエンド（`types/`）とバックエンド（`backend/src/types/`）が独立したパッケージ構成
 - **トレードオフ**: 重複するが、依存関係を分離することでデプロイの独立性を確保
+
+### 楽曲はコンポジット（Work / Movement）
+
+- **状態**: PR1（Issue #640）でドメインモデルを Composite に再設計
+- **構造**:
+  - `PieceComponent`（抽象基底クラス）: `kind: "work" | "movement"`、`title: PieceTitle`、`videoUrls?: Url[]` を共通プロパティとして公開
+  - `PieceWorkEntity extends PieceComponent`: 親楽曲。`composerId: ComposerId` と楽曲カテゴリ（`genre` / `era` / `formation` / `region`）を持つ
+  - `PieceMovementEntity extends PieceComponent`: 楽章。`parentId: PieceId` で Work を参照、`index: MovementIndex`（0..999）で演奏順を表す
+- **リポジトリ I/F**: `PieceRepository` は **root（Work）操作と子（Movement）操作を明確に分ける**
+  - root 限定列挙: `findRootById` / `findRootPage` は Work のみを返す（Movement は除外）
+  - kind を問わず単体取得: `findById(id)` は Work / Movement のいずれも返す（更新フローで使用）
+  - Movement 一覧は **アグリゲートとして root を取得する API**（PR2 で追加予定。Work と
+    Movements をまとめて返す）に集約する。子要素単独の列挙クエリ（`findChildren`）は
+    持たない（独立に呼ぶユースケースが無いため）
+  - カスケード: `removeWorkCascade(id)` は Work 削除時に配下 Movement もまとめて削除する想定
+  - `replaceMovements(workId, movements)` で Movement 集合をアトミック置換（PR3 で実装）
+- **バリデーション**: `createPieceSchema` / `updatePieceSchema` は `z.discriminatedUnion("kind", [...])` で Work / Movement を判別する。両 Work / Movement のオブジェクトは `.strict()` で未知フィールドを拒否し、Work に `parentId` / `index` を、Movement に `composerId` / カテゴリ系を含めると 400 を返す
+- **PR1 時点の挙動**: 既存 API のレスポンスに `kind: "work"` が増える以外は互換。Movement 専用エンドポイントは追加していない。`DynamoDBPieceRepository` は既存レコード（`kind` を持たない）を読み込み時に `kind: "work"` で正規化することで後方互換を保つ。Movement の永続化は PR2、Movement 集合の REST エンドポイント追加は PR3 で行う

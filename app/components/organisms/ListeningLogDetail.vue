@@ -23,7 +23,12 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
         {{ log.composer }}
       </p>
 
-      <h1 class="log-title">{{ log.piece }}</h1>
+      <h1 class="log-title">
+        <NuxtLink v-if="log.pieceId" :to="`/pieces/${log.pieceId}`" class="piece-link">
+          {{ log.piece }}
+        </NuxtLink>
+        <template v-else>{{ log.piece }}</template>
+      </h1>
 
       <div class="log-rating-row">
         <RatingDisplay :rating="log.rating" />
@@ -86,6 +91,20 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
 }
 :root.dark .log-composer {
   color: var(--color-accent);
+}
+
+.piece-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-hairline);
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.piece-link:hover {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
 }
 
 .log-title {
