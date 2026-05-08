@@ -28,7 +28,7 @@
     "@middy/http-response-serializer": "^7.4.0",
     "http-errors": "^2.0.1",
     "http-status-codes": "^2.3.0",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@stryker-mutator/core": "catalog:",
