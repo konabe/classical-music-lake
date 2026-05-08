@@ -41,6 +41,7 @@ export interface ListeningLog {
   listenedAt: string; // ISO 8601 日時
   composer: string; // 作曲家
   piece: string; // 曲名
+  pieceId?: string; // 楽曲マスタ（Piece）の id 参照（任意。未指定時は曲名+作曲家名でフォールバック解決）
   rating: Rating; // 評価 1〜5
   isFavorite: boolean; // お気に入りフラグ
   memo?: string; // 感想・メモ
@@ -49,6 +50,7 @@ export interface ListeningLog {
 }
 
 export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
+// `pieceId` は更新時に空文字 `""` を送ると当該フィールドが削除される（`buildUpdateProps` の挙動）。
 export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
 
 // 楽曲マスタ（コンポジット）

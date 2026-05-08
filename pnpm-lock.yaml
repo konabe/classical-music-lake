@@ -172,11 +172,11 @@ importers:
         specifier: ^7.3.3
         version: 7.3.3
       '@middy/http-json-body-parser':
-        specifier: ^7.3.3
-        version: 7.3.3
+        specifier: ^7.4.0
+        version: 7.4.0
       '@middy/http-response-serializer':
-        specifier: ^7.3.3
-        version: 7.3.3
+        specifier: ^7.4.0
+        version: 7.4.0
       http-errors:
         specifier: ^2.0.1
         version: 2.0.1
@@ -1473,16 +1473,20 @@ packages:
     resolution: {integrity: sha512-9BiuuhraTgPGoRpN8dzGz6aK/tK71+9N3e6XRCCSHFXTc7At108j+GxFRf0KJs30BHAQyHJVdS3fZlqYhBWESg==}
     engines: {node: '>=22'}
 
-  '@middy/http-json-body-parser@7.3.3':
-    resolution: {integrity: sha512-C8WeWdCjYIJoMegUmxo/n1D3ba9xkmvcW8n7yHW3BEsOjjHvugupmSqGVPnlM/ck+3FmgX13VefjVFcZ4C6okg==}
+  '@middy/http-json-body-parser@7.4.0':
+    resolution: {integrity: sha512-IrnDgOjLNtQat9CH4OvzTY4nA5bjY13JoxMRaapWuWj8jPlKtFm9eXEPkYSGdruU7Xtnb1xHg8edo+888OykKQ==}
     engines: {node: '>=22'}
 
-  '@middy/http-response-serializer@7.3.3':
-    resolution: {integrity: sha512-akIUWCEmT76DlIpoZVbaSydcvGQu+UoI9mSEZxovaTsF9zh27QQmjmKEEXgNx7JLTTh+Qx9vNevPCoJ1ejvsDQ==}
+  '@middy/http-response-serializer@7.4.0':
+    resolution: {integrity: sha512-fi7MKFJ74jB4pxCQQrF+zN0/+yT9hPW23M/ju0akrwXEJKVA+syA/LuLZZ7svzFhY3E6v3YeNWeqy3GkwcalNw==}
     engines: {node: '>=22'}
 
   '@middy/util@7.3.3':
     resolution: {integrity: sha512-BR6zrbF3utbVobZfFa1eEbOu7u51uzrtQVJCAS3So/5dzlPF/8Q9Ediwu4lV8y1gLGzWAuhbZZL8JBWX6O4Bcg==}
+    engines: {node: '>=22'}
+
+  '@middy/util@7.4.0':
+    resolution: {integrity: sha512-TeXuwTICbLBQqiP/l54e8evbd9v7n9Mj/pMtoG2mlnfiEQ2W7uuRcN5Xq3IzcJrBD73ef4USs6eANGFkYOPgCg==}
     engines: {node: '>=22'}
 
   '@napi-rs/wasm-runtime@0.2.12':
@@ -2404,6 +2408,12 @@ packages:
 
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
+
+  '@simple-git/args-pathspec@1.0.3':
+    resolution: {integrity: sha512-ngJMaHlsWDTfjyq9F3VIQ8b7NXbBLq5j9i5bJ6XLYtD6qlDXT7fdKY2KscWWUF8t18xx052Y/PUO1K1TRc9yKA==}
+
+  '@simple-git/argv-parser@1.1.1':
+    resolution: {integrity: sha512-Q9lBcfQ+VQCpQqGJFHe5yooOS5hGdLFFbJ5R+R5aDsnkPCahtn1hSkMcORX65J2Z5lxSkD0lQorMsncuBQxYUw==}
 
   '@simple-libs/child-process-utils@1.0.2':
     resolution: {integrity: sha512-/4R8QKnd/8agJynkNdJmNw2MBxuFTRcNFnE5Sg/G+jkSsV8/UBgULMzhizWWW42p8L5H7flImV2ATi79Ove2Tw==}
@@ -6103,8 +6113,8 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  simple-git@3.33.0:
-    resolution: {integrity: sha512-D4V/tGC2sjsoNhoMybKyGoE+v8A60hRawKQ1iFRA1zwuDgGZCBJ4ByOzZ5J8joBbi4Oam0qiPH+GhzmSBwbJng==}
+  simple-git@3.36.0:
+    resolution: {integrity: sha512-cGQjLjK8bxJw4QuYT7gxHw3/IouVESbhahSsHrX97MzCL1gu2u7oy38W6L2ZIGECEfIBG4BabsWDPjBxJENv9Q==}
 
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
@@ -8679,15 +8689,17 @@ snapshots:
     dependencies:
       '@middy/util': 7.3.3
 
-  '@middy/http-json-body-parser@7.3.3':
+  '@middy/http-json-body-parser@7.4.0':
     dependencies:
-      '@middy/util': 7.3.3
+      '@middy/util': 7.4.0
 
-  '@middy/http-response-serializer@7.3.3':
+  '@middy/http-response-serializer@7.4.0':
     dependencies:
-      '@middy/util': 7.3.3
+      '@middy/util': 7.4.0
 
   '@middy/util@7.3.3': {}
+
+  '@middy/util@7.4.0': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -8810,7 +8822,7 @@ snapshots:
       perfect-debounce: 2.1.0
       pkg-types: 2.3.0
       semver: 7.7.4
-      simple-git: 3.33.0
+      simple-git: 3.36.0
       sirv: 3.0.2
       structured-clone-es: 2.0.0
       tinyglobby: 0.2.15
@@ -9735,6 +9747,12 @@ snapshots:
     optional: true
 
   '@sec-ant/readable-stream@0.4.1': {}
+
+  '@simple-git/args-pathspec@1.0.3': {}
+
+  '@simple-git/argv-parser@1.1.1':
+    dependencies:
+      '@simple-git/args-pathspec': 1.0.3
 
   '@simple-libs/child-process-utils@1.0.2':
     dependencies:
@@ -14051,10 +14069,12 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-git@3.33.0:
+  simple-git@3.36.0:
     dependencies:
       '@kwsites/file-exists': 1.1.1
       '@kwsites/promise-deferred': 1.1.1
+      '@simple-git/args-pathspec': 1.0.3
+      '@simple-git/argv-parser': 1.1.1
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
