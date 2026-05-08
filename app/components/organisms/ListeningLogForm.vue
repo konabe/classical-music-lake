@@ -31,24 +31,36 @@ const form = reactive<CreateListeningLogInput>({
       : toDatetimeLocal(props.initialValues.listenedAt),
   composer: props.initialValues?.composer ?? "",
   piece: props.initialValues?.piece ?? "",
+  pieceId: props.initialValues?.pieceId,
   rating: props.initialValues?.rating ?? 3,
   isFavorite: props.initialValues?.isFavorite ?? false,
   memo: props.initialValues?.memo ?? "",
 });
 
+const selectedPieceId = ref<string>(props.initialValues?.pieceId ?? "");
 const selectedVideoUrl = ref<string | undefined>(undefined);
 
 function handlePieceSelect(e: Event) {
   const id = (e.target as HTMLSelectElement).value;
+  selectedPieceId.value = id;
   const found = pieces.value?.find((p) => p.id === id);
   form.piece = found?.title ?? "";
   form.composer =
     found?.composerId !== undefined ? (composerNameById.value[found.composerId] ?? "") : "";
+  form.pieceId = found?.id;
   selectedVideoUrl.value = found?.videoUrls?.[0];
 }
 
 function handleSubmit() {
-  emit("submit", { ...form, listenedAt: new Date(form.listenedAt).toISOString() });
+  // 既存ログ編集時に「選択しない」へ戻した場合は空文字でサーバ側に削除指示を送る
+  const hadInitialPieceId =
+    props.initialValues?.pieceId !== undefined && props.initialValues.pieceId !== "";
+  const pieceId = form.pieceId === undefined && hadInitialPieceId ? "" : form.pieceId;
+  emit("submit", {
+    ...form,
+    pieceId,
+    listenedAt: new Date(form.listenedAt).toISOString(),
+  });
 }
 </script>
 
@@ -68,6 +80,7 @@ function handleSubmit() {
       <div class="select-wrap">
         <select
           id="piece-select"
+          :value="selectedPieceId"
           class="native-select"
           :disabled="piecesPending"
           @change="handlePieceSelect"

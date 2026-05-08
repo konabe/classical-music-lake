@@ -27,6 +27,7 @@ async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: s
     listenedAt: new Date().toISOString(),
     composer: composerName.value,
     piece: piece.value.title,
+    pieceId: piece.value.id,
     userId: null,
     ...values,
   });
