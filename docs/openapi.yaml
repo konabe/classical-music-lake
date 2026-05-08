@@ -146,6 +146,11 @@ components:
           type: string
           description: 曲名
           example: 交響曲第9番
+        pieceId:
+          type: string
+          format: uuid
+          description: 楽曲マスタの id 参照（任意）
+          example: 550e8400-e29b-41d4-a716-446655440000
         performer:
           type: string
           description: 演奏家・楽団名
@@ -194,6 +199,10 @@ components:
           type: string
         piece:
           type: string
+        pieceId:
+          type: string
+          format: uuid
+          description: 楽曲マスタの id 参照（任意）
         performer:
           type: string
         conductor:
@@ -218,6 +227,13 @@ components:
           type: string
         piece:
           type: string
+        pieceId:
+          description: 楽曲マスタの id 参照。空文字 `""` を送ると当該フィールドが削除される。
+          oneOf:
+            - type: string
+              format: uuid
+            - type: string
+              enum: [""]
         performer:
           type: string
         conductor:
