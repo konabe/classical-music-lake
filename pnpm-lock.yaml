@@ -172,8 +172,8 @@ importers:
         specifier: ^7.3.3
         version: 7.3.3
       '@middy/http-json-body-parser':
-        specifier: ^7.3.3
-        version: 7.3.3
+        specifier: ^7.4.0
+        version: 7.4.0
       '@middy/http-response-serializer':
         specifier: ^7.4.0
         version: 7.4.0
@@ -1473,8 +1473,8 @@ packages:
     resolution: {integrity: sha512-9BiuuhraTgPGoRpN8dzGz6aK/tK71+9N3e6XRCCSHFXTc7At108j+GxFRf0KJs30BHAQyHJVdS3fZlqYhBWESg==}
     engines: {node: '>=22'}
 
-  '@middy/http-json-body-parser@7.3.3':
-    resolution: {integrity: sha512-C8WeWdCjYIJoMegUmxo/n1D3ba9xkmvcW8n7yHW3BEsOjjHvugupmSqGVPnlM/ck+3FmgX13VefjVFcZ4C6okg==}
+  '@middy/http-json-body-parser@7.4.0':
+    resolution: {integrity: sha512-IrnDgOjLNtQat9CH4OvzTY4nA5bjY13JoxMRaapWuWj8jPlKtFm9eXEPkYSGdruU7Xtnb1xHg8edo+888OykKQ==}
     engines: {node: '>=22'}
 
   '@middy/http-response-serializer@7.4.0':
@@ -8689,9 +8689,9 @@ snapshots:
     dependencies:
       '@middy/util': 7.3.3
 
-  '@middy/http-json-body-parser@7.3.3':
+  '@middy/http-json-body-parser@7.4.0':
     dependencies:
-      '@middy/util': 7.3.3
+      '@middy/util': 7.4.0
 
   '@middy/http-response-serializer@7.4.0':
     dependencies:
