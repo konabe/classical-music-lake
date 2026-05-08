@@ -35,7 +35,7 @@ const sampleComposers: Composer[] = [
 
 const sampleLogs: ListeningLog[] = [
   {
-    id: "log-pieceId-match",
+    id: "log-pieceId-match-1",
     userId: "user-1",
     listenedAt: "2024-04-01T10:00:00.000Z",
     composer: "別の作曲家", // composer 文字列が違っても pieceId 一致なので含まれる
@@ -45,6 +45,18 @@ const sampleLogs: ListeningLog[] = [
     isFavorite: false,
     createdAt: "2024-04-01T10:00:00.000Z",
     updatedAt: "2024-04-01T10:00:00.000Z",
+  },
+  {
+    id: "log-pieceId-match-2",
+    userId: "user-1",
+    listenedAt: "2024-02-01T10:00:00.000Z",
+    composer: "ベートーヴェン",
+    piece: "交響曲第9番",
+    pieceId: PIECE_ID,
+    rating: 3,
+    isFavorite: false,
+    createdAt: "2024-02-01T10:00:00.000Z",
+    updatedAt: "2024-02-01T10:00:00.000Z",
   },
   {
     id: "log-pieceId-mismatch",
@@ -59,26 +71,15 @@ const sampleLogs: ListeningLog[] = [
     updatedAt: "2024-03-01T10:00:00.000Z",
   },
   {
-    id: "log-string-fallback",
+    id: "log-no-pieceId",
     userId: "user-1",
-    listenedAt: "2024-02-01T10:00:00.000Z",
+    listenedAt: "2024-02-15T10:00:00.000Z",
     composer: "ベートーヴェン",
-    piece: "交響曲第9番",
+    piece: "交響曲第9番", // 文字列が一致しても pieceId が無いので除外（フォールバックなし）
     rating: 3,
     isFavorite: false,
-    createdAt: "2024-02-01T10:00:00.000Z",
-    updatedAt: "2024-02-01T10:00:00.000Z",
-  },
-  {
-    id: "log-no-match",
-    userId: "user-1",
-    listenedAt: "2024-01-01T10:00:00.000Z",
-    composer: "モーツァルト",
-    piece: "魔笛",
-    rating: 2,
-    isFavorite: false,
-    createdAt: "2024-01-01T10:00:00.000Z",
-    updatedAt: "2024-01-01T10:00:00.000Z",
+    createdAt: "2024-02-15T10:00:00.000Z",
+    updatedAt: "2024-02-15T10:00:00.000Z",
   },
 ];
 
@@ -154,14 +155,15 @@ describe("PieceDetailPage", () => {
   });
 
   describe("鑑賞記録一覧の絞り込み", () => {
-    it("pieceId が一致するログを含む（composer 文字列が違っても）", async () => {
+    it("pieceId が一致するログを含む（composer/piece 文字列が違っても）", async () => {
       listeningLogsData.value = sampleLogs;
       const wrapper = await mountSuspended(PieceDetailPage);
       await flushPromises();
       const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
       const logs = template.props("listeningLogs") as ListeningLog[];
       const ids = logs.map((l) => l.id);
-      expect(ids).toContain("log-pieceId-match");
+      expect(ids).toContain("log-pieceId-match-1");
+      expect(ids).toContain("log-pieceId-match-2");
     });
 
     it("pieceId が異なるログは文字列が一致しても除外する", async () => {
@@ -174,24 +176,14 @@ describe("PieceDetailPage", () => {
       expect(ids).not.toContain("log-pieceId-mismatch");
     });
 
-    it("pieceId が未設定のログは composer/piece 文字列マッチで含む", async () => {
+    it("pieceId が未設定のログは文字列が一致しても除外する（フォールバックなし）", async () => {
       listeningLogsData.value = sampleLogs;
       const wrapper = await mountSuspended(PieceDetailPage);
       await flushPromises();
       const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
       const logs = template.props("listeningLogs") as ListeningLog[];
       const ids = logs.map((l) => l.id);
-      expect(ids).toContain("log-string-fallback");
-    });
-
-    it("pieceId 未設定かつ文字列も一致しないログは除外する", async () => {
-      listeningLogsData.value = sampleLogs;
-      const wrapper = await mountSuspended(PieceDetailPage);
-      await flushPromises();
-      const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
-      const logs = template.props("listeningLogs") as ListeningLog[];
-      const ids = logs.map((l) => l.id);
-      expect(ids).not.toContain("log-no-match");
+      expect(ids).not.toContain("log-no-pieceId");
     });
 
     it("listenedAt 降順でソートされる", async () => {
@@ -201,7 +193,7 @@ describe("PieceDetailPage", () => {
       const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
       const logs = template.props("listeningLogs") as ListeningLog[];
       const ids = logs.map((l) => l.id);
-      expect(ids).toEqual(["log-pieceId-match", "log-string-fallback"]);
+      expect(ids).toEqual(["log-pieceId-match-1", "log-pieceId-match-2"]);
     });
 
     it("未認証時は鑑賞記録を取得せず空配列を渡す", async () => {

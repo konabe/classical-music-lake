@@ -31,15 +31,8 @@ const listeningLogs = computed<ListeningLog[]>(() => {
   }
   const all = listeningLogsResource.data.value ?? [];
   const pieceId = piece.value.id;
-  const title = piece.value.title;
-  const composer = composerName.value;
   return all
-    .filter((log) => {
-      if (log.pieceId !== undefined) {
-        return log.pieceId === pieceId;
-      }
-      return log.piece === title && log.composer === composer;
-    })
+    .filter((log) => log.pieceId === pieceId)
     .slice()
     .sort((a, b) => b.listenedAt.localeCompare(a.listenedAt));
 });

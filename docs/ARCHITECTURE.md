@@ -299,12 +299,9 @@ classical-music-lake/
 ```text
 ブラウザ (/pieces/[id])
   → usePiece(id) で Piece を取得（認証不要）
-  → useComposersAll() で作曲家マスタを取得し composerName を解決
   → useAuth().isAuthenticated() が true の場合のみ:
       → useListeningLogs() で自ユーザーの鑑賞記録を全件取得
-      → log.pieceId が設定されていれば log.pieceId === piece.id で絞り込み、
-        未設定の旧データは log.composer === composerName && log.piece === piece.title に
-        フォールバックしてクライアント絞り込み
+      → log.pieceId === piece.id で絞り込み（pieceId 未設定の旧データは対象外）
       → listenedAt 降順にソート
   → PieceDetailTemplate で「Listening records」セクションに表示し、各エントリは
     /listening-logs/{id} へリンク
