@@ -218,8 +218,8 @@ importers:
   cdk:
     dependencies:
       aws-cdk-lib:
-        specifier: ^2.251.0
-        version: 2.251.0(constructs@10.6.0)
+        specifier: ^2.252.0
+        version: 2.253.0(constructs@10.6.0)
       constructs:
         specifier: ^10.6.0
         version: 10.6.0
@@ -3401,8 +3401,8 @@ packages:
     peerDependencies:
       postcss: ^8.1.0
 
-  aws-cdk-lib@2.251.0:
-    resolution: {integrity: sha512-H1Jfz2Oyejn+yG24i+By9fZpYfg+E3h1XnFCF2wnt/MyGOTIePRph7MRGkX73ap10ERSpmd0Ly58OLVykFoSQA==}
+  aws-cdk-lib@2.253.0:
+    resolution: {integrity: sha512-36nNLOz0WJDWraEzU7zlmYY8nsM+YEroBWpRZ84LZPaeEe4Ozy4RhBvdCz/jIGYtLbtiFnfk+przNW2NNRjz5Q==}
     engines: {node: '>= 20.0.0'}
     peerDependencies:
       constructs: ^10.5.0
@@ -11108,7 +11108,7 @@ snapshots:
       postcss: 8.5.10
       postcss-value-parser: 4.2.0
 
-  aws-cdk-lib@2.251.0(constructs@10.6.0):
+  aws-cdk-lib@2.253.0(constructs@10.6.0):
     dependencies:
       '@aws-cdk/asset-awscli-v1': 2.2.273
       '@aws-cdk/asset-node-proxy-agent-v6': 2.1.1
