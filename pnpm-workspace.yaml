@@ -22,6 +22,7 @@ overrides:
   h3-next: "npm:h3@2.0.1-rc.16"
   undici: ^6.24.0
   fast-xml-parser: 5.5.6
+  simple-git: ^3.36.0
 
 onlyBuiltDependencies:
   - "@parcel/watcher"

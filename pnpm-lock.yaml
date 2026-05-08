@@ -169,14 +169,14 @@ importers:
         specifier: ^7.3.3
         version: 7.3.3
       '@middy/http-error-handler':
-        specifier: ^7.3.3
-        version: 7.3.3
+        specifier: ^7.4.0
+        version: 7.4.0
       '@middy/http-json-body-parser':
-        specifier: ^7.3.3
-        version: 7.3.3
+        specifier: ^7.4.0
+        version: 7.4.0
       '@middy/http-response-serializer':
-        specifier: ^7.3.3
-        version: 7.3.3
+        specifier: ^7.4.0
+        version: 7.4.0
       http-errors:
         specifier: ^2.0.1
         version: 2.0.1
@@ -184,8 +184,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       zod:
-        specifier: ^4.3.6
-        version: 4.3.6
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@stryker-mutator/core':
         specifier: 'catalog:'
@@ -218,8 +218,8 @@ importers:
   cdk:
     dependencies:
       aws-cdk-lib:
-        specifier: ^2.251.0
-        version: 2.251.0(constructs@10.6.0)
+        specifier: ^2.252.0
+        version: 2.253.0(constructs@10.6.0)
       constructs:
         specifier: ^10.6.0
         version: 10.6.0
@@ -228,8 +228,8 @@ importers:
         specifier: 'catalog:'
         version: 25.6.0
       aws-cdk:
-        specifier: ^2.1119.0
-        version: 2.1119.0
+        specifier: ^2.1120.0
+        version: 2.1121.0
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
@@ -1469,16 +1469,16 @@ packages:
     resolution: {integrity: sha512-yVH1+RH48U5Awv089iaAGL99wXxklkCIIZbMNp/3CZ/EQKImlFbLCOzLNh9teFXagzPJOn9wFwDQEdKZ6bZEtw==}
     engines: {node: '>=22'}
 
-  '@middy/http-error-handler@7.3.3':
-    resolution: {integrity: sha512-9BiuuhraTgPGoRpN8dzGz6aK/tK71+9N3e6XRCCSHFXTc7At108j+GxFRf0KJs30BHAQyHJVdS3fZlqYhBWESg==}
+  '@middy/http-error-handler@7.4.0':
+    resolution: {integrity: sha512-EwnnqC35CSpCsgF/Mo5Zl1R7A/aOFsnE3ltndycLuUd+67ai27Y/giG9bbS7mYrPmizxTPCyyHG2PEqHXtlaxg==}
     engines: {node: '>=22'}
 
-  '@middy/http-json-body-parser@7.3.3':
-    resolution: {integrity: sha512-C8WeWdCjYIJoMegUmxo/n1D3ba9xkmvcW8n7yHW3BEsOjjHvugupmSqGVPnlM/ck+3FmgX13VefjVFcZ4C6okg==}
+  '@middy/http-json-body-parser@7.4.0':
+    resolution: {integrity: sha512-IrnDgOjLNtQat9CH4OvzTY4nA5bjY13JoxMRaapWuWj8jPlKtFm9eXEPkYSGdruU7Xtnb1xHg8edo+888OykKQ==}
     engines: {node: '>=22'}
 
-  '@middy/http-response-serializer@7.3.3':
-    resolution: {integrity: sha512-akIUWCEmT76DlIpoZVbaSydcvGQu+UoI9mSEZxovaTsF9zh27QQmjmKEEXgNx7JLTTh+Qx9vNevPCoJ1ejvsDQ==}
+  '@middy/http-response-serializer@7.4.0':
+    resolution: {integrity: sha512-fi7MKFJ74jB4pxCQQrF+zN0/+yT9hPW23M/ju0akrwXEJKVA+syA/LuLZZ7svzFhY3E6v3YeNWeqy3GkwcalNw==}
     engines: {node: '>=22'}
 
   '@middy/util@7.3.3':
@@ -2408,6 +2408,12 @@ packages:
 
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
+
+  '@simple-git/args-pathspec@1.0.3':
+    resolution: {integrity: sha512-ngJMaHlsWDTfjyq9F3VIQ8b7NXbBLq5j9i5bJ6XLYtD6qlDXT7fdKY2KscWWUF8t18xx052Y/PUO1K1TRc9yKA==}
+
+  '@simple-git/argv-parser@1.1.1':
+    resolution: {integrity: sha512-Q9lBcfQ+VQCpQqGJFHe5yooOS5hGdLFFbJ5R+R5aDsnkPCahtn1hSkMcORX65J2Z5lxSkD0lQorMsncuBQxYUw==}
 
   '@simple-libs/child-process-utils@1.0.2':
     resolution: {integrity: sha512-/4R8QKnd/8agJynkNdJmNw2MBxuFTRcNFnE5Sg/G+jkSsV8/UBgULMzhizWWW42p8L5H7flImV2ATi79Ove2Tw==}
@@ -3395,8 +3401,8 @@ packages:
     peerDependencies:
       postcss: ^8.1.0
 
-  aws-cdk-lib@2.251.0:
-    resolution: {integrity: sha512-H1Jfz2Oyejn+yG24i+By9fZpYfg+E3h1XnFCF2wnt/MyGOTIePRph7MRGkX73ap10ERSpmd0Ly58OLVykFoSQA==}
+  aws-cdk-lib@2.253.0:
+    resolution: {integrity: sha512-36nNLOz0WJDWraEzU7zlmYY8nsM+YEroBWpRZ84LZPaeEe4Ozy4RhBvdCz/jIGYtLbtiFnfk+przNW2NNRjz5Q==}
     engines: {node: '>= 20.0.0'}
     peerDependencies:
       constructs: ^10.5.0
@@ -3414,8 +3420,8 @@ packages:
       - yaml
       - mime-types
 
-  aws-cdk@2.1119.0:
-    resolution: {integrity: sha512-XBxZEKH3BY4M1EX6x0qBkmOAj8viErjpww14iH6Z3z6nI0YzjZeJ05eEl7eJwzUgv7NTGagWBS9m/eDJW5+dAg==}
+  aws-cdk@2.1121.0:
+    resolution: {integrity: sha512-cG7CHt/SytYTfwrK+BUNQpqmS1dwhjt8z6ExKL6GK4n+8/6ZCwFzxlZWA/jUd2+Y9xPc+Q8cLKfMqGmgxEXbkg==}
     engines: {node: '>= 18.0.0'}
     hasBin: true
 
@@ -6107,8 +6113,8 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  simple-git@3.33.0:
-    resolution: {integrity: sha512-D4V/tGC2sjsoNhoMybKyGoE+v8A60hRawKQ1iFRA1zwuDgGZCBJ4ByOzZ5J8joBbi4Oam0qiPH+GhzmSBwbJng==}
+  simple-git@3.36.0:
+    resolution: {integrity: sha512-cGQjLjK8bxJw4QuYT7gxHw3/IouVESbhahSsHrX97MzCL1gu2u7oy38W6L2ZIGECEfIBG4BabsWDPjBxJENv9Q==}
 
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
@@ -7051,8 +7057,8 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.3.6:
-    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
 
@@ -8679,17 +8685,17 @@ snapshots:
     dependencies:
       '@middy/util': 7.3.3
 
-  '@middy/http-error-handler@7.3.3':
+  '@middy/http-error-handler@7.4.0':
     dependencies:
-      '@middy/util': 7.3.3
+      '@middy/util': 7.4.0
 
-  '@middy/http-json-body-parser@7.3.3':
+  '@middy/http-json-body-parser@7.4.0':
     dependencies:
-      '@middy/util': 7.3.3
+      '@middy/util': 7.4.0
 
-  '@middy/http-response-serializer@7.3.3':
+  '@middy/http-response-serializer@7.4.0':
     dependencies:
-      '@middy/util': 7.3.3
+      '@middy/util': 7.4.0
 
   '@middy/util@7.3.3': {}
 
@@ -8816,7 +8822,7 @@ snapshots:
       perfect-debounce: 2.1.0
       pkg-types: 2.3.0
       semver: 7.7.4
-      simple-git: 3.33.0
+      simple-git: 3.36.0
       sirv: 3.0.2
       structured-clone-es: 2.0.0
       tinyglobby: 0.2.15
@@ -9741,6 +9747,12 @@ snapshots:
     optional: true
 
   '@sec-ant/readable-stream@0.4.1': {}
+
+  '@simple-git/args-pathspec@1.0.3': {}
+
+  '@simple-git/argv-parser@1.1.1':
+    dependencies:
+      '@simple-git/args-pathspec': 1.0.3
 
   '@simple-libs/child-process-utils@1.0.2':
     dependencies:
@@ -11096,14 +11108,14 @@ snapshots:
       postcss: 8.5.10
       postcss-value-parser: 4.2.0
 
-  aws-cdk-lib@2.251.0(constructs@10.6.0):
+  aws-cdk-lib@2.253.0(constructs@10.6.0):
     dependencies:
       '@aws-cdk/asset-awscli-v1': 2.2.273
       '@aws-cdk/asset-node-proxy-agent-v6': 2.1.1
       '@aws-cdk/cloud-assembly-schema': 53.18.0
       constructs: 10.6.0
 
-  aws-cdk@2.1119.0: {}
+  aws-cdk@2.1121.0: {}
 
   axe-core@4.11.3: {}
 
@@ -12919,7 +12931,7 @@ snapshots:
 
   mutation-server-protocol@0.4.1:
     dependencies:
-      zod: 4.3.6
+      zod: 4.4.3
 
   mutation-testing-elements@3.7.3: {}
 
@@ -14057,10 +14069,12 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-git@3.33.0:
+  simple-git@3.36.0:
     dependencies:
       '@kwsites/file-exists': 1.1.1
       '@kwsites/promise-deferred': 1.1.1
+      '@simple-git/args-pathspec': 1.0.3
+      '@simple-git/argv-parser': 1.1.1
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
@@ -15054,4 +15068,4 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zod@4.3.6: {}
+  zod@4.4.3: {}
