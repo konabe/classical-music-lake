@@ -294,6 +294,20 @@ classical-music-lake/
   ※ サーバー API には composerId による絞り込みパラメータなし（クライアント絞り込み）
 ```
 
+### 楽曲詳細取得（鑑賞記録一覧付き）
+
+```text
+ブラウザ (/pieces/[id])
+  → usePiece(id) で Piece を取得（認証不要）
+  → useAuth().isAuthenticated() が true の場合のみ:
+      → useListeningLogs() で自ユーザーの鑑賞記録を全件取得
+      → log.pieceId === piece.id で絞り込み（pieceId 未設定の旧データは対象外）
+      → listenedAt 降順にソート
+  → PieceDetailTemplate で「Listening records」セクションに表示し、各エントリは
+    /listening-logs/{id} へリンク
+  ※ サーバー API には pieceId 絞り込みパラメータなし（全件取得後にクライアント絞り込み）
+```
+
 ### コンサート記録詳細取得
 
 ```text

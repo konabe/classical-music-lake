@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { Piece } from "~/types";
+import type { ListeningLog, Piece } from "~/types";
 import PieceDetailTemplate from "./PieceDetailTemplate.vue";
 
 const meta: Meta<typeof PieceDetailTemplate> = {
@@ -115,5 +115,41 @@ export const WithPartialCategories: Story = {
     error: null,
     isAdmin: false,
     composerName: "モーツァルト",
+  },
+};
+
+const sampleListeningLogs: ListeningLog[] = [
+  {
+    id: "log-1",
+    userId: "user-1",
+    listenedAt: "2024-03-10T12:00:00.000Z",
+    composer: "モーツァルト",
+    piece: "魔笛",
+    rating: 5,
+    isFavorite: true,
+    memo: "夜の女王のアリアが圧巻",
+    createdAt: "2024-03-10T12:00:00.000Z",
+    updatedAt: "2024-03-10T12:00:00.000Z",
+  },
+  {
+    id: "log-2",
+    userId: "user-1",
+    listenedAt: "2024-02-01T08:30:00.000Z",
+    composer: "モーツァルト",
+    piece: "魔笛",
+    rating: 4,
+    isFavorite: false,
+    createdAt: "2024-02-01T08:30:00.000Z",
+    updatedAt: "2024-02-01T08:30:00.000Z",
+  },
+];
+
+export const WithListeningLogs: Story = {
+  args: {
+    piece: pieceWithoutVideo,
+    error: null,
+    isAdmin: false,
+    composerName: "モーツァルト",
+    listeningLogs: sampleListeningLogs,
   },
 };

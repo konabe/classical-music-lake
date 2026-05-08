@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Piece, Rating } from "~/types";
+import type { ListeningLog, Piece, Rating } from "~/types";
 
 const route = useRoute();
 const apiBase = useApiBase();
@@ -7,7 +7,7 @@ const { data: piece, error } = await usePiece(() => route.params.id as string);
 const { data: composers, refresh: refreshComposers } = useComposersAll();
 await refreshComposers();
 const { create } = useListeningLogCreate();
-const { isAdmin } = useAuth();
+const { isAdmin, isAuthenticated } = useAuth();
 const isAdminUser = isAdmin();
 
 const composerName = computed(() => {
@@ -17,6 +17,24 @@ const composerName = computed(() => {
   }
   const found = (composers.value ?? []).find((c) => c.id === id);
   return found?.name ?? "(不明な作曲家)";
+});
+
+const authenticated: boolean = isAuthenticated();
+const listeningLogsResource = authenticated ? useListeningLogs() : null;
+if (listeningLogsResource !== null) {
+  await listeningLogsResource.execute();
+}
+
+const listeningLogs = computed<ListeningLog[]>(() => {
+  if (listeningLogsResource === null || piece.value === null) {
+    return [];
+  }
+  const all = listeningLogsResource.data.value ?? [];
+  const pieceId = piece.value.id;
+  return all
+    .filter((log) => log.pieceId === pieceId)
+    .slice()
+    .sort((a, b) => b.listenedAt.localeCompare(a.listenedAt));
 });
 
 async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: string }) {
@@ -31,6 +49,9 @@ async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: s
     userId: null,
     ...values,
   });
+  if (listeningLogsResource !== null) {
+    await listeningLogsResource.refresh();
+  }
 }
 
 async function handleDelete(target: Piece) {
@@ -52,6 +73,7 @@ async function handleDelete(target: Piece) {
     :error="error"
     :is-admin="isAdminUser"
     :composer-name="composerName"
+    :listening-logs="listeningLogs"
     @save="handleSave"
     @delete="handleDelete"
   />
