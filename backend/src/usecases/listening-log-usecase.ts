@@ -3,7 +3,7 @@ import type { ListeningLogRepository } from "../domain/listening-log";
 import { ListeningLogId } from "../domain/value-objects/ids";
 import type { UserId } from "../domain/value-objects/ids";
 import { DynamoDBListeningLogRepository } from "../repositories/listening-log-repository";
-import type { CreateListeningLogInput, ListeningLog } from "../types";
+import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "../types";
 import { loadOwnedEntityOrNotFound } from "./helpers";
 
 // handlers 層は domain へ直接アクセスできないため、ID 値オブジェクトを usecase 層経由で公開する
@@ -44,11 +44,14 @@ export class ListeningLogUsecase {
 
   async update(
     id: ListeningLogId,
-    input: Partial<ListeningLog>,
+    input: UpdateListeningLogInput,
     userId: UserId,
   ): Promise<ListeningLog> {
-    await this.loadOwnedEntity(id, userId);
-    return this.repo.update(id, input);
+    const current = await this.loadOwnedEntity(id, userId);
+    const updated = current.mergeUpdate(input);
+    const plain = updated.toPlain();
+    await this.repo.saveWithOptimisticLock(plain, current.updatedAt);
+    return plain;
   }
 
   async delete(id: ListeningLogId, userId: UserId): Promise<void> {

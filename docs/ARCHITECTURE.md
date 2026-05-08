@@ -156,6 +156,28 @@ classical-music-lake/
   → ブラウザに返却
 ```
 
+### 視聴ログ詳細取得（楽曲マスタへのリンク付き）
+
+```text
+ブラウザ (/listening-logs/[id])
+  → useListeningLog(id) で ListeningLog を取得
+  → GET /prod/listening-logs/{id}
+  → log.pieceId が設定されていれば /pieces/{pieceId} へリンク、未設定なら曲名は plain text で表示
+```
+
+### 視聴ログ作成・更新（pieceId 付き）
+
+```text
+楽曲マスタから記録（QuickLogForm / 楽曲詳細ページ）:
+  → POST /prod/listening-logs に pieceId を含めて送信（楽曲マスタの id を信頼ソースとして固定）
+
+自由入力フォーム（/listening-logs/new、/listening-logs/[id]/edit）:
+  → 「楽曲マスタから選択」ドロップダウンを選ぶと pieceId が自動設定され、曲名・作曲家名も同期される
+  → 「選択しない」を選ぶと曲名・作曲家名はクリアされ、pieceId も undefined となる
+  → 編集時に既存の pieceId を解除したい場合は、フォーム側で pieceId="" として送信し、
+    バックエンドの buildUpdateProps が DynamoDB 属性を REMOVE する
+```
+
 ### 視聴ログ検索フィルタ（クライアントサイド）
 
 ```text

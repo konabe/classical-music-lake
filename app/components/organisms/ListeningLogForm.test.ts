@@ -279,6 +279,52 @@ describe("ListeningLogForm", () => {
       expect((composerInput.element as HTMLInputElement).value).toBe("");
       expect((pieceInput.element as HTMLInputElement).value).toBe("");
     });
+
+    it("楽曲を選択して送信すると pieceId が submit イベントに含まれる", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      const select = wrapper.find("select#piece-select");
+      await select.setValue("piece-1");
+
+      await wrapper.find("form").trigger("submit");
+
+      const emitted = wrapper.emitted("submit");
+      expect(emitted).toBeDefined();
+      const payload = emitted?.[0]?.[0] as { pieceId?: string };
+      expect(payload.pieceId).toBe("piece-1");
+    });
+
+    it("楽曲を選択しないで送信すると pieceId は含まれない", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm);
+      await wrapper.find('input[placeholder="例: ベートーヴェン"]').setValue("ショパン");
+      await wrapper.find('input[placeholder="例: 交響曲第9番"]').setValue("ノクターン");
+      await wrapper.find("form").trigger("submit");
+
+      const emitted = wrapper.emitted("submit");
+      const payload = emitted?.[0]?.[0] as { pieceId?: string };
+      expect(payload.pieceId).toBeUndefined();
+    });
+
+    it("初期値に pieceId があり「選択しない」へ戻すと submit で空文字が送信される", async () => {
+      const wrapper = await mountSuspended(ListeningLogForm, {
+        props: {
+          initialValues: {
+            composer: "ベートーヴェン",
+            piece: "交響曲第9番",
+            pieceId: "piece-1",
+            rating: 5 as const,
+            isFavorite: false,
+            listenedAt: "2024-03-01T14:00:00.000Z",
+          },
+        },
+      });
+      const select = wrapper.find("select#piece-select");
+      await select.setValue("");
+      await wrapper.find("form").trigger("submit");
+
+      const emitted = wrapper.emitted("submit");
+      const payload = emitted?.[0]?.[0] as { pieceId?: string };
+      expect(payload.pieceId).toBe("");
+    });
   });
 
   describe("動画プレビュー", () => {
