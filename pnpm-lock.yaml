@@ -169,8 +169,8 @@ importers:
         specifier: ^7.3.3
         version: 7.3.3
       '@middy/http-error-handler':
-        specifier: ^7.3.3
-        version: 7.3.3
+        specifier: ^7.4.0
+        version: 7.4.0
       '@middy/http-json-body-parser':
         specifier: ^7.4.0
         version: 7.4.0
@@ -1469,8 +1469,8 @@ packages:
     resolution: {integrity: sha512-yVH1+RH48U5Awv089iaAGL99wXxklkCIIZbMNp/3CZ/EQKImlFbLCOzLNh9teFXagzPJOn9wFwDQEdKZ6bZEtw==}
     engines: {node: '>=22'}
 
-  '@middy/http-error-handler@7.3.3':
-    resolution: {integrity: sha512-9BiuuhraTgPGoRpN8dzGz6aK/tK71+9N3e6XRCCSHFXTc7At108j+GxFRf0KJs30BHAQyHJVdS3fZlqYhBWESg==}
+  '@middy/http-error-handler@7.4.0':
+    resolution: {integrity: sha512-EwnnqC35CSpCsgF/Mo5Zl1R7A/aOFsnE3ltndycLuUd+67ai27Y/giG9bbS7mYrPmizxTPCyyHG2PEqHXtlaxg==}
     engines: {node: '>=22'}
 
   '@middy/http-json-body-parser@7.4.0':
@@ -8685,9 +8685,9 @@ snapshots:
     dependencies:
       '@middy/util': 7.3.3
 
-  '@middy/http-error-handler@7.3.3':
+  '@middy/http-error-handler@7.4.0':
     dependencies:
-      '@middy/util': 7.3.3
+      '@middy/util': 7.4.0
 
   '@middy/http-json-body-parser@7.4.0':
     dependencies:
