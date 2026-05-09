@@ -43,8 +43,13 @@ export type PieceKind = (typeof PIECE_KINDS)[number];
 /**
  * 1 つの Work に紐付けられる Movement の最大数。
  * UI / バリデーションの双方で参照する。
+ *
+ * 上限値の根拠: Movement の集合一括差し替え（`PUT /pieces/{workId}/movements`）は
+ * 1 つの DynamoDB TransactWriteItems で実行する。最大 100 アイテム / トランザクション
+ * の制約があるため、最悪ケース（既存 49 削除 + 新規 49 Put + Work 1 件の更新）= 99 で 100
+ * 以下に収まるよう 49 に抑える。
  */
-export const MOVEMENTS_PER_WORK_MAX = 64;
+export const MOVEMENTS_PER_WORK_MAX = 49;
 
 /**
  * Movement の `index` 値（演奏順）の許容範囲。0 始まり。

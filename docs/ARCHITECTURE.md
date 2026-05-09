@@ -96,12 +96,14 @@ classical-music-lake/
 │       │   ├── get.ts
 │       │   ├── update.ts
 │       │   └── delete.ts
-│       ├── pieces/               # 楽曲マスタ Lambda 関数
-│       │   ├── create.ts
-│       │   ├── list.ts
-│       │   ├── get.ts
-│       │   ├── update.ts
-│       │   └── delete.ts
+│       ├── pieces/               # 楽曲マスタ Lambda 関数（Work / Movement 共通）
+│       │   ├── create.ts             # POST /pieces (kind で Work / Movement を分岐)
+│       │   ├── list.ts               # GET /pieces (root の Work のみ)
+│       │   ├── get.ts                # GET /pieces/{id} (kind を問わず単一ノード)
+│       │   ├── update.ts             # PUT /pieces/{id} (kind 共通の単一更新)
+│       │   ├── delete.ts             # DELETE /pieces/{id} (Work は cascade、Movement は単独)
+│       │   ├── children.ts           # GET /pieces/{id}/children (Movement 一覧)
+│       │   └── replace-movements.ts  # PUT /pieces/{workId}/movements (集合一括差し替え)
 │       ├── migrations/           # 一時的なデータ移行スクリプト（レイヤードアーキテクチャから独立）
 │       │   └── piece-composer-id/
 │       │       └── index.ts      # composer(string) → composerId 移行（手動 invoke 専用）
@@ -398,10 +400,10 @@ classical-music-lake/
 - **状態**: Cognito グループによるロールベースアクセス制御を実装済み（ワーク015-02 / 015-03）
 - **実装内容**:
   - `admin` Cognito グループを CDK で全環境に定義（`CfnUserPoolGroup`）。グループ所属ユーザーの ID/Access Token には `cognito:groups: ["admin"]` クレームが付与される
-  - 楽曲マスタ書き込み API（`POST /pieces` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`）は `admin` グループのみ実行可能
+  - 楽曲マスタ書き込み API（`POST /pieces` / `PUT /pieces/{id}` / `DELETE /pieces/{id}` / `PUT /pieces/{workId}/movements`）は `admin` グループのみ実行可能
     - API Gateway の Cognito Authorizer で認証を強制（未認証は 401 Unauthorized）
     - Lambda ハンドラ内の `requireAdmin(event)`（`backend/src/utils/auth.ts`）で `cognito:groups` を検査し、非管理者には 403 Forbidden を返す
-  - 楽曲マスタ参照 API（`GET /pieces` / `GET /pieces/{id}`）は認証不要で公開のまま
+  - 楽曲マスタ参照 API（`GET /pieces` / `GET /pieces/{id}` / `GET /pieces/{id}/children`）は認証不要で公開のまま
 - **設計上の判断**: Cognito Authorizer にはグループ強制機能が無いため、Authorizer（トークン署名検証）と Lambda 内判定（グループ検査）の二段構えとする
 - **運用**: `admin` グループの付与・剥奪は AWS CLI／コンソールによる手動運用。グループ変更は再ログイン後に ID Token に反映される（`docs/OPERATIONS.md` 参照）
 
@@ -443,11 +445,20 @@ classical-music-lake/
   - `PieceMovementEntity extends PieceComponent`: 楽章。`parentId: PieceId` で Work を参照、`index: MovementIndex`（0..999）で演奏順を表す
 - **リポジトリ I/F**: `PieceRepository` は **root（Work）操作と子（Movement）操作を明確に分ける**
   - root 限定列挙: `findRootById` / `findRootPage` は Work のみを返す（Movement は除外）
-  - kind を問わず単体取得: `findById(id)` は Work / Movement のいずれも返す（更新フローで使用）
-  - 子要素列挙: `findChildren(parentId)` は新 GSI `parentId-index-index` を Query して Movement を `index` 昇順で全件取得する。`removeWorkCascade` / `replaceMovements` の前段処理として内部的に利用するほか、PR3 以降の Movement 一覧 API（`GET /pieces/{id}/children`）の基盤となる
+  - kind を問わず単体取得: `findById(id)` は Work / Movement のいずれも返す（更新・削除フローで使用）
+  - 子要素列挙: `findChildren(parentId)` は新 GSI `parentId-index-index` を Query して Movement を `index` 昇順で全件取得する。`removeWorkCascade` / `replaceMovements` の前段処理として内部的に利用するほか、Movement 一覧 API（`GET /pieces/{id}/children`）の基盤となる
   - カスケード: `removeWorkCascade(id)` は Work 削除時に配下 Movement を `findChildren` で集めて、Work + Movement を 1 つの TransactWriteItems で原子的に削除する
-  - `replaceMovements(workId, movements)` は既存子の Delete + 新規 Put を 1 つの TransactWriteItems で実行する（PR3 のエンドポイントから呼ばれる）。DynamoDB の TransactWriteItems 上限 100 件を超える場合は例外を投げる
-- **バリデーション**: `createPieceSchema` / `updatePieceSchema` は `z.discriminatedUnion("kind", [...])` で Work / Movement を判別する。両 Work / Movement のオブジェクトは `.strict()` で未知フィールドを拒否し、Work に `parentId` / `index` を、Movement に `composerId` / カテゴリ系を含めると 400 を返す
-- **ユースケース**: `WorkUsecase`（Work 専用）/ `MovementUsecase`（Movement 専用）/ `PieceUsecase`（kind を判別して dispatch するファサード）の 3 種に分割。`/pieces` ハンドラは従来どおり `PieceUsecase` を経由し、`PieceUsecase.getNode(id)` で kind を問わない単一ノード取得をサポートする（PR3 の `/pieces/{id}/children` 等で利用予定）
+  - `replaceMovements(workId, movements, workOptimisticLock?)` は既存子の Delete + 新規 Put を 1 つの TransactWriteItems で実行する。`workOptimisticLock` を渡すと Work の楽観的ロック付き Put（`updatedAt = :prevUpdatedAt`）を同一トランザクションに含めて Work の `updatedAt` も同時に進める（`replaceAll` 経由で常に渡す）。DynamoDB の TransactWriteItems 上限 100 件を超える場合は例外を投げる
+- **バリデーション**: `createPieceSchema` / `updatePieceSchema` は `z.discriminatedUnion("kind", [...])` で Work / Movement を判別する。両 Work / Movement のオブジェクトは `.strict()` で未知フィールドを拒否し、Work に `parentId` / `index` を、Movement に `composerId` / カテゴリ系を含めると 400 を返す。`replaceMovementsSchema` は `.refine()` で同一 Work 内の `index` 重複を拒否する
+- **ユースケース**: `WorkUsecase`（Work 専用）/ `MovementUsecase`（Movement 専用、`replaceAll(workId, items)` で集合一括差し替え）/ `PieceUsecase`（kind を判別して dispatch するファサード）の 3 種に分割。`/pieces` 単一ノードハンドラは `PieceUsecase` を経由し、`PieceUsecase.getNode(id)` で kind を問わず取得、`PieceUsecase.delete(id)` で kind を判別して cascade / 単独削除を分岐する。`PieceUsecase.resolveComposerId(node)` は Movement の親 Work から `composerId` を解決するヘルパー（API レスポンスには `composerId` を載せないが、内部の作曲家解決で使用）
+- **API エンドポイント**:
+  - `GET /pieces`（root の Work のみ、ページング）/ `GET /pieces/{id}`（kind 問わず）/ `GET /pieces/{id}/children`（Movement 一覧、認証不要）
+  - `POST /pieces`（kind 分岐）/ `PUT /pieces/{id}`（kind 共通単一更新）/ `DELETE /pieces/{id}`（kind 判別）/ `PUT /pieces/{workId}/movements`（集合一括差し替え、admin 必須）
+- **集合一括差し替え（`PUT /pieces/{workId}/movements`）の設計**:
+  - 並び替え・追加・削除を「Work 配下の楽章リスト全体」の更新として捉える
+  - Work の `updatedAt` を ifMatch 条件にして同一 TransactWriteItems で原子的に処理。競合時は 409 Conflict
+  - 上限は `MOVEMENTS_PER_WORK_MAX = 49`（`既存 49 削除 + 新規 49 Put + Work 1 件更新 = 99` で TransactWriteItems の上限 100 以下）
+  - 個別更新は `PUT /pieces/{movementId}`（軽量更新向け）、並び替え系は本エンドポイントで使い分ける二段構え
 - **PR1 時点の挙動**: 既存 API のレスポンスに `kind: "work"` が増える以外は互換。Movement 専用エンドポイントは追加していない。`DynamoDBPieceRepository` は既存レコード（`kind` を持たない）を読み込み時に `kind: "work"` で正規化することで後方互換を保つ
-- **PR2 時点の挙動**: GSI と Movement 集合操作（`findChildren` / `removeWorkCascade` / `replaceMovements`）が利用可能になった。外向き REST エンドポイントは未追加（PR3 で `GET /pieces/{id}/children`・`PUT /pieces/{workId}/movements` を追加予定）
+- **PR2 時点の挙動**: GSI と Movement 集合操作（`findChildren` / `removeWorkCascade` / `replaceMovements`）が利用可能になった。外向き REST エンドポイントは未追加
+- **PR3 時点の挙動**: Movement 一覧 / 集合一括差し替え用の REST エンドポイントを追加。`GET /pieces/{id}` を kind を問わない単一ノード取得に拡張、`DELETE /pieces/{id}` を kind 判別で cascade / 単独削除に分岐する

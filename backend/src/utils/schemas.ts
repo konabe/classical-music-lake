@@ -168,9 +168,10 @@ export const updatePieceSchema = z.discriminatedUnion("kind", [
 ]);
 
 /**
- * Work 配下の Movement 集合を一括置換するための入力スキーマ（PR3 で実エンドポイントを追加する用途）。
+ * Work 配下の Movement 集合を一括置換するための入力スキーマ（`PUT /pieces/{workId}/movements`）。
  * - `kind` は不要。常に movement 集合として扱う。
  * - 1 Work あたりの最大件数は {@link MOVEMENTS_PER_WORK_MAX}。
+ * - 同一 Work 内で `index` の重複は許容しない（演奏順を一意に決めるため）。
  */
 export const replaceMovementsSchema = z.object({
   movements: z
@@ -193,10 +194,10 @@ export const replaceMovementsSchema = z.object({
         videoUrls: videoUrlsSchema.optional(),
       }),
     )
-    .max(
-      MOVEMENTS_PER_WORK_MAX,
-      `movements must contain at most ${MOVEMENTS_PER_WORK_MAX} entries`,
-    ),
+    .max(MOVEMENTS_PER_WORK_MAX, `movements must contain at most ${MOVEMENTS_PER_WORK_MAX} entries`)
+    .refine((items) => new Set(items.map((m) => m.index)).size === items.length, {
+      message: "movements must not contain duplicate index values",
+    }),
 });
 
 const emailSchema = z.email("email must be a valid email address").trim();

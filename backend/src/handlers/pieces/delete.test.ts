@@ -48,6 +48,25 @@ function makeEvent(id: string | null, auth: AuthMode = "admin"): APIGatewayProxy
   return makeBaseEvent(overrides);
 }
 
+const workItem = {
+  kind: "work" as const,
+  id: "test-id-123",
+  title: "交響曲第9番",
+  composerId: "00000000-0000-4000-8000-000000000001",
+  createdAt: "2024-01-15T21:00:00.000Z",
+  updatedAt: "2024-01-15T21:00:00.000Z",
+};
+
+const movementItem = {
+  kind: "movement" as const,
+  id: "mov-1",
+  parentId: "test-id-123",
+  index: 0,
+  title: "第1楽章",
+  createdAt: "2024-01-15T21:00:00.000Z",
+  updatedAt: "2024-01-15T21:00:00.000Z",
+};
+
 describe("DELETE /pieces/{id} (delete)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -59,21 +78,35 @@ describe("DELETE /pieces/{id} (delete)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
   });
 
-  it("正常に削除して 204 を返す", async () => {
+  it("Work を指定すると removeWorkCascade で cascade 削除し 204 を返す", async () => {
+    mockRepo.findById.mockResolvedValueOnce(workItem);
     mockRepo.removeWorkCascade.mockResolvedValueOnce(undefined);
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
+    expect(mockRepo.removeWorkCascade).toHaveBeenCalledWith(PieceId.from("test-id-123"));
+    expect(mockRepo.removeMovement).not.toHaveBeenCalled();
   });
 
-  it("正しい id で Repository.removeWorkCascade を呼び出す", async () => {
-    mockRepo.removeWorkCascade.mockResolvedValueOnce(undefined);
-    await handler(makeEvent("test-id-123"), mockContext, mockCallback);
+  it("Movement を指定すると removeMovement で単独削除し 204 を返す", async () => {
+    mockRepo.findById.mockResolvedValueOnce(movementItem);
+    mockRepo.removeMovement.mockResolvedValueOnce(undefined);
+    const result = await handler(makeEvent("mov-1"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(204);
+    expect(mockRepo.removeMovement).toHaveBeenCalledWith(PieceId.from("mov-1"));
+    expect(mockRepo.removeWorkCascade).not.toHaveBeenCalled();
+  });
 
-    expect(mockRepo.removeWorkCascade).toHaveBeenCalledWith(PieceId.from("test-id-123"));
+  it("存在しない id は冪等に 204 を返し、削除呼び出しは行わない", async () => {
+    mockRepo.findById.mockResolvedValueOnce(undefined);
+    const result = await handler(makeEvent("not-found"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(204);
+    expect(mockRepo.removeWorkCascade).not.toHaveBeenCalled();
+    expect(mockRepo.removeMovement).not.toHaveBeenCalled();
   });
 
   it("Repository エラー時に 500 を返す", async () => {
+    mockRepo.findById.mockResolvedValueOnce(workItem);
     mockRepo.removeWorkCascade.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
@@ -88,13 +121,17 @@ describe("DELETE /pieces/{id} (delete)", () => {
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
+      expect(mockRepo.findById).not.toHaveBeenCalled();
       expect(mockRepo.removeWorkCascade).not.toHaveBeenCalled();
+      expect(mockRepo.removeMovement).not.toHaveBeenCalled();
     });
 
     it("認証クレームがない場合は 403 を返し、削除しない", async () => {
       const result = await handler(makeEvent("test-id-123", "none"), mockContext, mockCallback);
       expect(result?.statusCode).toBe(403);
+      expect(mockRepo.findById).not.toHaveBeenCalled();
       expect(mockRepo.removeWorkCascade).not.toHaveBeenCalled();
+      expect(mockRepo.removeMovement).not.toHaveBeenCalled();
     });
   });
 });

@@ -273,4 +273,27 @@ describe("replaceMovements", () => {
     );
     expect(mockSend).not.toHaveBeenCalled();
   });
+
+  it("workOptimisticLock を渡すと Work の楽観的ロック付き Put をトランザクションの先頭に含める", async () => {
+    const next = makeMovement(CHILD_1_ID, 0);
+    const work: PieceWork = { ...basePiece, id: PARENT_ID } as PieceWork;
+    mockSend.mockResolvedValueOnce({ Items: [], LastEvaluatedKey: undefined });
+    mockSend.mockResolvedValueOnce({});
+
+    const repo = new DynamoDBPieceRepository();
+    await repo.replaceMovements(PieceId.from(PARENT_ID), [next], {
+      work,
+      prevUpdatedAt: "2024-01-15T20:00:00.000Z",
+    });
+
+    const txArg = mockSend.mock.calls[1]?.[0];
+    const transactItems = txArg?.input?.TransactItems;
+    expect(transactItems).toHaveLength(2);
+    expect(transactItems?.[0]?.Put?.Item).toEqual(work);
+    expect(transactItems?.[0]?.Put?.ConditionExpression).toBe("updatedAt = :prevUpdatedAt");
+    expect(transactItems?.[0]?.Put?.ExpressionAttributeValues?.[":prevUpdatedAt"]).toBe(
+      "2024-01-15T20:00:00.000Z",
+    );
+    expect(transactItems?.[1]?.Put?.Item).toEqual(next);
+  });
 });
