@@ -838,6 +838,9 @@ function handler(event) {
       return alarm;
     };
 
+    // 新しい Lambda 関数は必ずこの配列の末尾に追加すること。
+    // 途中に挿入するとインデックスベースの論理 ID がズレ、
+    // CloudFormation のアラームリソースが競合してデプロイが失敗する。
     const allFunctions = [
       listeningLogsList,
       listeningLogsGet,
@@ -849,8 +852,6 @@ function handler(event) {
       getPiece,
       updatePiece,
       deletePiece,
-      getPieceChildren,
-      replacePieceMovements,
       authRegister,
       authLogin,
       authVerifyEmail,
@@ -867,6 +868,8 @@ function handler(event) {
       getComposer,
       updateComposer,
       deleteComposer,
+      getPieceChildren,
+      replacePieceMovements,
     ];
 
     // Lambda エラー監視：各関数ごとにアラームを作成
