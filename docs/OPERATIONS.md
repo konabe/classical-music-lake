@@ -413,3 +413,92 @@ aws dynamodb restore-table-from-backup \
 5. S3 同期（フロント差し替え）
 6. CloudFront invalidation
 7. 移行完了確認後、任意のタイミングで `cdk destroy MigrationsStack[-<stage>]` でスタック破棄
+
+---
+
+## Piece の `kind` バックフィル移行手順
+
+楽曲マスタを Composite モデル（Work / Movement）に再設計（PR1）するより前に作成された `Piece` レコードは `kind` フィールドを持たない。読み込み時には `DynamoDBPieceRepository` が `kind: "work"` を補完するため API レスポンスは正常だが、永続化されたデータ自体を正規化することで透過的な互換ロジックを将来削除可能にする。
+
+### 前提
+
+- 移行 Lambda は `MigrationsStack[-<stage>]` に所属する。ソースは `backend/src/migrations/piece-kind-backfill/index.ts`
+- `MigrationsStack[-<stage>]` をデプロイすると `MigratePieceKindBackfill` Lambda が作成される（API Gateway には接続されない）
+- 対象テーブル: `classical-music-pieces[-<stage>]`（`ClassicalMusicLakeStack[-<stage>]` 側で作成済みのものをテーブル名で参照）
+- IAM は piecesTable のみ。`reservedConcurrentExecutions: 1` で同時実行禁止
+- 依存関係: PR2（`parentId-index-index` GSI 追加）のデプロイが各環境に伝播済みであること（GSI バックフィルが走るとテーブルへの書き込み I/O が一時的に上がるため、移行は GSI が ACTIVE になってから実施する）
+- **べき等**: `kind` が既に `"work"` または `"movement"` のレコードは skip される。何度実行しても安全
+
+### 実行手順（環境ごとに `dev → stg → prod` の順で実施）
+
+> 推奨スパン: dev で実行 → 24 時間後に stg → 1 週間後に prod。各段で問題が無いことを確認してから次の環境へ進む。
+
+#### 1. オンデマンドバックアップの取得（必須）
+
+```bash
+STAGE=dev  # stg / prod
+aws dynamodb create-backup \
+  --table-name classical-music-pieces-${STAGE} \
+  --backup-name "pre-kind-backfill-$(date +%Y%m%d)"
+```
+
+> prod は `-<stage>` サフィックスなし（`classical-music-pieces`）。
+
+#### 2. dry-run でログ確認
+
+```bash
+FUNC=$(aws lambda list-functions \
+  --query "Functions[?contains(FunctionName, 'MigratePieceKindBackfill')].FunctionName | [0]" \
+  --output text)
+
+aws lambda invoke \
+  --function-name $FUNC \
+  --payload '{"dryRun": true}' \
+  --cli-binary-format raw-in-base64-out \
+  /tmp/kind-backfill-dry-run.json
+
+cat /tmp/kind-backfill-dry-run.json
+```
+
+CloudWatch Logs から:
+
+- `total` / `backfilled` / `skippedAlreadyKind` のサマリを確認
+- `would-backfill-kind` の各行を目視レビュー（`pieceId` のサンプリング確認）
+- 想定件数と乖離があれば次の手順に進まない
+
+#### 3. 本番モードで invoke
+
+```bash
+aws lambda invoke \
+  --function-name $FUNC \
+  --payload '{"dryRun": false}' \
+  --cli-binary-format raw-in-base64-out \
+  /tmp/kind-backfill-run.json
+
+cat /tmp/kind-backfill-run.json
+```
+
+レスポンスの `backfilled` 件数と dry-run の件数が一致することを確認する。
+
+#### 4. 再実行（べき等）
+
+途中で失敗した場合や追加で `kind` 欠損レコードが見つかった場合は、再度 `{"dryRun": false}` で invoke する。既に `kind` を持つ Piece は自動 skip される（べき等）。
+
+#### 5. 確認
+
+- 1 件サンプリング: `aws dynamodb get-item --table-name classical-music-pieces[-<stage>] --key '{"id": {"S": "<対象ID>"}}'` で `kind` 属性が `"work"` になっていることを確認
+- 全件確認（小規模環境のみ）: `aws dynamodb scan --table-name classical-music-pieces[-<stage>] --filter-expression 'attribute_not_exists(kind)' --output json` の `Count` が 0 になっていること
+- フロントエンドで楽曲一覧・詳細ページが従来どおり表示されることを確認
+
+### ロールバック
+
+`kind` の付与のみであり、`updatedAt` も触らないためロールバックの必要は通常ない。万一テーブル全体を巻き戻す必要がある場合は、手順 1 のオンデマンドバックアップから別テーブル名で復元し、差分確認後に本番テーブルへ差し替える。
+
+### 移行完了後
+
+全環境（dev / stg / prod）で `skippedAlreadyKind === total` となり `backfilled === 0` になることを確認したら、別 PR で次のクリーンアップを行う:
+
+1. `cdk/lib/migrations-stack.ts` から `MigratePieceKindBackfill` Lambda・LogGroup・IAM ロールを削除
+2. `backend/src/migrations/piece-kind-backfill/` ディレクトリを削除
+3. `docs/OPERATIONS.md` の本セクションを削除
+4. （任意）`DynamoDBPieceRepository.normalizeLegacyKind` の互換ロジックも別 PR で除去できる

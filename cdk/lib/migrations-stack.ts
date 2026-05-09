@@ -76,6 +76,43 @@ export class MigrationsStack extends cdk.Stack {
       },
       role: this.makeMigrationRole("MigratePieceComposerRole", [piecesTable, composersTable]),
     });
+
+    // -------------------------
+    // Migration: Piece.kind バックフィル（PR4）
+    // 既存レコードに `kind = "work"` を埋める。手動 invoke 専用、API Gateway には接続しない。
+    // 全件 Scan + PutItem を含むため、メモリと reservedConcurrency を `MigratePieceComposer` と
+    // 揃える。IAM は piecesTable のみ。
+    // -------------------------
+    const migratePieceKindBackfillLogGroup = new logs.LogGroup(
+      this,
+      "MigratePieceKindBackfillLogGroup",
+      {
+        retention: logs.RetentionDays.THREE_MONTHS,
+        removalPolicy,
+      },
+    );
+
+    new lambdaNodejs.NodejsFunction(this, "MigratePieceKindBackfill", {
+      // prettier-ignore
+      entry: path.join(backendSrcDir, "migrations/piece-kind-backfill/index.ts"), // NOSONAR
+      handler: "handler",
+      runtime: lambda.Runtime.NODEJS_24_X,
+      architecture: lambda.Architecture.ARM_64,
+      memorySize: 512,
+      timeout: cdk.Duration.seconds(60),
+      tracing: lambda.Tracing.ACTIVE,
+      reservedConcurrentExecutions: 1,
+      environment: {
+        DYNAMO_TABLE_PIECES: piecesTableName,
+      },
+      logGroup: migratePieceKindBackfillLogGroup,
+      bundling: {
+        minify: true,
+        sourceMap: false,
+        target: "es2022",
+      },
+      role: this.makeMigrationRole("MigratePieceKindBackfillRole", [piecesTable]),
+    });
   }
 
   /**
