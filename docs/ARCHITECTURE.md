@@ -444,10 +444,10 @@ classical-music-lake/
 - **リポジトリ I/F**: `PieceRepository` は **root（Work）操作と子（Movement）操作を明確に分ける**
   - root 限定列挙: `findRootById` / `findRootPage` は Work のみを返す（Movement は除外）
   - kind を問わず単体取得: `findById(id)` は Work / Movement のいずれも返す（更新フローで使用）
-  - Movement 一覧は **アグリゲートとして root を取得する API**（PR2 で追加予定。Work と
-    Movements をまとめて返す）に集約する。子要素単独の列挙クエリ（`findChildren`）は
-    持たない（独立に呼ぶユースケースが無いため）
-  - カスケード: `removeWorkCascade(id)` は Work 削除時に配下 Movement もまとめて削除する想定
-  - `replaceMovements(workId, movements)` で Movement 集合をアトミック置換（PR3 で実装）
+  - 子要素列挙: `findChildren(parentId)` は新 GSI `parentId-index-index` を Query して Movement を `index` 昇順で全件取得する。`removeWorkCascade` / `replaceMovements` の前段処理として内部的に利用するほか、PR3 以降の Movement 一覧 API（`GET /pieces/{id}/children`）の基盤となる
+  - カスケード: `removeWorkCascade(id)` は Work 削除時に配下 Movement を `findChildren` で集めて、Work + Movement を 1 つの TransactWriteItems で原子的に削除する
+  - `replaceMovements(workId, movements)` は既存子の Delete + 新規 Put を 1 つの TransactWriteItems で実行する（PR3 のエンドポイントから呼ばれる）。DynamoDB の TransactWriteItems 上限 100 件を超える場合は例外を投げる
 - **バリデーション**: `createPieceSchema` / `updatePieceSchema` は `z.discriminatedUnion("kind", [...])` で Work / Movement を判別する。両 Work / Movement のオブジェクトは `.strict()` で未知フィールドを拒否し、Work に `parentId` / `index` を、Movement に `composerId` / カテゴリ系を含めると 400 を返す
-- **PR1 時点の挙動**: 既存 API のレスポンスに `kind: "work"` が増える以外は互換。Movement 専用エンドポイントは追加していない。`DynamoDBPieceRepository` は既存レコード（`kind` を持たない）を読み込み時に `kind: "work"` で正規化することで後方互換を保つ。Movement の永続化は PR2、Movement 集合の REST エンドポイント追加は PR3 で行う
+- **ユースケース**: `WorkUsecase`（Work 専用）/ `MovementUsecase`（Movement 専用）/ `PieceUsecase`（kind を判別して dispatch するファサード）の 3 種に分割。`/pieces` ハンドラは従来どおり `PieceUsecase` を経由し、`PieceUsecase.getNode(id)` で kind を問わない単一ノード取得をサポートする（PR3 の `/pieces/{id}/children` 等で利用予定）
+- **PR1 時点の挙動**: 既存 API のレスポンスに `kind: "work"` が増える以外は互換。Movement 専用エンドポイントは追加していない。`DynamoDBPieceRepository` は既存レコード（`kind` を持たない）を読み込み時に `kind: "work"` で正規化することで後方互換を保つ
+- **PR2 時点の挙動**: GSI と Movement 集合操作（`findChildren` / `removeWorkCascade` / `replaceMovements`）が利用可能になった。外向き REST エンドポイントは未追加（PR3 で `GET /pieces/{id}/children`・`PUT /pieces/{workId}/movements` を追加予定）
