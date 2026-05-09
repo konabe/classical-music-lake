@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.11.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.10.1...classical-music-lake-v2.11.0) (2026-05-08)
+
+
+### Features
+
+* **listening-logs:** 鑑賞記録の詳細から楽曲マスタへリンク ([#648](https://github.com/konabe/classical-music-lake/issues/648)) ([1317647](https://github.com/konabe/classical-music-lake/commit/131764764d81932c47c81a4dfdf0ab77b8ea4fd2))
+* **pieces:** 楽曲詳細から鑑賞記録の詳細ページへリンクできるよう一覧を表示 ([#650](https://github.com/konabe/classical-music-lake/issues/650)) ([c4756b7](https://github.com/konabe/classical-music-lake/commit/c4756b7b66ae5a22fa00d06abf7bf5f249b53baa))
+
+
+### Code Refactoring
+
+* **backend:** 楽曲ドメインを Composite (Work / Movement) に再設計 ([#649](https://github.com/konabe/classical-music-lake/issues/649)) ([e184983](https://github.com/konabe/classical-music-lake/commit/e18498371cdceef44c54f56fdd83b4fe1dd04f82))
+
 ## [2.10.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.10.0...classical-music-lake-v2.10.1) (2026-05-03)
 
 
