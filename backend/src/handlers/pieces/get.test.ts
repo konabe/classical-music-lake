@@ -64,14 +64,14 @@ describe("GET /pieces/{id} (get)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findRootById.mockResolvedValueOnce(undefined);
+    mockRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(makeEvent("not-found-id"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Piece not found");
   });
 
   it("正常に取得して 200 を返す", async () => {
-    mockRepo.findRootById.mockResolvedValueOnce(testPiece);
+    mockRepo.findById.mockResolvedValueOnce(testPiece);
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
 
@@ -83,8 +83,26 @@ describe("GET /pieces/{id} (get)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findRootById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
+  });
+
+  it("Movement も id で取得できる（kind を問わず単一ノード）", async () => {
+    const movement = {
+      kind: "movement" as const,
+      id: "mov-1",
+      parentId: "abc-123",
+      index: 0,
+      title: "第1楽章",
+      createdAt: "2024-01-15T21:00:00.000Z",
+      updatedAt: "2024-01-15T21:00:00.000Z",
+    };
+    mockRepo.findById.mockResolvedValueOnce(movement);
+    const result = await handler(makeEvent("mov-1"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.kind).toBe("movement");
+    expect(body.id).toBe("mov-1");
   });
 });

@@ -215,14 +215,76 @@ describe("MovementUsecase", () => {
     });
   });
 
-  describe("replaceMovements", () => {
-    it("replaceMovements リポジトリ操作に委譲する", async () => {
-      const m = makeMovement();
-      await usecase.replaceMovements(PieceId.from(TEST_WORK_ID), [m]);
+  describe("replaceAll", () => {
+    it("Work が見つからない場合は 404", async () => {
+      vi.mocked(repo.findRootById).mockResolvedValueOnce(undefined);
+
+      await expect(
+        usecase.replaceAll(PieceId.from(TEST_WORK_ID), [{ index: 0, title: "第1楽章" }]),
+      ).rejects.toMatchObject({ statusCode: 404 });
+    });
+
+    it("既存子を全削除し、新規 Movement に id を採番して TransactWriteItems で書き込む", async () => {
+      const work = makeWork();
+      vi.mocked(repo.findRootById).mockResolvedValueOnce(work);
+      vi.mocked(repo.findChildren).mockResolvedValueOnce([]);
+
+      const result = await usecase.replaceAll(PieceId.from(TEST_WORK_ID), [
+        { index: 0, title: "第1楽章" },
+        { index: 1, title: "第2楽章" },
+      ]);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]?.kind).toBe("movement");
+      expect(result[0]?.parentId).toBe(TEST_WORK_ID);
+      expect(result[0]?.title).toBe("第1楽章");
+      expect(result[0]?.id).toMatch(/^[0-9a-f-]{36}$/);
+      expect(result[1]?.id).not.toBe(result[0]?.id);
+
       expect(repo.replaceMovements).toHaveBeenCalledWith(
         expect.objectContaining({ value: TEST_WORK_ID }),
-        [m],
+        result,
+        expect.objectContaining({
+          prevUpdatedAt: work.updatedAt,
+          work: expect.objectContaining({ id: work.id, updatedAt: expect.any(String) }),
+        }),
       );
+    });
+
+    it("既存 Movement と同じ id を渡すと createdAt を引き継ぎつつ updatedAt は新しくなる", async () => {
+      const work = makeWork();
+      const existing = makeMovement({
+        id: TEST_MOVEMENT_ID,
+        index: 0,
+        createdAt: "2023-01-01T00:00:00.000Z",
+      });
+      vi.mocked(repo.findRootById).mockResolvedValueOnce(work);
+      vi.mocked(repo.findChildren).mockResolvedValueOnce([existing]);
+
+      const result = await usecase.replaceAll(PieceId.from(TEST_WORK_ID), [
+        { id: TEST_MOVEMENT_ID, index: 0, title: "改題" },
+      ]);
+
+      expect(result[0]?.id).toBe(TEST_MOVEMENT_ID);
+      expect(result[0]?.title).toBe("改題");
+      expect(result[0]?.createdAt).toBe(existing.createdAt);
+      expect(result[0]?.updatedAt).not.toBe(existing.updatedAt);
+    });
+
+    it("Work の updatedAt を ifMatch にして同一トランザクション内で更新する", async () => {
+      const work = makeWork({ updatedAt: "2024-01-15T20:00:00.000Z" });
+      vi.mocked(repo.findRootById).mockResolvedValueOnce(work);
+      vi.mocked(repo.findChildren).mockResolvedValueOnce([]);
+
+      await usecase.replaceAll(PieceId.from(TEST_WORK_ID), [{ index: 0, title: "第1楽章" }]);
+
+      const call = vi.mocked(repo.replaceMovements).mock.calls[0];
+      expect(call?.[2]).toMatchObject({
+        prevUpdatedAt: "2024-01-15T20:00:00.000Z",
+      });
+      // updatedWork は新しい updatedAt に進んでいる
+      const updatedWork = call?.[2]?.work as { updatedAt: string };
+      expect(updatedWork.updatedAt).not.toBe("2024-01-15T20:00:00.000Z");
     });
   });
 });
@@ -304,6 +366,60 @@ describe("PieceUsecase (facade)", () => {
       await expect(
         usecase.update(PieceId.from(TEST_WORK_ID), { kind: "movement", title: "改題" }),
       ).rejects.toThrow(TypeError);
+    });
+  });
+
+  describe("delete", () => {
+    it("Work の場合は removeWorkCascade を呼ぶ", async () => {
+      vi.mocked(repo.findById).mockResolvedValueOnce(makeWork());
+
+      await usecase.delete(PieceId.from(TEST_WORK_ID));
+
+      expect(repo.removeWorkCascade).toHaveBeenCalled();
+      expect(repo.removeMovement).not.toHaveBeenCalled();
+    });
+
+    it("Movement の場合は removeMovement を呼ぶ", async () => {
+      vi.mocked(repo.findById).mockResolvedValueOnce(makeMovement());
+
+      await usecase.delete(PieceId.from(TEST_MOVEMENT_ID));
+
+      expect(repo.removeMovement).toHaveBeenCalled();
+      expect(repo.removeWorkCascade).not.toHaveBeenCalled();
+    });
+
+    it("存在しない id は冪等（何も呼ばない）", async () => {
+      vi.mocked(repo.findById).mockResolvedValueOnce(undefined);
+
+      await usecase.delete(PieceId.from(TEST_WORK_ID));
+
+      expect(repo.removeWorkCascade).not.toHaveBeenCalled();
+      expect(repo.removeMovement).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("resolveComposerId", () => {
+    it("Work ノードはそのまま composerId を返す", async () => {
+      const result = await usecase.resolveComposerId(makeWork());
+
+      expect(result.value).toBe(TEST_COMPOSER_ID);
+    });
+
+    it("Movement ノードは親 Work の composerId を返す", async () => {
+      const otherComposerId = "00000000-0000-4000-8000-000000000099";
+      vi.mocked(repo.findRootById).mockResolvedValueOnce(makeWork({ composerId: otherComposerId }));
+
+      const result = await usecase.resolveComposerId(makeMovement());
+
+      expect(result.value).toBe(otherComposerId);
+    });
+
+    it("Movement の親 Work が存在しない場合は 404", async () => {
+      vi.mocked(repo.findRootById).mockResolvedValueOnce(undefined);
+
+      await expect(usecase.resolveComposerId(makeMovement())).rejects.toMatchObject({
+        statusCode: 404,
+      });
     });
   });
 });

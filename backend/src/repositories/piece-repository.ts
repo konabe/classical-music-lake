@@ -1,3 +1,4 @@
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import {
   DeleteCommand,
   GetCommand,
@@ -5,6 +6,7 @@ import {
   QueryCommand,
   TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
+import createError from "http-errors";
 
 import type { PieceRepository } from "../domain/piece";
 import type { PieceId } from "../domain/value-objects/ids";
@@ -200,15 +202,24 @@ export class DynamoDBPieceRepository implements PieceRepository {
    * 既存の子要素を全て削除し、新しい子要素を Put する操作を 1 つの
    * TransactWriteItems で実行する。並び替え・追加・削除の混在も同時に反映される。
    *
+   * `workOptimisticLock` を渡すと、Work の楽観的ロック付き Put（条件式: `updatedAt = :prevUpdatedAt`）
+   * を同一トランザクションに含めて Work の `updatedAt` も同時に進める。Work の更新が他リクエストと
+   * 競合した場合、トランザクション全体がロールバックされる。
+   *
    * DynamoDB の TransactWriteItems は 1 トランザクション最大 100 アイテムのため、
-   * `(既存件数 + 新規件数)` が 100 を超える場合はエラーを投げる。
+   * `(既存件数 + 新規件数 + Work 更新の有無)` が 100 を超える場合はエラーを投げる。
    */
-  async replaceMovements(workId: PieceId, movements: PieceMovement[]): Promise<void> {
+  async replaceMovements(
+    workId: PieceId,
+    movements: PieceMovement[],
+    workOptimisticLock?: { work: PieceWork; prevUpdatedAt: string },
+  ): Promise<void> {
     if (movements.some((m) => m.parentId !== workId.value)) {
       throw new Error("All movements must belong to the specified workId");
     }
     const existing = await this.findChildren(workId);
-    const totalItems = existing.length + movements.length;
+    const workItemCount = workOptimisticLock === undefined ? 0 : 1;
+    const totalItems = existing.length + movements.length + workItemCount;
     if (totalItems > TRANSACT_WRITE_MAX_ITEMS) {
       throw new Error(
         `replaceMovements exceeds DynamoDB transaction limit (${totalItems} > ${TRANSACT_WRITE_MAX_ITEMS})`,
@@ -217,17 +228,38 @@ export class DynamoDBPieceRepository implements PieceRepository {
     if (totalItems === 0) {
       return;
     }
-    await dynamo.send(
-      new TransactWriteCommand({
-        TransactItems: [
-          ...existing.map((m) => ({
-            Delete: { TableName: TABLE_PIECES, Key: { id: m.id } },
-          })),
-          ...movements.map((m) => ({
-            Put: { TableName: TABLE_PIECES, Item: m },
-          })),
-        ],
-      }),
-    );
+    const transactItems: NonNullable<
+      ConstructorParameters<typeof TransactWriteCommand>[0]["TransactItems"]
+    > = [];
+    if (workOptimisticLock !== undefined) {
+      transactItems.push({
+        Put: {
+          TableName: TABLE_PIECES,
+          Item: workOptimisticLock.work,
+          ConditionExpression: "updatedAt = :prevUpdatedAt",
+          ExpressionAttributeValues: { ":prevUpdatedAt": workOptimisticLock.prevUpdatedAt },
+        },
+      });
+    }
+    existing.forEach((m) => {
+      transactItems.push({ Delete: { TableName: TABLE_PIECES, Key: { id: m.id } } });
+    });
+    movements.forEach((m) => {
+      transactItems.push({ Put: { TableName: TABLE_PIECES, Item: m } });
+    });
+    try {
+      await dynamo.send(new TransactWriteCommand({ TransactItems: transactItems }));
+    } catch (err) {
+      // Work の楽観的ロックが衝突するとトランザクション全体がキャンセルされる。
+      // CancellationReasons[0]（Work の Put）が ConditionalCheckFailed であれば 409 Conflict に変換する。
+      if (
+        err instanceof TransactionCanceledException &&
+        workOptimisticLock !== undefined &&
+        err.CancellationReasons?.[0]?.Code === "ConditionalCheckFailed"
+      ) {
+        throw new createError.Conflict("Piece was updated by another request");
+      }
+      throw err;
+    }
   }
 }

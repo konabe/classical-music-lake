@@ -2,7 +2,7 @@ import createError from "http-errors";
 
 import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
-import { PieceId } from "../domain/value-objects/ids";
+import { ComposerId, PieceId } from "../domain/value-objects/ids";
 import { DynamoDBPieceRepository } from "../repositories/piece-repository";
 import type {
   CreateMovementInput,
@@ -22,6 +22,18 @@ import { findByIdOrNotFound, toPaginatedResult } from "./helpers";
 export { PieceId };
 
 const ENTITY_NAME = "Piece";
+
+/**
+ * Movement 集合一括差し替えの入力型。
+ * - `id` は省略可能。指定されない場合は新規 UUID を採番する（追加扱い）。
+ * - `parentId` はパスパラメータの workId から付与するため受け取らない。
+ */
+export type ReplaceMovementInput = {
+  id?: string;
+  index: number;
+  title: string;
+  videoUrls?: string[];
+};
 
 /**
  * Work（親楽曲）専用ユースケース。
@@ -106,8 +118,46 @@ export class MovementUsecase {
     return this.repo.findChildren(parentId);
   }
 
-  async replaceMovements(workId: PieceId, movements: PieceMovement[]): Promise<void> {
-    await this.repo.replaceMovements(workId, movements);
+  /**
+   * Work 配下の Movement 集合を一括置換する。Work の `updatedAt` も同時に進める（楽観的ロック付き）。
+   *
+   * - Work が存在しなければ 404 を投げる。
+   * - 既存 Movement は内部で全件削除し、入力された `movements` のみ残る。
+   * - `id` を持つ入力は既存 Movement の更新（`createdAt` を引き継ぐ）、無ければ新規採番。
+   * - Work の楽観的ロックが衝突した場合は repository が 409 Conflict を投げる。
+   */
+  async replaceAll(workId: PieceId, movements: ReplaceMovementInput[]): Promise<PieceMovement[]> {
+    const currentWork = await findByIdOrNotFound(
+      (id) => this.repo.findRootById(id),
+      workId,
+      ENTITY_NAME,
+    );
+    const existingChildren = await this.repo.findChildren(workId);
+    const existingById = new Map(existingChildren.map((m) => [m.id, m]));
+    const now = new Date().toISOString();
+    const newMovements: PieceMovement[] = movements.map((m) => {
+      // id 指定 + 既存に存在 → 更新（createdAt を保持）。それ以外は新規採番。
+      const matched = m.id !== undefined ? existingById.get(m.id) : undefined;
+      const id = matched?.id ?? PieceId.generate().value;
+      const createdAt = matched?.createdAt ?? now;
+      return {
+        kind: "movement" as const,
+        id,
+        parentId: workId.value,
+        index: m.index,
+        title: m.title,
+        videoUrls: m.videoUrls,
+        createdAt,
+        updatedAt: now,
+      };
+    });
+    // Work の updatedAt を進める（同一トランザクション内で楽観的ロック）
+    const updatedWork: PieceWork = { ...currentWork, updatedAt: now };
+    await this.repo.replaceMovements(workId, newMovements, {
+      work: updatedWork,
+      prevUpdatedAt: currentWork.updatedAt,
+    });
+    return newMovements;
   }
 }
 
@@ -154,6 +204,26 @@ export class PieceUsecase {
     return findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
   }
 
+  /**
+   * 任意ノード（Work / Movement）から `composerId` を解決する。
+   * - Work: 自身の `composerId` を返す。
+   * - Movement: 親 Work を引き、親の `composerId` を返す。親が存在しなければ 404。
+   *
+   * Movement の API レスポンスには `composerId` を載せないが、内部処理（鑑賞記録の作曲家解決など）で
+   * 親 Work からの継承を必要とするユースケースのために提供する。
+   */
+  async resolveComposerId(node: Piece): Promise<ComposerId> {
+    if (node.kind === "work") {
+      return ComposerId.from(node.composerId);
+    }
+    const parent = await findByIdOrNotFound(
+      (id) => this.repo.findRootById(id),
+      PieceId.from(node.parentId),
+      ENTITY_NAME,
+    );
+    return ComposerId.from(parent.composerId);
+  }
+
   async update(id: PieceId, input: UpdatePieceInput): Promise<Piece> {
     const current = await findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
     const entity = PieceComponent.reconstruct(current);
@@ -168,8 +238,22 @@ export class PieceUsecase {
     return plain;
   }
 
+  /**
+   * kind を判別して削除する。
+   * - Work: 配下 Movement までまとめて cascade 削除
+   * - Movement: 単独削除（親 Work には影響しない）
+   * - 存在しない id は冪等に扱い、何もせず終了する（DELETE 系の慣例どおり）
+   */
   async delete(id: PieceId): Promise<void> {
-    await this.repo.removeWorkCascade(id);
+    const item = await this.repo.findById(id);
+    if (item === undefined) {
+      return;
+    }
+    if (item.kind === "work") {
+      await this.repo.removeWorkCascade(id);
+      return;
+    }
+    await this.repo.removeMovement(id);
   }
 }
 

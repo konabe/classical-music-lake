@@ -186,7 +186,7 @@ interface PieceMovement {
 type Piece = PieceWork | PieceMovement;
 ```
 
-> 1 Work あたりの Movement 件数の上限は `MOVEMENTS_PER_WORK_MAX = 64`、`index` の許容範囲は `MOVEMENT_INDEX_MIN..MOVEMENT_INDEX_MAX = 0..999`（`shared/constants.ts`）。
+> 1 Work あたりの Movement 件数の上限は `MOVEMENTS_PER_WORK_MAX = 49`、`index` の許容範囲は `MOVEMENT_INDEX_MIN..MOVEMENT_INDEX_MAX = 0..999`（`shared/constants.ts`）。49 という値は `PUT /pieces/{workId}/movements` の TransactWriteItems 上限（100 アイテム / 件）に収まるよう、最悪ケース（既存 49 削除 + 新規 49 Put + Work 1 件更新 = 99）から導出している。
 
 > **マイグレーション履歴**:
 >
@@ -194,6 +194,7 @@ type Piece = PieceWork | PieceMovement;
 > - 2026-05: `videoUrl`（単一）→ `videoUrls`（配列）。`DynamoDBPieceRepository` の読み込み時に透過的に正規化されるため、明示的な移行 Lambda は持たない
 > - 2026-05: `Piece` を Composite（`PieceWork` / `PieceMovement`）に再設計（PR1）。既存レコードは `kind` を持たないため、`DynamoDBPieceRepository` が読み込み時に `kind: "work"` を補完する。書き込み時は常に `kind` を含める。Movement の永続化と専用エンドポイントは PR2 / PR3 で追加する
 > - 2026-05: 楽曲テーブルに `parentId-index-index` GSI を追加（PR2）。`DynamoDBPieceRepository.findChildren` / `removeWorkCascade`（カスケード削除）/ `replaceMovements`（TransactWriteItems による集合置換）を有効化。GSI のバックフィルは AWS 側で非同期に走るため、PR3 デプロイ前に CloudWatch でステータスが `ACTIVE` になっていることを確認すること
+> - 2026-05: Movement 用 API（`GET /pieces/{id}/children` / `PUT /pieces/{workId}/movements`）と Work / Movement 横断の単一ノード API（`GET /pieces/{id}` / `PUT /pieces/{id}` / `DELETE /pieces/{id}`）を追加（PR3）。`MOVEMENTS_PER_WORK_MAX` を 64 → 49 に下げて TransactWriteItems の上限内に収める
 
 > **任意項目の更新**: Work では `era` / `genre` / `formation` / `region` を空文字で送信するとフィールドが削除される。`videoUrls` は空配列 `[]` で削除（Work / Movement 共通）。
 
@@ -305,10 +306,24 @@ interface ConcertLog {
 
 ### 4.5 楽曲マスタ API（`/pieces`）
 
-- **参照**: `GET /pieces`（カーソル型ページング）/ `GET /pieces/{id}`。**認証不要**
-- **書き込み**: `POST` / `PUT /{id}` / `DELETE /{id}`。**`admin` グループ必須**
+楽曲はコンポジット（Work / Movement）として扱う（§3.2）。同じ `/pieces/{id}` でも `kind` により挙動が分岐する。
+
+- **参照**: `GET /pieces`（root の Work のみ）/ `GET /pieces/{id}`（kind 問わず）/ `GET /pieces/{id}/children`（Movement 一覧）。**認証不要**
+- **書き込み**: `POST` / `PUT /{id}` / `DELETE /{id}` / `PUT /{workId}/movements`。**`admin` グループ必須**
   - 認証ヘッダーなし: `401 Unauthorized`（API Gateway Authorizer）
   - 認証済みだが非 admin: `403 Forbidden` + `{ "message": "Admin privilege required" }`
+
+#### エンドポイント一覧
+
+| メソッド | パス                         | 認証 | 概要                                                                                             |
+| -------- | ---------------------------- | ---- | ------------------------------------------------------------------------------------------------ |
+| `GET`    | `/pieces`                    | 不要 | Work（root）のカーソル型ページング。Movement は含まれない                                        |
+| `GET`    | `/pieces/{id}`               | 不要 | kind を問わず単一ノードを取得（Work でも Movement でも返す）                                     |
+| `GET`    | `/pieces/{id}/children`      | 不要 | 親 Work 配下の Movement を `index` 昇順で返す（`{ items: PieceMovement[] }` ではなく素直な配列） |
+| `POST`   | `/pieces`                    | 必須 | `kind` に応じて Work / Movement を作成                                                           |
+| `PUT`    | `/pieces/{id}`               | 必須 | kind 共通の単一更新（kind 不一致は 400）。楽観的ロック付き                                       |
+| `DELETE` | `/pieces/{id}`               | 必須 | kind を判別。Work なら配下 Movement まで cascade、Movement なら単独削除                          |
+| `PUT`    | `/pieces/{workId}/movements` | 必須 | Movement 集合の一括差し替え（並び替え・追加・削除）。Work の楽観的ロック付き                     |
 
 #### `GET /pieces` カーソル型ページング
 
@@ -317,11 +332,37 @@ interface ConcertLog {
 | `limit`  | 50   | 1〜100、範囲外は `400 Bad Request`       |
 | `cursor` | なし | 前回 `nextCursor` を渡す。不正値は `400` |
 
-レスポンス: `{ "items": Piece[], "nextCursor": "opaque-base64url" | null }`。`nextCursor` 無しで終端。
+レスポンス: `{ "items": PieceWork[], "nextCursor": "opaque-base64url" | null }`。`nextCursor` 無しで終端。Work のみが返される（Movement は `parentId-index-index` GSI に射影されるが、ベーステーブルの Scan 結果から `kind === "movement"` を除外している）。
 
 **カーソル仕様**: `base64url(JSON.stringify({ v: 1, k: LastEvaluatedKey }))` の不透明文字列。形式は Zod の `z.base64url()` で検証、デコード後の不正・未知バージョンは `decodeCursor` で検出して 400。**HMAC は付与しない**（楽曲マスタは全ユーザ共通でテナント境界を越えるリスク無し）。
 
 **ソート順**: DynamoDB Scan の戻り順（順不同）。
+
+#### `GET /pieces/{id}/children`
+
+親 Work 配下の Movement を `index` 昇順で全件返す。`parentId-index-index` GSI を利用。
+
+- レスポンス: `PieceMovement[]`（直接配列、`composerId` は含まれない）
+- 親 Work が存在しない `id` を渡しても 200 + 空配列を返す（GSI Query は親の存在を要求しない）
+
+#### `PUT /pieces/{workId}/movements`
+
+親 Work 配下の Movement 集合を一括差し替えする。並び替え・追加・削除を 1 つの DynamoDB TransactWriteItems で原子的に反映する。
+
+- **リクエストボディ**: `{ "movements": [{ "id"?, "index", "title", "videoUrls"? }, ...] }`
+  - `id` を指定すると既存 Movement の更新（`createdAt` を引き継ぐ）。省略時は新規 UUID を採番
+  - `index` は 0〜999 の整数。**同じ Work 内で重複は 400 Bad Request**（`replaceMovementsSchema.refine`）
+  - `title` は 1〜200 文字
+  - `videoUrls` は最大 10 件、URL 形式
+- **件数上限**: `MOVEMENTS_PER_WORK_MAX = 49` 件（既存 49 削除 + 新規 49 Put + Work 1 件更新 = 99 で TransactWriteItems の上限 100 以下）
+- **楽観的ロック**: Work の `updatedAt` を ifMatch 条件にして同一トランザクションで Work の `updatedAt` を進める。競合時は `409 Conflict` + `{ "message": "Piece was updated by another request" }`
+- **Work が存在しない場合**: `404 Not Found`
+- **レスポンス**: `{ "movements": PieceMovement[] }` 200 OK
+
+#### Movement のレスポンスポリシー
+
+- Movement の API レスポンスには `composerId` を含めない（親 Work から継承するため）
+- フロント側で楽章の作曲家を表示する場合は、親 Work を別途 fetch する（`GET /pieces/{parentId}`）
 
 ### 4.6 作曲家マスタ API（`/composers`）
 
@@ -354,8 +395,8 @@ interface ConcertLog {
 #### Lambda
 
 - **ランタイム**: Node.js 24.x
-- **関数数**: 26 個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
-  - 視聴ログ × 5 / 楽曲マスタ × 5 / 作曲家マスタ × 5 / コンサート記録 × 5 / 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）/ PreSignUp トリガー × 1
+- **関数数**: 28 個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
+  - 視聴ログ × 5 / 楽曲マスタ × 7（CRUD 5 + `getPieceChildren` + `replacePieceMovements`）/ 作曲家マスタ × 5 / コンサート記録 × 5 / 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）/ PreSignUp トリガー × 1
 - **環境変数**: `DYNAMO_TABLE_{LISTENING_LOGS,PIECES,CONCERT_LOGS,COMPOSERS}`、`COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID`（認証系のみ）、`CORS_ALLOW_ORIGIN`
 
 #### Cognito

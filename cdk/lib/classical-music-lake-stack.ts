@@ -408,6 +408,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const getPiece = fn("GetPiece", "handlers/pieces/get.ts");
     const updatePiece = fn("UpdatePiece", "handlers/pieces/update.ts");
     const deletePiece = fn("DeletePiece", "handlers/pieces/delete.ts");
+    const getPieceChildren = fn("GetPieceChildren", "handlers/pieces/children.ts");
+    const replacePieceMovements = fn(
+      "ReplacePieceMovements",
+      "handlers/pieces/replace-movements.ts",
+    );
 
     const authRegister = fn("AuthRegister", "handlers/auth/register.ts");
     const authLogin = fn("AuthLogin", "handlers/auth/login.ts");
@@ -497,7 +502,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     piecesTable.grantWriteData(createPiece);
     piecesTable.grantReadData(getPiece);
     piecesTable.grantReadWriteData(updatePiece);
-    piecesTable.grantWriteData(deletePiece);
+    // delete は kind 判定で Movement の場合は単独削除、Work の場合は cascade（子 Movement の Query が必要）
+    piecesTable.grantReadWriteData(deletePiece);
+    piecesTable.grantReadData(getPieceChildren);
+    // replace-movements は親 Work の取得・既存子 Movement の Query・TransactWriteItems を行うため Read+Write 両方必要
+    piecesTable.grantReadWriteData(replacePieceMovements);
     concertLogsTable.grantReadData(concertLogsList);
     concertLogsTable.grantWriteData(concertLogsCreate);
     concertLogsTable.grantReadData(concertLogsGet);
@@ -605,6 +614,14 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     pieceResource.addMethod("PUT", integ(updatePiece), withAuth);
     pieceResource.addMethod("DELETE", integ(deletePiece), withAuth);
 
+    // /pieces/{id}/children: 親 Work 配下の Movement 一覧（参照系のため認証不要）
+    const pieceChildrenResource = pieceResource.addResource("children");
+    pieceChildrenResource.addMethod("GET", integ(getPieceChildren), withoutAuth);
+
+    // /pieces/{workId}/movements: Movement 集合の一括差し替え（admin 必須）
+    const pieceMovementsResource = pieceResource.addResource("movements");
+    pieceMovementsResource.addMethod("PUT", integ(replacePieceMovements), withAuth);
+
     // /composers
     // 参照系（GET）は公開。書き込み系（POST/PUT/DELETE）は withAuth でトークン検証し、
     // ハンドラ側で admin グループ判定を実施する
@@ -652,6 +669,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       getPiece,
       updatePiece,
       deletePiece,
+      getPieceChildren,
+      replacePieceMovements,
       authRegister,
       authLogin,
       authVerifyEmail,
@@ -709,6 +728,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       ["GET", "PUT", "DELETE", "OPTIONS"],
       ["Content-Type", "Authorization"],
     );
+    this.addCors(pieceChildrenResource, ["GET", "OPTIONS"]);
+    this.addCors(pieceMovementsResource, ["PUT", "OPTIONS"], ["Content-Type", "Authorization"]);
     this.addCors(composersResource, ["GET", "POST", "OPTIONS"], ["Content-Type", "Authorization"]);
     this.addCors(
       composerResource,
@@ -828,6 +849,8 @@ function handler(event) {
       getPiece,
       updatePiece,
       deletePiece,
+      getPieceChildren,
+      replacePieceMovements,
       authRegister,
       authLogin,
       authVerifyEmail,

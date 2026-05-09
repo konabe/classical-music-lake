@@ -52,8 +52,18 @@ export type PieceRepository = {
   saveMovement(movement: PieceMovement): Promise<void>;
   saveMovementWithOptimisticLock(movement: PieceMovement, prevUpdatedAt: string): Promise<void>;
   removeMovement(id: PieceId): Promise<void>;
-  /** Work 配下の Movement 集合を一括置換する（PR3 用）。 */
-  replaceMovements(workId: PieceId, movements: PieceMovement[]): Promise<void>;
+  /**
+   * Work 配下の Movement 集合を一括置換する。
+   *
+   * `workOptimisticLock` を渡すと Work の楽観的ロック付き Put（`updatedAt = :prevUpdatedAt`）を
+   * 同一 TransactWriteItems に含めて Work の `updatedAt` も同時に進める。
+   * 競合した場合はリポジトリ実装が 409 Conflict を投げる。
+   */
+  replaceMovements(
+    workId: PieceId,
+    movements: PieceMovement[],
+    workOptimisticLock?: { work: PieceWork; prevUpdatedAt: string },
+  ): Promise<void>;
 };
 
 function toUrlArray(values: readonly string[] | undefined): Url[] | undefined {
