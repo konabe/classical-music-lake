@@ -83,6 +83,15 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
+    // parentId + index でコンポジット楽曲（Work 配下の Movement）を演奏順に取得する GSI。
+    // PartitionKey が parentId のみのため、kind="work" のレコード（parentId 不在）は当該インデックスに射影されない。
+    piecesTable.addGlobalSecondaryIndex({
+      indexName: "parentId-index-index",
+      partitionKey: { name: "parentId", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "index", type: dynamodb.AttributeType.NUMBER },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
     // -------------------------
     // DynamoDB テーブル（作曲家マスタ）
     // -------------------------

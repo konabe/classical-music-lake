@@ -1,4 +1,10 @@
-import { DeleteCommand, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DeleteCommand,
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+  TransactWriteCommand,
+} from "@aws-sdk/lib-dynamodb";
 
 import type { PieceRepository } from "../domain/piece";
 import type { PieceId } from "../domain/value-objects/ids";
@@ -6,6 +12,18 @@ import type { Piece, PieceMovement, PieceWork } from "../types";
 import { dynamo, putItemWithOptimisticLock, scanPage, TABLE_PIECES } from "../utils/dynamodb";
 
 type LegacyVideoUrlPiece = Piece & { videoUrl?: string };
+
+/**
+ * `parentId-index-index` GSI で Movement を演奏順取得するためのインデックス名。
+ * CDK の `piecesTable.addGlobalSecondaryIndex` と一致させる。
+ */
+const MOVEMENTS_GSI_INDEX_NAME = "parentId-index-index";
+
+/**
+ * 1 トランザクションで TransactWriteItems に渡せる最大件数（DynamoDB の上限）。
+ * 既存子の Delete + 新規 Put + Work 1 件で運用しても収まるよう、ハード上限値で扱う。
+ */
+const TRANSACT_WRITE_MAX_ITEMS = 100;
 
 export class DynamoDBPieceRepository implements PieceRepository {
   /**
@@ -30,9 +48,10 @@ export class DynamoDBPieceRepository implements PieceRepository {
 
   /**
    * 既存 DB レコード（`kind` を持たない）を Composite モデルに合わせて補完する。
-   * 既存データは全て Work として扱う（Movement は PR2 以降で書き込みを開始）。
+   * `kind` バックフィル移行（PR4）の完了前でも既存データを Work として読めるようにする。
+   * 書き込みは常に `kind` を含むため、上書きで自然に正規化される。
    */
-  private static normalizeKind(item: Piece | undefined): Piece | undefined {
+  static normalizeLegacyKind(item: Piece | undefined): Piece | undefined {
     if (item === undefined) {
       return undefined;
     }
@@ -44,7 +63,7 @@ export class DynamoDBPieceRepository implements PieceRepository {
   }
 
   private static readPiece(item: Piece | undefined): Piece | undefined {
-    return DynamoDBPieceRepository.normalizeKind(
+    return DynamoDBPieceRepository.normalizeLegacyKind(
       DynamoDBPieceRepository.normalizeLegacyVideoUrl(item),
     );
   }
@@ -89,11 +108,33 @@ export class DynamoDBPieceRepository implements PieceRepository {
     });
   }
 
+  /**
+   * Work 削除時に配下 Movement もまとめて削除する。
+   * Movement 集合は `parentId-index-index` GSI から取得し、Work + Movement を
+   * 1 つの TransactWriteItems で原子的に削除する。
+   */
   async removeWorkCascade(id: PieceId): Promise<void> {
-    // PR1 時点では Movement が DB に存在しないため、Work 単体の削除と等価。
-    // PR2 で root 取得（Work + Movements をアグリゲートで返す API）と合わせて
-    // 子レコードのカスケード削除を有効化する。
-    await dynamo.send(new DeleteCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }));
+    const children = await this.findChildren(id);
+    if (children.length === 0) {
+      await dynamo.send(new DeleteCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }));
+      return;
+    }
+    const totalItems = children.length + 1;
+    if (totalItems > TRANSACT_WRITE_MAX_ITEMS) {
+      throw new Error(
+        `Work cascade exceeds DynamoDB transaction limit (${totalItems} > ${TRANSACT_WRITE_MAX_ITEMS})`,
+      );
+    }
+    await dynamo.send(
+      new TransactWriteCommand({
+        TransactItems: [
+          { Delete: { TableName: TABLE_PIECES, Key: { id: id.value } } },
+          ...children.map((m) => ({
+            Delete: { TableName: TABLE_PIECES, Key: { id: m.id } },
+          })),
+        ],
+      }),
+    );
   }
 
   async findById(id: PieceId): Promise<Piece | undefined> {
@@ -101,6 +142,33 @@ export class DynamoDBPieceRepository implements PieceRepository {
       new GetCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }),
     );
     return DynamoDBPieceRepository.readPiece(result.Item as Piece | undefined);
+  }
+
+  /**
+   * 親 Work 配下の Movement を `parentId-index-index` GSI で `index` 昇順に全件取得する。
+   * `Limit` は付けず（楽章は最大 {@link MOVEMENTS_PER_WORK_MAX} 件想定）、
+   * 1 ページに収まらない場合は `LastEvaluatedKey` で全件を吸収する。
+   */
+  async findChildren(parentId: PieceId): Promise<PieceMovement[]> {
+    const items: PieceMovement[] = [];
+    let exclusiveStartKey: Record<string, unknown> | undefined;
+    do {
+      const result = await dynamo.send(
+        new QueryCommand({
+          TableName: TABLE_PIECES,
+          IndexName: MOVEMENTS_GSI_INDEX_NAME,
+          KeyConditionExpression: "parentId = :parentId",
+          ExpressionAttributeValues: { ":parentId": parentId.value },
+          ExclusiveStartKey: exclusiveStartKey,
+        }),
+      );
+      const page = (result.Items ?? [])
+        .map((raw) => DynamoDBPieceRepository.readPiece(raw as Piece | undefined))
+        .filter(DynamoDBPieceRepository.isMovement);
+      items.push(...page);
+      exclusiveStartKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+    } while (exclusiveStartKey !== undefined);
+    return items;
   }
 
   async saveMovement(movement: PieceMovement): Promise<void> {
@@ -127,10 +195,39 @@ export class DynamoDBPieceRepository implements PieceRepository {
     await dynamo.send(new DeleteCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }));
   }
 
-  async replaceMovements(_workId: PieceId, _movements: PieceMovement[]): Promise<void> {
-    // PR3 で実装する。PR1 時点ではエンドポイントが無いためスタブのまま。
-    void _workId;
-    void _movements;
-    throw new Error("replaceMovements is not implemented yet (PR3)");
+  /**
+   * Work 配下の Movement 集合をアトミックに置換する。
+   * 既存の子要素を全て削除し、新しい子要素を Put する操作を 1 つの
+   * TransactWriteItems で実行する。並び替え・追加・削除の混在も同時に反映される。
+   *
+   * DynamoDB の TransactWriteItems は 1 トランザクション最大 100 アイテムのため、
+   * `(既存件数 + 新規件数)` が 100 を超える場合はエラーを投げる。
+   */
+  async replaceMovements(workId: PieceId, movements: PieceMovement[]): Promise<void> {
+    if (movements.some((m) => m.parentId !== workId.value)) {
+      throw new Error("All movements must belong to the specified workId");
+    }
+    const existing = await this.findChildren(workId);
+    const totalItems = existing.length + movements.length;
+    if (totalItems > TRANSACT_WRITE_MAX_ITEMS) {
+      throw new Error(
+        `replaceMovements exceeds DynamoDB transaction limit (${totalItems} > ${TRANSACT_WRITE_MAX_ITEMS})`,
+      );
+    }
+    if (totalItems === 0) {
+      return;
+    }
+    await dynamo.send(
+      new TransactWriteCommand({
+        TransactItems: [
+          ...existing.map((m) => ({
+            Delete: { TableName: TABLE_PIECES, Key: { id: m.id } },
+          })),
+          ...movements.map((m) => ({
+            Put: { TableName: TABLE_PIECES, Item: m },
+          })),
+        ],
+      }),
+    );
   }
 }
