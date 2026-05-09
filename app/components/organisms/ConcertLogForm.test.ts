@@ -1,19 +1,21 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import ConcertLogForm from "./ConcertLogForm.vue";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
-const mockPieces: Piece[] = [
+const mockPieces: PieceWork[] = [
   {
+    kind: "work",
     id: "piece-1",
     title: "交響曲第9番",
-    composer: "ベートーヴェン",
+    composerId: "00000000-0000-4000-8000-000000000001",
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
+    kind: "work",
     id: "piece-2",
     title: "ピアノ協奏曲第1番",
-    composer: "チャイコフスキー",
+    composerId: "00000000-0000-4000-8000-000000000002",
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },

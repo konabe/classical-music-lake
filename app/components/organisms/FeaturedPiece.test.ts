@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import FeaturedPiece from "./FeaturedPiece.vue";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const COMPOSER_ID_TCHAIKOVSKY = "00000000-0000-4000-8000-000000000001";
 const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000002";
@@ -12,7 +12,8 @@ const composerNameById = {
   [COMPOSER_ID_BRAHMS]: "ブラームス",
 };
 
-const makePiece = (overrides: Partial<Piece> = {}): Piece => ({
+const makePiece = (overrides: Partial<PieceWork> = {}): PieceWork => ({
+  kind: "work",
   id: "piece-1",
   title: "ピアノ協奏曲第1番 変ロ短調 Op.23",
   composerId: COMPOSER_ID_TCHAIKOVSKY,

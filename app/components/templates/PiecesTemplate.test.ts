@@ -1,12 +1,13 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PiecesTemplate from "./PiecesTemplate.vue";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 const composerNameById = { [COMPOSER_ID]: "ベートーヴェン" };
 
-const samplePieces: Piece[] = [
+const samplePieces: PieceWork[] = [
   {
+    kind: "work",
     id: "piece-1",
     title: "交響曲第9番",
     composerId: COMPOSER_ID,
@@ -16,7 +17,7 @@ const samplePieces: Piece[] = [
 ];
 
 const baseProps = {
-  pieces: [] as Piece[],
+  pieces: [] as PieceWork[],
   error: null as Error | null,
   pending: false,
   hasMore: false,

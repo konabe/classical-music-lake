@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Composer, Piece, UpdatePieceInput } from "~/types";
+import type { Composer, PieceWork, UpdatePieceInput } from "~/types";
 
 defineProps<{
-  piece: Piece | null;
+  piece: PieceWork | null;
   fetchError: Error | null;
   error: string | null;
   composers: Composer[];

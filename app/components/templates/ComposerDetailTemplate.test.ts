@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import ComposerDetailTemplate from "./ComposerDetailTemplate.vue";
-import type { Composer, Piece } from "~/types";
+import type { Composer, PieceWork } from "~/types";
 
 const sample: Composer = {
   id: "1",
@@ -11,8 +11,9 @@ const sample: Composer = {
   updatedAt: "2024-06-01T00:00:00.000Z",
 };
 
-const samplePieces: Piece[] = [
+const samplePieces: PieceWork[] = [
   {
+    kind: "work",
     id: "p1",
     title: "交響曲第9番",
     composerId: "1",
@@ -24,6 +25,7 @@ const samplePieces: Piece[] = [
     updatedAt: "2024-06-01T00:00:00.000Z",
   },
   {
+    kind: "work",
     id: "p2",
     title: "ピアノソナタ第14番「月光」",
     composerId: "1",

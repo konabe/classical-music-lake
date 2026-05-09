@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 import PieceItem from "./PieceItem.vue";
 
 const meta: Meta<typeof PieceItem> = {
@@ -13,7 +13,8 @@ type Story = StoryObj<typeof PieceItem>;
 const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
 const COMPOSER_ID_MOZART = "00000000-0000-4000-8000-000000000002";
 
-const samplePiece: Piece = {
+const samplePiece: PieceWork = {
+  kind: "work",
   id: "1",
   title: "交響曲第9番 ニ短調 Op.125",
   composerId: COMPOSER_ID_BEETHOVEN,

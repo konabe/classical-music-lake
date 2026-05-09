@@ -1,14 +1,15 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
 import PieceEditPage from "./edit.vue";
-import type { Piece, UpdatePieceInput } from "~/types";
+import type { PieceWork, UpdatePieceInput } from "~/types";
 
 const mockUpdatePiece = vi.fn();
 
-const samplePiece: Piece = {
+const samplePiece: PieceWork = {
+  kind: "work",
   id: "piece-1",
   title: "交響曲第9番",
-  composer: "ベートーヴェン",
+  composerId: "00000000-0000-4000-8000-000000000001",
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 };

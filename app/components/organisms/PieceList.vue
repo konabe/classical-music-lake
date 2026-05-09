@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 defineProps<{
-  pieces: Piece[];
+  pieces: PieceWork[];
   error: Error | null;
   composerNameById: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
-  delete: [piece: Piece];
+  delete: [piece: PieceWork];
 }>();
 
 const router = useRouter();

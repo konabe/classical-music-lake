@@ -12,6 +12,7 @@
 - **視聴ログの検索・統計**: クライアントサイド絞り込みと、件数・評価分布・作曲家ランキング・月別トレンドの集計表示
 - **コンサート記録管理**: 会場・指揮者・オーケストラ・ソリスト・プログラム（楽曲マスタ参照）
 - **楽曲マスタ管理**: 楽曲の登録・編集・削除（管理者のみ）。詳細ページではログイン中ユーザーの該当楽曲の鑑賞記録一覧（`pieceId` 一致でクライアントサイド絞り込み）を表示し、各鑑賞記録の詳細ページへリンクする
+- **楽章表示**: 楽曲（Work）詳細ページに楽章（Movement）の一覧をカード形式で表示し、YouTube 動画は埋め込みプレーヤーで再生する。楽章を直接 `/pieces/{movementId}` で開いた場合は親 Work へのパンくずリンクを表示し、クイックログ生成時は「親 Work title - 楽章 title」で記録する
 - **作曲家マスタ管理**: 作曲家の登録・編集・削除（管理者のみ）。生没年を登録すると一覧は生年昇順（古い順）で表示され、未登録は末尾に並ぶ。詳細ページではその作曲家の楽曲一覧（クライアントサイド絞り込み）も表示
 - **ユーザー登録**: メールアドレス＋パスワード（メール確認付き）／Google OAuth（Cognito Hosted UI）
 
@@ -53,7 +54,9 @@
 | `useApiBase`                | API Gateway のベース URL を返す                                                                                                                                               |
 | `useCognitoConfig`          | Cognito Hosted UI のドメインとクライアント ID を返す                                                                                                                          |
 | `useAuth`                   | 認証処理（register・login・logout・isAuthenticated・refreshTokens・isTokenExpired・loginWithGoogle・handleOAuthCallback・isAdmin）                                            |
-| `usePieces`                 | 曲一覧を取得する                                                                                                                                                              |
+| `usePieces`                 | 曲一覧（root の `PieceWork[]`）を取得する。`usePiecesPaginated` / `usePiecesAll` / `usePiece` を提供                                                                          |
+| `useMovements`              | 親 Work 配下の楽章一覧を取得する（`GET /pieces/{id}/children`、認証不要）                                                                                                     |
+| `useReplaceMovements`       | 親 Work 配下の楽章集合を一括差し替える `replaceMovements(workId, items)` を提供（`PUT /pieces/{workId}/movements`、admin 必須）                                               |
 | `useRatingDisplay`          | 評価値（0〜5）を星文字列に変換する (`ratingStars`)                                                                                                                            |
 | `useConcertLogs`            | コンサート記録の一覧取得（`list`）・作成（`create`）・更新（`update`）・削除（`deleteLog`）。401 時にトークンリフレッシュを自動試行                                           |
 | `useConcertLog`             | 特定のコンサート記録を id で取得する（詳細ページ用）                                                                                                                          |

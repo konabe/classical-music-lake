@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const props = defineProps<{
-  pieces: Piece[];
+  pieces: PieceWork[];
   loading: boolean;
   composerNameById: Record<string, string>;
 }>();

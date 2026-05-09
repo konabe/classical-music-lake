@@ -1,10 +1,11 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceEditTemplate from "./PieceEditTemplate.vue";
-import type { Composer, Piece } from "~/types";
+import type { Composer, PieceWork } from "~/types";
 
 const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 
-const samplePiece: Piece = {
+const samplePiece: PieceWork = {
+  kind: "work",
   id: "piece-1",
   title: "交響曲第9番",
   composerId: COMPOSER_ID,

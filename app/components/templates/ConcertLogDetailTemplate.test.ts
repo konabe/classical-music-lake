@@ -3,7 +3,7 @@ import { flushPromises } from "@vue/test-utils";
 import ConcertLogDetailTemplate from "./ConcertLogDetailTemplate.vue";
 import ButtonDanger from "~/components/atoms/ButtonDanger.vue";
 import ButtonSecondary from "~/components/atoms/ButtonSecondary.vue";
-import type { ConcertLog, Piece } from "~/types";
+import type { ConcertLog, PieceWork } from "~/types";
 
 const mockDeleteLog = vi.fn();
 
@@ -19,11 +19,12 @@ vi.mock("~/composables/useConcertLogs", () => ({
   }),
 }));
 
-const mockPieces: Piece[] = [
+const mockPieces: PieceWork[] = [
   {
+    kind: "work",
     id: "piece-1",
     title: "交響曲第9番",
-    composer: "ベートーヴェン",
+    composerId: "00000000-0000-4000-8000-000000000001",
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2024-01-01T00:00:00.000Z",
   },

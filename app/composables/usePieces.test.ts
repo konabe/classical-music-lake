@@ -1,7 +1,7 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { usePiecesPaginated, usePiecesAll, usePiece } from "./usePieces";
 import type { PageResult } from "./usePaginatedList";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 import { ID_TOKEN_KEY } from "./useAuth";
 import {
   PIECES_PAGE_SIZE_DEFAULT,
@@ -43,7 +43,8 @@ vi.mock("./useAuth", async (importOriginal) => {
   };
 });
 
-const makePiece = (id: string, title = `title-${id}`): Piece => ({
+const makePiece = (id: string, title = `title-${id}`): PieceWork => ({
+  kind: "work",
   id,
   title,
   composerId: "00000000-0000-4000-8000-000000000001",
@@ -88,7 +89,7 @@ describe("usePiecesPaginated", () => {
       mockDollarFetch.mockResolvedValueOnce({
         items: [],
         nextCursor: null,
-      } satisfies PageResult<Piece>);
+      } satisfies PageResult<PieceWork>);
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(mockDollarFetch).toHaveBeenCalledWith("/api/pieces", {
@@ -130,9 +131,9 @@ describe("usePiecesPaginated", () => {
     });
 
     it("pending 中に loadMore を呼んでも二重発行しない", async () => {
-      let resolvePage: ((value: PageResult<Piece>) => void) | undefined;
+      let resolvePage: ((value: PageResult<PieceWork>) => void) | undefined;
       mockDollarFetch.mockReturnValueOnce(
-        new Promise<PageResult<Piece>>((resolve) => {
+        new Promise<PageResult<PieceWork>>((resolve) => {
           resolvePage = resolve;
         }),
       );
@@ -187,7 +188,11 @@ describe("usePiecesPaginated", () => {
       const p = usePiecesPaginated();
       await p.loadMore();
       expect(p.items.value).toHaveLength(1);
-      await p.createPiece({ title: "x", composerId: "00000000-0000-4000-8000-000000000001" });
+      await p.createPiece({
+        kind: "work",
+        title: "x",
+        composerId: "00000000-0000-4000-8000-000000000001",
+      });
       expect(p.items.value).toEqual([]);
       expect(p.hasMore.value).toBe(true);
     });
@@ -205,12 +210,17 @@ describe("usePiecesPaginated", () => {
       localStorage.setItem(ID_TOKEN_KEY, "test-id-token");
       mockFetch.mockResolvedValueOnce(jsonResponse(makePiece("new"), 201));
       const p = usePiecesPaginated();
-      await p.createPiece({ title: "new", composerId: "00000000-0000-4000-8000-000000000001" });
+      await p.createPiece({
+        kind: "work",
+        title: "new",
+        composerId: "00000000-0000-4000-8000-000000000001",
+      });
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/pieces",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({
+            kind: "work",
             title: "new",
             composerId: "00000000-0000-4000-8000-000000000001",
           }),
@@ -246,7 +256,11 @@ describe("usePiecesPaginated", () => {
       );
       const p = usePiecesPaginated();
       await expect(
-        p.createPiece({ title: "x", composerId: "00000000-0000-4000-8000-000000000001" }),
+        p.createPiece({
+          kind: "work",
+          title: "x",
+          composerId: "00000000-0000-4000-8000-000000000001",
+        }),
       ).rejects.toThrow();
     });
   });
@@ -310,7 +324,11 @@ describe("usePiecesAll", () => {
     const p = usePiecesAll();
     await p.refresh();
     expect(p.data.value).toHaveLength(1);
-    await p.createPiece({ title: "x", composerId: "00000000-0000-4000-8000-000000000001" });
+    await p.createPiece({
+      kind: "work",
+      title: "x",
+      composerId: "00000000-0000-4000-8000-000000000001",
+    });
     await flush();
     expect(p.data.value).toHaveLength(2);
   });

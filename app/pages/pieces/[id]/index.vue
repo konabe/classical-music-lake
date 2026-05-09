@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ListeningLog, Piece, Rating } from "~/types";
+import type { ListeningLog, Piece, PieceMovement, PieceWork, Rating } from "~/types";
 
 const route = useRoute();
 const apiBase = useApiBase();
@@ -10,13 +10,71 @@ const { create } = useListeningLogCreate();
 const { isAdmin, isAuthenticated } = useAuth();
 const isAdminUser = isAdmin();
 
+// Movement を直接開いた場合、親 Work を取得して composerId・タイトルを継承解決する。
+const parentWorkId = computed<string | null>(() => {
+  if (piece.value === null || piece.value === undefined) return null;
+  return piece.value.kind === "movement" ? piece.value.parentId : null;
+});
+
+const parentWork = ref<PieceWork | null>(null);
+watch(
+  parentWorkId,
+  async (id) => {
+    if (id === null) {
+      parentWork.value = null;
+      return;
+    }
+    try {
+      const fetched = await $fetch<Piece>(`${apiBase}/pieces/${id}`);
+      parentWork.value = fetched.kind === "work" ? fetched : null;
+    } catch {
+      parentWork.value = null;
+    }
+  },
+  { immediate: true },
+);
+
+// Work の場合のみ楽章一覧を取得する。Movement の場合は不要（描画されない）。
+const movementsWorkId = computed(() => (piece.value?.kind === "work" ? piece.value.id : null));
+const movements = ref<PieceMovement[]>([]);
+watch(
+  movementsWorkId,
+  async (id) => {
+    if (id === null) {
+      movements.value = [];
+      return;
+    }
+    try {
+      const fetched = await $fetch<PieceMovement[]>(`${apiBase}/pieces/${id}/children`);
+      movements.value = fetched;
+    } catch {
+      movements.value = [];
+    }
+  },
+  { immediate: true },
+);
+
 const composerName = computed(() => {
-  const id = piece.value?.composerId;
+  let id: string | undefined;
+  if (piece.value?.kind === "work") {
+    id = piece.value.composerId;
+  } else if (piece.value?.kind === "movement") {
+    id = parentWork.value?.composerId;
+  }
   if (id === undefined) {
     return "";
   }
   const found = (composers.value ?? []).find((c) => c.id === id);
   return found?.name ?? "(不明な作曲家)";
+});
+
+const quickLogPieceLabel = computed(() => {
+  if (piece.value === null || piece.value === undefined) return "";
+  if (piece.value.kind === "movement") {
+    const parentTitle = parentWork.value?.title ?? "";
+    return parentTitle === "" ? piece.value.title : `${parentTitle} - ${piece.value.title}`;
+  }
+  return piece.value.title;
 });
 
 const authenticated: boolean = isAuthenticated();
@@ -44,7 +102,7 @@ async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: s
   await create({
     listenedAt: new Date().toISOString(),
     composer: composerName.value,
-    piece: piece.value.title,
+    piece: quickLogPieceLabel.value,
     pieceId: piece.value.id,
     userId: null,
     ...values,
@@ -74,6 +132,9 @@ async function handleDelete(target: Piece) {
     :is-admin="isAdminUser"
     :composer-name="composerName"
     :listening-logs="listeningLogs"
+    :movements="movements"
+    :parent-work="parentWork"
+    :quick-log-piece-label="quickLogPieceLabel"
     @save="handleSave"
     @delete="handleDelete"
   />

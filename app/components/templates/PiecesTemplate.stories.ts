@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 import PiecesTemplate from "./PiecesTemplate.vue";
 
 const meta: Meta<typeof PiecesTemplate> = {
@@ -18,8 +18,9 @@ const composerNameById = {
   [COMPOSER_ID_MOZART]: "モーツァルト",
 };
 
-const samplePieces: Piece[] = [
+const samplePieces: PieceWork[] = [
   {
+    kind: "work",
     id: "1",
     title: "交響曲第9番 ニ短調 Op.125",
     composerId: COMPOSER_ID_BEETHOVEN,
@@ -27,6 +28,7 @@ const samplePieces: Piece[] = [
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
+    kind: "work",
     id: "2",
     title: "ピアノ協奏曲第21番 ハ長調 K.467",
     composerId: COMPOSER_ID_MOZART,

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { Composer, Piece } from "~/types";
+import type { Composer, PieceWork } from "~/types";
 import { formatLifespan } from "~/utils/lifespan";
 
 const props = defineProps<{
   composer: Composer | null;
   error: Error | null;
   isAdmin: boolean;
-  pieces: Piece[];
+  pieces: PieceWork[];
   piecesError: Error | null;
   piecesPending: boolean;
 }>();

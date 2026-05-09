@@ -1,8 +1,9 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceDetailTemplate from "./PieceDetailTemplate.vue";
-import type { ListeningLog, Piece } from "~/types";
+import type { ListeningLog, PieceMovement, PieceWork } from "~/types";
 
-const pieceWithVideo: Piece = {
+const pieceWithVideo: PieceWork = {
+  kind: "work",
   id: "1",
   title: "交響曲第9番 ニ短調 Op.125",
   composerId: "00000000-0000-4000-8000-000000000001",
@@ -11,7 +12,8 @@ const pieceWithVideo: Piece = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
-const pieceWithMultipleVideos: Piece = {
+const pieceWithMultipleVideos: PieceWork = {
+  kind: "work",
   id: "4",
   title: "交響曲第9番 ニ短調 Op.125",
   composerId: "00000000-0000-4000-8000-000000000001",
@@ -24,7 +26,8 @@ const pieceWithMultipleVideos: Piece = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
-const pieceWithCategories: Piece = {
+const pieceWithCategories: PieceWork = {
+  kind: "work",
   id: "3",
   title: "春の祭典",
   composerId: "00000000-0000-4000-8000-000000000003",
@@ -36,10 +39,22 @@ const pieceWithCategories: Piece = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
-const pieceWithoutVideo: Piece = {
+const pieceWithoutVideo: PieceWork = {
+  kind: "work",
   id: "2",
   title: "魔笛",
   composerId: "00000000-0000-4000-8000-000000000002",
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
+};
+
+const movementSample: PieceMovement = {
+  kind: "movement",
+  id: "movement-1",
+  parentId: "1",
+  index: 0,
+  title: "第1楽章 Allegro ma non troppo",
+  videoUrls: ["https://www.youtube.com/watch?v=mov1"],
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
@@ -384,6 +399,103 @@ describe("PieceDetailTemplate", () => {
         },
       });
       expect(wrapper.find(".piece-listenings").exists()).toBe(false);
+    });
+  });
+
+  describe("楽章一覧（Movements）", () => {
+    it("Work かつ movements が指定されると Movements セクションが表示される", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+          movements: [movementSample],
+        },
+      });
+      expect(wrapper.find(".piece-movements").exists()).toBe(true);
+      expect(wrapper.text()).toContain("第1楽章 Allegro ma non troppo");
+    });
+
+    it("movements が空配列の場合 Movements セクションは表示されない", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+          movements: [],
+        },
+      });
+      expect(wrapper.find(".piece-movements").exists()).toBe(false);
+    });
+
+    it("movements が未指定の場合 Movements セクションは表示されない", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+        },
+      });
+      expect(wrapper.find(".piece-movements").exists()).toBe(false);
+    });
+
+    it("Movement を直接開いた場合は Movements セクションは表示されない", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: movementSample,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+          movements: [movementSample],
+        },
+      });
+      expect(wrapper.find(".piece-movements").exists()).toBe(false);
+    });
+  });
+
+  describe("Movement 詳細とパンくず", () => {
+    it("Movement かつ parentWork が渡されると親 Work へのパンくずが表示される", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: movementSample,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+          parentWork: pieceWithoutVideo,
+        },
+      });
+      const link = wrapper.find(".breadcrumb-link");
+      expect(link.exists()).toBe(true);
+      expect(link.attributes("href")).toBe("/pieces/2");
+      expect(link.text()).toContain("魔笛");
+    });
+
+    it("Work の場合パンくずは表示されない", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: pieceWithoutVideo,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+        },
+      });
+      expect(wrapper.find(".breadcrumb-link").exists()).toBe(false);
+    });
+
+    it("Movement の場合 PieceCategoryList は表示されない（カテゴリは Work に紐付くため）", async () => {
+      const wrapper = await mountSuspended(PieceDetailTemplate, {
+        props: {
+          piece: movementSample,
+          error: null,
+          isAdmin: false,
+          composerName: "ベートーヴェン",
+          parentWork: pieceWithCategories,
+        },
+      });
+      expect(wrapper.find(".piece-category-list").exists()).toBe(false);
     });
   });
 });

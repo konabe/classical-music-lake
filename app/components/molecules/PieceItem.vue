@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 import { isYouTubeUrl } from "~/utils/video";
 
 const props = defineProps<{
-  piece: Piece;
+  piece: PieceWork;
   composerName: string;
 }>();
 
