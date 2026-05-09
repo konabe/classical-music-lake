@@ -128,6 +128,30 @@ jobs:
         run: |
           aws logs delete-log-group --log-group-name "/aws/apigateway/classical-music-lake-${STAGE_NAME}" 2>/dev/null || true
 
+      # ----------------------------------------
+      # 孤立 CloudWatch アラームのクリーンアップ
+      # Lambda 関数追加によりインデックスがズレ、論理 ID が変わった際に
+      # 古い物理リソースが残って競合するケースに対処する
+      # ----------------------------------------
+      - name: Cleanup orphaned CloudWatch alarms
+        run: |
+          STACK_NAME="${{ steps.stack.outputs.name }}"
+          # CloudFormation スタックが管理していないアラームのみ削除する
+          ALL_ALARMS=$(aws cloudwatch describe-alarms \
+            --alarm-name-prefix "classical-music-lake-${STAGE_NAME}-lambda-" \
+            --query 'MetricAlarms[].AlarmName' \
+            --output text 2>/dev/null || true)
+          MANAGED=$(aws cloudformation list-stack-resources \
+            --stack-name "$STACK_NAME" \
+            --query 'StackResourceSummaries[?ResourceType==`AWS::CloudWatch::Alarm`].PhysicalResourceId' \
+            --output text 2>/dev/null || true)
+          for alarm in $ALL_ALARMS; do
+            if ! echo "$MANAGED" | grep -qF "$alarm"; then
+              echo "Deleting orphaned alarm: $alarm"
+              aws cloudwatch delete-alarms --alarm-names "$alarm" 2>/dev/null || true
+            fi
+          done
+
       - name: CDK Bootstrap (ap-northeast-1)
         run: npx cdk bootstrap
         working-directory: cdk
