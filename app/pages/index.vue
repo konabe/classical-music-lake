@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { PageResult } from "~/composables/usePaginatedList";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const apiBase = useApiBase();
-const { data, pending } = useFetch<PageResult<Piece>>(`${apiBase}/pieces`);
+const { data, pending } = useFetch<PageResult<PieceWork>>(`${apiBase}/pieces`);
 const { data: composers, refresh: refreshComposers } = useComposersAll();
 void refreshComposers();
 

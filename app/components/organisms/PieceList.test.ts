@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceList from "./PieceList.vue";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
 const COMPOSER_ID_MOZART = "00000000-0000-4000-8000-000000000002";
@@ -10,8 +10,9 @@ const composerNameById = {
   [COMPOSER_ID_MOZART]: "モーツァルト",
 };
 
-const makePieces = (): Piece[] => [
+const makePieces = (): PieceWork[] => [
   {
+    kind: "work",
     id: "piece-1",
     title: "交響曲第9番",
     composerId: COMPOSER_ID_BEETHOVEN,
@@ -20,6 +21,7 @@ const makePieces = (): Piece[] => [
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
+    kind: "work",
     id: "piece-2",
     title: "魔笛",
     composerId: COMPOSER_ID_MOZART,
@@ -104,7 +106,7 @@ describe("PieceList", () => {
         props: { pieces: makePieces(), error: null, composerNameById },
       });
       await wrapper.findAll(".btn-danger")[0].trigger("click");
-      const emitted = wrapper.emitted("delete") as [Piece][];
+      const emitted = wrapper.emitted("delete") as [PieceWork][];
       expect(emitted[0][0].id).toBe("piece-1");
     });
 

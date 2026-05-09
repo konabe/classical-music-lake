@@ -2,11 +2,12 @@ import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceItem from "./PieceItem.vue";
 import ButtonSecondary from "../atoms/ButtonSecondary.vue";
 import ButtonDanger from "../atoms/ButtonDanger.vue";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 
-const samplePiece: Piece = {
+const samplePiece: PieceWork = {
+  kind: "work",
   id: "1",
   title: "交響曲第9番 ニ短調 Op.125",
   composerId: COMPOSER_ID,
@@ -14,7 +15,7 @@ const samplePiece: Piece = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
-const samplePieceWithCategories: Piece = {
+const samplePieceWithCategories: PieceWork = {
   ...samplePiece,
   genre: "交響曲",
   era: "ロマン派",
@@ -22,22 +23,22 @@ const samplePieceWithCategories: Piece = {
   region: "ドイツ・オーストリア",
 };
 
-const samplePieceWithYouTubeUrl: Piece = {
+const samplePieceWithYouTubeUrl: PieceWork = {
   ...samplePiece,
   videoUrls: ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
 };
 
-const samplePieceWithShortYouTubeUrl: Piece = {
+const samplePieceWithShortYouTubeUrl: PieceWork = {
   ...samplePiece,
   videoUrls: ["https://youtu.be/dQw4w9WgXcQ"],
 };
 
-const samplePieceWithNonYouTubeUrl: Piece = {
+const samplePieceWithNonYouTubeUrl: PieceWork = {
   ...samplePiece,
   videoUrls: ["https://example.com/video.mp4"],
 };
 
-const samplePieceWithMultipleYouTubeUrls: Piece = {
+const samplePieceWithMultipleYouTubeUrls: PieceWork = {
   ...samplePiece,
   videoUrls: [
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -171,7 +172,7 @@ describe("PieceItem", () => {
   });
 
   describe("YouTube サムネイル表示", () => {
-    const expectThumbnailVisible = async (piece: Piece, shouldExist: boolean) => {
+    const expectThumbnailVisible = async (piece: PieceWork, shouldExist: boolean) => {
       const wrapper = await mountSuspended(PieceItem, {
         props: { piece, composerName: "ベートーヴェン" },
       });

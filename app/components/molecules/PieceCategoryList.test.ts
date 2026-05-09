@@ -1,15 +1,15 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceCategoryList from "./PieceCategoryList.vue";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
-const allCategories: Pick<Piece, "genre" | "era" | "formation" | "region"> = {
+const allCategories: Pick<PieceWork, "genre" | "era" | "formation" | "region"> = {
   genre: "交響曲",
   era: "ロマン派",
   formation: "管弦楽",
   region: "ドイツ・オーストリア",
 };
 
-const noCategories: Pick<Piece, "genre" | "era" | "formation" | "region"> = {};
+const noCategories: Pick<PieceWork, "genre" | "era" | "formation" | "region"> = {};
 
 describe("PieceCategoryList", () => {
   describe("カテゴリあり", () => {

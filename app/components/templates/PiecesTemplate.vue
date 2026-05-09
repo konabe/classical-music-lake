@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const props = defineProps<{
-  pieces: Piece[];
+  pieces: PieceWork[];
   error: Error | null;
   pending: boolean;
   hasMore: boolean;
@@ -11,7 +11,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  delete: [piece: Piece];
+  delete: [piece: PieceWork];
   loadMore: [];
   retry: [];
 }>();

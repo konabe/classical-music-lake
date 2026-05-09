@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import ConcertLogDetail from "./ConcertLogDetail.vue";
-import type { ConcertLog, Piece } from "~/types";
+import type { ConcertLog, PieceWork } from "~/types";
 
 const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
 const COMPOSER_ID_TCHAIKOVSKY = "00000000-0000-4000-8000-000000000002";
@@ -23,8 +23,9 @@ const sampleLog: ConcertLog = {
   updatedAt: "2024-01-15T20:00:00.000Z",
 };
 
-const samplePieces: Piece[] = [
+const samplePieces: PieceWork[] = [
   {
+    kind: "work",
     id: "piece-1",
     title: "交響曲第9番",
     composerId: COMPOSER_ID_BEETHOVEN,
@@ -32,6 +33,7 @@ const samplePieces: Piece[] = [
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
+    kind: "work",
     id: "piece-2",
     title: "ピアノ協奏曲第1番",
     composerId: COMPOSER_ID_TCHAIKOVSKY,

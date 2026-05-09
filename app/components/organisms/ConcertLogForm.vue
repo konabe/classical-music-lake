@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import draggable from "vuedraggable";
 import { nowAsDatetimeLocal, toDatetimeLocal } from "~/utils/date";
-import type { CreateConcertLogInput, Piece } from "~/types";
+import type { CreateConcertLogInput, PieceWork } from "~/types";
 
 const props = defineProps<{
   initialValues?: Partial<CreateConcertLogInput>;
@@ -38,15 +38,15 @@ const form = reactive({
 });
 
 const selectedPieceId = ref("");
-const selectedPieces = ref<Piece[]>(resolveInitialPieces());
+const selectedPieces = ref<PieceWork[]>(resolveInitialPieces());
 
-function resolveInitialPieces(): Piece[] {
+function resolveInitialPieces(): PieceWork[] {
   if (props.initialValues?.pieceIds === undefined || pieces.value === null) {
     return [];
   }
   return props.initialValues.pieceIds
     .map((id) => pieces.value!.find((p) => p.id === id))
-    .filter((p): p is Piece => p !== undefined);
+    .filter((p): p is PieceWork => p !== undefined);
 }
 
 watch(

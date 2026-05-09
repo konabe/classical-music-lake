@@ -3,12 +3,13 @@ import {
   PIECES_ALL_MAX_TOTAL,
   PIECES_PAGE_SIZE_DEFAULT,
 } from "~/types";
-import type { CreatePieceInput, Piece, UpdatePieceInput } from "~/types";
+import type { CreatePieceInput, Piece, PieceWork, UpdatePieceInput } from "~/types";
 import { useAuthenticatedApi } from "./useAuthenticatedApi";
 import { fetchCursorPage, usePaginatedList } from "./usePaginatedList";
 
+// `GET /pieces` は root の Work のみを返す（楽章は `GET /pieces/{id}/children` 経由）。
 const fetchPiecesPage = (apiBase: string, options: { limit: number; cursor?: string }) =>
-  fetchCursorPage<Piece>(`${apiBase}/pieces`, options);
+  fetchCursorPage<PieceWork>(`${apiBase}/pieces`, options);
 
 const usePieceMutations = () => {
   const apiBase = useApiBase();
@@ -33,7 +34,7 @@ const usePieceMutations = () => {
 export const usePiecesPaginated = () => {
   const apiBase = useApiBase();
   const { postPiece, putPiece } = usePieceMutations();
-  const pagination = usePaginatedList<Piece>((cursor) =>
+  const pagination = usePaginatedList<PieceWork>((cursor) =>
     fetchPiecesPage(apiBase, { limit: PIECES_PAGE_SIZE_DEFAULT, cursor }),
   );
 
@@ -66,14 +67,14 @@ export const usePiecesPaginated = () => {
 export const usePiecesAll = () => {
   const apiBase = useApiBase();
   const { postPiece, putPiece } = usePieceMutations();
-  const data = ref<Piece[] | null>(null);
+  const data = ref<PieceWork[] | null>(null);
   const pending = ref<boolean>(false);
   const error = ref<Error | null>(null);
 
   const refresh = async () => {
     pending.value = true;
     error.value = null;
-    const acc: Piece[] = [];
+    const acc: PieceWork[] = [];
     let cursor: string | undefined;
     let consecutiveEmpty = 0;
     try {

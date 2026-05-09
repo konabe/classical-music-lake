@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UpdatePieceInput } from "~/types";
+import type { PieceWork, UpdatePieceInput } from "~/types";
 
 definePageMeta({ middleware: ["admin"] });
 
@@ -11,6 +11,12 @@ const { updatePiece } = usePiecesPaginated();
 const { data: composers, pending: composersPending, refresh: refreshComposers } = useComposersAll();
 await refreshComposers();
 
+const workPiece = computed<PieceWork | null>(() =>
+  piece.value !== null && piece.value !== undefined && piece.value.kind === "work"
+    ? piece.value
+    : null,
+);
+
 const { error, handleSubmit } = useSubmitHandler<UpdatePieceInput>({
   submit: (values) => updatePiece(id.value, values),
   redirectTo: "/pieces",
@@ -20,7 +26,7 @@ const { error, handleSubmit } = useSubmitHandler<UpdatePieceInput>({
 
 <template>
   <PieceEditTemplate
-    :piece="piece ?? null"
+    :piece="workPiece"
     :fetch-error="fetchError"
     :error="error"
     :composers="composers ?? []"

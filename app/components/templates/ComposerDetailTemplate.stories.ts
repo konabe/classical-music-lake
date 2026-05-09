@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import ComposerDetailTemplate from "./ComposerDetailTemplate.vue";
-import type { Composer, Piece } from "~/types";
+import type { Composer, PieceWork } from "~/types";
 
 const meta: Meta<typeof ComposerDetailTemplate> = {
   title: "Templates/ComposerDetailTemplate",
@@ -19,8 +19,9 @@ const sample: Composer = {
   updatedAt: "2024-06-01T00:00:00.000Z",
 };
 
-const samplePieces: Piece[] = [
+const samplePieces: PieceWork[] = [
   {
+    kind: "work",
     id: "p1",
     title: "交響曲第9番 ニ短調 作品125「合唱」",
     composerId: "1",
@@ -32,6 +33,7 @@ const samplePieces: Piece[] = [
     updatedAt: "2024-06-01T00:00:00.000Z",
   },
   {
+    kind: "work",
     id: "p2",
     title: "ピアノソナタ第14番 嬰ハ短調 作品27-2「月光」",
     composerId: "1",
@@ -43,6 +45,7 @@ const samplePieces: Piece[] = [
     updatedAt: "2024-06-02T00:00:00.000Z",
   },
   {
+    kind: "work",
     id: "p3",
     title: "ヴァイオリン協奏曲 ニ長調 作品61",
     composerId: "1",

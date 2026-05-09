@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 import FeaturedPiece from "~/components/organisms/FeaturedPiece.vue";
 
 defineProps<{
-  pieces: Piece[];
+  pieces: PieceWork[];
   loading: boolean;
   isAdmin: boolean;
   composerNameById: Record<string, string>;

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import PieceListInfinite from "./PieceListInfinite.vue";
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
 const COMPOSER_ID_TCHAIKOVSKY = "00000000-0000-4000-8000-000000000002";
@@ -10,8 +10,9 @@ const composerNameById = {
   [COMPOSER_ID_TCHAIKOVSKY]: "チャイコフスキー",
 };
 
-const samplePieces: Piece[] = [
+const samplePieces: PieceWork[] = [
   {
+    kind: "work",
     id: "piece-1",
     title: "交響曲第9番 ニ短調 Op.125「合唱」",
     composerId: COMPOSER_ID_BEETHOVEN,
@@ -23,6 +24,7 @@ const samplePieces: Piece[] = [
     updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
+    kind: "work",
     id: "piece-2",
     title: "ピアノ協奏曲第1番 変ロ短調 Op.23",
     composerId: COMPOSER_ID_TCHAIKOVSKY,

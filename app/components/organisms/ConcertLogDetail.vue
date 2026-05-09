@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { formatDatetime } from "~/utils/date";
-import type { ConcertLog, Piece } from "~/types";
+import type { ConcertLog, PieceWork } from "~/types";
 
 const props = defineProps<{
   log: ConcertLog;
-  pieces: Piece[];
+  pieces: PieceWork[];
   composerNameById: Record<string, string>;
 }>();
 
@@ -14,7 +14,7 @@ const programPieces = computed(() => {
   }
   return props.log.pieceIds
     .map((id) => props.pieces.find((p) => p.id === id))
-    .filter((p): p is Piece => p !== undefined);
+    .filter((p): p is PieceWork => p !== undefined);
 });
 
 const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());

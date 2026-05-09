@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 const apiBase = useApiBase();
 const { items, pending, error, hasMore, loadMore, reset, retry } = usePiecesPaginated();
@@ -19,7 +19,7 @@ const composerNameById = computed<Record<string, string>>(() => {
   return map;
 });
 
-async function handleDelete(piece: Piece) {
+async function handleDelete(piece: PieceWork) {
   if (!confirm(`「${piece.title}」を削除しますか？`)) {
     return;
   }

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { Composer, Piece } from "~/types";
+import type { Composer, PieceWork } from "~/types";
 import PieceEditTemplate from "./PieceEditTemplate.vue";
 
 const meta: Meta<typeof PieceEditTemplate> = {
@@ -21,7 +21,8 @@ const composers: Composer[] = [
   },
 ];
 
-const samplePiece: Piece = {
+const samplePiece: PieceWork = {
+  kind: "work",
   id: "1",
   title: "交響曲第9番 ニ短調 Op.125",
   composerId: COMPOSER_ID_BEETHOVEN,

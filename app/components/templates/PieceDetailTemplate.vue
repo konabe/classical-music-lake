@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatDate } from "~/utils/date";
-import type { ListeningLog, Piece, Rating } from "~/types";
+import type { ListeningLog, Piece, PieceMovement, PieceWork, Rating } from "~/types";
 
 const props = defineProps<{
   piece: Piece | null;
@@ -8,6 +8,9 @@ const props = defineProps<{
   isAdmin: boolean;
   composerName: string;
   listeningLogs?: ListeningLog[];
+  movements?: PieceMovement[];
+  parentWork?: PieceWork | null;
+  quickLogPieceLabel?: string;
 }>();
 
 const emit = defineEmits<{
@@ -24,6 +27,17 @@ const shortId = computed(() => {
 
 const logs = computed<ListeningLog[]>(() => props.listeningLogs ?? []);
 const logCount = computed(() => logs.value.length);
+
+const movementsList = computed<PieceMovement[]>(() => props.movements ?? []);
+const isWork = computed(() => props.piece?.kind === "work");
+const isMovement = computed(() => props.piece?.kind === "movement");
+
+const quickLogPieceTitle = computed(() => {
+  if (props.quickLogPieceLabel !== undefined) {
+    return props.quickLogPieceLabel;
+  }
+  return props.piece?.title ?? "";
+});
 </script>
 
 <template>
@@ -40,6 +54,13 @@ const logCount = computed(() => logs.value.length);
     />
 
     <template v-else-if="piece">
+      <nav v-if="isMovement && parentWork" class="movement-breadcrumb" aria-label="親楽曲">
+        <NuxtLink :to="`/pieces/${parentWork.id}`" class="breadcrumb-link">
+          <span aria-hidden="true">&larr;</span>
+          <span class="smallcaps">{{ parentWork.title }}</span>
+        </NuxtLink>
+      </nav>
+
       <header class="piece-masthead">
         <div class="piece-meta">
           <span class="meta-tag smallcaps">II / Repertoire</span>
@@ -51,7 +72,7 @@ const logCount = computed(() => logs.value.length);
 
         <h1 class="piece-title">{{ piece.title }}</h1>
 
-        <div class="piece-category-wrapper">
+        <div v-if="isWork" class="piece-category-wrapper">
           <PieceCategoryList :piece="piece" />
         </div>
 
@@ -91,11 +112,33 @@ const logCount = computed(() => logs.value.length);
           </header>
           <QuickLogForm
             :composer="composerName"
-            :piece="piece.title"
+            :piece="quickLogPieceTitle"
             @submit="emit('save', $event)"
           />
         </section>
       </template>
+
+      <section v-if="isWork && movementsList.length > 0" class="piece-movements">
+        <header class="movements-masthead">
+          <span class="movements-tag smallcaps">Movements</span>
+          <span class="movements-rule" aria-hidden="true" />
+          <span class="movements-count smallcaps numeric">
+            {{ movementsList.length.toString().padStart(2, "0") }}
+            {{ movementsList.length === 1 ? "movement" : "movements" }}
+          </span>
+        </header>
+
+        <h2 class="movements-title">
+          <span class="movements-title-jp">楽章</span>
+          <span class="movements-title-en"><em>Mouvements</em></span>
+        </h2>
+
+        <ol class="movements-list stagger-children">
+          <li v-for="movement in movementsList" :key="movement.id" class="movements-item">
+            <MovementListItem :movement="movement" />
+          </li>
+        </ol>
+      </section>
 
       <section v-if="logCount > 0" class="piece-listenings" aria-labelledby="listenings-heading">
         <header class="listenings-masthead">
@@ -153,6 +196,26 @@ const logCount = computed(() => logs.value.length);
 }
 
 .back-link:hover {
+  color: var(--color-accent);
+  gap: 0.65rem;
+}
+
+.movement-breadcrumb {
+  margin: -1rem 0 1.5rem;
+}
+
+.breadcrumb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition:
+    color 0.25s ease,
+    gap 0.25s ease;
+}
+
+.breadcrumb-link:hover {
   color: var(--color-accent);
   gap: 0.65rem;
 }
@@ -353,6 +416,75 @@ const logCount = computed(() => logs.value.length);
 
 .quicklog-meta {
   color: var(--color-text-muted);
+}
+
+.piece-movements {
+  margin-top: 3rem;
+}
+
+.movements-masthead {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+.movements-tag {
+  color: var(--color-bordeaux);
+}
+:root.dark .movements-tag {
+  color: var(--color-accent);
+}
+
+.movements-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-hairline);
+}
+
+.movements-count {
+  color: var(--color-text-muted);
+}
+
+.movements-title {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  margin: 0 0 1.5rem;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30;
+}
+
+.movements-title-jp {
+  font-style: normal;
+  font-weight: 400;
+}
+
+.movements-title-en {
+  color: var(--color-accent);
+  font-style: italic;
+  font-size: 0.7em;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 100,
+    "WONK" 1;
+}
+
+.movements-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-hairline);
 }
 
 .piece-listenings {

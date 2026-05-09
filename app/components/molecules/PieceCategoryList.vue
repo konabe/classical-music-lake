@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Piece } from "~/types";
+import type { PieceWork } from "~/types";
 
 type Kind = "genre" | "era" | "formation" | "region";
 
 const props = defineProps<{
-  piece: Pick<Piece, "genre" | "era" | "formation" | "region">;
+  piece: Pick<PieceWork, "genre" | "era" | "formation" | "region">;
 }>();
 
 const categories = computed(() =>

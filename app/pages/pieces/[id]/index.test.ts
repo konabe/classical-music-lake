@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
 import PieceDetailPage from "./index.vue";
-import type { Composer, ListeningLog, Piece, Rating } from "~/types";
+import type { Composer, ListeningLog, PieceWork, Rating } from "~/types";
 
 vi.mock("~/composables/useAuth", () => ({
   ACCESS_TOKEN_KEY: "accessToken",
@@ -15,7 +15,8 @@ const mockRefresh = vi.fn().mockResolvedValue(undefined);
 const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 const PIECE_ID = "piece-1";
 
-const samplePiece: Piece = {
+const samplePiece: PieceWork = {
+  kind: "work",
   id: PIECE_ID,
   title: "交響曲第9番",
   composerId: COMPOSER_ID,
@@ -83,10 +84,12 @@ const sampleLogs: ListeningLog[] = [
   },
 ];
 
+const usePieceData = ref<PieceWork | import("~/types").PieceMovement | null>(samplePiece);
+
 vi.mock("~/composables/usePieces", () => ({
   usePiecesPaginated: vi.fn(),
   usePiecesAll: vi.fn(),
-  usePiece: () => ({ data: ref(samplePiece), error: ref(null) }),
+  usePiece: () => ({ data: usePieceData, error: ref(null) }),
 }));
 
 vi.mock("~/composables/useComposers", () => ({
@@ -116,11 +119,19 @@ vi.mock("~/composables/useListeningLogs", () => ({
   useListeningLogCreate: () => ({ create: mockCreate }),
 }));
 
+const mockDollarFetch = vi.fn();
+
 beforeEach(async () => {
   mockCreate.mockClear();
   mockExecute.mockClear();
   mockRefresh.mockClear();
   listeningLogsData.value = [];
+  mockDollarFetch.mockReset();
+  // 楽章一覧 / 親 Work の取得は空配列・null を返すデフォルトモック
+  mockDollarFetch.mockResolvedValue([]);
+  vi.stubGlobal("$fetch", mockDollarFetch);
+  // デフォルトは Work
+  usePieceData.value = samplePiece;
   const { useAuth } = await import("~/composables/useAuth");
   vi.mocked(useAuth).mockReturnValue({
     isAdmin: () => false,
@@ -209,6 +220,110 @@ describe("PieceDetailPage", () => {
       const logs = template.props("listeningLogs") as ListeningLog[];
       expect(logs).toEqual([]);
       expect(mockExecute).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("楽章一覧（Work）", () => {
+    it("Work の場合 GET /pieces/{id}/children を呼んで movements にセットする", async () => {
+      const sampleMovements: import("~/types").PieceMovement[] = [
+        {
+          kind: "movement",
+          id: "movement-1",
+          parentId: PIECE_ID,
+          index: 0,
+          title: "第1楽章",
+          createdAt: "2024-01-01T00:00:00.000Z",
+          updatedAt: "2024-01-01T00:00:00.000Z",
+        },
+      ];
+      mockDollarFetch.mockImplementation((url: string) => {
+        if (url.endsWith(`/pieces/${PIECE_ID}/children`)) {
+          return Promise.resolve(sampleMovements);
+        }
+        return Promise.resolve([]);
+      });
+      const wrapper = await mountSuspended(PieceDetailPage);
+      await flushPromises();
+      const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
+      const movements = template.props("movements") as import("~/types").PieceMovement[];
+      expect(movements).toHaveLength(1);
+      expect(movements[0].id).toBe("movement-1");
+    });
+  });
+
+  describe("Movement 詳細", () => {
+    const PARENT_ID = "parent-work";
+    const MOVEMENT_ID = "movement-99";
+    const movementSample: import("~/types").PieceMovement = {
+      kind: "movement",
+      id: MOVEMENT_ID,
+      parentId: PARENT_ID,
+      index: 1,
+      title: "第2楽章 Andante",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    };
+    const parentWorkSample: PieceWork = {
+      kind: "work",
+      id: PARENT_ID,
+      title: "ピアノ協奏曲第1番",
+      composerId: COMPOSER_ID,
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-01T00:00:00.000Z",
+    };
+
+    beforeEach(() => {
+      usePieceData.value = movementSample;
+      mockDollarFetch.mockImplementation((url: string) => {
+        if (url.endsWith(`/pieces/${PARENT_ID}`)) {
+          return Promise.resolve(parentWorkSample);
+        }
+        return Promise.resolve([]);
+      });
+    });
+
+    it("Movement の場合 GET /pieces/{parentId} を呼んで親 Work を解決する", async () => {
+      const wrapper = await mountSuspended(PieceDetailPage);
+      await flushPromises();
+      const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
+      const parentWork = template.props("parentWork") as PieceWork | null;
+      expect(parentWork?.id).toBe(PARENT_ID);
+    });
+
+    it("Movement の場合 composerName は親 Work の composerId から解決される", async () => {
+      const wrapper = await mountSuspended(PieceDetailPage);
+      await flushPromises();
+      const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
+      expect(template.props("composerName")).toBe("ベートーヴェン");
+    });
+
+    it("Movement の場合 quickLogPieceLabel が「親 Work title - 楽章 title」になる", async () => {
+      const wrapper = await mountSuspended(PieceDetailPage);
+      await flushPromises();
+      const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
+      expect(template.props("quickLogPieceLabel")).toBe("ピアノ協奏曲第1番 - 第2楽章 Andante");
+    });
+
+    it("Movement で handleSave を呼ぶと create の piece に親 - 楽章ラベルが渡る", async () => {
+      mockCreate.mockResolvedValue({ id: "log-new" });
+      const wrapper = await mountSuspended(PieceDetailPage);
+      await flushPromises();
+      const vm = wrapper.vm as {
+        handleSave: (values: {
+          rating: Rating;
+          isFavorite: boolean;
+          memo: string;
+        }) => Promise<void>;
+      };
+      await vm.handleSave({ rating: 4, isFavorite: false, memo: "" });
+      await flushPromises();
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          composer: "ベートーヴェン",
+          piece: "ピアノ協奏曲第1番 - 第2楽章 Andante",
+          pieceId: MOVEMENT_ID,
+        }),
+      );
     });
   });
 });

@@ -1,7 +1,7 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import ListeningLogForm from "./ListeningLogForm.vue";
 import ButtonPrimary from "../atoms/ButtonPrimary.vue";
-import type { Composer, Piece } from "~/types";
+import type { Composer, PieceWork } from "~/types";
 
 const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
 const COMPOSER_ID_MOZART = "00000000-0000-4000-8000-000000000002";
@@ -13,8 +13,9 @@ const { mockPieces, mockComposers } = vi.hoisted(() => {
   const MOZART = "00000000-0000-4000-8000-000000000002";
   const MUSSORGSKY = "00000000-0000-4000-8000-000000000003";
   const STRAVINSKY = "00000000-0000-4000-8000-000000000004";
-  const mockPieces: Piece[] = [
+  const mockPieces: PieceWork[] = [
     {
+      kind: "work",
       id: "piece-1",
       title: "交響曲第9番",
       composerId: BEETHOVEN,
@@ -22,6 +23,7 @@ const { mockPieces, mockComposers } = vi.hoisted(() => {
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
     {
+      kind: "work",
       id: "piece-2",
       title: "魔笛",
       composerId: MOZART,
@@ -29,6 +31,7 @@ const { mockPieces, mockComposers } = vi.hoisted(() => {
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
     {
+      kind: "work",
       id: "piece-3",
       title: "展覧会の絵",
       composerId: MUSSORGSKY,
@@ -37,6 +40,7 @@ const { mockPieces, mockComposers } = vi.hoisted(() => {
       updatedAt: "2024-01-01T00:00:00.000Z",
     },
     {
+      kind: "work",
       id: "piece-4",
       title: "春の祭典",
       composerId: STRAVINSKY,
