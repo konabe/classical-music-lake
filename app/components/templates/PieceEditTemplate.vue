@@ -34,6 +34,10 @@ const emit = defineEmits<{
             title: piece?.title,
             composerId: piece?.composerId,
             videoUrls: piece?.videoUrls,
+            genre: piece?.genre,
+            era: piece?.era,
+            formation: piece?.formation,
+            region: piece?.region,
           }"
           :composers="composers"
           :composers-pending="composersPending"
