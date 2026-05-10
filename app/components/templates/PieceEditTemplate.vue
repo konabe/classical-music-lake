@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Composer, PieceWork, UpdatePieceInput } from "~/types";
+import type { Composer, PieceMovement, PieceWork, UpdatePieceInput } from "~/types";
 
 defineProps<{
   piece: PieceWork | null;
@@ -7,6 +7,7 @@ defineProps<{
   error: string | null;
   composers: Composer[];
   composersPending?: boolean;
+  movements: PieceMovement[];
 }>();
 
 const emit = defineEmits<{
@@ -26,18 +27,25 @@ const emit = defineEmits<{
     <ErrorMessage v-if="fetchError" message="楽曲の取得に失敗しました。" variant="block" />
 
     <template v-else>
-      <ErrorMessage v-if="error" :message="error" variant="block" />
-      <PieceForm
-        :initial-values="{
-          title: piece?.title,
-          composerId: piece?.composerId,
-          videoUrls: piece?.videoUrls,
-        }"
-        :composers="composers"
-        :composers-pending="composersPending"
-        submit-label="更新する"
-        @submit="emit('submit', $event)"
-      />
+      <section class="edit-section">
+        <ErrorMessage v-if="error" :message="error" variant="block" />
+        <PieceForm
+          :initial-values="{
+            title: piece?.title,
+            composerId: piece?.composerId,
+            videoUrls: piece?.videoUrls,
+          }"
+          :composers="composers"
+          :composers-pending="composersPending"
+          submit-label="更新する"
+          @submit="emit('submit', $event)"
+        />
+      </section>
+
+      <section v-if="piece" class="edit-section">
+        <h2 class="section-heading">楽章</h2>
+        <MovementListEditor :work-id="piece.id" :initial-movements="movements" />
+      </section>
     </template>
   </div>
 </template>
@@ -62,5 +70,21 @@ const emit = defineEmits<{
 .back-link:hover {
   color: var(--color-accent);
   gap: 0.65rem;
+}
+
+.edit-section {
+  margin-top: 2.5rem;
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-wide);
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-hairline);
 }
 </style>

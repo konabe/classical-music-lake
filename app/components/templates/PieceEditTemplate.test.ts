@@ -1,6 +1,13 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import PieceEditTemplate from "./PieceEditTemplate.vue";
-import type { Composer, PieceWork } from "~/types";
+import type { Composer, PieceMovement, PieceWork } from "~/types";
+
+const mockReplaceMovements = vi.fn();
+
+vi.mock("~/composables/useMovements", () => ({
+  useMovements: vi.fn(),
+  useReplaceMovements: () => ({ replaceMovements: mockReplaceMovements }),
+}));
 
 const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 
@@ -22,10 +29,22 @@ const composers: Composer[] = [
   },
 ];
 
+const sampleMovements: PieceMovement[] = [
+  {
+    kind: "movement",
+    id: "mov-1",
+    parentId: "piece-1",
+    index: 0,
+    title: "第一楽章",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+];
+
 describe("PieceEditTemplate", () => {
   it("ページタイトルが表示される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
-      props: { piece: samplePiece, fetchError: null, error: null, composers },
+      props: { piece: samplePiece, fetchError: null, error: null, composers, movements: [] },
     });
     expect(wrapper.text()).toContain("楽曲を編集");
   });
@@ -37,6 +56,7 @@ describe("PieceEditTemplate", () => {
         fetchError: new Error("fetch error"),
         error: null,
         composers,
+        movements: [],
       },
     });
     expect(wrapper.findComponent({ name: "ErrorMessage" }).exists()).toBe(true);
@@ -49,6 +69,7 @@ describe("PieceEditTemplate", () => {
         fetchError: new Error("fetch error"),
         error: null,
         composers,
+        movements: [],
       },
     });
     expect(wrapper.find("form.piece-form").exists()).toBe(false);
@@ -56,14 +77,14 @@ describe("PieceEditTemplate", () => {
 
   it("fetchError がない場合は PieceForm が表示される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
-      props: { piece: samplePiece, fetchError: null, error: null, composers },
+      props: { piece: samplePiece, fetchError: null, error: null, composers, movements: [] },
     });
     expect(wrapper.find("form.piece-form").exists()).toBe(true);
   });
 
   it("初期値が PieceForm に反映される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
-      props: { piece: samplePiece, fetchError: null, error: null, composers },
+      props: { piece: samplePiece, fetchError: null, error: null, composers, movements: [] },
     });
     const titleInput = wrapper.find('input[placeholder="例：交響曲第9番"]');
     expect((titleInput.element as HTMLInputElement).value).toBe("交響曲第9番");
@@ -73,9 +94,36 @@ describe("PieceEditTemplate", () => {
 
   it("フォーム送信時に submit イベントが emit される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
-      props: { piece: samplePiece, fetchError: null, error: null, composers },
+      props: { piece: samplePiece, fetchError: null, error: null, composers, movements: [] },
     });
     await wrapper.find("form").trigger("submit.prevent");
     expect(wrapper.emitted("submit")).toBeDefined();
+  });
+
+  it("piece がある場合は楽章セクションが表示される", async () => {
+    const wrapper = await mountSuspended(PieceEditTemplate, {
+      props: {
+        piece: samplePiece,
+        fetchError: null,
+        error: null,
+        composers,
+        movements: sampleMovements,
+      },
+    });
+    expect(wrapper.text()).toContain("楽章");
+    expect(wrapper.find('[data-testid="add-movement"]').exists()).toBe(true);
+  });
+
+  it("fetchError がある場合は楽章セクションが表示されない", async () => {
+    const wrapper = await mountSuspended(PieceEditTemplate, {
+      props: {
+        piece: null,
+        fetchError: new Error("fetch error"),
+        error: null,
+        composers,
+        movements: [],
+      },
+    });
+    expect(wrapper.find('[data-testid="add-movement"]').exists()).toBe(false);
   });
 });

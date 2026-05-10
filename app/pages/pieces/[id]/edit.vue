@@ -11,6 +11,8 @@ const { updatePiece } = usePiecesPaginated();
 const { data: composers, pending: composersPending, refresh: refreshComposers } = useComposersAll();
 await refreshComposers();
 
+const { data: movements } = useMovements(() => id.value);
+
 const workPiece = computed<PieceWork | null>(() =>
   piece.value !== null && piece.value !== undefined && piece.value.kind === "work"
     ? piece.value
@@ -31,6 +33,7 @@ const { error, handleSubmit } = useSubmitHandler<UpdatePieceInput>({
     :error="error"
     :composers="composers ?? []"
     :composers-pending="composersPending"
+    :movements="movements ?? []"
     @submit="handleSubmit"
   />
 </template>

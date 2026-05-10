@@ -14,6 +14,11 @@ const samplePiece: PieceWork = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
+vi.mock("~/composables/useMovements", () => ({
+  useMovements: () => ({ data: ref([]), error: ref(null), pending: ref(false), refresh: vi.fn() }),
+  useReplaceMovements: () => ({ replaceMovements: vi.fn() }),
+}));
+
 vi.mock("~/composables/usePieces", () => ({
   usePiecesPaginated: () => ({
     items: ref([]),
