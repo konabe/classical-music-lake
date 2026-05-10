@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.12.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.12.0...classical-music-lake-v2.12.1) (2026-05-10)
+
+
+### Bug Fixes
+
+* **pieces:** 楽曲編集画面でカテゴリの現在値が初期表示されないバグを修正 ([#673](https://github.com/konabe/classical-music-lake/issues/673)) ([8943a41](https://github.com/konabe/classical-music-lake/commit/8943a41da37f66980960f2957db7a8b5ba3049fa))
+
+
+### Code Refactoring
+
+* 鑑賞ログを pieceId 必須化し ListeningLogDetail 集約を導入 ([#670](https://github.com/konabe/classical-music-lake/issues/670)) ([f6d8db5](https://github.com/konabe/classical-music-lake/commit/f6d8db53b67a8739b9d0979028b73e5ff301200b))
+
 ## [2.12.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.11.0...classical-music-lake-v2.12.0) (2026-05-10)
 
 
