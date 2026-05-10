@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { Composer, PieceWork } from "~/types";
+import type { Composer, PieceMovement, PieceWork } from "~/types";
 import PieceEditTemplate from "./PieceEditTemplate.vue";
 
 const meta: Meta<typeof PieceEditTemplate> = {
@@ -30,12 +30,58 @@ const samplePiece: PieceWork = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
+const sampleMovements: PieceMovement[] = [
+  {
+    kind: "movement",
+    id: "mov-1",
+    parentId: "1",
+    index: 0,
+    title: "第一楽章 アレグロ・マ・ノン・トロッポ",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    kind: "movement",
+    id: "mov-2",
+    parentId: "1",
+    index: 1,
+    title: "第二楽章 モルト・ヴィヴァーチェ",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    kind: "movement",
+    id: "mov-3",
+    parentId: "1",
+    index: 2,
+    title: "第三楽章 アダージョ・モルト・エ・カンタービレ",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    kind: "movement",
+    id: "mov-4",
+    parentId: "1",
+    index: 3,
+    title: "第四楽章 プレスト",
+    videoUrls: ["https://www.youtube.com/watch?v=example"],
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+];
+
 export const Default: Story = {
-  args: { piece: samplePiece, fetchError: null, error: null, composers },
+  args: {
+    piece: samplePiece,
+    fetchError: null,
+    error: null,
+    composers,
+    movements: sampleMovements,
+  },
 };
 
 export const WithFetchError: Story = {
-  args: { piece: null, fetchError: new Error("取得失敗"), error: null, composers },
+  args: { piece: null, fetchError: new Error("取得失敗"), error: null, composers, movements: [] },
 };
 
 export const WithSubmitError: Story = {
@@ -44,5 +90,10 @@ export const WithSubmitError: Story = {
     fetchError: null,
     error: "更新に失敗しました。時間をおいて再度お試しください。",
     composers,
+    movements: sampleMovements,
   },
+};
+
+export const WithNoMovements: Story = {
+  args: { piece: samplePiece, fetchError: null, error: null, composers, movements: [] },
 };
