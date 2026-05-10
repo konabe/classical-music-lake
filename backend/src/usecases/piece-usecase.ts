@@ -97,7 +97,7 @@ export class MovementUsecase {
 
   async get(id: PieceId): Promise<PieceMovement> {
     const item = await this.repo.findById(id);
-    if (item === undefined || item.kind !== "movement") {
+    if (item?.kind !== "movement") {
       throw new createError.NotFound(`${ENTITY_NAME} not found`);
     }
     return item;
@@ -139,7 +139,7 @@ export class MovementUsecase {
     const now = new Date().toISOString();
     const newMovements: PieceMovement[] = movements.map((m) => {
       // id 指定 + 既存に存在 → 更新（createdAt を保持）。それ以外は新規採番。
-      const matched = m.id !== undefined ? existingById.get(m.id) : undefined;
+      const matched = m.id === undefined ? undefined : existingById.get(m.id);
       const id = matched?.id ?? PieceId.generate().value;
       const createdAt = matched?.createdAt ?? now;
       return {

@@ -45,9 +45,9 @@ export class ComposerEntity extends Entity<ComposerId, ComposerProps> {
       ...input,
       id: ComposerId.generate(),
       name: ComposerName.of(input.name),
-      imageUrl: input.imageUrl !== undefined ? Url.of(input.imageUrl) : undefined,
-      birthYear: input.birthYear !== undefined ? Year.of(input.birthYear) : undefined,
-      deathYear: input.deathYear !== undefined ? Year.of(input.deathYear) : undefined,
+      imageUrl: input.imageUrl === undefined ? undefined : Url.of(input.imageUrl),
+      birthYear: input.birthYear === undefined ? undefined : Year.of(input.birthYear),
+      deathYear: input.deathYear === undefined ? undefined : Year.of(input.deathYear),
       createdAt: now,
       updatedAt: now,
     });
@@ -58,9 +58,9 @@ export class ComposerEntity extends Entity<ComposerId, ComposerProps> {
       ...data,
       id: ComposerId.from(data.id),
       name: ComposerName.of(data.name),
-      imageUrl: data.imageUrl !== undefined ? Url.of(data.imageUrl) : undefined,
-      birthYear: data.birthYear !== undefined ? Year.of(data.birthYear) : undefined,
-      deathYear: data.deathYear !== undefined ? Year.of(data.deathYear) : undefined,
+      imageUrl: data.imageUrl === undefined ? undefined : Url.of(data.imageUrl),
+      birthYear: data.birthYear === undefined ? undefined : Year.of(data.birthYear),
+      deathYear: data.deathYear === undefined ? undefined : Year.of(data.deathYear),
     });
   }
 

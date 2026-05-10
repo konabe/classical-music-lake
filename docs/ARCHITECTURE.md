@@ -105,8 +105,8 @@ classical-music-lake/
 │       │   ├── children.ts           # GET /pieces/{id}/children (Movement 一覧)
 │       │   └── replace-movements.ts  # PUT /pieces/{workId}/movements (集合一括差し替え)
 │       ├── migrations/           # 一時的なデータ移行スクリプト（レイヤードアーキテクチャから独立）
-│       │   └── piece-composer-id/
-│       │       └── index.ts      # composer(string) → composerId 移行（手動 invoke 専用）
+│       │   └── piece-kind-backfill/
+│       │       └── index.ts      # Piece.kind バックフィル（手動 invoke 専用）
 │       ├── composers/             # 作曲家マスタ Lambda 関数
 │       │   ├── create.ts
 │       │   ├── list.ts

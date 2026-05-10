@@ -34,54 +34,16 @@ export class MigrationsStack extends cdk.Stack {
     const piecesTableName = isProd
       ? "classical-music-pieces"
       : `classical-music-pieces-${stageName}`;
-    const composersTableName = isProd
-      ? "classical-music-composers"
-      : `classical-music-composers-${stageName}`;
 
     const piecesTable = dynamodb.Table.fromTableName(this, "PiecesTable", piecesTableName);
-    const composersTable = dynamodb.Table.fromTableName(this, "ComposersTable", composersTableName);
 
     const backendSrcDir = path.join(__dirname, "../../backend/src");
 
     // -------------------------
-    // Migration: Piece.composer (string) → composerId (UUID reference)
-    // 手動 invoke 専用。API Gateway には接続しない。
-    // 全件 Scan + 新規 Composer 作成を含むため、タイムアウトとメモリを拡張し
-    // reservedConcurrency=1 で同時実行禁止。
-    // -------------------------
-    const migratePieceComposerLogGroup = new logs.LogGroup(this, "MigratePieceComposerLogGroup", {
-      retention: logs.RetentionDays.THREE_MONTHS,
-      removalPolicy,
-    });
-
-    new lambdaNodejs.NodejsFunction(this, "MigratePieceComposer", {
-      // prettier-ignore
-      entry: path.join(backendSrcDir, "migrations/piece-composer-id/index.ts"), // NOSONAR
-      handler: "handler",
-      runtime: lambda.Runtime.NODEJS_24_X,
-      architecture: lambda.Architecture.ARM_64,
-      memorySize: 512,
-      timeout: cdk.Duration.seconds(60),
-      tracing: lambda.Tracing.ACTIVE,
-      reservedConcurrentExecutions: 1,
-      environment: {
-        DYNAMO_TABLE_PIECES: piecesTableName,
-        DYNAMO_TABLE_COMPOSERS: composersTableName,
-      },
-      logGroup: migratePieceComposerLogGroup,
-      bundling: {
-        minify: true,
-        sourceMap: false,
-        target: "es2022",
-      },
-      role: this.makeMigrationRole("MigratePieceComposerRole", [piecesTable, composersTable]),
-    });
-
-    // -------------------------
     // Migration: Piece.kind バックフィル（PR4）
     // 既存レコードに `kind = "work"` を埋める。手動 invoke 専用、API Gateway には接続しない。
-    // 全件 Scan + PutItem を含むため、メモリと reservedConcurrency を `MigratePieceComposer` と
-    // 揃える。IAM は piecesTable のみ。
+    // 全件 Scan + PutItem を含むため、reservedConcurrency=1 で同時実行禁止。
+    // IAM は piecesTable のみ。
     // -------------------------
     const migratePieceKindBackfillLogGroup = new logs.LogGroup(
       this,

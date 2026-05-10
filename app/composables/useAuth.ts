@@ -10,7 +10,7 @@ const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
     if (parts.length !== 3) {
       return null;
     }
-    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const base64 = parts[1].replaceAll("-", "+").replaceAll("_", "/");
     const padding = (4 - (base64.length % 4)) % 4;
     return JSON.parse(atob(base64 + "=".repeat(padding))) as Record<string, unknown>;
   } catch {
