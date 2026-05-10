@@ -13,6 +13,14 @@ export type ConcertLogRepository = {
   remove(id: ConcertLogId): Promise<void>;
 };
 
+/**
+ * 鑑賞記録の訂正内容を表す型。フィールド単位の差分を 1 つのオブジェクトで表現する。
+ * このアプリは鑑賞者の個人ノートであり、コンサートを「主催・運営」しているわけではないため、
+ * フィールドごとの意図メソッド（rename / relocate / reschedule …）には実体が伴わない。
+ * 操作はすべて「過去に観測した事実の記録を訂正・追記する」という単一のドメイン操作に帰着する。
+ */
+export type ConcertLogRevision = UpdateConcertLogInput;
+
 type ConcertLogProps = EntityProps<ConcertLogId> & {
   userId: UserId;
   title: ConcertTitle;
@@ -62,8 +70,12 @@ export class ConcertLogEntity extends Entity<ConcertLogId, ConcertLogProps> {
     return this.props.userId.equals(userId);
   }
 
-  mergeUpdate(input: UpdateConcertLogInput): ConcertLogEntity {
-    const merged = buildUpdateProps(this.toPlain(), input, []);
+  /**
+   * 鑑賞記録を訂正する。フィールドごとの意図メソッドを生やす代わりに、
+   * 「観測した事実の記録を後から書き直す」という単一の意図を 1 メソッドで表す。
+   */
+  revise(revision: ConcertLogRevision): ConcertLogEntity {
+    const merged = buildUpdateProps(this.toPlain(), revision, []);
     return ConcertLogEntity.reconstruct(merged);
   }
 

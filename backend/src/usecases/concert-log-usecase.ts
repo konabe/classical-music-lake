@@ -48,8 +48,8 @@ export class ConcertLogUsecase {
     userId: UserId,
   ): Promise<ConcertLog> {
     const current = await this.loadOwnedEntity(id, userId);
-    const updated = current.mergeUpdate(input);
-    const plain = updated.toPlain();
+    const revised = current.revise(input);
+    const plain = revised.toPlain();
     await this.repo.saveWithOptimisticLock(plain, current.updatedAt);
     return plain;
   }
