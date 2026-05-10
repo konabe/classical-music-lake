@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.12.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.11.0...classical-music-lake-v2.12.0) (2026-05-10)
+
+
+### Features
+
+* **migrations:** 楽曲レコードの kind バックフィル移行 Lambda を追加 ([#664](https://github.com/konabe/classical-music-lake/issues/664)) ([9310aff](https://github.com/konabe/classical-music-lake/commit/9310aff8bf0ef24036e199099cbfd473197d449a))
+* **pieces:** 楽曲編集ページに楽章エディタを追加 ([#669](https://github.com/konabe/classical-music-lake/issues/669)) ([49bb8eb](https://github.com/konabe/classical-music-lake/commit/49bb8eba45edc1982791c0fe15ef67eb1ef08437))
+* **pieces:** 楽曲詳細ページに楽章一覧と Movement パンくずを追加 ([#665](https://github.com/konabe/classical-music-lake/issues/665)) ([48d4656](https://github.com/konabe/classical-music-lake/commit/48d4656c189c5b474404ee8f8baae79e4e22560e))
+* **pieces:** 楽章 API と kind 共通 CRUD・集合一括差し替えを追加 ([#663](https://github.com/konabe/classical-music-lake/issues/663)) ([a198bc6](https://github.com/konabe/classical-music-lake/commit/a198bc61ff40f7e44542a153f3d318dd2face45e))
+* **pieces:** 楽章コンポジットのリポジトリ実装と parentId-index GSI を追加 ([#661](https://github.com/konabe/classical-music-lake/issues/661)) ([51cd3ef](https://github.com/konabe/classical-music-lake/commit/51cd3ef60034513504c8539ff3f08a2a4d5d1de9))
+
+
+### Bug Fixes
+
+* **cdk:** アラーム論理IDをインデックスベースに戻しデプロイ競合を解消 ([#668](https://github.com/konabe/classical-music-lake/issues/668)) ([bf86e90](https://github.com/konabe/classical-music-lake/commit/bf86e90c1a256c3e3614405a1dcc846528d7f2dc))
+* **cdk:** デプロイ失敗の修正: Lambda追加時にCloudWatchアラームの物理名が衝突する問題を解消 ([#666](https://github.com/konabe/classical-music-lake/issues/666)) ([3e52ad4](https://github.com/konabe/classical-music-lake/commit/3e52ad409c8c4325196dbc4bb1a355f8e0d87c6f))
+* **cdk:** 新規Lambda関数をallFunctions末尾に移動しアラーム論理ID衝突を解消 ([#667](https://github.com/konabe/classical-music-lake/issues/667)) ([0fcd178](https://github.com/konabe/classical-music-lake/commit/0fcd178037a35aa20f43954c7e4ece91229d56bc))
+
 ## [2.11.0](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.10.1...classical-music-lake-v2.11.0) (2026-05-08)
 
 
