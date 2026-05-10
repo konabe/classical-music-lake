@@ -4,7 +4,7 @@ import type { ListeningLog, Rating } from "~/types";
 export type RatingDistribution = Record<1 | 2 | 3 | 4 | 5, number>;
 
 export type ComposerCount = {
-  composer: string;
+  composerName: string;
   count: number;
 };
 
@@ -64,13 +64,13 @@ export const computeStatistics = (
 
   const composerMap = new Map<string, number>();
   for (const log of logs) {
-    composerMap.set(log.composer, (composerMap.get(log.composer) ?? 0) + 1);
+    composerMap.set(log.composerName, (composerMap.get(log.composerName) ?? 0) + 1);
   }
   const topComposers: ComposerCount[] = [...composerMap.entries()]
-    .map(([composer, count]) => ({ composer, count }))
+    .map(([composerName, count]) => ({ composerName, count }))
     .sort((a, b) => {
       const diff = b.count - a.count;
-      return diff !== 0 ? diff : a.composer.localeCompare(b.composer);
+      return diff !== 0 ? diff : a.composerName.localeCompare(b.composerName);
     })
     .slice(0, topComposerLimit);
 

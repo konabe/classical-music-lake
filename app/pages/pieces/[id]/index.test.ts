@@ -39,9 +39,10 @@ const sampleLogs: ListeningLog[] = [
     id: "log-pieceId-match-1",
     userId: "user-1",
     listenedAt: "2024-04-01T10:00:00.000Z",
-    composer: "別の作曲家", // composer 文字列が違っても pieceId 一致なので含まれる
-    piece: "別の曲名",
     pieceId: PIECE_ID,
+    pieceTitle: "交響曲第9番",
+    composerId: COMPOSER_ID,
+    composerName: "ベートーヴェン",
     rating: 5,
     isFavorite: false,
     createdAt: "2024-04-01T10:00:00.000Z",
@@ -51,9 +52,10 @@ const sampleLogs: ListeningLog[] = [
     id: "log-pieceId-match-2",
     userId: "user-1",
     listenedAt: "2024-02-01T10:00:00.000Z",
-    composer: "ベートーヴェン",
-    piece: "交響曲第9番",
     pieceId: PIECE_ID,
+    pieceTitle: "交響曲第9番",
+    composerId: COMPOSER_ID,
+    composerName: "ベートーヴェン",
     rating: 3,
     isFavorite: false,
     createdAt: "2024-02-01T10:00:00.000Z",
@@ -63,24 +65,14 @@ const sampleLogs: ListeningLog[] = [
     id: "log-pieceId-mismatch",
     userId: "user-1",
     listenedAt: "2024-03-01T10:00:00.000Z",
-    composer: "ベートーヴェン",
-    piece: "交響曲第9番", // 文字列は一致するが pieceId が違うので除外
     pieceId: "other-piece-id",
+    pieceTitle: "交響曲第9番",
+    composerId: COMPOSER_ID,
+    composerName: "ベートーヴェン",
     rating: 4,
     isFavorite: false,
     createdAt: "2024-03-01T10:00:00.000Z",
     updatedAt: "2024-03-01T10:00:00.000Z",
-  },
-  {
-    id: "log-no-pieceId",
-    userId: "user-1",
-    listenedAt: "2024-02-15T10:00:00.000Z",
-    composer: "ベートーヴェン",
-    piece: "交響曲第9番", // 文字列が一致しても pieceId が無いので除外（フォールバックなし）
-    rating: 3,
-    isFavorite: false,
-    createdAt: "2024-02-15T10:00:00.000Z",
-    updatedAt: "2024-02-15T10:00:00.000Z",
   },
 ];
 
@@ -155,18 +147,20 @@ describe("PieceDetailPage", () => {
     await flushPromises();
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        composer: "ベートーヴェン",
-        piece: "交響曲第9番",
         pieceId: PIECE_ID,
         rating: 5,
         isFavorite: true,
         memo: "最高",
       }),
     );
+    // composer / piece は新スキーマで送信されない（バックエンドが派生）
+    const arg = mockCreate.mock.calls[0]?.[0];
+    expect(arg).not.toHaveProperty("composer");
+    expect(arg).not.toHaveProperty("piece");
   });
 
   describe("鑑賞記録一覧の絞り込み", () => {
-    it("pieceId が一致するログを含む（composer/piece 文字列が違っても）", async () => {
+    it("pieceId が一致するログを含む", async () => {
       listeningLogsData.value = sampleLogs;
       const wrapper = await mountSuspended(PieceDetailPage);
       await flushPromises();
@@ -177,7 +171,7 @@ describe("PieceDetailPage", () => {
       expect(ids).toContain("log-pieceId-match-2");
     });
 
-    it("pieceId が異なるログは文字列が一致しても除外する", async () => {
+    it("pieceId が異なるログは除外する", async () => {
       listeningLogsData.value = sampleLogs;
       const wrapper = await mountSuspended(PieceDetailPage);
       await flushPromises();
@@ -185,16 +179,6 @@ describe("PieceDetailPage", () => {
       const logs = template.props("listeningLogs") as ListeningLog[];
       const ids = logs.map((l) => l.id);
       expect(ids).not.toContain("log-pieceId-mismatch");
-    });
-
-    it("pieceId が未設定のログは文字列が一致しても除外する（フォールバックなし）", async () => {
-      listeningLogsData.value = sampleLogs;
-      const wrapper = await mountSuspended(PieceDetailPage);
-      await flushPromises();
-      const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
-      const logs = template.props("listeningLogs") as ListeningLog[];
-      const ids = logs.map((l) => l.id);
-      expect(ids).not.toContain("log-no-pieceId");
     });
 
     it("listenedAt 降順でソートされる", async () => {
@@ -304,7 +288,7 @@ describe("PieceDetailPage", () => {
       expect(template.props("quickLogPieceLabel")).toBe("ピアノ協奏曲第1番 - 第2楽章 Andante");
     });
 
-    it("Movement で handleSave を呼ぶと create の piece に親 - 楽章ラベルが渡る", async () => {
+    it("Movement で handleSave を呼ぶと create の pieceId に movementId が渡る", async () => {
       mockCreate.mockResolvedValue({ id: "log-new" });
       const wrapper = await mountSuspended(PieceDetailPage);
       await flushPromises();
@@ -317,13 +301,8 @@ describe("PieceDetailPage", () => {
       };
       await vm.handleSave({ rating: 4, isFavorite: false, memo: "" });
       await flushPromises();
-      expect(mockCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          composer: "ベートーヴェン",
-          piece: "ピアノ協奏曲第1番 - 第2楽章 Andante",
-          pieceId: MOVEMENT_ID,
-        }),
-      );
+      // pieceTitle / composerName はサーバ側で派生するためフロントは送らない
+      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ pieceId: MOVEMENT_ID }));
     });
   });
 });

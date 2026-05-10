@@ -1,20 +1,53 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { ListeningLog } from "../../types";
 
 import { handler } from "./get";
+import { makeComposer, makeLogRecord, makePiece } from "../../test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
+const mocks = vi.hoisted(() => ({
+  listeningLogRepo: {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findByUserId: vi.fn(),
+    existsByPieceIds: vi.fn(),
+    saveWithOptimisticLock: vi.fn(),
+    remove: vi.fn(),
+  },
+  pieceRepo: {
+    findRootById: vi.fn(),
+    findRootPage: vi.fn(),
+    saveWork: vi.fn(),
+    saveWorkWithOptimisticLock: vi.fn(),
+    removeWorkCascade: vi.fn(),
+    findById: vi.fn(),
+    findChildren: vi.fn(),
+    saveMovement: vi.fn(),
+    saveMovementWithOptimisticLock: vi.fn(),
+    removeMovement: vi.fn(),
+    replaceMovements: vi.fn(),
+  },
+  composerRepo: {
+    findById: vi.fn(),
+    findPage: vi.fn(),
+    save: vi.fn(),
+    saveWithOptimisticLock: vi.fn(),
+    remove: vi.fn(),
+  },
 }));
 
 vi.mock("../../repositories/listening-log-repository", () => ({
   DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
+    return mocks.listeningLogRepo;
+  }),
+}));
+vi.mock("../../repositories/piece-repository", () => ({
+  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
+    return mocks.pieceRepo;
+  }),
+}));
+vi.mock("../../repositories/composer-repository", () => ({
+  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
+    return mocks.composerRepo;
   }),
 }));
 
@@ -43,22 +76,11 @@ function makeEvent(id?: string, userId?: string): APIGatewayProxyEvent {
   };
 }
 
-const testLog: ListeningLog = {
-  id: "abc-123",
-  userId: TEST_USER_ID,
-  listenedAt: "2024-01-15T20:00:00.000Z",
-  composer: "ベートーヴェン",
-  piece: "交響曲第9番",
-  rating: 5,
-  isFavorite: true,
-  memo: "素晴らしい演奏",
-  createdAt: "2024-01-15T21:00:00.000Z",
-  updatedAt: "2024-01-15T21:00:00.000Z",
-};
-
 describe("GET /listening-logs/:id (get)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.pieceRepo.findById.mockResolvedValue(makePiece());
+    mocks.composerRepo.findById.mockResolvedValue(makeComposer());
   });
 
   it("id がない場合は 400 を返す", async () => {
@@ -68,7 +90,7 @@ describe("GET /listening-logs/:id (get)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(undefined);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", TEST_USER_ID),
       mockContext,
@@ -78,30 +100,36 @@ describe("GET /listening-logs/:id (get)", () => {
   });
 
   it("他ユーザーのアイテムにアクセスした場合は 404 を返す（存在を隠蔽）", async () => {
-    mockRepo.findById.mockResolvedValueOnce(testLog);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(
+      makeLogRecord("abc-123", "2024-01-15T20:00:00.000Z", TEST_USER_ID),
+    );
     const result = await handler(makeEvent("abc-123", OTHER_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
   });
 
   it("userId が null のアイテム（未帰属データ）にアクセスした場合は 404 を返す", async () => {
-    const nullUserLog = { ...testLog, userId: null };
-    mockRepo.findById.mockResolvedValueOnce(nullUserLog);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(
+      makeLogRecord("abc-123", "2024-01-15T20:00:00.000Z", null),
+    );
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
   });
 
-  it("正常取得して 200 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(testLog);
+  it("正常取得して 200 を返す（派生値 pieceTitle / composerName を含む）", async () => {
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(
+      makeLogRecord("abc-123", "2024-01-15T20:00:00.000Z", TEST_USER_ID),
+    );
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
 
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBe("abc-123");
-    expect(body.piece).toBe("交響曲第9番");
+    expect(body.pieceTitle).toBe("交響曲第5番 ハ短調 Op.67");
+    expect(body.composerName).toBe("ベートーヴェン");
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mocks.listeningLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

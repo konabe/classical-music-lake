@@ -8,7 +8,7 @@
 
 ### 1.2 主要機能
 
-- **視聴ログ管理**: CD・配信サービス等で聴いた録音の記録。楽曲マスタから記録を作成すると `pieceId` で楽曲詳細へ正確にリンクする（`pieceId` を持たない記録は曲名をテキスト表示）
+- **視聴ログ管理**: CD・配信サービス等で聴いた録音の記録。`pieceId` で楽曲マスタを必ず参照する（楽曲名・作曲家名はサーバ側でマスタを結合して表示用 DTO に載せる派生値）
 - **視聴ログの検索・統計**: クライアントサイド絞り込みと、件数・評価分布・作曲家ランキング・月別トレンドの集計表示
 - **コンサート記録管理**: 会場・指揮者・オーケストラ・ソリスト・プログラム（楽曲マスタ参照）
 - **楽曲マスタ管理**: 楽曲の登録・編集・削除（管理者のみ）。詳細ページではログイン中ユーザーの該当楽曲の鑑賞記録一覧（`pieceId` 一致でクライアントサイド絞り込み）を表示し、各鑑賞記録の詳細ページへリンクする
@@ -118,24 +118,32 @@
 ```typescript
 type Rating = 1 | 2 | 3 | 4 | 5;
 
+// API レスポンス（DTO）。pieceTitle / composerId / composerName はサーバ側で
+// Piece / Composer を結合した派生値で、DynamoDB には保存しない。
 interface ListeningLog {
   id: string; // UUID (自動生成)
   userId: string | null; // Cognito sub（未帰属データは null）
   listenedAt: string; // 視聴日時 (ISO 8601、UTC、Zサフィックス必須)
-  composer: string; // 作曲家名（最大100文字、空白のみ不可）
-  piece: string; // 曲名（最大200文字、空白のみ不可）
-  pieceId?: string; // 楽曲マスタ（Piece）の id 参照（任意。UUID）
+  pieceId: string; // 楽曲マスタ（Piece）の id 参照（必須・UUID）
+  pieceTitle: string; // 派生: Movement の場合は「親Work title - 楽章 title」
+  composerId: string; // 派生: Work の composerId（Movement は親 Work から継承）
+  composerName: string; // 派生: Composer.name
   rating: Rating; // 評価 (1〜5の整数)
   isFavorite: boolean;
   memo?: string; // 任意、最大1000文字
   createdAt: string;
   updatedAt: string;
 }
+
+// 永続化レコード（派生値を含まない）。リポジトリ層で扱う。
+type ListeningLogRecord = Omit<ListeningLog, "pieceTitle" | "composerId" | "composerName">;
 ```
 
 > `listenedAt` は `datetime-local` 入力値をローカル時刻として `toISOString()` で変換して送信する。
 
-> **任意項目の更新**: `pieceId` は更新時に空文字 `""` を送るとフィールドが削除される（楽曲マスタとの紐付けを解除）。これにより楽曲マスタから記録した曲を後から自由記述に戻すことができる。
+> **`pieceId` 必須化（2026-05）**: 旧スキーマでは `composer` / `piece`（自由記述）と `pieceId`（任意）が併存していたが、楽曲マスタを単一の真実の源にするため `pieceId` を必須化し、自由記述フィールドは削除した。`composer` / `piece` を持つ既存データの自動移行は行わず、運用者（admin）が手動で `pieceId` を埋めるか削除して整える。
+
+> **dangling reference 防止**: `pieceId` の参照先 Piece が削除されると ListeningLog が宙に浮くため、`DELETE /pieces/{id}` は ListeningLog から参照されている場合に 409 Conflict を返す（Work の場合は配下 Movement までまとめて参照チェックする）。
 
 ### 3.2 楽曲マスタ (Piece — Composite)
 
@@ -296,10 +304,13 @@ interface ConcertLog {
 ### 4.3 視聴ログ API（`/listening-logs`）
 
 - **CRUD**: `GET /listening-logs` / `GET /listening-logs/{id}` / `POST /listening-logs` / `PUT /listening-logs/{id}` / `DELETE /listening-logs/{id}`
+- **リクエストボディ**: `pieceId`（必須・UUID）/ `listenedAt` / `rating` / `isFavorite` / `memo`。`composer` / `piece` / `pieceTitle` / `composerName` は**送らない**
+- **レスポンスボディ**: `ListeningLog` DTO。`pieceTitle` / `composerId` / `composerName` はサーバ側で Piece / Composer を結合した派生値で、リクエストには現れない
 - **ソート順**: `listenedAt` 降順（新しい順）
 - **アクセス制御**: GSI1（`userId` + `createdAt`）でユーザースコープに絞り込み。他ユーザーのアイテムへのアクセスは `404 Not Found`（存在を隠蔽）
-- **更新**: 部分更新（Partial Update）。`id` / `createdAt` / `userId` は不変、`updatedAt` は自動更新
+- **更新**: 部分更新（Partial Update）。`id` / `createdAt` / `userId` は不変、`updatedAt` は自動更新。`pieceId` は省略可能だが、空文字や `null` は送れない（必須フィールドの解除は許容しない）
 - **自動生成**: `id`（UUID v4）/ `userId`（Cognito sub）/ `createdAt` / `updatedAt`
+- **ListeningLogDetail（読み取り専用集約）**: ハンドラの戻り値 DTO は `domain/listening-log-detail.ts` の `ListeningLogDetail` で組み立てる。`ListeningLogEntity` 単体は `pieceId` のみを持ち、表示用の派生値は usecase 層で `PieceRepository.findById` / `ComposerRepository.findById` を引いて結合する（一覧 API では同一 pieceId / composerId をまとめて取得し N+1 を抑制）
 
 ### 4.4 コンサート記録 API（`/concert-logs`）
 
@@ -319,15 +330,15 @@ interface ConcertLog {
 
 #### エンドポイント一覧
 
-| メソッド | パス                         | 認証 | 概要                                                                                             |
-| -------- | ---------------------------- | ---- | ------------------------------------------------------------------------------------------------ |
-| `GET`    | `/pieces`                    | 不要 | Work（root）のカーソル型ページング。Movement は含まれない                                        |
-| `GET`    | `/pieces/{id}`               | 不要 | kind を問わず単一ノードを取得（Work でも Movement でも返す）                                     |
-| `GET`    | `/pieces/{id}/children`      | 不要 | 親 Work 配下の Movement を `index` 昇順で返す（`{ items: PieceMovement[] }` ではなく素直な配列） |
-| `POST`   | `/pieces`                    | 必須 | `kind` に応じて Work / Movement を作成                                                           |
-| `PUT`    | `/pieces/{id}`               | 必須 | kind 共通の単一更新（kind 不一致は 400）。楽観的ロック付き                                       |
-| `DELETE` | `/pieces/{id}`               | 必須 | kind を判別。Work なら配下 Movement まで cascade、Movement なら単独削除                          |
-| `PUT`    | `/pieces/{workId}/movements` | 必須 | Movement 集合の一括差し替え（並び替え・追加・削除）。Work の楽観的ロック付き                     |
+| メソッド | パス                         | 認証 | 概要                                                                                                                            |
+| -------- | ---------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/pieces`                    | 不要 | Work（root）のカーソル型ページング。Movement は含まれない                                                                       |
+| `GET`    | `/pieces/{id}`               | 不要 | kind を問わず単一ノードを取得（Work でも Movement でも返す）                                                                    |
+| `GET`    | `/pieces/{id}/children`      | 不要 | 親 Work 配下の Movement を `index` 昇順で返す（`{ items: PieceMovement[] }` ではなく素直な配列）                                |
+| `POST`   | `/pieces`                    | 必須 | `kind` に応じて Work / Movement を作成                                                                                          |
+| `PUT`    | `/pieces/{id}`               | 必須 | kind 共通の単一更新（kind 不一致は 400）。楽観的ロック付き                                                                      |
+| `DELETE` | `/pieces/{id}`               | 必須 | kind を判別。Work なら配下 Movement まで cascade、Movement なら単独削除。ListeningLog から参照されている場合は **409 Conflict** |
+| `PUT`    | `/pieces/{workId}/movements` | 必須 | Movement 集合の一括差し替え（並び替え・追加・削除）。Work の楽観的ロック付き                                                    |
 
 #### `GET /pieces` カーソル型ページング
 
@@ -578,7 +589,18 @@ cd cdk && pnpm install && cdk bootstrap && cdk deploy
 - `equals(other: unknown)`: 「同じ具象クラス」かつ「同じ ID」のとき `true`。異なる派生クラス同士は `false`
 - 派生クラスの規約: `private constructor(props)` で `super(props)` を呼ぶ。`static create()` / `static reconstruct()` ファクトリは個別実装。`toPlain()` / `isOwnedBy()` / `mergeUpdate()` は派生クラスで実装
 
-### 8.4 その他の値オブジェクト（バックエンドのみ）
+### 8.4 読み取り専用集約（ListeningLogDetail）
+
+`backend/src/domain/listening-log-detail.ts` の `ListeningLogDetail` は、`ListeningLogEntity` と関連する `Piece`（Work / Movement）・`Composer` を保持し、表示用 DTO（`ListeningLog`）を組み立てる読み取り専用集約。
+
+- `ListeningLogEntity` は `pieceId` のみを保持し、楽曲名・作曲家名は持たない（DDD の集約境界に従い、関連集約は ID で参照）
+- 派生値の解決責任は `ListeningLogDetail` に閉じる:
+  - `pieceTitle`: Work なら `piece.title`、Movement なら「親 Work title - 楽章 title」
+  - `composerId` / `composerName`: Work なら自身の `composerId`、Movement なら親 Work から継承
+- ドメイン層は `repositories/` に依存しないため、必要な `Piece` / `Composer` は usecase 層が事前に取得して `ListeningLogDetail.from(log, piece, parentWork, composer)` に渡す
+- 一覧 API では同一 `pieceId` / 同一 `composerId` の重複取得を排除し、N+1 を抑制する（`ListeningLogUsecase.toDetailDtoList`）
+
+### 8.5 その他の値オブジェクト（バックエンドのみ）
 
 ID 以外のドメイン概念も不変条件を VO で保証する。すべて `backend/src/domain/value-objects/` 配下。
 

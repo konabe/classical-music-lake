@@ -88,8 +88,8 @@ const formatMonthLabel = (month: string): string => {
           <span class="smallcaps panel-meta">よく聴く作曲家</span>
         </header>
         <ul class="bar-list">
-          <li v-for="row in statistics.topComposers" :key="row.composer" class="bar-row">
-            <span class="bar-label bar-label-name">{{ row.composer }}</span>
+          <li v-for="row in statistics.topComposers" :key="row.composerName" class="bar-row">
+            <span class="bar-label bar-label-name">{{ row.composerName }}</span>
             <div class="bar-track">
               <div
                 class="bar-fill bar-fill--accent"

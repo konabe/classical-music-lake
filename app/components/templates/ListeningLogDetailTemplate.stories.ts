@@ -14,8 +14,10 @@ const baseLog: ListeningLog = {
   id: "1",
   userId: null,
   listenedAt: "2024-03-01T14:00:00.000Z",
-  composer: "ベートーヴェン",
-  piece: "交響曲第9番 ニ短調 Op.125",
+  pieceId: "piece-1",
+  pieceTitle: "交響曲第9番 ニ短調 Op.125",
+  composerId: "composer-1",
+  composerName: "ベートーヴェン",
   rating: 5,
   isFavorite: false,
   createdAt: "2024-03-01T14:00:00.000Z",
@@ -40,11 +42,5 @@ export const WithMemo: Story = {
       ...baseLog,
       memo: "フルトヴェングラー指揮、バイロイト祝祭管弦楽団。歴史的名演。第四楽章のテンポが絶品だった。",
     },
-  },
-};
-
-export const WithPieceLink: Story = {
-  args: {
-    log: { ...baseLog, pieceId: "piece-1" },
   },
 };

@@ -1,21 +1,54 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Conflict } from "http-errors";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { ListeningLog } from "../../types";
 
 import { handler } from "./update";
+import { makeComposer, makeLogRecord, makePiece } from "../../test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
+const mocks = vi.hoisted(() => ({
+  listeningLogRepo: {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findByUserId: vi.fn(),
+    existsByPieceIds: vi.fn(),
+    saveWithOptimisticLock: vi.fn(),
+    remove: vi.fn(),
+  },
+  pieceRepo: {
+    findRootById: vi.fn(),
+    findRootPage: vi.fn(),
+    saveWork: vi.fn(),
+    saveWorkWithOptimisticLock: vi.fn(),
+    removeWorkCascade: vi.fn(),
+    findById: vi.fn(),
+    findChildren: vi.fn(),
+    saveMovement: vi.fn(),
+    saveMovementWithOptimisticLock: vi.fn(),
+    removeMovement: vi.fn(),
+    replaceMovements: vi.fn(),
+  },
+  composerRepo: {
+    findById: vi.fn(),
+    findPage: vi.fn(),
+    save: vi.fn(),
+    saveWithOptimisticLock: vi.fn(),
+    remove: vi.fn(),
+  },
 }));
 
 vi.mock("../../repositories/listening-log-repository", () => ({
   DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
+    return mocks.listeningLogRepo;
+  }),
+}));
+vi.mock("../../repositories/piece-repository", () => ({
+  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
+    return mocks.pieceRepo;
+  }),
+}));
+vi.mock("../../repositories/composer-repository", () => ({
+  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
+    return mocks.composerRepo;
   }),
 }));
 
@@ -44,22 +77,13 @@ function makeEvent(id?: string, body?: string | null, userId?: string): APIGatew
   };
 }
 
-const existingLog: ListeningLog = {
-  id: "abc-123",
-  userId: TEST_USER_ID,
-  listenedAt: "2024-01-15T20:00:00.000Z",
-  composer: "ベートーヴェン",
-  piece: "交響曲第9番",
-  rating: 5,
-  isFavorite: false,
-  memo: "",
-  createdAt: "2024-01-15T21:00:00.000Z",
-  updatedAt: "2024-01-15T21:00:00.000Z",
-};
+const existingLog = makeLogRecord("abc-123", "2024-01-15T20:00:00.000Z", TEST_USER_ID);
 
 describe("PUT /listening-logs/:id (update)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.pieceRepo.findById.mockResolvedValue(makePiece());
+    mocks.composerRepo.findById.mockResolvedValue(makeComposer());
   });
 
   it("id がない場合は 400 を返す", async () => {
@@ -102,54 +126,6 @@ describe("PUT /listening-logs/:id (update)", () => {
     },
   );
 
-  it.each(["   ", "\t", "\n"])(
-    "composer が空白のみ（%j）の場合は 400 を返す",
-    async (whitespaceComposer) => {
-      const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ composer: whitespaceComposer }), TEST_USER_ID),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe("composer must be a non-empty string");
-    },
-  );
-
-  it("composer が 100 文字を超える場合は 400 を返す", async () => {
-    const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ composer: "あ".repeat(101) }), TEST_USER_ID),
-      mockContext,
-      mockCallback,
-    );
-    expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe(
-      "composer must be 100 characters or less",
-    );
-  });
-
-  it.each(["   ", "\t", "\n"])(
-    "piece が空白のみ（%j）の場合は 400 を返す",
-    async (whitespacePiece) => {
-      const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ piece: whitespacePiece }), TEST_USER_ID),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be a non-empty string");
-    },
-  );
-
-  it("piece が 200 文字を超える場合は 400 を返す", async () => {
-    const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ piece: "あ".repeat(201) }), TEST_USER_ID),
-      mockContext,
-      mockCallback,
-    );
-    expect(result?.statusCode).toBe(400);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("piece must be 200 characters or less");
-  });
-
   it("memo が 1000 文字を超える場合は 400 を返す", async () => {
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ memo: "あ".repeat(1001) }), TEST_USER_ID),
@@ -170,30 +146,29 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("他ユーザーのアイテムを更新しようとした場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), OTHER_USER_ID),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(404);
-    expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+    expect(mocks.listeningLogRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
   });
 
   it("userId が null のアイテム（未帰属データ）を更新しようとした場合は 404 を返す", async () => {
-    const nullUserLog = { ...existingLog, userId: null };
-    mockRepo.findById.mockResolvedValueOnce(nullUserLog);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce({ ...existingLog, userId: null });
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(404);
-    expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+    expect(mocks.listeningLogRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(undefined);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
@@ -203,8 +178,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("rating を含まない更新は rating のバリデーションをスキップする", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ isFavorite: true }), TEST_USER_ID),
@@ -215,8 +190,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("正常更新して 200 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4, isFavorite: true }), TEST_USER_ID),
@@ -229,11 +204,14 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(body.id).toBe("abc-123");
     expect(body.rating).toBe(4);
     expect(body.isFavorite).toBe(true);
+    // 派生値が結合されている
+    expect(body.pieceTitle).toBe("交響曲第5番 ハ短調 Op.67");
+    expect(body.composerName).toBe("ベートーヴェン");
   });
 
   it("updatedAt が更新されること", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const before = new Date(existingLog.updatedAt).getTime();
     const result = await handler(
@@ -246,8 +224,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("id は上書きされない", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ id: "tampered-id", rating: 4 }), TEST_USER_ID),
@@ -258,11 +236,11 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(body.id).toBe("abc-123");
   });
 
-  it("pieceId を更新できる", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+  it("pieceId を別の UUID に更新できる", async () => {
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
-    const newPieceId = "00000000-0000-4000-8000-000000000001";
+    const newPieceId = "00000000-0000-4000-8000-00000000aaaa";
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceId: newPieceId }), TEST_USER_ID),
       mockContext,
@@ -271,22 +249,6 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.pieceId).toBe(newPieceId);
-  });
-
-  it("pieceId に空文字を送ると当該フィールドが削除される", async () => {
-    const PIECE_ID = "00000000-0000-4000-8000-000000000001";
-    const logWithPieceId = { ...existingLog, pieceId: PIECE_ID };
-    mockRepo.findById.mockResolvedValueOnce(logWithPieceId);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
-
-    const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ pieceId: "" }), TEST_USER_ID),
-      mockContext,
-      mockCallback,
-    );
-    expect(result?.statusCode).toBe(200);
-    const body = JSON.parse(result?.body ?? "{}");
-    expect(body.pieceId).toBeUndefined();
   });
 
   it("pieceId が UUID 形式でない場合は 400 を返す", async () => {
@@ -300,8 +262,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockRejectedValueOnce(
+    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mocks.listeningLogRepo.saveWithOptimisticLock.mockRejectedValueOnce(
       new Conflict("Listening log was updated by another request"),
     );
     const result = await handler(
@@ -316,7 +278,7 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mocks.listeningLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+import type { ListeningLogRepository } from "../domain/listening-log";
 import type { PieceRepository } from "../domain/piece";
 import { PieceId } from "../domain/value-objects/ids";
 import type { CreateMovementInput, CreateWorkInput, PieceMovement, PieceWork } from "../types";
@@ -16,11 +17,20 @@ const makeMockRepo = (): PieceRepository => ({
   saveWorkWithOptimisticLock: vi.fn(),
   removeWorkCascade: vi.fn(),
   findById: vi.fn(),
-  findChildren: vi.fn(),
+  findChildren: vi.fn().mockResolvedValue([]),
   saveMovement: vi.fn(),
   saveMovementWithOptimisticLock: vi.fn(),
   removeMovement: vi.fn(),
   replaceMovements: vi.fn(),
+});
+
+const makeMockListeningLogRepo = (): ListeningLogRepository => ({
+  findById: vi.fn(),
+  findByUserId: vi.fn(),
+  existsByPieceIds: vi.fn().mockResolvedValue(false),
+  save: vi.fn(),
+  saveWithOptimisticLock: vi.fn(),
+  remove: vi.fn(),
 });
 
 const makeWork = (overrides: Partial<PieceWork> = {}): PieceWork => ({
@@ -291,11 +301,13 @@ describe("MovementUsecase", () => {
 
 describe("PieceUsecase (facade)", () => {
   let repo: PieceRepository;
+  let listeningLogRepo: ListeningLogRepository;
   let usecase: PieceUsecase;
 
   beforeEach(() => {
     repo = makeMockRepo();
-    usecase = new PieceUsecase(repo);
+    listeningLogRepo = makeMockListeningLogRepo();
+    usecase = new PieceUsecase(repo, listeningLogRepo);
   });
 
   describe("create", () => {
@@ -395,6 +407,40 @@ describe("PieceUsecase (facade)", () => {
 
       expect(repo.removeWorkCascade).not.toHaveBeenCalled();
       expect(repo.removeMovement).not.toHaveBeenCalled();
+    });
+
+    it("ListeningLog から参照されている Work は 409 を投げる", async () => {
+      vi.mocked(repo.findById).mockResolvedValueOnce(makeWork());
+      vi.mocked(listeningLogRepo.existsByPieceIds).mockResolvedValueOnce(true);
+
+      await expect(usecase.delete(PieceId.from(TEST_WORK_ID))).rejects.toMatchObject({
+        statusCode: 409,
+      });
+      expect(repo.removeWorkCascade).not.toHaveBeenCalled();
+    });
+
+    it("ListeningLog から参照されている Movement は 409 を投げる", async () => {
+      vi.mocked(repo.findById).mockResolvedValueOnce(makeMovement());
+      vi.mocked(listeningLogRepo.existsByPieceIds).mockResolvedValueOnce(true);
+
+      await expect(usecase.delete(PieceId.from(TEST_MOVEMENT_ID))).rejects.toMatchObject({
+        statusCode: 409,
+      });
+      expect(repo.removeMovement).not.toHaveBeenCalled();
+    });
+
+    it("Work 配下の Movement も含めて参照チェックする", async () => {
+      vi.mocked(repo.findById).mockResolvedValueOnce(makeWork());
+      vi.mocked(repo.findChildren).mockResolvedValueOnce([
+        makeMovement({ id: "mov-a" }),
+        makeMovement({ id: "mov-b" }),
+      ]);
+
+      await usecase.delete(PieceId.from(TEST_WORK_ID));
+
+      const arg = vi.mocked(listeningLogRepo.existsByPieceIds).mock.calls[0]?.[0];
+      expect(arg).toHaveLength(3);
+      expect(arg?.map((p) => p.value)).toEqual([TEST_WORK_ID, "mov-a", "mov-b"]);
     });
   });
 

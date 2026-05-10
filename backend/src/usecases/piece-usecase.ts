@@ -1,8 +1,10 @@
 import createError from "http-errors";
 
+import type { ListeningLogRepository } from "../domain/listening-log";
 import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
 import { ComposerId, PieceId } from "../domain/value-objects/ids";
+import { DynamoDBListeningLogRepository } from "../repositories/listening-log-repository";
 import { DynamoDBPieceRepository } from "../repositories/piece-repository";
 import type {
   CreateMovementInput,
@@ -173,7 +175,10 @@ export class PieceUsecase {
   private readonly work: WorkUsecase;
   private readonly movement: MovementUsecase;
 
-  constructor(private readonly repo: PieceRepository) {
+  constructor(
+    private readonly repo: PieceRepository,
+    private readonly listeningLogRepo: ListeningLogRepository,
+  ) {
     this.work = new WorkUsecase(repo);
     this.movement = new MovementUsecase(repo);
   }
@@ -243,11 +248,21 @@ export class PieceUsecase {
    * - Work: 配下 Movement までまとめて cascade 削除
    * - Movement: 単独削除（親 Work には影響しない）
    * - 存在しない id は冪等に扱い、何もせず終了する（DELETE 系の慣例どおり）
+   *
+   * 削除前に対象 Piece（Work の場合は配下 Movement を含む）を参照する ListeningLog が
+   * 存在しないかチェックし、存在する場合は 409 Conflict を投げる（dangling reference 防止）。
    */
   async delete(id: PieceId): Promise<void> {
     const item = await this.repo.findById(id);
     if (item === undefined) {
       return;
+    }
+    const targetPieceIds: PieceId[] =
+      item.kind === "work"
+        ? [id, ...(await this.repo.findChildren(id)).map((m) => PieceId.from(m.id))]
+        : [id];
+    if (await this.listeningLogRepo.existsByPieceIds(targetPieceIds)) {
+      throw new createError.Conflict("Cannot delete piece referenced by existing listening logs");
     }
     if (item.kind === "work") {
       await this.repo.removeWorkCascade(id);
@@ -261,4 +276,4 @@ export const createWorkUsecase = (): WorkUsecase => new WorkUsecase(new DynamoDB
 export const createMovementUsecase = (): MovementUsecase =>
   new MovementUsecase(new DynamoDBPieceRepository());
 export const createPieceUsecase = (): PieceUsecase =>
-  new PieceUsecase(new DynamoDBPieceRepository());
+  new PieceUsecase(new DynamoDBPieceRepository(), new DynamoDBListeningLogRepository());

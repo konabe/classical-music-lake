@@ -3,11 +3,6 @@ import ListeningLogForm from "./ListeningLogForm.vue";
 import ButtonPrimary from "../atoms/ButtonPrimary.vue";
 import type { Composer, PieceWork } from "~/types";
 
-const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
-const COMPOSER_ID_MOZART = "00000000-0000-4000-8000-000000000002";
-const COMPOSER_ID_MUSSORGSKY = "00000000-0000-4000-8000-000000000003";
-const COMPOSER_ID_STRAVINSKY = "00000000-0000-4000-8000-000000000004";
-
 const { mockPieces, mockComposers } = vi.hoisted(() => {
   const BEETHOVEN = "00000000-0000-4000-8000-000000000001";
   const MOZART = "00000000-0000-4000-8000-000000000002";
@@ -78,11 +73,6 @@ const { mockPieces, mockComposers } = vi.hoisted(() => {
   return { mockPieces, mockComposers };
 });
 
-void COMPOSER_ID_BEETHOVEN;
-void COMPOSER_ID_MOZART;
-void COMPOSER_ID_MUSSORGSKY;
-void COMPOSER_ID_STRAVINSKY;
-
 mockNuxtImport("usePiecesAll", () =>
   vi.fn().mockReturnValue({
     data: ref(mockPieces),
@@ -129,32 +119,26 @@ describe("ListeningLogForm", () => {
   });
 
   describe("initialValues での初期化", () => {
-    it("初期値が入力フィールドに反映される", async () => {
+    it("pieceId 初期値が select に反映される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm, {
         props: {
           initialValues: {
-            composer: "モーツァルト",
-            piece: "魔笛",
+            pieceId: "piece-2",
             rating: 4,
             isFavorite: true,
           },
         },
       });
-
-      const composerInput = wrapper.find('input[placeholder="例: ベートーヴェン"]');
-      expect((composerInput.element as HTMLInputElement).value).toBe("モーツァルト");
-
-      const pieceInput = wrapper.find('input[placeholder="例: 交響曲第9番"]');
-      expect((pieceInput.element as HTMLInputElement).value).toBe("魔笛");
+      const select = wrapper.find("select#piece-select");
+      expect((select.element as HTMLSelectElement).value).toBe("piece-2");
     });
 
     it("初期評価が星の表示に反映される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm, {
         props: {
-          initialValues: { rating: 5, composer: "", piece: "", isFavorite: false },
+          initialValues: { rating: 5, isFavorite: false },
         },
       });
-
       const activeStars = wrapper.findAll(".star-btn.active");
       expect(activeStars).toHaveLength(5);
     });
@@ -162,10 +146,9 @@ describe("ListeningLogForm", () => {
     it("初期お気に入りが反映される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm, {
         props: {
-          initialValues: { isFavorite: true, composer: "", piece: "", rating: 3 },
+          initialValues: { isFavorite: true, rating: 3 },
         },
       });
-
       const checkbox = wrapper.find('input[type="checkbox"]');
       expect((checkbox.element as HTMLInputElement).checked).toBe(true);
     });
@@ -182,30 +165,12 @@ describe("ListeningLogForm", () => {
   });
 
   describe("フォーム送信", () => {
-    it("フォーム送信時に submit イベントが emit される", async () => {
-      const wrapper = await mountSuspended(ListeningLogForm, {
-        props: {
-          initialValues: {
-            listenedAt: "2024-01-15T20:00",
-            composer: "ベートーヴェン",
-            piece: "交響曲第9番",
-            rating: 5,
-            isFavorite: false,
-          },
-        },
-      });
-
-      await wrapper.find("form").trigger("submit.prevent");
-      expect(wrapper.emitted("submit")).toBeDefined();
-    });
-
-    it("submit イベントにフォームデータが含まれる", async () => {
+    it("submit イベントに pieceId と派生でない入力フィールドが含まれる", async () => {
       const wrapper = await mountSuspended(ListeningLogForm, {
         props: {
           initialValues: {
             listenedAt: "2024-01-15T20:00:00.000Z",
-            composer: "ベートーヴェン",
-            piece: "交響曲第9番",
+            pieceId: "piece-1",
             rating: 5,
             isFavorite: true,
           },
@@ -216,9 +181,11 @@ describe("ListeningLogForm", () => {
       const emitted = wrapper.emitted("submit");
       expect(emitted).toBeDefined();
       const emittedData = emitted![0][0] as Record<string, unknown>;
-      expect(emittedData.composer).toBe("ベートーヴェン");
-      expect(emittedData.piece).toBe("交響曲第9番");
+      expect(emittedData.pieceId).toBe("piece-1");
+      expect(emittedData.rating).toBe(5);
       expect(emittedData.isFavorite).toBe(true);
+      expect(emittedData).not.toHaveProperty("composer");
+      expect(emittedData).not.toHaveProperty("piece");
     });
 
     it("listenedAt は ISO 8601 UTC 形式（Zサフィックス）で emit される", async () => {
@@ -226,8 +193,7 @@ describe("ListeningLogForm", () => {
         props: {
           initialValues: {
             listenedAt: "2024-01-15T20:00:00.000Z",
-            composer: "ベートーヴェン",
-            piece: "交響曲第9番",
+            pieceId: "piece-1",
             rating: 5,
             isFavorite: false,
           },
@@ -247,41 +213,25 @@ describe("ListeningLogForm", () => {
       expect(wrapper.find("select#piece-select").exists()).toBe(true);
     });
 
-    it("「選択しない」オプションが含まれる", async () => {
+    it("プレースホルダーオプション（楽曲未選択）が含まれる", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
       const options = wrapper.findAll("select#piece-select option");
-      expect(options[0].text()).toBe("選択しない");
+      expect(options[0].text()).toContain("楽曲を選択");
     });
 
     it("楽曲一覧がオプションに表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
       const options = wrapper.findAll("select#piece-select option");
-      expect(options[1].text()).toBe("交響曲第9番 / ベートーヴェン");
-      expect(options[2].text()).toBe("魔笛 / モーツァルト");
+      expect(options[1].text()).toContain("交響曲第9番 / ベートーヴェン");
+      expect(options[2].text()).toContain("魔笛 / モーツァルト");
     });
 
-    it("楽曲を選択すると曲名・作曲家が自動入力される", async () => {
+    it("楽曲を選択すると作曲家ヒントが表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogForm);
       const select = wrapper.find("select#piece-select");
       await select.setValue("piece-1");
 
-      const composerInput = wrapper.find('input[placeholder="例: ベートーヴェン"]');
-      const pieceInput = wrapper.find('input[placeholder="例: 交響曲第9番"]');
-      expect((composerInput.element as HTMLInputElement).value).toBe("ベートーヴェン");
-      expect((pieceInput.element as HTMLInputElement).value).toBe("交響曲第9番");
-    });
-
-    it("「選択しない」を選ぶと曲名・作曲家がクリアされる", async () => {
-      const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select#piece-select");
-
-      await select.setValue("piece-1");
-      await select.setValue("");
-
-      const composerInput = wrapper.find('input[placeholder="例: ベートーヴェン"]');
-      const pieceInput = wrapper.find('input[placeholder="例: 交響曲第9番"]');
-      expect((composerInput.element as HTMLInputElement).value).toBe("");
-      expect((pieceInput.element as HTMLInputElement).value).toBe("");
+      expect(wrapper.find(".composer-hint").text()).toContain("ベートーヴェン");
     });
 
     it("楽曲を選択して送信すると pieceId が submit イベントに含まれる", async () => {
@@ -295,39 +245,6 @@ describe("ListeningLogForm", () => {
       expect(emitted).toBeDefined();
       const payload = emitted?.[0]?.[0] as { pieceId?: string };
       expect(payload.pieceId).toBe("piece-1");
-    });
-
-    it("楽曲を選択しないで送信すると pieceId は含まれない", async () => {
-      const wrapper = await mountSuspended(ListeningLogForm);
-      await wrapper.find('input[placeholder="例: ベートーヴェン"]').setValue("ショパン");
-      await wrapper.find('input[placeholder="例: 交響曲第9番"]').setValue("ノクターン");
-      await wrapper.find("form").trigger("submit");
-
-      const emitted = wrapper.emitted("submit");
-      const payload = emitted?.[0]?.[0] as { pieceId?: string };
-      expect(payload.pieceId).toBeUndefined();
-    });
-
-    it("初期値に pieceId があり「選択しない」へ戻すと submit で空文字が送信される", async () => {
-      const wrapper = await mountSuspended(ListeningLogForm, {
-        props: {
-          initialValues: {
-            composer: "ベートーヴェン",
-            piece: "交響曲第9番",
-            pieceId: "piece-1",
-            rating: 5 as const,
-            isFavorite: false,
-            listenedAt: "2024-03-01T14:00:00.000Z",
-          },
-        },
-      });
-      const select = wrapper.find("select#piece-select");
-      await select.setValue("");
-      await wrapper.find("form").trigger("submit");
-
-      const emitted = wrapper.emitted("submit");
-      const payload = emitted?.[0]?.[0] as { pieceId?: string };
-      expect(payload.pieceId).toBe("");
     });
   });
 
@@ -368,17 +285,6 @@ describe("ListeningLogForm", () => {
       await select.setValue("piece-4");
       expect(wrapper.find("iframe").attributes("src")).toContain("video456");
     });
-
-    it("「選択しない」にすると動画が非表示になる", async () => {
-      const wrapper = await mountSuspended(ListeningLogForm);
-      const select = wrapper.find("select#piece-select");
-
-      await select.setValue("piece-3");
-      expect(wrapper.find(".video-player").exists()).toBe(true);
-
-      await select.setValue("");
-      expect(wrapper.find(".video-player").exists()).toBe(false);
-    });
   });
 
   describe("星評価の操作", () => {
@@ -386,7 +292,6 @@ describe("ListeningLogForm", () => {
       const wrapper = await mountSuspended(ListeningLogForm);
       const starButtons = wrapper.findAll(".star-btn");
 
-      // 1番目の星をクリック（評価を1に）
       await starButtons[0].trigger("click");
       const activeStars = wrapper.findAll(".star-btn.active");
       expect(activeStars).toHaveLength(1);
