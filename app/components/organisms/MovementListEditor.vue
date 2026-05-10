@@ -43,7 +43,7 @@ async function handleSave() {
   saveError.value = null;
   try {
     const payload = items.value.map((item, idx) => ({
-      ...(item.id !== undefined ? { id: item.id } : {}),
+      ...(item.id === undefined ? {} : { id: item.id }),
       index: idx,
       title: item.title,
       videoUrls: item.videoUrlsText
@@ -67,7 +67,6 @@ async function handleSave() {
     <draggable v-model="items" item-key="_key" tag="ol" class="movement-list" handle=".drag-handle">
       <template #item="{ element, index }">
         <li class="movement-item">
-          <!-- NOSONAR: draggableがolラッパーを生成するためliの親はolになる -->
           <span class="movement-num numeric">{{ String(index + 1).padStart(2, "0") }}</span>
           <button
             type="button"

@@ -205,7 +205,6 @@ export class PieceWorkEntity extends PieceComponent<PieceWorkProps> {
 
   mergeUpdate(input: UpdateWorkInput): PieceWorkEntity {
     const { kind: _kind, ...rest } = input;
-    void _kind;
     const merged = buildUpdateProps(this.toPlain(), rest, WORK_CLEARABLE_FIELDS);
     return PieceWorkEntity.reconstruct(merged);
   }
@@ -266,7 +265,6 @@ export class PieceMovementEntity extends PieceComponent<PieceMovementProps> {
 
   mergeUpdate(input: UpdateMovementInput): PieceMovementEntity {
     const { kind: _kind, ...rest } = input;
-    void _kind;
     const merged = buildUpdateProps(this.toPlain(), rest, MOVEMENT_CLEARABLE_FIELDS);
     return PieceMovementEntity.reconstruct(merged);
   }

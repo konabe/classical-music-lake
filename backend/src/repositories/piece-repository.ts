@@ -43,9 +43,9 @@ export class DynamoDBPieceRepository implements PieceRepository {
     }
     const { videoUrl, ...rest } = legacy;
     if (rest.videoUrls === undefined && typeof videoUrl === "string" && videoUrl !== "") {
-      return { ...rest, videoUrls: [videoUrl] } as Piece;
+      return { ...rest, videoUrls: [videoUrl] };
     }
-    return rest as Piece;
+    return rest;
   }
 
   /**
@@ -71,11 +71,11 @@ export class DynamoDBPieceRepository implements PieceRepository {
   }
 
   private static isWork(piece: Piece | undefined): piece is PieceWork {
-    return piece !== undefined && piece.kind === "work";
+    return piece?.kind === "work";
   }
 
   private static isMovement(piece: Piece | undefined): piece is PieceMovement {
-    return piece !== undefined && piece.kind === "movement";
+    return piece?.kind === "movement";
   }
 
   async findRootById(id: PieceId): Promise<PieceWork | undefined> {

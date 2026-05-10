@@ -22,7 +22,7 @@ export type ListeningLogStatistics = {
   monthlyTrend: MonthlyCount[];
 };
 
-const RATINGS: Rating[] = [1, 2, 3, 4, 5];
+const RATINGS: ReadonlySet<Rating> = new Set([1, 2, 3, 4, 5]);
 
 const emptyRatingDistribution = (): RatingDistribution => ({
   1: 0,
@@ -55,7 +55,7 @@ export const computeStatistics = (
   const ratingDistribution = emptyRatingDistribution();
   let ratingSum = 0;
   for (const log of logs) {
-    if (RATINGS.includes(log.rating)) {
+    if (RATINGS.has(log.rating)) {
       ratingDistribution[log.rating] += 1;
       ratingSum += log.rating;
     }
@@ -70,7 +70,7 @@ export const computeStatistics = (
     .map(([composerName, count]) => ({ composerName, count }))
     .sort((a, b) => {
       const diff = b.count - a.count;
-      return diff !== 0 ? diff : a.composerName.localeCompare(b.composerName);
+      return diff === 0 ? a.composerName.localeCompare(b.composerName) : diff;
     })
     .slice(0, topComposerLimit);
 

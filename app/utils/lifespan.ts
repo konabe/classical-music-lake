@@ -12,8 +12,8 @@ export function formatLifespan(birthYear?: number, deathYear?: number): string {
   if (birthYear === undefined && deathYear === undefined) {
     return "";
   }
-  const left = birthYear !== undefined ? formatYear(birthYear) : "";
-  const right = deathYear !== undefined ? formatYear(deathYear) : "";
+  const left = birthYear === undefined ? "" : formatYear(birthYear);
+  const right = deathYear === undefined ? "" : formatYear(deathYear);
   return `${left}–${right}`;
 }
 

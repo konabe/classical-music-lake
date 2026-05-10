@@ -57,37 +57,45 @@ describe("createListeningLogSchema", () => {
   });
 
   it("rating が 1〜5 の整数は常に有効", () => {
-    fc.assert(
-      fc.property(fc.integer({ min: 1, max: 5 }), (rating) =>
-        succeeds(createListeningLogSchema.safeParse({ ...validLog, rating })),
+    expect(() =>
+      fc.assert(
+        fc.property(fc.integer({ min: 1, max: 5 }), (rating) =>
+          succeeds(createListeningLogSchema.safeParse({ ...validLog, rating })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 
   it("rating が 1〜5 の範囲外の整数は常にエラー", () => {
-    fc.assert(
-      fc.property(fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })), (rating) =>
-        fails(createListeningLogSchema.safeParse({ ...validLog, rating })),
+    expect(() =>
+      fc.assert(
+        fc.property(fc.oneof(fc.integer({ max: 0 }), fc.integer({ min: 6 })), (rating) =>
+          fails(createListeningLogSchema.safeParse({ ...validLog, rating })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 
   it("rating が小数の場合は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.integer().map((n) => n + 0.5),
-        (rating) => fails(createListeningLogSchema.safeParse({ ...validLog, rating })),
+    expect(() =>
+      fc.assert(
+        fc.property(
+          fc.integer().map((n) => n + 0.5),
+          (rating) => fails(createListeningLogSchema.safeParse({ ...validLog, rating })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 
   it("trim 後も 1000 文字を超える memo は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ minLength: 1001, maxLength: 2000 }).filter((s) => s.trim().length > 1000),
-        (memo) => fails(createListeningLogSchema.safeParse({ ...validLog, memo })),
+    expect(() =>
+      fc.assert(
+        fc.property(
+          fc.string({ minLength: 1001, maxLength: 2000 }).filter((s) => s.trim().length > 1000),
+          (memo) => fails(createListeningLogSchema.safeParse({ ...validLog, memo })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 
   it("isFavorite が boolean でない場合はエラー", () => {
@@ -164,12 +172,14 @@ describe("createPieceSchema", () => {
   });
 
   it("trim 後も 200 文字を超える title は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
-        (title) => fails(createPieceSchema.safeParse({ ...validPiece, title })),
+    expect(() =>
+      fc.assert(
+        fc.property(
+          fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
+          (title) => fails(createPieceSchema.safeParse({ ...validPiece, title })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 
   it("composerId が空文字の場合はエラー", () => {
@@ -251,38 +261,46 @@ describe("registerSchema", () => {
   });
 
   it("8 文字未満の password は常にエラー", () => {
-    fc.assert(
-      fc.property(fc.string({ minLength: 1, maxLength: 7 }), (password) =>
-        fails(registerSchema.safeParse({ ...validAuth, password })),
+    expect(() =>
+      fc.assert(
+        fc.property(fc.string({ minLength: 1, maxLength: 7 }), (password) =>
+          fails(registerSchema.safeParse({ ...validAuth, password })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 
   it("大文字を含まない password は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ minLength: 8 }).filter((s) => !/[A-Z]/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+    expect(() =>
+      fc.assert(
+        fc.property(
+          fc.string({ minLength: 8 }).filter((s) => !/[A-Z]/.test(s)),
+          (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 
   it("小文字を含まない password は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ minLength: 8 }).filter((s) => !/[a-z]/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+    expect(() =>
+      fc.assert(
+        fc.property(
+          fc.string({ minLength: 8 }).filter((s) => !/[a-z]/.test(s)),
+          (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 
   it("数字を含まない password は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ minLength: 8 }).filter((s) => !/\d/.test(s)),
-        (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+    expect(() =>
+      fc.assert(
+        fc.property(
+          fc.string({ minLength: 8 }).filter((s) => !/\d/.test(s)),
+          (password) => fails(registerSchema.safeParse({ ...validAuth, password })),
+        ),
       ),
-    );
+    ).not.toThrow();
   });
 });
 
@@ -415,12 +433,14 @@ describe("listPiecesQuerySchema", () => {
     });
 
     it("base64url として不正な文字（+, /, =, !）を含む文字列は拒否する", () => {
-      fc.assert(
-        fc.property(fc.constantFrom("abc+", "abc/", "abc=", "abc!"), (invalid) => {
-          const result = listPiecesQuerySchema.safeParse({ cursor: invalid });
-          return fails(result);
-        }),
-      );
+      expect(() =>
+        fc.assert(
+          fc.property(fc.constantFrom("abc+", "abc/", "abc=", "abc!"), (invalid) => {
+            const result = listPiecesQuerySchema.safeParse({ cursor: invalid });
+            return fails(result);
+          }),
+        ),
+      ).not.toThrow();
     });
 
     it("空文字は拒否する", () => {
@@ -441,15 +461,17 @@ describe("listPiecesQuerySchema", () => {
     });
 
     it("有効な入力のプロパティベーステスト", () => {
-      fc.assert(
-        fc.property(
-          fc.integer({ min: PIECES_PAGE_SIZE_MIN, max: PIECES_PAGE_SIZE_MAX }),
-          (limit) => {
-            const result = listPiecesQuerySchema.safeParse({ limit });
-            return succeeds(result);
-          },
+      expect(() =>
+        fc.assert(
+          fc.property(
+            fc.integer({ min: PIECES_PAGE_SIZE_MIN, max: PIECES_PAGE_SIZE_MAX }),
+            (limit) => {
+              const result = listPiecesQuerySchema.safeParse({ limit });
+              return succeeds(result);
+            },
+          ),
         ),
-      );
+      ).not.toThrow();
     });
   });
 });

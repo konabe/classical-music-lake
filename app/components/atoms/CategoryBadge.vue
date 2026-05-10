@@ -8,7 +8,7 @@ const props = defineProps<{
 }>();
 
 const kindClass = computed(() =>
-  props.kind !== undefined ? `kind-${props.kind}` : "kind-default",
+  props.kind === undefined ? "kind-default" : `kind-${props.kind}`,
 );
 const ariaLabel = computed(() => `${props.label}: ${props.value}`);
 </script>

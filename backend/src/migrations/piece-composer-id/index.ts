@@ -62,6 +62,94 @@ export type MigrationDeps = {
   saveComposer: (composer: Composer) => Promise<void>;
 };
 
+function isAlreadyMigrated(piece: LegacyPiece): boolean {
+  return piece.composerId !== undefined && piece.composerId.length > 0;
+}
+
+async function resolveComposer(
+  composerName: string,
+  composerByName: Map<string, Composer>,
+  deps: Pick<MigrationDeps, "saveComposer">,
+  options: { dryRun: boolean; pieceId: string },
+): Promise<{ composer: Composer; created: boolean }> {
+  const existing = composerByName.get(composerName);
+  if (existing !== undefined) {
+    return { composer: existing, created: false };
+  }
+  const now = new Date().toISOString();
+  const composer: Composer = {
+    id: randomUUID(),
+    name: composerName,
+    createdAt: now,
+    updatedAt: now,
+  };
+  if (!options.dryRun) {
+    await deps.saveComposer(composer);
+  }
+  composerByName.set(composerName, composer);
+  console.log({
+    pieceId: options.pieceId,
+    action: options.dryRun ? "would-create-composer" : "created-composer",
+    composerName,
+    composerId: composer.id,
+  });
+  return { composer, created: true };
+}
+
+function buildMigratedPiece(legacy: LegacyPiece, composerId: string): MigratedPiece {
+  return {
+    id: legacy.id,
+    title: legacy.title,
+    composerId,
+    videoUrl: legacy.videoUrl,
+    genre: legacy.genre,
+    era: legacy.era,
+    formation: legacy.formation,
+    region: legacy.region,
+    createdAt: legacy.createdAt,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+async function migrateOne(
+  legacy: LegacyPiece,
+  composerByName: Map<string, Composer>,
+  deps: MigrationDeps,
+  summary: MigrateSummary,
+  dryRun: boolean,
+): Promise<void> {
+  if (isAlreadyMigrated(legacy)) {
+    summary.skippedAlreadyMigrated += 1;
+    console.log({ pieceId: legacy.id, action: "skipped-already-migrated" });
+    return;
+  }
+  const composerName = legacy.composer?.trim();
+  if (composerName === undefined || composerName.length === 0) {
+    summary.skippedNoComposer += 1;
+    console.warn({ pieceId: legacy.id, action: "skipped-no-composer" });
+    return;
+  }
+
+  const { composer, created } = await resolveComposer(composerName, composerByName, deps, {
+    dryRun,
+    pieceId: legacy.id,
+  });
+  if (created) {
+    summary.createdComposers += 1;
+  }
+
+  const migrated = buildMigratedPiece(legacy, composer.id);
+  if (!dryRun) {
+    await deps.savePiece(migrated);
+  }
+  summary.migrated += 1;
+  console.log({
+    pieceId: legacy.id,
+    action: dryRun ? "would-migrate" : "migrated",
+    composerId: composer.id,
+  });
+}
+
 export async function runMigration(
   deps: MigrationDeps,
   event: MigrateEvent = {},
@@ -84,56 +172,7 @@ export async function runMigration(
   };
 
   for (const legacy of pieces) {
-    if (legacy.composerId !== undefined && legacy.composerId.length > 0) {
-      summary.skippedAlreadyMigrated += 1;
-      console.log({ pieceId: legacy.id, action: "skipped-already-migrated" });
-      continue;
-    }
-    const composerName = legacy.composer?.trim();
-    if (composerName === undefined || composerName.length === 0) {
-      summary.skippedNoComposer += 1;
-      console.warn({ pieceId: legacy.id, action: "skipped-no-composer" });
-      continue;
-    }
-
-    let composer = composerByName.get(composerName);
-    if (composer === undefined) {
-      const now = new Date().toISOString();
-      composer = { id: randomUUID(), name: composerName, createdAt: now, updatedAt: now };
-      if (!dryRun) {
-        await deps.saveComposer(composer);
-      }
-      composerByName.set(composerName, composer);
-      summary.createdComposers += 1;
-      console.log({
-        pieceId: legacy.id,
-        action: dryRun ? "would-create-composer" : "created-composer",
-        composerName,
-        composerId: composer.id,
-      });
-    }
-
-    const migrated: MigratedPiece = {
-      id: legacy.id,
-      title: legacy.title,
-      composerId: composer.id,
-      videoUrl: legacy.videoUrl,
-      genre: legacy.genre,
-      era: legacy.era,
-      formation: legacy.formation,
-      region: legacy.region,
-      createdAt: legacy.createdAt,
-      updatedAt: new Date().toISOString(),
-    };
-    if (!dryRun) {
-      await deps.savePiece(migrated);
-    }
-    summary.migrated += 1;
-    console.log({
-      pieceId: legacy.id,
-      action: dryRun ? "would-migrate" : "migrated",
-      composerId: composer.id,
-    });
+    await migrateOne(legacy, composerByName, deps, summary, dryRun);
   }
 
   console.log({ action: "migration-complete", ...summary });
