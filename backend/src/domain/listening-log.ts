@@ -1,10 +1,5 @@
-import type {
-  CreateListeningLogInput,
-  ListeningLogRecord,
-  UpdateListeningLogInput,
-} from "../types";
+import type { CreateListeningLogInput, ListeningLogRecord } from "../types";
 import { Entity, type EntityProps } from "./entity";
-import { buildUpdateProps } from "./entity-helpers";
 import { Rating } from "./value-objects/rating";
 import { ListeningLogId, PieceId, UserId } from "./value-objects/ids";
 
@@ -67,9 +62,34 @@ export class ListeningLogEntity extends Entity<ListeningLogId, ListeningLogProps
     return this.props.userId !== null && this.props.userId.equals(userId);
   }
 
-  mergeUpdate(input: UpdateListeningLogInput): ListeningLogEntity {
-    const merged = buildUpdateProps(this.toPlain(), input, []);
-    return ListeningLogEntity.reconstruct(merged);
+  /** お気に入りに加える。 */
+  markAsFavorite(): ListeningLogEntity {
+    return this.touched({ isFavorite: true });
+  }
+
+  /** お気に入りから外す。 */
+  unmarkAsFavorite(): ListeningLogEntity {
+    return this.touched({ isFavorite: false });
+  }
+
+  /** 評価を付け直す。 */
+  rerate(rating: number): ListeningLogEntity {
+    return this.touched({ rating });
+  }
+
+  /** メモを書き直す。空文字も許容する（API 仕様上の partial update 互換）。 */
+  rewriteMemo(memo: string): ListeningLogEntity {
+    return this.touched({ memo });
+  }
+
+  /** 視聴日時を訂正する。 */
+  correctListenedAt(listenedAt: string): ListeningLogEntity {
+    return this.touched({ listenedAt });
+  }
+
+  /** 別の楽曲に紐付け直す（事実訂正）。 */
+  relinkPiece(pieceId: string): ListeningLogEntity {
+    return this.touched({ pieceId });
   }
 
   toPlain(): ListeningLogRecord {
@@ -80,5 +100,13 @@ export class ListeningLogEntity extends Entity<ListeningLogId, ListeningLogProps
       pieceId: this.props.pieceId.value,
       rating: this.props.rating.value,
     };
+  }
+
+  private touched(diff: Partial<ListeningLogRecord>): ListeningLogEntity {
+    return ListeningLogEntity.reconstruct({
+      ...this.toPlain(),
+      ...diff,
+      updatedAt: new Date().toISOString(),
+    });
   }
 }
