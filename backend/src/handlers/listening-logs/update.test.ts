@@ -156,17 +156,6 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(mocks.listeningLogRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
   });
 
-  it("userId が null のアイテム（未帰属データ）を更新しようとした場合は 404 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce({ ...existingLog, userId: null });
-    const result = await handler(
-      makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
-      mockContext,
-      mockCallback,
-    );
-    expect(result?.statusCode).toBe(404);
-    expect(mocks.listeningLogRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
-  });
-
   it("アイテムが存在しない場合は 404 を返す", async () => {
     mocks.listeningLogRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(

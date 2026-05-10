@@ -44,11 +44,17 @@ export class ListeningLogDetail {
   }
 
   private get pieceTitle(): string {
-    if (this.piece.kind === "work") {
-      return this.piece.title;
+    switch (this.piece.kind) {
+      case "work":
+        return this.piece.title;
+      case "movement":
+        // Movement の場合、親 Work と楽章のタイトルを連結
+        return `${this.parentWork!.title} - ${this.piece.title}`;
+      default: {
+        const exhaustive: never = this.piece;
+        throw new TypeError(`Unknown piece kind: ${JSON.stringify(exhaustive)}`);
+      }
     }
-    // Movement の場合、親 Work と楽章のタイトルを連結
-    return `${this.parentWork!.title} - ${this.piece.title}`;
   }
 
   private get composerId(): string {

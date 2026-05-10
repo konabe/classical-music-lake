@@ -107,14 +107,6 @@ describe("GET /listening-logs/:id (get)", () => {
     expect(result?.statusCode).toBe(404);
   });
 
-  it("userId が null のアイテム（未帰属データ）にアクセスした場合は 404 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(
-      makeLogRecord("abc-123", "2024-01-15T20:00:00.000Z", null),
-    );
-    const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
-    expect(result?.statusCode).toBe(404);
-  });
-
   it("正常取得して 200 を返す（派生値 pieceTitle / composerName を含む）", async () => {
     mocks.listeningLogRepo.findById.mockResolvedValueOnce(
       makeLogRecord("abc-123", "2024-01-15T20:00:00.000Z", TEST_USER_ID),

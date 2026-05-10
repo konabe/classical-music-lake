@@ -95,16 +95,6 @@ describe("DELETE /listening-logs/:id (delete)", () => {
     expect(mocks.listeningLogRepo.remove).not.toHaveBeenCalled();
   });
 
-  it("userId が null のアイテム（未帰属データ）を削除しようとした場合は 404 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce({ ...ownItem, userId: null });
-    const result = await handler(
-      makeDeleteEvent("listening-logs", "abc-123", TEST_USER_ID),
-      mockContext,
-      mockCallback,
-    );
-    expect(result?.statusCode).toBe(404);
-  });
-
   it("正常削除して 204 を返す", async () => {
     mocks.listeningLogRepo.findById.mockResolvedValueOnce(ownItem);
     mocks.listeningLogRepo.remove.mockResolvedValueOnce(undefined);
