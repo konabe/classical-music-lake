@@ -8,7 +8,7 @@ const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
   findById: vi.fn(),
   findByUserId: vi.fn(),
-  update: vi.fn(),
+  saveWithOptimisticLock: vi.fn(),
   remove: vi.fn(),
 }));
 

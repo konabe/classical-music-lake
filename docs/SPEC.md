@@ -317,6 +317,7 @@ interface ConcertLog {
 - **CRUD**: `GET /concert-logs` / `GET /concert-logs/{id}` / `POST /concert-logs` / `PUT /concert-logs/{id}` / `DELETE /concert-logs/{id}`
 - **ソート順**: `concertDate` 降順
 - **アクセス制御**: GSI1（`userId` + `createdAt`）でユーザースコープに絞り込み
+- **楽観的ロック**: `PUT /concert-logs/{id}` は `updatedAt` を ifMatch 条件にした条件付き Put で更新する。競合時は `409 Conflict` + `{ "message": "Concert log was updated by another request" }`
 - 認可・自動生成・更新ルールは視聴ログと同様
 
 ### 4.5 楽曲マスタ API（`/pieces`）
