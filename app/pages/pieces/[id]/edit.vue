@@ -11,7 +11,7 @@ const { updatePiece } = usePiecesPaginated();
 const { data: composers, pending: composersPending, refresh: refreshComposers } = useComposersAll();
 await refreshComposers();
 
-const { data: movements } = useMovements(() => id.value);
+const { data: movements } = await useMovements(() => id.value);
 
 const workPiece = computed<PieceWork | null>(() =>
   piece.value !== null && piece.value !== undefined && piece.value.kind === "work"

@@ -92,6 +92,31 @@ describe("PieceEditTemplate", () => {
     expect((composerSelect.element as HTMLSelectElement).value).toBe(COMPOSER_ID);
   });
 
+  it("カテゴリ系（genre / era / formation / region）の現在値も初期値として反映される", async () => {
+    const pieceWithCategories: PieceWork = {
+      ...samplePiece,
+      genre: "交響曲",
+      era: "古典派",
+      formation: "管弦楽",
+      region: "ドイツ・オーストリア",
+    };
+    const wrapper = await mountSuspended(PieceEditTemplate, {
+      props: {
+        piece: pieceWithCategories,
+        fetchError: null,
+        error: null,
+        composers,
+        movements: [],
+      },
+    });
+    expect((wrapper.find("#genre").element as HTMLSelectElement).value).toBe("交響曲");
+    expect((wrapper.find("#era").element as HTMLSelectElement).value).toBe("古典派");
+    expect((wrapper.find("#formation").element as HTMLSelectElement).value).toBe("管弦楽");
+    expect((wrapper.find("#region").element as HTMLSelectElement).value).toBe(
+      "ドイツ・オーストリア",
+    );
+  });
+
   it("フォーム送信時に submit イベントが emit される", async () => {
     const wrapper = await mountSuspended(PieceEditTemplate, {
       props: { piece: samplePiece, fetchError: null, error: null, composers, movements: [] },
