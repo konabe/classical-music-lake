@@ -1,5 +1,6 @@
-import type { ConcertLog, CreateConcertLogInput } from "../types";
+import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "../types";
 import { Entity, type EntityProps } from "./entity";
+import { buildUpdateProps } from "./entity-helpers";
 import { ConcertTitle } from "./value-objects/concert-title";
 import { ConcertLogId, PieceId, UserId } from "./value-objects/ids";
 import { Venue } from "./value-objects/venue";
@@ -11,6 +12,14 @@ export type ConcertLogRepository = {
   saveWithOptimisticLock(item: ConcertLog, prevUpdatedAt: string): Promise<void>;
   remove(id: ConcertLogId): Promise<void>;
 };
+
+/**
+ * 鑑賞記録の訂正内容を表す型。フィールド単位の差分を 1 つのオブジェクトで表現する。
+ * このアプリは鑑賞者の個人ノートであり、コンサートを「主催・運営」しているわけではないため、
+ * フィールドごとの意図メソッド（rename / relocate / reschedule …）には実体が伴わない。
+ * 操作はすべて「過去に観測した事実の記録を訂正・追記する」という単一のドメイン操作に帰着する。
+ */
+export type ConcertLogRevision = UpdateConcertLogInput;
 
 type ConcertLogProps = EntityProps<ConcertLogId> & {
   userId: UserId;
@@ -61,60 +70,13 @@ export class ConcertLogEntity extends Entity<ConcertLogId, ConcertLogProps> {
     return this.props.userId.equals(userId);
   }
 
-  rename(title: ConcertTitle): ConcertLogEntity {
-    return new ConcertLogEntity({
-      ...this.props,
-      title,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
-  relocate(venue: Venue): ConcertLogEntity {
-    return new ConcertLogEntity({
-      ...this.props,
-      venue,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
-  reschedule(concertDate: string): ConcertLogEntity {
-    return new ConcertLogEntity({
-      ...this.props,
-      concertDate,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
-  assignConductor(name: string): ConcertLogEntity {
-    return new ConcertLogEntity({
-      ...this.props,
-      conductor: name,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
-  assignOrchestra(name: string): ConcertLogEntity {
-    return new ConcertLogEntity({
-      ...this.props,
-      orchestra: name,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
-  assignSoloist(name: string): ConcertLogEntity {
-    return new ConcertLogEntity({
-      ...this.props,
-      soloist: name,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
-  setProgram(pieceIds: PieceId[]): ConcertLogEntity {
-    return new ConcertLogEntity({
-      ...this.props,
-      pieceIds,
-      updatedAt: new Date().toISOString(),
-    });
+  /**
+   * 鑑賞記録を訂正する。フィールドごとの意図メソッドを生やす代わりに、
+   * 「観測した事実の記録を後から書き直す」という単一の意図を 1 メソッドで表す。
+   */
+  revise(revision: ConcertLogRevision): ConcertLogEntity {
+    const merged = buildUpdateProps(this.toPlain(), revision, []);
+    return ConcertLogEntity.reconstruct(merged);
   }
 
   toPlain(): ConcertLog {

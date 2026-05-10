@@ -1,9 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { ConcertLogEntity } from "./concert-log";
-import { ConcertTitle } from "./value-objects/concert-title";
-import { PieceId, UserId } from "./value-objects/ids";
-import { Venue } from "./value-objects/venue";
+import { UserId } from "./value-objects/ids";
 import type { ConcertLog, CreateConcertLogInput } from "../types";
 
 const USER_ID = "cognito-sub-user-1";
@@ -49,73 +47,54 @@ describe("ConcertLogEntity", () => {
     expect(plain.updatedAt).toBe(baseData.updatedAt);
   });
 
-  describe("意図メソッドは新エンティティを返し updatedAt を進める", () => {
-    it("rename はタイトルだけを置き換える", () => {
+  describe("revise（鑑賞記録の訂正）", () => {
+    it("指定したフィールドのみ書き換え、updatedAt を進める", () => {
       const entity = ConcertLogEntity.reconstruct(baseData);
-      const renamed = entity.rename(ConcertTitle.of("特別演奏会")).toPlain();
-      expect(renamed.title).toBe("特別演奏会");
-      expect(renamed.venue).toBe(baseData.venue);
-      expect(renamed.concertDate).toBe(baseData.concertDate);
-      expect(renamed.id).toBe(baseData.id);
-      expect(renamed.createdAt).toBe(baseData.createdAt);
-      expect(renamed.updatedAt).not.toBe(baseData.updatedAt);
+      const revised = entity.revise({ venue: "東京文化会館" }).toPlain();
+      expect(revised.venue).toBe("東京文化会館");
+      expect(revised.title).toBe(baseData.title);
+      expect(revised.concertDate).toBe(baseData.concertDate);
+      expect(revised.conductor).toBe(baseData.conductor);
+      expect(revised.updatedAt).not.toBe(baseData.updatedAt);
     });
 
-    it("relocate は会場だけを置き換える", () => {
+    it("複数フィールドをまとめて書き換えられる", () => {
       const entity = ConcertLogEntity.reconstruct(baseData);
-      const moved = entity.relocate(Venue.of("東京文化会館")).toPlain();
-      expect(moved.venue).toBe("東京文化会館");
-      expect(moved.title).toBe(baseData.title);
-      expect(moved.updatedAt).not.toBe(baseData.updatedAt);
-    });
-
-    it("reschedule は開催日時だけを置き換える", () => {
-      const entity = ConcertLogEntity.reconstruct(baseData);
-      const rescheduled = entity.reschedule("2024-03-01T19:00:00.000Z").toPlain();
-      expect(rescheduled.concertDate).toBe("2024-03-01T19:00:00.000Z");
-      expect(rescheduled.title).toBe(baseData.title);
-      expect(rescheduled.updatedAt).not.toBe(baseData.updatedAt);
-    });
-
-    it("assignConductor は指揮者だけを置き換える", () => {
-      const entity = ConcertLogEntity.reconstruct(baseData);
-      const reassigned = entity.assignConductor("カラヤン").toPlain();
-      expect(reassigned.conductor).toBe("カラヤン");
-      expect(reassigned.orchestra).toBeUndefined();
-      expect(reassigned.updatedAt).not.toBe(baseData.updatedAt);
-    });
-
-    it("assignOrchestra はオーケストラだけを置き換える", () => {
-      const entity = ConcertLogEntity.reconstruct(baseData);
-      const reassigned = entity.assignOrchestra("ベルリン・フィル").toPlain();
-      expect(reassigned.orchestra).toBe("ベルリン・フィル");
-      expect(reassigned.conductor).toBe(baseData.conductor);
-    });
-
-    it("assignSoloist はソリストだけを置き換える", () => {
-      const entity = ConcertLogEntity.reconstruct(baseData);
-      const reassigned = entity.assignSoloist("内田光子").toPlain();
-      expect(reassigned.soloist).toBe("内田光子");
-    });
-
-    it("setProgram はプログラム配列を置き換える", () => {
-      const entity = ConcertLogEntity.reconstruct(baseData);
-      const programmed = entity
-        .setProgram([PieceId.from(PIECE_ID_1), PieceId.from(PIECE_ID_2)])
+      const revised = entity
+        .revise({
+          title: "特別演奏会",
+          venue: "東京文化会館",
+          conductor: "カラヤン",
+        })
         .toPlain();
-      expect(programmed.pieceIds).toEqual([PIECE_ID_1, PIECE_ID_2]);
+      expect(revised.title).toBe("特別演奏会");
+      expect(revised.venue).toBe("東京文化会館");
+      expect(revised.conductor).toBe("カラヤン");
     });
 
-    it("setProgram に空配列を渡すとプログラムが空になる", () => {
-      const entity = ConcertLogEntity.reconstruct({ ...baseData, pieceIds: [PIECE_ID_1] });
-      const cleared = entity.setProgram([]).toPlain();
-      expect(cleared.pieceIds).toEqual([]);
-    });
-
-    it("意図メソッドはイミュータブル（元エンティティは変化しない）", () => {
+    it("id と createdAt は不変", () => {
       const entity = ConcertLogEntity.reconstruct(baseData);
-      entity.rename(ConcertTitle.of("別の名前"));
-      expect(entity.toPlain().title).toBe(baseData.title);
+      const revised = entity.revise({ venue: "東京文化会館" }).toPlain();
+      expect(revised.id).toBe(baseData.id);
+      expect(revised.createdAt).toBe(baseData.createdAt);
+    });
+
+    it("pieceIds を配列で書き換えられる", () => {
+      const entity = ConcertLogEntity.reconstruct(baseData);
+      const revised = entity.revise({ pieceIds: [PIECE_ID_1, PIECE_ID_2] }).toPlain();
+      expect(revised.pieceIds).toEqual([PIECE_ID_1, PIECE_ID_2]);
+    });
+
+    it("pieceIds に空配列を渡すとプログラムが空になる", () => {
+      const entity = ConcertLogEntity.reconstruct({ ...baseData, pieceIds: [PIECE_ID_1] });
+      const revised = entity.revise({ pieceIds: [] }).toPlain();
+      expect(revised.pieceIds).toEqual([]);
+    });
+
+    it("イミュータブル（元エンティティは変化しない）", () => {
+      const entity = ConcertLogEntity.reconstruct(baseData);
+      entity.revise({ venue: "東京文化会館" });
+      expect(entity.toPlain().venue).toBe(baseData.venue);
     });
   });
 
@@ -126,8 +105,8 @@ describe("ConcertLogEntity", () => {
     });
 
     it("異なる userId なら false", () => {
-      const entity = ConcertLogEntity.create(makeInput(), UserId.from(USER_ID));
-      expect(entity.isOwnedBy(UserId.from(OTHER_USER_ID))).toBe(false);
+      const entity = ConcertLogEntity.create(makeInput(), UserId.from(OTHER_USER_ID));
+      expect(entity.isOwnedBy(UserId.from(USER_ID))).toBe(false);
     });
   });
 

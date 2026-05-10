@@ -1,9 +1,7 @@
 import { ConcertLogEntity } from "../domain/concert-log";
 import type { ConcertLogRepository } from "../domain/concert-log";
-import { ConcertTitle } from "../domain/value-objects/concert-title";
-import { ConcertLogId, PieceId } from "../domain/value-objects/ids";
+import { ConcertLogId } from "../domain/value-objects/ids";
 import type { UserId } from "../domain/value-objects/ids";
-import { Venue } from "../domain/value-objects/venue";
 import { DynamoDBConcertLogRepository } from "../repositories/concert-log-repository";
 import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "../types";
 import { loadOwnedEntityOrNotFound } from "./helpers";
@@ -50,32 +48,8 @@ export class ConcertLogUsecase {
     userId: UserId,
   ): Promise<ConcertLog> {
     const current = await this.loadOwnedEntity(id, userId);
-    let next = current;
-    if (input.title !== undefined) {
-      next = next.rename(ConcertTitle.of(input.title));
-    }
-    if (input.venue !== undefined) {
-      next = next.relocate(Venue.of(input.venue));
-    }
-    if (input.concertDate !== undefined) {
-      next = next.reschedule(input.concertDate);
-    }
-    if (input.conductor !== undefined) {
-      next = next.assignConductor(input.conductor);
-    }
-    if (input.orchestra !== undefined) {
-      next = next.assignOrchestra(input.orchestra);
-    }
-    if (input.soloist !== undefined) {
-      next = next.assignSoloist(input.soloist);
-    }
-    if (input.pieceIds !== undefined) {
-      next = next.setProgram(input.pieceIds.map(PieceId.from));
-    }
-    const plain = next.toPlain();
-    if (next === current) {
-      return plain;
-    }
+    const revised = current.revise(input);
+    const plain = revised.toPlain();
     await this.repo.saveWithOptimisticLock(plain, current.updatedAt);
     return plain;
   }
