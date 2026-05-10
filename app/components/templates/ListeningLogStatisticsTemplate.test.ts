@@ -7,7 +7,7 @@ const stats: ListeningLogStatistics = {
   favoriteCount: 1,
   averageRating: 4,
   ratingDistribution: { 1: 0, 2: 0, 3: 1, 4: 1, 5: 1 },
-  topComposers: [{ composer: "ベートーヴェン", count: 2 }],
+  topComposers: [{ composerName: "ベートーヴェン", count: 2 }],
   monthlyTrend: [{ month: "2024-01", count: 3 }],
 };
 

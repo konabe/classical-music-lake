@@ -5,8 +5,10 @@ const log = (overrides: Partial<ListeningLog> = {}): ListeningLog => ({
   id: "log-1",
   userId: "user-1",
   listenedAt: "2024-01-15T19:30:00.000Z",
-  composer: "ベートーヴェン",
-  piece: "交響曲第9番",
+  pieceId: "piece-1",
+  pieceTitle: "交響曲第9番",
+  composerId: "composer-1",
+  composerName: "ベートーヴェン",
   rating: 5,
   isFavorite: false,
   memo: undefined,
@@ -17,11 +19,17 @@ const log = (overrides: Partial<ListeningLog> = {}): ListeningLog => ({
 
 describe("filterListeningLogs", () => {
   const logs: ListeningLog[] = [
-    log({ id: "1", composer: "ベートーヴェン", piece: "交響曲第9番", rating: 5, isFavorite: true }),
+    log({
+      id: "1",
+      composerName: "ベートーヴェン",
+      pieceTitle: "交響曲第9番",
+      rating: 5,
+      isFavorite: true,
+    }),
     log({
       id: "2",
-      composer: "モーツァルト",
-      piece: "魔笛",
+      composerName: "モーツァルト",
+      pieceTitle: "魔笛",
       rating: 3,
       isFavorite: false,
       memo: "鳥と夜",
@@ -29,8 +37,8 @@ describe("filterListeningLogs", () => {
     }),
     log({
       id: "3",
-      composer: "ブラームス",
-      piece: "交響曲第4番",
+      composerName: "ブラームス",
+      pieceTitle: "交響曲第4番",
       rating: 4,
       isFavorite: true,
       listenedAt: "2024-06-01T19:00:00.000Z",

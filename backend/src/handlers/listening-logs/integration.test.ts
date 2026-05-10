@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { ListeningLog } from "../../types";
+import type { Composer, ListeningLogRecord, Piece } from "../../types";
 
 import { handler as createHandler } from "./create";
 import { handler as listHandler } from "./list";
@@ -67,14 +67,32 @@ function makeEvent(options: {
   };
 }
 
-const testLog: ListeningLog = {
+const PIECE_ID = "00000000-0000-4000-8000-000000000010";
+const COMPOSER_ID = "00000000-0000-4000-8000-000000000020";
+
+const testLog: ListeningLogRecord = {
   id: "test-id-123",
   userId: TEST_USER_ID,
   listenedAt: "2024-01-15T20:00:00.000Z",
-  composer: "ショパン",
-  piece: "ピアノ協奏曲第1番",
+  pieceId: PIECE_ID,
   rating: 5,
   isFavorite: true,
+  createdAt: "2024-01-15T21:00:00.000Z",
+  updatedAt: "2024-01-15T21:00:00.000Z",
+};
+
+const testPiece: Piece = {
+  kind: "work",
+  id: PIECE_ID,
+  title: "ピアノ協奏曲第1番",
+  composerId: COMPOSER_ID,
+  createdAt: "2024-01-15T21:00:00.000Z",
+  updatedAt: "2024-01-15T21:00:00.000Z",
+};
+
+const testComposer: Composer = {
+  id: COMPOSER_ID,
+  name: "ショパン",
   createdAt: "2024-01-15T21:00:00.000Z",
   updatedAt: "2024-01-15T21:00:00.000Z",
 };
@@ -106,8 +124,11 @@ describe("DynamoDB 統合テスト", () => {
   });
 
   describe("get: GetCommand に正しい Key が渡る", () => {
-    it("id が Key として渡され、userId が照合される", async () => {
-      mockSend.mockResolvedValueOnce({ Item: testLog });
+    it("id が Key として渡され、Piece / Composer も結合される", async () => {
+      mockSend
+        .mockResolvedValueOnce({ Item: testLog }) // ListeningLog
+        .mockResolvedValueOnce({ Item: testPiece }) // Piece
+        .mockResolvedValueOnce({ Item: testComposer }); // Composer
 
       await getHandler(
         makeEvent({
@@ -128,13 +149,15 @@ describe("DynamoDB 統合テスト", () => {
   });
 
   describe("create: PutCommand に正しいアイテム構造が渡る", () => {
-    it("id・userId・createdAt・updatedAt が付与されて PutCommand に渡される", async () => {
-      mockSend.mockResolvedValueOnce({});
+    it("id・userId・createdAt・updatedAt が付与されて PutCommand に渡される（派生値は保存しない）", async () => {
+      mockSend
+        .mockResolvedValueOnce({}) // PutCommand for ListeningLog
+        .mockResolvedValueOnce({ Item: testPiece }) // GetCommand for Piece
+        .mockResolvedValueOnce({ Item: testComposer }); // GetCommand for Composer
 
       const input = {
         listenedAt: "2024-01-20T18:00:00.000Z",
-        composer: "バッハ",
-        piece: "ゴルトベルク変奏曲",
+        pieceId: PIECE_ID,
         rating: 5,
         isFavorite: false,
       };
@@ -155,12 +178,15 @@ describe("DynamoDB 統合テスト", () => {
         Item: expect.objectContaining({
           id: expect.stringMatching(/^[0-9a-f-]{36}$/),
           userId: TEST_USER_ID,
-          composer: "バッハ",
-          piece: "ゴルトベルク変奏曲",
+          pieceId: PIECE_ID,
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
         }),
       });
+      // 派生値は永続化に含まれない
+      const putArg = vi.mocked(PutCommand).mock.calls[0][0];
+      expect(putArg.Item).not.toHaveProperty("pieceTitle");
+      expect(putArg.Item).not.toHaveProperty("composerName");
     });
   });
 
@@ -196,7 +222,9 @@ describe("DynamoDB 統合テスト", () => {
     it("既存アイテム取得後に更新アイテムを保存する", async () => {
       mockSend
         .mockResolvedValueOnce({ Item: testLog }) // GetCommand (userId 確認)
-        .mockResolvedValueOnce({}); // PutCommand (saveWithOptimisticLock)
+        .mockResolvedValueOnce({}) // PutCommand (saveWithOptimisticLock)
+        .mockResolvedValueOnce({ Item: testPiece }) // Piece
+        .mockResolvedValueOnce({ Item: testComposer }); // Composer
 
       await updateHandler(
         makeEvent({
@@ -210,15 +238,16 @@ describe("DynamoDB 統合テスト", () => {
         mockCallback,
       );
 
-      expect(GetCommand).toHaveBeenCalledTimes(1);
+      expect(GetCommand).toHaveBeenCalled();
       expect(PutCommand).toHaveBeenCalledTimes(1);
 
       const putArg = vi.mocked(PutCommand).mock.calls[0][0];
       expect(putArg.Item).toMatchObject({
         id: "test-id-123",
         rating: 4,
-        composer: "ショパン", // 既存データが保持される
+        pieceId: PIECE_ID, // 既存データが保持される
       });
+      expect(putArg.Item).not.toHaveProperty("pieceTitle");
     });
   });
 });

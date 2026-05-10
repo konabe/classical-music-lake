@@ -20,14 +20,15 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
 
       <p class="log-composer smallcaps">
         <FavoriteIndicator :is-favorite="log.isFavorite" />
-        {{ log.composer }}
+        <NuxtLink :to="`/composers/${log.composerId}`" class="composer-link">
+          {{ log.composerName }}
+        </NuxtLink>
       </p>
 
       <h1 class="log-title">
-        <NuxtLink v-if="log.pieceId" :to="`/pieces/${log.pieceId}`" class="piece-link">
-          {{ log.piece }}
+        <NuxtLink :to="`/pieces/${log.pieceId}`" class="piece-link">
+          {{ log.pieceTitle }}
         </NuxtLink>
-        <template v-else>{{ log.piece }}</template>
       </h1>
 
       <div class="log-rating-row">
@@ -93,7 +94,8 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
   color: var(--color-accent);
 }
 
-.piece-link {
+.piece-link,
+.composer-link {
   color: inherit;
   text-decoration: none;
   border-bottom: 1px solid var(--color-hairline);
@@ -102,7 +104,8 @@ const shortId = computed(() => props.log.id.slice(0, 6).toUpperCase());
     border-color 0.25s ease;
 }
 
-.piece-link:hover {
+.piece-link:hover,
+.composer-link:hover {
   color: var(--color-accent);
   border-bottom-color: var(--color-accent);
 }

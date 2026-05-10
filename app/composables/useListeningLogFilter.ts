@@ -22,7 +22,7 @@ const matchesKeyword = (log: ListeningLog, keyword: string): boolean => {
   if (needle.length === 0) {
     return true;
   }
-  const haystack = [log.composer, log.piece, log.memo ?? ""].join(" ").toLowerCase();
+  const haystack = [log.composerName, log.pieceTitle, log.memo ?? ""].join(" ").toLowerCase();
   return haystack.includes(needle);
 };
 

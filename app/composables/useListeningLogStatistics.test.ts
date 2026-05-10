@@ -5,8 +5,10 @@ const log = (overrides: Partial<ListeningLog> = {}): ListeningLog => ({
   id: "log-1",
   userId: "user-1",
   listenedAt: "2024-01-15T19:30:00.000Z",
-  composer: "ベートーヴェン",
-  piece: "交響曲第9番",
+  pieceId: "piece-1",
+  pieceTitle: "交響曲第9番",
+  composerId: "composer-1",
+  composerName: "ベートーヴェン",
   rating: 5,
   isFavorite: false,
   memo: undefined,
@@ -51,18 +53,18 @@ describe("computeStatistics", () => {
   it("作曲家トップを件数降順で返す", () => {
     const stats = computeStatistics(
       [
-        log({ id: "1", composer: "ベートーヴェン" }),
-        log({ id: "2", composer: "ベートーヴェン" }),
-        log({ id: "3", composer: "モーツァルト" }),
-        log({ id: "4", composer: "ブラームス" }),
-        log({ id: "5", composer: "ブラームス" }),
-        log({ id: "6", composer: "ブラームス" }),
+        log({ id: "1", composerName: "ベートーヴェン" }),
+        log({ id: "2", composerName: "ベートーヴェン" }),
+        log({ id: "3", composerName: "モーツァルト" }),
+        log({ id: "4", composerName: "ブラームス" }),
+        log({ id: "5", composerName: "ブラームス" }),
+        log({ id: "6", composerName: "ブラームス" }),
       ],
       { topComposerLimit: 2 },
     );
     expect(stats.topComposers).toEqual([
-      { composer: "ブラームス", count: 3 },
-      { composer: "ベートーヴェン", count: 2 },
+      { composerName: "ブラームス", count: 3 },
+      { composerName: "ベートーヴェン", count: 2 },
     ]);
   });
 

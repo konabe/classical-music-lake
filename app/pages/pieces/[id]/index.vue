@@ -101,10 +101,7 @@ async function handleSave(values: { rating: Rating; isFavorite: boolean; memo: s
   }
   await create({
     listenedAt: new Date().toISOString(),
-    composer: composerName.value,
-    piece: quickLogPieceLabel.value,
     pieceId: piece.value.id,
-    userId: null,
     ...values,
   });
   if (listeningLogsResource !== null) {

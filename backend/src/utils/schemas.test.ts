@@ -22,8 +22,7 @@ const succeeds = (result: { success: boolean }): boolean => result.success;
 
 const validLog = {
   listenedAt: "2024-01-15T19:30:00.000Z",
-  composer: "ベートーヴェン",
-  piece: "交響曲第9番",
+  pieceId: "00000000-0000-4000-8000-000000000001",
   rating: 5,
   isFavorite: true,
   memo: "素晴らしい",
@@ -46,37 +45,15 @@ describe("createListeningLogSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("composer が空文字の場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({ ...validLog, composer: "" });
+  it("pieceId が未指定の場合はエラー", () => {
+    const { pieceId: _pieceId, ...withoutPieceId } = validLog;
+    const result = createListeningLogSchema.safeParse(withoutPieceId);
     expect(result.success).toBe(false);
   });
 
-  it("composer が空白のみの場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({ ...validLog, composer: "   " });
+  it("pieceId が UUID 形式でない場合はエラー", () => {
+    const result = createListeningLogSchema.safeParse({ ...validLog, pieceId: "not-a-uuid" });
     expect(result.success).toBe(false);
-  });
-
-  it("trim 後も 100 文字を超える composer は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ minLength: 101, maxLength: 200 }).filter((s) => s.trim().length > 100),
-        (composer) => fails(createListeningLogSchema.safeParse({ ...validLog, composer })),
-      ),
-    );
-  });
-
-  it("piece が空文字の場合はエラー", () => {
-    const result = createListeningLogSchema.safeParse({ ...validLog, piece: "" });
-    expect(result.success).toBe(false);
-  });
-
-  it("trim 後も 200 文字を超える piece は常にエラー", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ minLength: 201, maxLength: 400 }).filter((s) => s.trim().length > 200),
-        (piece) => fails(createListeningLogSchema.safeParse({ ...validLog, piece })),
-      ),
-    );
   });
 
   it("rating が 1〜5 の整数は常に有効", () => {
@@ -132,6 +109,18 @@ describe("updateListeningLogSchema", () => {
 
   it("rating が範囲外の場合はエラー", () => {
     const result = updateListeningLogSchema.safeParse({ rating: 6 });
+    expect(result.success).toBe(false);
+  });
+
+  it("pieceId を別の UUID に変更できる", () => {
+    const result = updateListeningLogSchema.safeParse({
+      pieceId: "00000000-0000-4000-8000-000000000002",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("pieceId が UUID 形式でない場合はエラー", () => {
+    const result = updateListeningLogSchema.safeParse({ pieceId: "not-a-uuid" });
     expect(result.success).toBe(false);
   });
 });

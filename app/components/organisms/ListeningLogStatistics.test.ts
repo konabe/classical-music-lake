@@ -17,8 +17,8 @@ const populatedStats: Stats = {
   averageRating: 4.2,
   ratingDistribution: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
   topComposers: [
-    { composer: "ベートーヴェン", count: 5 },
-    { composer: "モーツァルト", count: 3 },
+    { composerName: "ベートーヴェン", count: 5 },
+    { composerName: "モーツァルト", count: 3 },
   ],
   monthlyTrend: [
     { month: "2024-01", count: 4 },

@@ -1,17 +1,24 @@
-import { describe, it, expect } from "vitest";
-import type { Composer, ListeningLog, Piece } from "../types";
+import { describe, it, expect, vi } from "vitest";
+import type { Composer, ListeningLog, ListeningLogRecord, Piece } from "../types";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
-export const makeLog = (
+export const TEST_COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
+export const TEST_PIECE_ID = "00000000-0000-4000-8000-000000000002";
+
+/**
+ * 永続化用 ListeningLog レコード（pieceId のみ、派生値を含まない）。
+ * リポジトリ層のモック戻り値に使用する。
+ */
+export const makeLogRecord = (
   id: string,
   listenedAt: string,
   userId: string | null = "user-123",
-): ListeningLog => ({
+  pieceId: string = TEST_PIECE_ID,
+): ListeningLogRecord => ({
   id,
   listenedAt,
   userId,
-  composer: "ベートーヴェン",
-  piece: "交響曲第5番 ハ短調 Op.67",
+  pieceId,
   rating: 4,
   isFavorite: false,
   memo: "カラヤン指揮、ベルリン・フィル。第1楽章の緊張感が素晴らしい。",
@@ -19,9 +26,27 @@ export const makeLog = (
   updatedAt: "2024-06-01T09:00:00.000Z",
 });
 
-export const TEST_COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
+/**
+ * API レスポンス用の ListeningLog DTO（派生値 pieceTitle / composerId / composerName を含む）。
+ * ハンドラ層のレスポンス比較に使用する。
+ */
+export const makeLog = (
+  id: string,
+  listenedAt: string,
+  userId: string | null = "user-123",
+  pieceId: string = TEST_PIECE_ID,
+): ListeningLog => ({
+  ...makeLogRecord(id, listenedAt, userId, pieceId),
+  pieceTitle: "交響曲第5番 ハ短調 Op.67",
+  composerId: TEST_COMPOSER_ID,
+  composerName: "ベートーヴェン",
+});
 
-export const makePiece = (id: string, title: string, composerId?: string): Piece => ({
+export const makePiece = (
+  id: string = TEST_PIECE_ID,
+  title: string = "交響曲第5番 ハ短調 Op.67",
+  composerId?: string,
+): Piece => ({
   kind: "work",
   id,
   title,
@@ -30,7 +55,10 @@ export const makePiece = (id: string, title: string, composerId?: string): Piece
   updatedAt: "2024-06-01T09:00:00.000Z",
 });
 
-export const makeComposer = (id: string, name: string): Composer => ({
+export const makeComposer = (
+  id: string = TEST_COMPOSER_ID,
+  name: string = "ベートーヴェン",
+): Composer => ({
   id,
   name,
   createdAt: "2024-06-01T09:00:00.000Z",
@@ -101,6 +129,43 @@ export const makeDeleteEvent = (
   } as APIGatewayProxyEvent["requestContext"],
   resource: "",
 });
+
+/**
+ * ListeningLog 系ハンドラ／ユースケースのテストで使うリポジトリモック群を生成する。
+ * ListeningLogUsecase が `pieceRepo.findById` / `composerRepo.findById` を呼ぶため、
+ * これらの戻り値も既定で fixture から提供する（必要に応じて override 可能）。
+ */
+export const makeListeningLogRepoMocks = () => {
+  const listeningLogRepo = {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findByUserId: vi.fn(),
+    existsByPieceIds: vi.fn().mockResolvedValue(false),
+    saveWithOptimisticLock: vi.fn(),
+    remove: vi.fn(),
+  };
+  const pieceRepo = {
+    findRootById: vi.fn().mockResolvedValue(makePiece()),
+    findRootPage: vi.fn(),
+    saveWork: vi.fn(),
+    saveWorkWithOptimisticLock: vi.fn(),
+    removeWorkCascade: vi.fn(),
+    findById: vi.fn().mockResolvedValue(makePiece()),
+    findChildren: vi.fn().mockResolvedValue([]),
+    saveMovement: vi.fn(),
+    saveMovementWithOptimisticLock: vi.fn(),
+    removeMovement: vi.fn(),
+    replaceMovements: vi.fn(),
+  };
+  const composerRepo = {
+    findById: vi.fn().mockResolvedValue(makeComposer()),
+    findPage: vi.fn(),
+    save: vi.fn(),
+    saveWithOptimisticLock: vi.fn(),
+    remove: vi.fn(),
+  };
+  return { listeningLogRepo, pieceRepo, composerRepo };
+};
 
 type HandlerFn = (
   event: APIGatewayProxyEvent,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ListeningLog, UpdateListeningLogInput } from "~/types";
+import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "~/types";
 
-defineProps<{
+const props = defineProps<{
   log: ListeningLog;
   error: string | null;
 }>();
@@ -9,6 +9,16 @@ defineProps<{
 const emit = defineEmits<{
   submit: [values: UpdateListeningLogInput];
 }>();
+
+// ListeningLog（API レスポンス）には pieceTitle / composerName 等の派生値が含まれるため、
+// フォームの初期値として必要なフィールドだけを抽出する。
+const formInitialValues = computed<Partial<CreateListeningLogInput>>(() => ({
+  listenedAt: props.log.listenedAt,
+  pieceId: props.log.pieceId,
+  rating: props.log.rating,
+  isFavorite: props.log.isFavorite,
+  memo: props.log.memo,
+}));
 </script>
 
 <template>
@@ -22,7 +32,7 @@ const emit = defineEmits<{
 
     <ErrorMessage v-if="error" :message="error" variant="block" />
     <ListeningLogForm
-      :initial-values="log"
+      :initial-values="formInitialValues"
       submit-label="更新する"
       @submit="emit('submit', $event)"
     />

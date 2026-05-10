@@ -44,14 +44,17 @@ export interface CognitoError extends Error {
   name: string;
 }
 
-// 鑑賞ログ（曲・演奏家の記録）
+// 鑑賞ログ（楽曲マスタと pieceId で関連付ける）。
+// API レスポンスに含まれる pieceTitle / composerId / composerName は、サーバ側で
+// Piece / Composer を結合した派生値（DynamoDB には保存しない）。
 export interface ListeningLog {
   id: string;
   userId: string | null; // Cognito sub（未帰属データは null）
   listenedAt: string; // ISO 8601 日時
-  composer: string; // 作曲家
-  piece: string; // 曲名
-  pieceId?: string; // 楽曲マスタ（Piece）の id 参照（任意。未指定時は曲名+作曲家名でフォールバック解決）
+  pieceId: string; // 楽曲マスタ（Piece）の id 参照（必須）
+  pieceTitle: string; // 派生: Movement の場合は「親Work title - 楽章 title」
+  composerId: string; // 派生: Work の composerId（Movement は親 Work から継承）
+  composerName: string; // 派生: Composer.name
   rating: Rating; // 評価 1〜5
   isFavorite: boolean; // お気に入りフラグ
   memo?: string; // 感想・メモ
@@ -59,9 +62,19 @@ export interface ListeningLog {
   updatedAt: string;
 }
 
-export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
-// `pieceId` は更新時に空文字 `""` を送ると当該フィールドが削除される（`buildUpdateProps` の挙動）。
-export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
+// 永続化される ListeningLog のフィールドのみ（派生値を除く）。リポジトリ層で利用。
+export type ListeningLogRecord = Omit<ListeningLog, "pieceTitle" | "composerId" | "composerName">;
+
+export type CreateListeningLogInput = {
+  userId: string | null;
+  listenedAt: string;
+  pieceId: string;
+  rating: Rating;
+  isFavorite: boolean;
+  memo?: string;
+};
+
+export type UpdateListeningLogInput = Partial<Omit<CreateListeningLogInput, "userId">>;
 
 // 楽曲マスタ（コンポジット）
 //

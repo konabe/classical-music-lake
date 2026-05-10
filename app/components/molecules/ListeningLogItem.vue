@@ -17,13 +17,15 @@ const emit = defineEmits<{
     <div class="log-main">
       <div class="log-meta">
         <FavoriteIndicator :is-favorite="listeningLog.isFavorite" />
-        <span class="log-composer smallcaps">{{ listeningLog.composer }}</span>
+        <span class="log-composer smallcaps">{{ listeningLog.composerName }}</span>
         <span class="log-rule" aria-hidden="true" />
         <time class="log-date smallcaps numeric">{{ formatDate(listeningLog.listenedAt) }}</time>
       </div>
 
       <h2 class="log-title">
-        <NuxtLink :to="`/listening-logs/${listeningLog.id}`">{{ listeningLog.piece }}</NuxtLink>
+        <NuxtLink :to="`/listening-logs/${listeningLog.id}`">
+          {{ listeningLog.pieceTitle }}
+        </NuxtLink>
       </h2>
 
       <div class="log-rating">

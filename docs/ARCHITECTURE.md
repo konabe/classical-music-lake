@@ -162,22 +162,26 @@ classical-music-lake/
 
 ```text
 ブラウザ (/listening-logs/[id])
-  → useListeningLog(id) で ListeningLog を取得
+  → useListeningLog(id) で ListeningLog DTO を取得
   → GET /prod/listening-logs/{id}
-  → log.pieceId が設定されていれば /pieces/{pieceId} へリンク、未設定なら曲名は plain text で表示
+  → サーバ側で ListeningLogDetail を組み立てる:
+      ListeningLog（永続化レコード）→ Piece（pieceId で fetch）→ Composer（composerId で fetch）
+    レスポンスには派生値 pieceTitle / composerId / composerName が含まれる
+  → /pieces/{log.pieceId} および /composers/{log.composerId} へリンク
 ```
 
-### 視聴ログ作成・更新（pieceId 付き）
+### 視聴ログ作成・更新
 
 ```text
-楽曲マスタから記録（QuickLogForm / 楽曲詳細ページ）:
-  → POST /prod/listening-logs に pieceId を含めて送信（楽曲マスタの id を信頼ソースとして固定）
-
-自由入力フォーム（/listening-logs/new、/listening-logs/[id]/edit）:
-  → 「楽曲マスタから選択」ドロップダウンを選ぶと pieceId が自動設定され、曲名・作曲家名も同期される
-  → 「選択しない」を選ぶと曲名・作曲家名はクリアされ、pieceId も undefined となる
-  → 編集時に既存の pieceId を解除したい場合は、フォーム側で pieceId="" として送信し、
-    バックエンドの buildUpdateProps が DynamoDB 属性を REMOVE する
+ブラウザ (ListeningLogForm / QuickLogForm)
+  → 楽曲マスタからの選択を必須化（pieceId は UUID）
+  → POST /prod/listening-logs に { listenedAt, pieceId, rating, isFavorite, memo } を送信
+    （pieceTitle / composerName は派生値なので送らない）
+  → サーバ側 (handlers/listening-logs/create.ts):
+    1. ListeningLogEntity.create で永続化レコードを作成し DynamoDB に保存
+    2. PieceRepository.findById / ComposerRepository.findById で関連を取得
+    3. ListeningLogDetail.from(entity, piece, parentWork, composer).toPlain() で派生値を載せた DTO を返す
+  → ブラウザは DTO から pieceTitle / composerName をそのまま表示
 ```
 
 ### 視聴ログ検索フィルタ（クライアントサイド）
@@ -186,7 +190,7 @@ classical-music-lake/
 ブラウザ (/listening-logs)
   → useListeningLogs() で全件取得（GET /listening-logs、API は同じ）
   → useListeningLogFilter(logs) でフィルタ状態を保持
-    - keyword（作曲家・曲名・メモを横断する部分一致検索）
+    - keyword（composerName・pieceTitle・memo を横断する部分一致検索）
     - rating（1〜5）
     - favoriteOnly（お気に入りのみ）
     - fromDate / toDate（listenedAt の範囲）
@@ -462,3 +466,13 @@ classical-music-lake/
 - **PR1 時点の挙動**: 既存 API のレスポンスに `kind: "work"` が増える以外は互換。Movement 専用エンドポイントは追加していない。`DynamoDBPieceRepository` は既存レコード（`kind` を持たない）を読み込み時に `kind: "work"` で正規化することで後方互換を保つ
 - **PR2 時点の挙動**: GSI と Movement 集合操作（`findChildren` / `removeWorkCascade` / `replaceMovements`）が利用可能になった。外向き REST エンドポイントは未追加
 - **PR3 時点の挙動**: Movement 一覧 / 集合一括差し替え用の REST エンドポイントを追加。`GET /pieces/{id}` を kind を問わない単一ノード取得に拡張、`DELETE /pieces/{id}` を kind 判別で cascade / 単独削除に分岐する
+- **dangling reference 防止（2026-05）**: `PieceUsecase.delete(id)` は削除前に `ListeningLogRepository.existsByPieceIds(targetIds)` で参照ガードする。Work 削除時は `[workId, ...childMovementIds]` をまとめて 1 回の Scan で判定し、いずれかが ListeningLog から参照されていれば 409 Conflict を返して削除を中止する。`existsByPieceIds` は専用 GSI を持たず Scan + FilterExpression(`pieceId IN (...)`) で実装（個人利用前提・データ量小）
+
+### ListeningLog 集約と読み取り専用集約 (2026-05)
+
+- **`ListeningLogEntity` の props は `pieceId` のみを持つ**。`composer` / `piece`（自由記述フィールド）は撤去された。楽曲名・作曲家名は楽曲マスタを単一の真実の源として扱い、ListeningLog は ID で参照する
+- **`ListeningLogDetail`（読み取り専用集約）**: `domain/listening-log-detail.ts`。`ListeningLogEntity` + `Piece`（Work or Movement）+ 親 `PieceWork`（Movement の場合のみ）+ `Composer` を保持し、`toPlain()` で API レスポンス DTO（`ListeningLog`）を返す。派生値の解決:
+  - `pieceTitle`: Work なら `piece.title`、Movement なら「親 Work title - 楽章 title」に整形
+  - `composerId` / `composerName`: Work なら自身の `composerId`、Movement なら親 Work から継承
+- **N+1 抑制**: 一覧 API では `ListeningLogUsecase.toDetailDtoList` が同一 `pieceId` / `composerId` の重複取得を排除する（`fetchUnique` ヘルパー）。データ量が増え BatchGetItem が必要になったらリポジトリに `findByIds` を追加して差し替える前提
+- **Piece 削除時のガード**: 上記の `PieceUsecase.delete` の参照ガードと組み合わせて dangling reference を防ぐ

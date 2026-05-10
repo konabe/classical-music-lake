@@ -34,24 +34,32 @@ export type ApiErrorResponse = {
   message: string;
 };
 
-// 鑑賞ログ（曲・演奏家の記録）
+// 鑑賞ログ（楽曲マスタと pieceId で関連付ける）。
+// pieceTitle / composerId / composerName はサーバ側で結合した派生値で、永続化されない。
 export interface ListeningLog {
   id: string;
   userId: string | null; // Cognito sub（未帰属データは null）
   listenedAt: string; // ISO 8601 日時
-  composer: string; // 作曲家
-  piece: string; // 曲名
-  pieceId?: string; // 楽曲マスタ（Piece）の id 参照（任意。未指定時は曲名+作曲家名でフォールバック解決）
-  rating: Rating; // 評価 1〜5
-  isFavorite: boolean; // お気に入りフラグ
-  memo?: string; // 感想・メモ
+  pieceId: string; // 楽曲マスタ（Piece）の id 参照（必須）
+  pieceTitle: string; // 派生: Movement の場合は「親Work title - 楽章 title」
+  composerId: string; // 派生: Work の composerId（Movement は親 Work から継承）
+  composerName: string; // 派生: Composer.name
+  rating: Rating;
+  isFavorite: boolean;
+  memo?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export type CreateListeningLogInput = Omit<ListeningLog, "id" | "createdAt" | "updatedAt">;
-// `pieceId` は更新時に空文字 `""` を送ると当該フィールドが削除される（`buildUpdateProps` の挙動）。
-export type UpdateListeningLogInput = Partial<Omit<ListeningLog, "id" | "createdAt" | "updatedAt">>;
+export type CreateListeningLogInput = {
+  listenedAt: string;
+  pieceId: string;
+  rating: Rating;
+  isFavorite: boolean;
+  memo?: string;
+};
+
+export type UpdateListeningLogInput = Partial<CreateListeningLogInput>;
 
 // 楽曲マスタ（コンポジット）
 //

@@ -16,9 +16,9 @@ const populated: ListeningLogStatistics = {
   averageRating: 4.04,
   ratingDistribution: { 1: 1, 2: 2, 3: 5, 4: 7, 5: 9 },
   topComposers: [
-    { composer: "ベートーヴェン", count: 8 },
-    { composer: "モーツァルト", count: 6 },
-    { composer: "ブラームス", count: 5 },
+    { composerName: "ベートーヴェン", count: 8 },
+    { composerName: "モーツァルト", count: 6 },
+    { composerName: "ブラームス", count: 5 },
   ],
   monthlyTrend: [
     { month: "2024-09", count: 4 },

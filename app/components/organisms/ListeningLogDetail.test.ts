@@ -6,8 +6,10 @@ const sampleLog: ListeningLog = {
   id: "log-1",
   userId: "user-1",
   listenedAt: "2024-01-15T19:30:00.000Z",
-  composer: "ベートーヴェン",
-  piece: "交響曲第9番 ニ短調 Op.125",
+  pieceId: "piece-1",
+  pieceTitle: "交響曲第9番 ニ短調 Op.125",
+  composerId: "composer-1",
+  composerName: "ベートーヴェン",
   rating: 5,
   isFavorite: false,
   memo: "カラヤン指揮、素晴らしい演奏",
@@ -47,10 +49,10 @@ describe("ListeningLogDetail", () => {
     });
   });
 
-  describe("楽曲リンク", () => {
-    it("log.pieceId が設定されていると楽曲詳細へのリンクが表示される", async () => {
+  describe("リンク", () => {
+    it("楽曲詳細へのリンクが pieceId 経由で表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogDetail, {
-        props: { log: { ...sampleLog, pieceId: "piece-1" } },
+        props: { log: sampleLog },
       });
       const link = wrapper.find(".piece-link");
       expect(link.exists()).toBe(true);
@@ -58,12 +60,14 @@ describe("ListeningLogDetail", () => {
       expect(link.text()).toContain("交響曲第9番 ニ短調 Op.125");
     });
 
-    it("log.pieceId が未設定だとリンクは表示されずテキストとして表示される", async () => {
+    it("作曲家詳細へのリンクが composerId 経由で表示される", async () => {
       const wrapper = await mountSuspended(ListeningLogDetail, {
         props: { log: sampleLog },
       });
-      expect(wrapper.find(".piece-link").exists()).toBe(false);
-      expect(wrapper.text()).toContain("交響曲第9番 ニ短調 Op.125");
+      const link = wrapper.find(".composer-link");
+      expect(link.exists()).toBe(true);
+      expect(link.attributes("href")).toBe("/composers/composer-1");
+      expect(link.text()).toContain("ベートーヴェン");
     });
   });
 });

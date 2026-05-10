@@ -29,36 +29,22 @@ const form = reactive<CreateListeningLogInput>({
     props.initialValues?.listenedAt === undefined
       ? nowAsDatetimeLocal()
       : toDatetimeLocal(props.initialValues.listenedAt),
-  composer: props.initialValues?.composer ?? "",
-  piece: props.initialValues?.piece ?? "",
-  pieceId: props.initialValues?.pieceId,
+  pieceId: props.initialValues?.pieceId ?? "",
   rating: props.initialValues?.rating ?? 3,
   isFavorite: props.initialValues?.isFavorite ?? false,
   memo: props.initialValues?.memo ?? "",
 });
 
-const selectedPieceId = ref<string>(props.initialValues?.pieceId ?? "");
-const selectedVideoUrl = ref<string | undefined>(undefined);
-
-function handlePieceSelect(e: Event) {
-  const id = (e.target as HTMLSelectElement).value;
-  selectedPieceId.value = id;
-  const found = pieces.value?.find((p) => p.id === id);
-  form.piece = found?.title ?? "";
-  form.composer =
-    found?.composerId !== undefined ? (composerNameById.value[found.composerId] ?? "") : "";
-  form.pieceId = found?.id;
-  selectedVideoUrl.value = found?.videoUrls?.[0];
-}
+const selectedPiece = computed(() => (pieces.value ?? []).find((p) => p.id === form.pieceId));
+const selectedComposerName = computed(() => {
+  const composerId = selectedPiece.value?.composerId;
+  return composerId === undefined ? "" : (composerNameById.value[composerId] ?? "");
+});
+const selectedVideoUrl = computed(() => selectedPiece.value?.videoUrls?.[0]);
 
 function handleSubmit() {
-  // 既存ログ編集時に「選択しない」へ戻した場合は空文字でサーバ側に削除指示を送る
-  const hadInitialPieceId =
-    props.initialValues?.pieceId !== undefined && props.initialValues.pieceId !== "";
-  const pieceId = form.pieceId === undefined && hadInitialPieceId ? "" : form.pieceId;
   emit("submit", {
     ...form,
-    pieceId,
     listenedAt: new Date(form.listenedAt).toISOString(),
   });
 }
@@ -76,16 +62,18 @@ function handleSubmit() {
       />
     </FormGroup>
 
-    <FormGroup label="楽曲マスタから選択" input-id="piece-select">
+    <FormGroup label="楽曲マスタから選択" input-id="piece-select" required>
       <div class="select-wrap">
         <select
           id="piece-select"
-          :value="selectedPieceId"
+          v-model="form.pieceId"
           class="native-select"
           :disabled="piecesPending"
-          @change="handlePieceSelect"
+          required
         >
-          <option value="">{{ piecesPending ? "読み込み中…" : "選択しない" }}</option>
+          <option value="" disabled>
+            {{ piecesPending ? "読み込み中…" : "楽曲を選択してください" }}
+          </option>
           <option v-for="piece in pieces" :key="piece.id" :value="piece.id">
             {{ piece.title }} / {{ composerNameById[piece.composerId] ?? "(不明)" }}
           </option>
@@ -94,21 +82,11 @@ function handleSubmit() {
       </div>
     </FormGroup>
 
-    <VideoPlayer v-if="selectedVideoUrl" :video-url="selectedVideoUrl" />
+    <p v-if="selectedPiece" class="composer-hint smallcaps">
+      Composer — {{ selectedComposerName || "(不明)" }}
+    </p>
 
-    <div class="form-row">
-      <FormGroup label="作曲家" input-id="composer" required>
-        <TextInput
-          id="composer"
-          v-model="form.composer"
-          placeholder="例: ベートーヴェン"
-          required
-        />
-      </FormGroup>
-      <FormGroup label="曲名" input-id="piece" required>
-        <TextInput id="piece" v-model="form.piece" placeholder="例: 交響曲第9番" required />
-      </FormGroup>
-    </div>
+    <VideoPlayer v-if="selectedVideoUrl" :video-url="selectedVideoUrl" />
 
     <FormGroup label="評価">
       <RatingSelector v-model="form.rating" />
@@ -146,16 +124,9 @@ function handleSubmit() {
   gap: 1.6rem;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.2rem;
-}
-
-@media (max-width: 600px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
+.composer-hint {
+  margin: -0.8rem 0 0;
+  color: var(--color-text-muted);
 }
 
 .form-group {

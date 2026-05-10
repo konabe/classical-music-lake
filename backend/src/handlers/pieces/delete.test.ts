@@ -19,15 +19,30 @@ const mockRepo = vi.hoisted(() => ({
   findRootById: vi.fn(),
   findRootPage: vi.fn(),
   findById: vi.fn(),
+  findChildren: vi.fn().mockResolvedValue([]),
   saveMovement: vi.fn(),
   saveMovementWithOptimisticLock: vi.fn(),
   removeMovement: vi.fn(),
   replaceMovements: vi.fn(),
 }));
 
+const mockListeningLogRepo = vi.hoisted(() => ({
+  save: vi.fn(),
+  findById: vi.fn(),
+  findByUserId: vi.fn(),
+  existsByPieceIds: vi.fn().mockResolvedValue(false),
+  saveWithOptimisticLock: vi.fn(),
+  remove: vi.fn(),
+}));
+
 vi.mock("../../repositories/piece-repository", () => ({
   DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
     return mockRepo;
+  }),
+}));
+vi.mock("../../repositories/listening-log-repository", () => ({
+  DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
+    return mockListeningLogRepo;
   }),
 }));
 
@@ -70,6 +85,8 @@ const movementItem = {
 describe("DELETE /pieces/{id} (delete)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRepo.findChildren.mockResolvedValue([]);
+    mockListeningLogRepo.existsByPieceIds.mockResolvedValue(false);
   });
 
   it("id がない場合は 400 を返す", async () => {
@@ -102,6 +119,33 @@ describe("DELETE /pieces/{id} (delete)", () => {
     const result = await handler(makeEvent("not-found"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(mockRepo.removeWorkCascade).not.toHaveBeenCalled();
+    expect(mockRepo.removeMovement).not.toHaveBeenCalled();
+  });
+
+  it("ListeningLog から参照されている Work は 409 を返し、削除しない", async () => {
+    mockRepo.findById.mockResolvedValueOnce(workItem);
+    mockListeningLogRepo.existsByPieceIds.mockResolvedValueOnce(true);
+    const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(409);
+    expect(JSON.parse(result?.body ?? "{}").message).toBe(
+      "Cannot delete piece referenced by existing listening logs",
+    );
+    expect(mockRepo.removeWorkCascade).not.toHaveBeenCalled();
+  });
+
+  it("Work 配下の Movement が ListeningLog から参照されている場合も 409 を返す", async () => {
+    mockRepo.findById.mockResolvedValueOnce(workItem);
+    mockRepo.findChildren.mockResolvedValueOnce([movementItem]);
+    mockListeningLogRepo.existsByPieceIds.mockResolvedValueOnce(true);
+    const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(409);
+  });
+
+  it("ListeningLog から参照されている Movement は 409 を返す", async () => {
+    mockRepo.findById.mockResolvedValueOnce(movementItem);
+    mockListeningLogRepo.existsByPieceIds.mockResolvedValueOnce(true);
+    const result = await handler(makeEvent("mov-1"), mockContext, mockCallback);
+    expect(result?.statusCode).toBe(409);
     expect(mockRepo.removeMovement).not.toHaveBeenCalled();
   });
 
