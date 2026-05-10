@@ -1,6 +1,5 @@
-import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "../types";
+import type { ConcertLog, CreateConcertLogInput } from "../types";
 import { Entity, type EntityProps } from "./entity";
-import { buildUpdateProps } from "./entity-helpers";
 import { ConcertTitle } from "./value-objects/concert-title";
 import { ConcertLogId, PieceId, UserId } from "./value-objects/ids";
 import { Venue } from "./value-objects/venue";
@@ -62,9 +61,60 @@ export class ConcertLogEntity extends Entity<ConcertLogId, ConcertLogProps> {
     return this.props.userId.equals(userId);
   }
 
-  mergeUpdate(input: UpdateConcertLogInput): ConcertLogEntity {
-    const merged = buildUpdateProps(this.toPlain(), input, []);
-    return ConcertLogEntity.reconstruct(merged);
+  rename(title: ConcertTitle): ConcertLogEntity {
+    return new ConcertLogEntity({
+      ...this.props,
+      title,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  relocate(venue: Venue): ConcertLogEntity {
+    return new ConcertLogEntity({
+      ...this.props,
+      venue,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  reschedule(concertDate: string): ConcertLogEntity {
+    return new ConcertLogEntity({
+      ...this.props,
+      concertDate,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  assignConductor(name: string): ConcertLogEntity {
+    return new ConcertLogEntity({
+      ...this.props,
+      conductor: name,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  assignOrchestra(name: string): ConcertLogEntity {
+    return new ConcertLogEntity({
+      ...this.props,
+      orchestra: name,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  assignSoloist(name: string): ConcertLogEntity {
+    return new ConcertLogEntity({
+      ...this.props,
+      soloist: name,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  setProgram(pieceIds: PieceId[]): ConcertLogEntity {
+    return new ConcertLogEntity({
+      ...this.props,
+      pieceIds,
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   toPlain(): ConcertLog {

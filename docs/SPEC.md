@@ -588,7 +588,10 @@ cd cdk && pnpm install && cdk bootstrap && cdk deploy
 - `protected readonly props: TProps`: 派生クラスの内部状態。`TProps extends EntityProps<TId> = { id: TId; createdAt: string; updatedAt: string }`
 - `get id(): TId` / `get createdAt(): string` / `get updatedAt(): string`: 共通アクセサ
 - `equals(other: unknown)`: 「同じ具象クラス」かつ「同じ ID」のとき `true`。異なる派生クラス同士は `false`
-- 派生クラスの規約: `private constructor(props)` で `super(props)` を呼ぶ。`static create()` / `static reconstruct()` ファクトリは個別実装。`toPlain()` / `isOwnedBy()` / `mergeUpdate()` は派生クラスで実装
+- 派生クラスの規約: `private constructor(props)` で `super(props)` を呼ぶ。`static create()` / `static reconstruct()` ファクトリは個別実装。`toPlain()` / `isOwnedBy()` は派生クラスで実装
+- 更新方法は派生クラスごとに 2 系統:
+  - **意図メソッド系**（`ConcertLogEntity`）: `rename` / `relocate` / `reschedule` / `assignConductor` / `assignOrchestra` / `assignSoloist` / `setProgram` のようにユビキタス言語を反映したメソッドを公開する。usecase 層が HTTP partial input を読んでフィールドの有無に応じてメソッドを呼び分ける
+  - **`mergeUpdate(input)` 系**（`ListeningLogEntity` / `ComposerEntity` / `PieceWorkEntity` / `PieceMovementEntity`）: `entity-helpers.ts:buildUpdateProps` を介して `Update*Input` をシャローマージする汎用更新メソッド。意図メソッド系への移行は段階的に進める（参照: 貧血ドメインモデル解消方針）
 
 ### 8.4 読み取り専用集約（ListeningLogDetail）
 
