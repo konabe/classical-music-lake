@@ -610,6 +610,7 @@ ID 以外のドメイン概念も不変条件を VO で保証する。すべて 
 | `PieceTitle`    | 非空・最大 200 文字                         | `PieceWorkEntity.props.title` / `PieceMovementEntity.props.title` |
 | `MovementIndex` | 0〜999 の整数                               | `PieceMovementEntity.props.index`                                 |
 | `ComposerName`  | 非空・最大 100 文字                         | `ComposerEntity.props.name`                                       |
+| `ConcertTitle`  | 非空・最大 200 文字                         | `ConcertLogEntity.props.title`                                    |
 | `Venue`         | 非空・最大 200 文字                         | `ConcertLogEntity.props.venue`                                    |
 | `Url`           | WHATWG URL パーサーで形式検証               | `Piece.videoUrls` 各要素 / `Composer.imageUrl`                    |
 | `Year`          | -3000〜9999 の整数（西暦。BC は負数で表現） | `ComposerEntity.props.birthYear` / `props.deathYear`              |

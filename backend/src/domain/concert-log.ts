@@ -1,5 +1,6 @@
 import type { ConcertLog, CreateConcertLogInput } from "../types";
 import { Entity, type EntityProps } from "./entity";
+import { ConcertTitle } from "./value-objects/concert-title";
 import { ConcertLogId, PieceId, UserId } from "./value-objects/ids";
 import { Venue } from "./value-objects/venue";
 
@@ -13,7 +14,7 @@ export type ConcertLogRepository = {
 
 type ConcertLogProps = EntityProps<ConcertLogId> & {
   userId: UserId;
-  title: string;
+  title: ConcertTitle;
   concertDate: string;
   venue: Venue;
   conductor?: string;
@@ -33,6 +34,7 @@ export class ConcertLogEntity extends Entity<ConcertLogId, ConcertLogProps> {
       ...input,
       id: ConcertLogId.generate(),
       userId,
+      title: ConcertTitle.of(input.title),
       venue: Venue.of(input.venue),
       pieceIds: input.pieceIds === undefined ? undefined : input.pieceIds.map(PieceId.from),
       createdAt: now,
@@ -45,6 +47,7 @@ export class ConcertLogEntity extends Entity<ConcertLogId, ConcertLogProps> {
       ...data,
       id: ConcertLogId.from(data.id),
       userId: UserId.from(data.userId),
+      title: ConcertTitle.of(data.title),
       venue: Venue.of(data.venue),
       pieceIds: data.pieceIds === undefined ? undefined : data.pieceIds.map(PieceId.from),
     });
@@ -63,6 +66,7 @@ export class ConcertLogEntity extends Entity<ConcertLogId, ConcertLogProps> {
       ...this.props,
       id: this.props.id.value,
       userId: this.props.userId.value,
+      title: this.props.title.value,
       venue: this.props.venue.value,
       pieceIds:
         this.props.pieceIds === undefined ? undefined : this.props.pieceIds.map((id) => id.value),

@@ -56,7 +56,9 @@ type(scope): 日本語の説明
 
 - `scope` は省略可能
 - 説明（subject）は**日本語で記述**する
-- subject の先頭を**英大文字にしない**（`subject-case` ルール）。ファイル名等を先頭に置く場合は日本語から始める形に言い換える
+- subject の先頭を**英大文字にしない**（`subject-case` ルール）。ファイル名・クラス名（`PieceTitle` のような **PascalCase**）を先頭に置く場合は日本語から始める形に言い換える
+  - 例: ❌ `refactor(backend): ConcertTitle 値オブジェクトを導入` → ✅ `refactor(backend): コンサート記録の title を ConcertTitle 値オブジェクト化`
+  - **PR タイトル**もこの規約に従うこと（マージ時の commit message が同じく commitlint で検証される）
 - 末尾に**ピリオド（`.`・`。`）を付けない**
 - ヘッダー全体は**100 文字以内**
 

@@ -150,7 +150,8 @@ type(scope): 日本語の説明
 
 - `scope` は省略可能
 - 説明（subject）は日本語で記述する
-- subject の先頭を英大文字にしない（`subject-case` ルール）。英単語やファイル名を先頭に置きたい場合は日本語から始める形に言い換える
+- subject の先頭を英大文字にしない（`subject-case` ルール）。英単語・ファイル名・クラス名（`PieceTitle` のような PascalCase）を先頭に置きたい場合は日本語から始める形に言い換える
+- このルールは **PR タイトル** にも同じく適用される（PR タイトル＝マージ後の commit message になるため）。クラス名や型名を頭に置く形式（例: `refactor(backend): ConcertTitle 値オブジェクトを導入`）は `subject must not be ... pascal-case` で弾かれるので避ける
 - 末尾にピリオド（`.`・`。`）を付けない
 - ヘッダー全体は100文字以内
 
@@ -160,11 +161,12 @@ type(scope): 日本語の説明
 ✅ feat: 視聴ログ統計ダッシュボードを追加
 ✅ fix(auth): リフレッシュトークン失効時のリダイレクトを修正
 ✅ docs: SPEC.md にコンサート記録 API を追記
-✅ refactor(backend): PieceTitle 値オブジェクトを導入
+✅ refactor(backend): 楽曲の title を PieceTitle 値オブジェクト化
 
-❌ Add stats dashboard               （subject-case 違反 + 英語）
-❌ feat: Update README.md             （subject の先頭が英大文字）
-❌ feat: 視聴ログ統計を追加。            （末尾の句点）
+❌ Add stats dashboard                          （subject-case 違反 + 英語）
+❌ feat: Update README.md                        （subject の先頭が英大文字）
+❌ refactor(backend): PieceTitle 値オブジェクトを導入  （subject 先頭が PascalCase で弾かれる）
+❌ feat: 視聴ログ統計を追加。                       （末尾の句点）
 ```
 
 ---
