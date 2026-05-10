@@ -339,7 +339,9 @@ classical-music-lake/
   → API Gateway + Cognito Authorizer
   → Lambda (update.ts)
   → 既存レコード取得 + userId 検証（不一致は 404）
-  → updateItem でフィールドを部分更新（楽観的ロック）
+  → ConcertLogEntity.mergeUpdate(input) で新エンティティを生成
+  → DynamoDBConcertLogRepository.saveWithOptimisticLock(plain, prevUpdatedAt)
+    （競合時は 409 Conflict + "Concert log was updated by another request"）
   → 200 OK + 更新済みオブジェクト
   → ブラウザに返却 → /concert-logs/{id} へ遷移
 ```

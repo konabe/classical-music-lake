@@ -1,5 +1,6 @@
-import type { ConcertLog, CreateConcertLogInput } from "../types";
+import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "../types";
 import { Entity, type EntityProps } from "./entity";
+import { buildUpdateProps } from "./entity-helpers";
 import { ConcertTitle } from "./value-objects/concert-title";
 import { ConcertLogId, PieceId, UserId } from "./value-objects/ids";
 import { Venue } from "./value-objects/venue";
@@ -8,7 +9,7 @@ export type ConcertLogRepository = {
   findById(id: ConcertLogId): Promise<ConcertLog | undefined>;
   findByUserId(userId: UserId): Promise<ConcertLog[]>;
   save(item: ConcertLog): Promise<void>;
-  update(id: ConcertLogId, input: Partial<ConcertLog>): Promise<ConcertLog>;
+  saveWithOptimisticLock(item: ConcertLog, prevUpdatedAt: string): Promise<void>;
   remove(id: ConcertLogId): Promise<void>;
 };
 
@@ -59,6 +60,11 @@ export class ConcertLogEntity extends Entity<ConcertLogId, ConcertLogProps> {
 
   isOwnedBy(userId: UserId): boolean {
     return this.props.userId.equals(userId);
+  }
+
+  mergeUpdate(input: UpdateConcertLogInput): ConcertLogEntity {
+    const merged = buildUpdateProps(this.toPlain(), input, []);
+    return ConcertLogEntity.reconstruct(merged);
   }
 
   toPlain(): ConcertLog {

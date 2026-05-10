@@ -9,7 +9,7 @@ const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
   findById: vi.fn(),
   findByUserId: vi.fn(),
-  update: vi.fn(),
+  saveWithOptimisticLock: vi.fn(),
   remove: vi.fn(),
 }));
 
@@ -139,7 +139,7 @@ describe("PUT /concert-logs/:id (update)", () => {
       mockCallback,
     );
     expect(result?.statusCode).toBe(404);
-    expect(mockRepo.update).not.toHaveBeenCalled();
+    expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
@@ -153,13 +153,8 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("正常更新して 200 を返す", async () => {
-    const updatedLog: ConcertLog = {
-      ...existingLog,
-      venue: "東京文化会館",
-      updatedAt: new Date().toISOString(),
-    };
     mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.update.mockResolvedValueOnce(updatedLog);
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
@@ -171,15 +166,15 @@ describe("PUT /concert-logs/:id (update)", () => {
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBe("abc-123");
     expect(body.venue).toBe("東京文化会館");
+    expect(mockRepo.saveWithOptimisticLock).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "abc-123", venue: "東京文化会館" }),
+      existingLog.updatedAt,
+    );
   });
 
   it("venue のみ更新して concertDate はそのままであること", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.update.mockResolvedValueOnce({
-      ...existingLog,
-      venue: "東京文化会館",
-      updatedAt: new Date().toISOString(),
-    });
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
@@ -187,18 +182,24 @@ describe("PUT /concert-logs/:id (update)", () => {
       mockCallback,
     );
     expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.concertDate).toBe(existingLog.concertDate);
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.update.mockRejectedValueOnce(new Conflict("Item was updated by another request"));
+    mockRepo.saveWithOptimisticLock.mockRejectedValueOnce(
+      new Conflict("Concert log was updated by another request"),
+    );
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(409);
-    expect(JSON.parse(result?.body ?? "{}").message).toBe("Item was updated by another request");
+    expect(JSON.parse(result?.body ?? "{}").message).toBe(
+      "Concert log was updated by another request",
+    );
   });
 
   it("Repository エラー時に 500 を返す", async () => {
@@ -213,13 +214,8 @@ describe("PUT /concert-logs/:id (update)", () => {
 
   it("pieceIds を更新できる", async () => {
     const pieceId = "550e8400-e29b-41d4-a716-446655440000";
-    const updatedLog: ConcertLog = {
-      ...existingLog,
-      pieceIds: [pieceId],
-      updatedAt: new Date().toISOString(),
-    };
     mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.update.mockResolvedValueOnce(updatedLog);
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [pieceId] }), TEST_USER_ID),
@@ -236,13 +232,8 @@ describe("PUT /concert-logs/:id (update)", () => {
       ...existingLog,
       pieceIds: ["550e8400-e29b-41d4-a716-446655440000"],
     };
-    const updatedLog: ConcertLog = {
-      ...existingLog,
-      pieceIds: [],
-      updatedAt: new Date().toISOString(),
-    };
     mockRepo.findById.mockResolvedValueOnce(existingLogWithPieces);
-    mockRepo.update.mockResolvedValueOnce(updatedLog);
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [] }), TEST_USER_ID),

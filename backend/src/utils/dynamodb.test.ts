@@ -1,13 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 
-import {
-  putItemWithOptimisticLock,
-  queryItemsByUserId,
-  scanAllItems,
-  scanPage,
-  updateItem,
-} from "./dynamodb";
+import { putItemWithOptimisticLock, queryItemsByUserId, scanAllItems, scanPage } from "./dynamodb";
 
 const { mockSend } = vi.hoisted(() => ({
   mockSend: vi.fn(),
@@ -28,9 +22,6 @@ vi.mock("@aws-sdk/lib-dynamodb", () => ({
   DynamoDBDocumentClient: {
     from: vi.fn().mockReturnValue({ send: mockSend }),
   },
-  GetCommand: class GetCommand {
-    constructor(public input: unknown) {}
-  },
   PutCommand: class PutCommand {
     constructor(public input: unknown) {}
   },
@@ -41,13 +32,6 @@ vi.mock("@aws-sdk/lib-dynamodb", () => ({
     constructor(public input: unknown) {}
   },
 }));
-
-type TestItem = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  name: string;
-};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -226,75 +210,5 @@ describe("putItemWithOptimisticLock", () => {
         conflictMessage: "Whatever",
       }),
     ).rejects.toThrow("DynamoDB connection error");
-  });
-});
-
-describe("updateItem", () => {
-  const existing: TestItem = {
-    id: "item-1",
-    createdAt: "2024-01-01T00:00:00.000Z",
-    updatedAt: "2024-01-01T00:00:00.000Z",
-    name: "original",
-  };
-
-  it("アイテムが存在しない場合は 404 を投げる", async () => {
-    mockSend.mockResolvedValueOnce({ Item: undefined });
-
-    await expect(updateItem<TestItem>("test-table", "item-1", { name: "updated" })).rejects.toThrow(
-      "Item not found",
-    );
-  });
-
-  it("正常に更新されたアイテムを返す", async () => {
-    mockSend.mockResolvedValueOnce({ Item: existing }).mockResolvedValueOnce({});
-
-    const result = await updateItem<TestItem>("test-table", "item-1", { name: "updated" });
-
-    expect(result.name).toBe("updated");
-    expect(result.id).toBe("item-1");
-    expect(result.createdAt).toBe(existing.createdAt);
-    expect(result.updatedAt).not.toBe(existing.updatedAt);
-  });
-
-  it("updatedAt が更新される", async () => {
-    mockSend.mockResolvedValueOnce({ Item: existing }).mockResolvedValueOnce({});
-
-    const result = await updateItem<TestItem>("test-table", "item-1", {});
-
-    expect(result.updatedAt).not.toBe(existing.updatedAt);
-  });
-
-  it("id と createdAt は変更されない", async () => {
-    mockSend.mockResolvedValueOnce({ Item: existing }).mockResolvedValueOnce({});
-
-    const result = await updateItem<TestItem>("test-table", "item-1", {
-      id: "different-id",
-      createdAt: "2099-01-01T00:00:00.000Z",
-    } as Partial<TestItem>);
-
-    expect(result.id).toBe("item-1");
-    expect(result.createdAt).toBe(existing.createdAt);
-  });
-
-  it("ConditionalCheckFailedException が発生した場合は 409 を投げる", async () => {
-    mockSend
-      .mockResolvedValueOnce({ Item: existing })
-      .mockRejectedValueOnce(
-        new ConditionalCheckFailedException({ message: "Condition failed", $metadata: {} }),
-      );
-
-    await expect(updateItem("test-table", "item-1", {})).rejects.toThrow(
-      "Item was updated by another request",
-    );
-  });
-
-  it("その他のエラーはそのまま再スローされる", async () => {
-    mockSend
-      .mockResolvedValueOnce({ Item: existing })
-      .mockRejectedValueOnce(new Error("DynamoDB connection error"));
-
-    await expect(updateItem("test-table", "item-1", {})).rejects.toThrow(
-      "DynamoDB connection error",
-    );
   });
 });

@@ -1,7 +1,12 @@
 import { DeleteCommand, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 import type { ConcertLogId, UserId } from "../domain/value-objects/ids";
-import { dynamo, queryItemsByUserId, updateItem, TABLE_CONCERT_LOGS } from "../utils/dynamodb";
+import {
+  dynamo,
+  putItemWithOptimisticLock,
+  queryItemsByUserId,
+  TABLE_CONCERT_LOGS,
+} from "../utils/dynamodb";
 import type { ConcertLog } from "../types";
 import type { ConcertLogRepository } from "../domain/concert-log";
 
@@ -21,8 +26,13 @@ export class DynamoDBConcertLogRepository implements ConcertLogRepository {
     await dynamo.send(new PutCommand({ TableName: TABLE_CONCERT_LOGS, Item: item }));
   }
 
-  async update(id: ConcertLogId, input: Partial<ConcertLog>): Promise<ConcertLog> {
-    return updateItem<ConcertLog>(TABLE_CONCERT_LOGS, id.value, input);
+  async saveWithOptimisticLock(item: ConcertLog, prevUpdatedAt: string): Promise<void> {
+    await putItemWithOptimisticLock({
+      tableName: TABLE_CONCERT_LOGS,
+      item,
+      prevUpdatedAt,
+      conflictMessage: "Concert log was updated by another request",
+    });
   }
 
   async remove(id: ConcertLogId): Promise<void> {

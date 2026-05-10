@@ -1,7 +1,6 @@
 import { ConditionalCheckFailedException, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
-  GetCommand,
   PutCommand,
   QueryCommand,
   ScanCommand,
@@ -117,31 +116,4 @@ export async function putItemWithOptimisticLock<T>(options: {
     }
     throw err;
   }
-}
-
-export async function updateItem<T extends { id: string; createdAt: string; updatedAt: string }>(
-  tableName: string,
-  id: string,
-  input: Partial<T>,
-): Promise<T> {
-  const existing = await dynamo.send(new GetCommand({ TableName: tableName, Key: { id } }));
-  if (existing.Item === undefined) {
-    throw new createError.NotFound("Item not found");
-  }
-
-  const current = existing.Item as T;
-  const updated: T = {
-    ...current,
-    ...input,
-    id,
-    createdAt: current.createdAt,
-    updatedAt: new Date().toISOString(),
-  };
-  await putItemWithOptimisticLock({
-    tableName,
-    item: updated,
-    prevUpdatedAt: current.updatedAt,
-    conflictMessage: "Item was updated by another request",
-  });
-  return updated;
 }

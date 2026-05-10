@@ -3,7 +3,7 @@ import type { ConcertLogRepository } from "../domain/concert-log";
 import { ConcertLogId } from "../domain/value-objects/ids";
 import type { UserId } from "../domain/value-objects/ids";
 import { DynamoDBConcertLogRepository } from "../repositories/concert-log-repository";
-import type { ConcertLog, CreateConcertLogInput } from "../types";
+import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "../types";
 import { loadOwnedEntityOrNotFound } from "./helpers";
 
 // handlers 層は domain へ直接アクセスできないため、ID 値オブジェクトを usecase 層経由で公開する
@@ -42,9 +42,16 @@ export class ConcertLogUsecase {
     return entity.toPlain();
   }
 
-  async update(id: ConcertLogId, input: Partial<ConcertLog>, userId: UserId): Promise<ConcertLog> {
-    await this.loadOwnedEntity(id, userId);
-    return this.repo.update(id, input);
+  async update(
+    id: ConcertLogId,
+    input: UpdateConcertLogInput,
+    userId: UserId,
+  ): Promise<ConcertLog> {
+    const current = await this.loadOwnedEntity(id, userId);
+    const updated = current.mergeUpdate(input);
+    const plain = updated.toPlain();
+    await this.repo.saveWithOptimisticLock(plain, current.updatedAt);
+    return plain;
   }
 
   async delete(id: ConcertLogId, userId: UserId): Promise<void> {
