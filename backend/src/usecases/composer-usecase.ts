@@ -34,7 +34,7 @@ export class ComposerUsecase {
   async update(id: ComposerId, input: UpdateComposerInput): Promise<Composer> {
     const current = await findByIdOrNotFound((id) => this.repo.findById(id), id, ENTITY_NAME);
     const entity = ComposerEntity.reconstruct(current);
-    const updated = entity.mergeUpdate(input);
+    const updated = ComposerEntity.applyRevisions(entity, input);
     const plain = updated.toPlain();
     await this.repo.saveWithOptimisticLock(plain, current.updatedAt);
     return plain;
