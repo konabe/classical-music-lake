@@ -1,4 +1,8 @@
-import type { CreateListeningLogInput, ListeningLogRecord } from "../types";
+import type {
+  CreateListeningLogInput,
+  ListeningLogRecord,
+  UpdateListeningLogInput,
+} from "../types";
 import { Entity, type EntityProps } from "./entity";
 import { Rating } from "./value-objects/rating";
 import { ListeningLogId, PieceId, UserId } from "./value-objects/ids";
@@ -90,6 +94,34 @@ export class ListeningLogEntity extends Entity<ListeningLogId, ListeningLogProps
   /** 別の楽曲に紐付け直す（事実訂正）。 */
   relinkPiece(pieceId: string): ListeningLogEntity {
     return this.touched({ pieceId });
+  }
+
+  /**
+   * Update*Input の partial 仕様を意図メソッドへ dispatch する。input にキーが
+   * 含まれているフィールドのみ適用する（partial update なので順序は可換）。
+   * static にしてあるのは `let next = this` の alias を避けるため。
+   */
+  static applyRevisions(
+    entity: ListeningLogEntity,
+    input: UpdateListeningLogInput,
+  ): ListeningLogEntity {
+    let next = entity;
+    if (input.isFavorite !== undefined) {
+      next = input.isFavorite ? next.markAsFavorite() : next.unmarkAsFavorite();
+    }
+    if (input.rating !== undefined) {
+      next = next.rerate(input.rating);
+    }
+    if (input.memo !== undefined) {
+      next = next.rewriteMemo(input.memo);
+    }
+    if (input.listenedAt !== undefined) {
+      next = next.correctListenedAt(input.listenedAt);
+    }
+    if (input.pieceId !== undefined) {
+      next = next.relinkPiece(input.pieceId);
+    }
+    return next;
   }
 
   toPlain(): ListeningLogRecord {
