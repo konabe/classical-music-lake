@@ -63,58 +63,67 @@ describe("ComposerEntity", () => {
     expect(plain.updatedAt).toBe(baseData.updatedAt);
   });
 
-  describe("rename", () => {
-    it("name を訂正し updatedAt が進む", () => {
+  describe("editProfile", () => {
+    it("name を訂正できる", () => {
       const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.rename("Ludwig van Beethoven").toPlain();
+      const next = entity.editProfile({ name: "Ludwig van Beethoven" }).toPlain();
       expect(next.name).toBe("Ludwig van Beethoven");
       expect(next.updatedAt).not.toBe(baseData.updatedAt);
     });
 
-    it("空文字（trim 後 0 文字）は ComposerName で弾かれる", () => {
+    it("era / region を再分類できる", () => {
       const entity = ComposerEntity.reconstruct(baseData);
-      expect(() => entity.rename("   ")).toThrow();
+      const next = entity.editProfile({ era: "ロマン派", region: "フランス" }).toPlain();
+      expect(next.era).toBe("ロマン派");
+      expect(next.region).toBe("フランス");
     });
 
-    it("他のフィールドは保持される", () => {
+    it("生没年をまとめて記録できる", () => {
       const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.rename("Beethoven").toPlain();
-      expect(next.era).toBe(baseData.era);
+      const next = entity.editProfile({ birthYear: 1685, deathYear: 1750 }).toPlain();
+      expect(next.birthYear).toBe(1685);
+      expect(next.deathYear).toBe(1750);
+    });
+
+    it("era に空文字を渡すと era フィールドが消える", () => {
+      const entity = ComposerEntity.reconstruct(baseData);
+      const next = entity.editProfile({ era: "" }).toPlain();
+      expect(next.era).toBeUndefined();
+    });
+
+    it("region に空文字を渡すと region フィールドが消える", () => {
+      const entity = ComposerEntity.reconstruct(baseData);
+      const next = entity.editProfile({ region: "" }).toPlain();
+      expect(next.region).toBeUndefined();
+    });
+
+    it("birthYear に null を渡すと birthYear フィールドが消える", () => {
+      const entity = ComposerEntity.reconstruct(baseData);
+      const next = entity.editProfile({ birthYear: null }).toPlain();
+      expect(next.birthYear).toBeUndefined();
+      expect(next.deathYear).toBe(baseData.deathYear);
+    });
+
+    it("deathYear に null を渡すと存命扱いに戻す", () => {
+      const entity = ComposerEntity.reconstruct(baseData);
+      const next = entity.editProfile({ deathYear: null }).toPlain();
+      expect(next.deathYear).toBeUndefined();
       expect(next.birthYear).toBe(baseData.birthYear);
+    });
+
+    it("imageUrl 以外の他フィールドは保持される", () => {
+      const entity = ComposerEntity.reconstruct(baseData);
+      const next = entity.editProfile({ name: "別名" }).toPlain();
+      expect(next.era).toBe(baseData.era);
+      expect(next.region).toBe(baseData.region);
+      expect(next.birthYear).toBe(baseData.birthYear);
+      expect(next.imageUrl).toBe(baseData.imageUrl);
     });
 
     it("イミュータブル（元エンティティは変化しない）", () => {
       const entity = ComposerEntity.reconstruct(baseData);
-      entity.rename("Beethoven");
+      entity.editProfile({ name: "別名" });
       expect(entity.toPlain().name).toBe(baseData.name);
-    });
-  });
-
-  describe("reclassifyEra", () => {
-    it("era を別の時代区分に書き換える", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.reclassifyEra("ロマン派").toPlain();
-      expect(next.era).toBe("ロマン派");
-    });
-
-    it("undefined を渡すと era フィールドが消える", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.reclassifyEra(undefined).toPlain();
-      expect(next.era).toBeUndefined();
-    });
-  });
-
-  describe("reclassifyRegion", () => {
-    it("region を別の地域に書き換える", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.reclassifyRegion("フランス").toPlain();
-      expect(next.region).toBe("フランス");
-    });
-
-    it("undefined を渡すと region フィールドが消える", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.reclassifyRegion(undefined).toPlain();
-      expect(next.region).toBeUndefined();
     });
   });
 
@@ -135,57 +144,25 @@ describe("ComposerEntity", () => {
       const entity = ComposerEntity.reconstruct(baseData);
       expect(() => entity.updateImage("not-a-url")).toThrow();
     });
-  });
 
-  describe("recordLifeSpan", () => {
-    it("両方の年を更新する", () => {
+    it("updateImage は他フィールドを保持する", () => {
       const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.recordLifeSpan(1685, 1750).toPlain();
-      expect(next.birthYear).toBe(1685);
-      expect(next.deathYear).toBe(1750);
-    });
-
-    it("birthYear に null を渡すと birthYear フィールドが消える", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.recordLifeSpan(null, undefined).toPlain();
-      expect(next.birthYear).toBeUndefined();
-      expect(next.deathYear).toBe(baseData.deathYear);
-    });
-
-    it("deathYear に null を渡すと存命扱いに戻す", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.recordLifeSpan(undefined, null).toPlain();
-      expect(next.deathYear).toBeUndefined();
+      const next = entity.updateImage("https://example.com/x.jpg").toPlain();
+      expect(next.name).toBe(baseData.name);
+      expect(next.era).toBe(baseData.era);
       expect(next.birthYear).toBe(baseData.birthYear);
-    });
-
-    it("両方 undefined なら現状維持（updatedAt のみ進む）", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = entity.recordLifeSpan(undefined, undefined).toPlain();
-      expect(next.birthYear).toBe(baseData.birthYear);
-      expect(next.deathYear).toBe(baseData.deathYear);
-      expect(next.updatedAt).not.toBe(baseData.updatedAt);
-    });
-
-    it("範囲外の年は Year VO で弾かれる", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      expect(() => entity.recordLifeSpan(99999, undefined)).toThrow();
     });
   });
 
-  describe("意図メソッドの不変条件", () => {
-    it("id と createdAt はどの意図メソッドでも不変", () => {
+  describe("id / createdAt の不変性", () => {
+    it("editProfile と updateImage のどちらでも id と createdAt は不変", () => {
       const entity = ComposerEntity.reconstruct(baseData);
       const checks = [
-        entity.rename("X"),
-        entity.reclassifyEra("ロマン派"),
-        entity.reclassifyEra(undefined),
-        entity.reclassifyRegion("フランス"),
-        entity.reclassifyRegion(undefined),
+        entity.editProfile({ name: "X" }),
+        entity.editProfile({ era: "", region: "" }),
+        entity.editProfile({ birthYear: null, deathYear: null }),
         entity.updateImage("https://example.com/y.jpg"),
         entity.updateImage(undefined),
-        entity.recordLifeSpan(1900, 1980),
-        entity.recordLifeSpan(null, null),
       ];
       for (const c of checks) {
         const p = c.toPlain();
@@ -196,7 +173,7 @@ describe("ComposerEntity", () => {
   });
 
   describe("applyRevisions", () => {
-    it("input にキーが含まれるフィールドのみ意図メソッドへ dispatch する", () => {
+    it("editProfile と updateImage の両方へ dispatch する", () => {
       const entity = ComposerEntity.reconstruct(baseData);
       const next = ComposerEntity.applyRevisions(entity, {
         name: "Ludwig",
@@ -214,47 +191,20 @@ describe("ComposerEntity", () => {
       expect(next.deathYear).toBe(1900);
     });
 
-    it("undefined のフィールドは元の値を保つ（partial update）", () => {
+    it("imageUrl だけが渡された場合は editProfile に行かず updateImage だけ走る", () => {
       const entity = ComposerEntity.reconstruct(baseData);
-      const next = ComposerEntity.applyRevisions(entity, { name: "別名" }).toPlain();
-      expect(next.name).toBe("別名");
+      const next = ComposerEntity.applyRevisions(entity, {
+        imageUrl: "https://example.com/only.jpg",
+      }).toPlain();
+      expect(next.imageUrl).toBe("https://example.com/only.jpg");
+      expect(next.name).toBe(baseData.name);
       expect(next.era).toBe(baseData.era);
-      expect(next.region).toBe(baseData.region);
-      expect(next.imageUrl).toBe(baseData.imageUrl);
-      expect(next.birthYear).toBe(baseData.birthYear);
-      expect(next.deathYear).toBe(baseData.deathYear);
     });
 
-    it("era に空文字を渡すと reclassifyEra(undefined) に dispatch されフィールドが消える", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = ComposerEntity.applyRevisions(entity, { era: "" }).toPlain();
-      expect(next.era).toBeUndefined();
-    });
-
-    it("region に空文字を渡すとフィールドが消える", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = ComposerEntity.applyRevisions(entity, { region: "" }).toPlain();
-      expect(next.region).toBeUndefined();
-    });
-
-    it("imageUrl に空文字を渡すとフィールドが消える", () => {
+    it("imageUrl に空文字を渡すと updateImage(undefined) に正規化される", () => {
       const entity = ComposerEntity.reconstruct(baseData);
       const next = ComposerEntity.applyRevisions(entity, { imageUrl: "" }).toPlain();
       expect(next.imageUrl).toBeUndefined();
-    });
-
-    it("birthYear に null を渡すとフィールドが消える", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = ComposerEntity.applyRevisions(entity, { birthYear: null }).toPlain();
-      expect(next.birthYear).toBeUndefined();
-      expect(next.deathYear).toBe(baseData.deathYear);
-    });
-
-    it("deathYear に null を渡すと存命扱いに戻す", () => {
-      const entity = ComposerEntity.reconstruct(baseData);
-      const next = ComposerEntity.applyRevisions(entity, { deathYear: null }).toPlain();
-      expect(next.deathYear).toBeUndefined();
-      expect(next.birthYear).toBe(baseData.birthYear);
     });
 
     it("空の input なら entity をそのまま返す（updatedAt も変化しない）", () => {

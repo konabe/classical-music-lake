@@ -6,6 +6,7 @@ import type {
   UpdateComposerInput,
 } from "../types";
 import { Entity, type EntityProps } from "./entity";
+import { buildUpdateProps } from "./entity-helpers";
 import { ComposerName } from "./value-objects/composer-name";
 import { ComposerId } from "./value-objects/ids";
 import { Url } from "./value-objects/url";
@@ -22,6 +23,15 @@ export type ComposerRepository = {
   remove(id: ComposerId): Promise<void>;
 };
 
+/**
+ * 作曲家マスタの基本情報を編集する差分。
+ * 名前を訂正する／時代区分を再分類する／地域を再分類する／生没年を記録するは
+ * すべて「マスタ情報を編集する」というマスタ管理者の単一の意図に帰着するため、
+ * フィールドごとに意図メソッドを生やさず 1 つの `editProfile` に集約する。
+ * 肖像画像 URL は外部リソース参照を貼り替える独立した意図なので、ここには含めない。
+ */
+export type ComposerProfileRevision = Omit<UpdateComposerInput, "imageUrl">;
+
 type ComposerProps = EntityProps<ComposerId> & {
   name: ComposerName;
   era?: PieceEra;
@@ -31,7 +41,7 @@ type ComposerProps = EntityProps<ComposerId> & {
   deathYear?: Year;
 };
 
-type OptionalComposerPropKey = "era" | "region" | "imageUrl" | "birthYear" | "deathYear";
+const PROFILE_CLEARABLE_FIELDS = ["era", "region", "birthYear", "deathYear"] as const;
 
 export class ComposerEntity extends Entity<ComposerId, ComposerProps> {
   private constructor(props: ComposerProps) {
@@ -63,81 +73,45 @@ export class ComposerEntity extends Entity<ComposerId, ComposerProps> {
     });
   }
 
-  /** 作曲家名を訂正する。 */
-  rename(name: string): ComposerEntity {
-    return this.touched({ name: ComposerName.of(name) });
-  }
-
-  /** 時代区分を再分類する。`undefined` で分類を取り消す。 */
-  reclassifyEra(era: PieceEra | undefined): ComposerEntity {
-    if (era === undefined) {
-      return this.touched({}, ["era"]);
-    }
-    return this.touched({ era });
-  }
-
-  /** 地域を再分類する。`undefined` で分類を取り消す。 */
-  reclassifyRegion(region: PieceRegion | undefined): ComposerEntity {
-    if (region === undefined) {
-      return this.touched({}, ["region"]);
-    }
-    return this.touched({ region });
+  /**
+   * マスタ情報を編集する。名前・時代区分・地域・生没年の訂正や記録、取り消しを
+   * 1 つの編集操作として扱う。`era` / `region` は空文字、`birthYear` / `deathYear`
+   * は `null` を渡すと当該フィールドが削除される（API 仕様と一致）。
+   */
+  editProfile(revision: ComposerProfileRevision): ComposerEntity {
+    const merged = buildUpdateProps(this.toPlain(), revision, PROFILE_CLEARABLE_FIELDS);
+    return ComposerEntity.reconstruct(merged);
   }
 
   /** 肖像画像 URL を更新する。`undefined` で画像を取り外す。 */
   updateImage(imageUrl: string | undefined): ComposerEntity {
+    const now = new Date().toISOString();
     if (imageUrl === undefined) {
-      return this.touched({}, ["imageUrl"]);
+      const { imageUrl: _omit, ...rest } = this.props;
+      return new ComposerEntity({ ...rest, updatedAt: now });
     }
-    return this.touched({ imageUrl: Url.of(imageUrl) });
+    return new ComposerEntity({
+      ...this.props,
+      imageUrl: Url.of(imageUrl),
+      updatedAt: now,
+    });
   }
 
   /**
-   * 生没年を記録する。`null` を渡したフィールドは登録解除（生年なら未登録に戻す、
-   * 没年なら存命扱いに戻す）。`undefined` のフィールドは現状維持。
-   */
-  recordLifeSpan(
-    birthYear: number | null | undefined,
-    deathYear: number | null | undefined,
-  ): ComposerEntity {
-    const diff: Partial<ComposerProps> = {};
-    const removed: OptionalComposerPropKey[] = [];
-
-    if (birthYear === null) {
-      removed.push("birthYear");
-    } else if (birthYear !== undefined) {
-      diff.birthYear = Year.of(birthYear);
-    }
-    if (deathYear === null) {
-      removed.push("deathYear");
-    } else if (deathYear !== undefined) {
-      diff.deathYear = Year.of(deathYear);
-    }
-    return this.touched(diff, removed);
-  }
-
-  /**
-   * Update*Input の partial 仕様を意図メソッドへ dispatch する。input にキーが
-   * 含まれているフィールドのみ適用する（partial update なので順序は可換）。
-   * API 仕様の「空文字でクリア」「null でクリア」もここで意図メソッドの引数に
-   * 正規化する（ドメイン層は技術的なクリア表現を持たない）。
+   * Update*Input の partial 仕様を `editProfile` と `updateImage` の 2 系統に
+   * dispatch する。肖像画像だけが意図として独立しており、それ以外は編集業務に
+   * 集約する。API 仕様の「imageUrl は空文字でクリア」もここで `undefined` に
+   * 正規化し、ドメイン層には漏らさない。
    */
   static applyRevisions(entity: ComposerEntity, input: UpdateComposerInput): ComposerEntity {
     let next = entity;
-    if (input.name !== undefined) {
-      next = next.rename(input.name);
+    const { imageUrl, ...profile } = input;
+
+    if (Object.keys(profile).length > 0) {
+      next = next.editProfile(profile);
     }
-    if (input.era !== undefined) {
-      next = next.reclassifyEra(input.era === "" ? undefined : input.era);
-    }
-    if (input.region !== undefined) {
-      next = next.reclassifyRegion(input.region === "" ? undefined : input.region);
-    }
-    if (input.imageUrl !== undefined) {
-      next = next.updateImage(input.imageUrl === "" ? undefined : input.imageUrl);
-    }
-    if (input.birthYear !== undefined || input.deathYear !== undefined) {
-      next = next.recordLifeSpan(input.birthYear, input.deathYear);
+    if (imageUrl !== undefined) {
+      next = next.updateImage(imageUrl === "" ? undefined : imageUrl);
     }
     return next;
   }
@@ -151,24 +125,5 @@ export class ComposerEntity extends Entity<ComposerId, ComposerProps> {
       birthYear: this.props.birthYear?.value,
       deathYear: this.props.deathYear?.value,
     };
-  }
-
-  private touched(
-    diff: Partial<ComposerProps>,
-    removed: readonly OptionalComposerPropKey[] = [],
-  ): ComposerEntity {
-    const merged: ComposerProps = {
-      ...this.props,
-      ...diff,
-      updatedAt: new Date().toISOString(),
-    };
-    if (removed.length === 0) {
-      return new ComposerEntity(merged);
-    }
-    const removedSet = new Set<string>(removed);
-    const filtered = Object.fromEntries(
-      Object.entries(merged).filter(([key]) => !removedSet.has(key)),
-    ) as ComposerProps;
-    return new ComposerEntity(filtered);
   }
 }
