@@ -75,7 +75,7 @@ export class ListeningLogUsecase {
     userId: UserId,
   ): Promise<ListeningLog> {
     const current = await this.loadOwnedEntity(id, userId);
-    const updated = current.mergeUpdate(input);
+    const updated = ListeningLogEntity.applyRevisions(current, input);
     await this.repo.saveWithOptimisticLock(updated.toPlain(), current.updatedAt);
     return this.toDetailDto(updated);
   }
