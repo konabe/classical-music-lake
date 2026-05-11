@@ -479,3 +479,13 @@ classical-music-lake/
 - **N+1 抑制**: 一覧 API では `ListeningLogUsecase.toDetailDtoList` が同一 `pieceId` / `composerId` の重複取得を排除する（`fetchUnique` ヘルパー）。データ量が増え BatchGetItem が必要になったらリポジトリに `findByIds` を追加して差し替える前提
 - **Piece 削除時のガード**: 上記の `PieceUsecase.delete` の参照ガードと組み合わせて dangling reference を防ぐ
 - **個別意図メソッド**: 更新フローは `markAsFavorite()` / `unmarkAsFavorite()` / `rerate(rating)` / `rewriteMemo(memo)` / `correctListenedAt(listenedAt)` / `relinkPiece(pieceId)` の 6 種に分解。`Update*Input` の partial を意図メソッドへ dispatch する責務はエンティティ側の static `applyRevisions(entity, input)` に閉じ、`ListeningLogUsecase.update` は `ListeningLogEntity.applyRevisions(current, input)` を呼ぶだけ。汎用 `mergeUpdate` は持たない（フィールドごとに鑑賞者ドメインの意図がはっきり違うため、ConcertLog の `revise` 集約とは別パターンを採る）
+
+### Composer 集約の個別意図メソッド (2026-05)
+
+`ComposerEntity` も `ListeningLogEntity` と同じ「個別意図メソッド系」に揃え、汎用 `mergeUpdate` を撤去した。
+
+- **意図メソッド 5 種**: `rename(name)` / `reclassifyEra(era)` / `reclassifyRegion(region)` / `updateImage(imageUrl)` / `recordLifeSpan(birthYear, deathYear)`
+- **クリア表現の閉じ込め**: API 仕様の「空文字でフィールド削除」（`era` / `region` / `imageUrl`）「null でフィールド削除」（`birthYear` / `deathYear`）はドメイン層には漏らさない。`ComposerEntity.applyRevisions(entity, input)` が API 入力を読み替え、意図メソッドの引数（`undefined` = 削除）に正規化してから dispatch する
+- **`recordLifeSpan` の二項引数**: 生年と没年は鑑賞者にとってもマスタ管理者にとっても 1 セットで扱う情報のため、`recordBirthYear` / `recordDeathYear` には分けず単一メソッドに集約する。片方だけ更新したい場合はもう片方に `undefined` を渡す。`null` を渡したフィールドだけが個別に削除される
+- **`touched` ヘルパー**: 「diff を適用しつつクリア対象キーを削除する」プライベートヘルパーを `ComposerEntity` 内に閉じる。`entity-helpers.ts:buildUpdateProps` への依存は `ComposerEntity` 側からは消える（`Piece*Entity` がまだ使用中なのでヘルパー自体は残る）
+- **`ComposerUsecase.update`**: `ComposerEntity.applyRevisions(current, input)` を呼ぶだけ。usecase 層には partial 仕様の解釈ロジックを持たない

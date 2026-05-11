@@ -12,8 +12,6 @@ import { ComposerId } from "./value-objects/ids";
 import { Url } from "./value-objects/url";
 import { Year } from "./value-objects/year";
 
-const CLEARABLE_FIELDS = ["era", "region", "imageUrl", "birthYear", "deathYear"] as const;
-
 export type ComposerRepository = {
   findById(id: ComposerId): Promise<Composer | undefined>;
   findPage(options: {
@@ -25,6 +23,15 @@ export type ComposerRepository = {
   remove(id: ComposerId): Promise<void>;
 };
 
+/**
+ * 作曲家マスタの基本情報を編集する差分。
+ * 名前を訂正する／時代区分を再分類する／地域を再分類する／生没年を記録するは
+ * すべて「マスタ情報を編集する」というマスタ管理者の単一の意図に帰着するため、
+ * フィールドごとに意図メソッドを生やさず 1 つの `editProfile` に集約する。
+ * 肖像画像 URL は外部リソース参照を貼り替える独立した意図なので、ここには含めない。
+ */
+export type ComposerProfileRevision = Omit<UpdateComposerInput, "imageUrl">;
+
 type ComposerProps = EntityProps<ComposerId> & {
   name: ComposerName;
   era?: PieceEra;
@@ -33,6 +40,8 @@ type ComposerProps = EntityProps<ComposerId> & {
   birthYear?: Year;
   deathYear?: Year;
 };
+
+const PROFILE_CLEARABLE_FIELDS = ["era", "region", "birthYear", "deathYear"] as const;
 
 export class ComposerEntity extends Entity<ComposerId, ComposerProps> {
   private constructor(props: ComposerProps) {
@@ -64,9 +73,47 @@ export class ComposerEntity extends Entity<ComposerId, ComposerProps> {
     });
   }
 
-  mergeUpdate(input: UpdateComposerInput): ComposerEntity {
-    const merged = buildUpdateProps(this.toPlain(), input, CLEARABLE_FIELDS);
+  /**
+   * マスタ情報を編集する。名前・時代区分・地域・生没年の訂正や記録、取り消しを
+   * 1 つの編集操作として扱う。`era` / `region` は空文字、`birthYear` / `deathYear`
+   * は `null` を渡すと当該フィールドが削除される（API 仕様と一致）。
+   */
+  editProfile(revision: ComposerProfileRevision): ComposerEntity {
+    const merged = buildUpdateProps(this.toPlain(), revision, PROFILE_CLEARABLE_FIELDS);
     return ComposerEntity.reconstruct(merged);
+  }
+
+  /** 肖像画像 URL を更新する。`undefined` で画像を取り外す。 */
+  updateImage(imageUrl: string | undefined): ComposerEntity {
+    const now = new Date().toISOString();
+    if (imageUrl === undefined) {
+      const { imageUrl: _omit, ...rest } = this.props;
+      return new ComposerEntity({ ...rest, updatedAt: now });
+    }
+    return new ComposerEntity({
+      ...this.props,
+      imageUrl: Url.of(imageUrl),
+      updatedAt: now,
+    });
+  }
+
+  /**
+   * Update*Input の partial 仕様を `editProfile` と `updateImage` の 2 系統に
+   * dispatch する。肖像画像だけが意図として独立しており、それ以外は編集業務に
+   * 集約する。API 仕様の「imageUrl は空文字でクリア」もここで `undefined` に
+   * 正規化し、ドメイン層には漏らさない。
+   */
+  static applyRevisions(entity: ComposerEntity, input: UpdateComposerInput): ComposerEntity {
+    let next = entity;
+    const { imageUrl, ...profile } = input;
+
+    if (Object.keys(profile).length > 0) {
+      next = next.editProfile(profile);
+    }
+    if (imageUrl !== undefined) {
+      next = next.updateImage(imageUrl === "" ? undefined : imageUrl);
+    }
+    return next;
   }
 
   toPlain(): Composer {

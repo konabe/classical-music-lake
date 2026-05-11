@@ -591,8 +591,11 @@ cd cdk && pnpm install && cdk bootstrap && cdk deploy
 - 派生クラスの規約: `private constructor(props)` で `super(props)` を呼ぶ。`static create()` / `static reconstruct()` ファクトリは個別実装。`toPlain()` / `isOwnedBy()` は派生クラスで実装
 - 更新方法は派生クラスごとに 3 系統:
   - **集約意図メソッド系**（`ConcertLogEntity`）: 鑑賞記録のドメイン操作は「過去に観測した事実の記録を訂正・追記する」という単一の意図に帰着する（コンサート運営者ではなく鑑賞者の語彙）。そのためフィールド単位の意図メソッドは生やさず、`revise(revision: ConcertLogRevision)` 1 メソッドに集約する。実装は内部で `entity-helpers.ts:buildUpdateProps` を呼ぶ
-  - **個別意図メソッド系**（`ListeningLogEntity`）: フィールドごとに鑑賞者ドメインの意図がはっきり違うため、`markAsFavorite()` / `unmarkAsFavorite()` / `rerate(rating)` / `rewriteMemo(memo)` / `correctListenedAt(listenedAt)` / `relinkPiece(pieceId)` を個別に生やす。汎用 `mergeUpdate` は持たない。`Update*Input` の partial を意図メソッドへ dispatch する責務はエンティティ側の static `applyRevisions(entity, input)` に閉じ、usecase は `ListeningLogEntity.applyRevisions(current, input)` を呼ぶだけ
-  - **`mergeUpdate(input)` 系**（`ComposerEntity` / `PieceWorkEntity` / `PieceMovementEntity`）: `entity-helpers.ts:buildUpdateProps` を介して `Update*Input` をシャローマージする汎用更新メソッド。命名がドメイン語彙を反映していない貧血状態。意図メソッド化（`recordLifeSpan` 等）への移行は段階的に進める
+  - **個別意図メソッド系**（`ListeningLogEntity` / `ComposerEntity`）: フィールドごとにドメインの意図がはっきり違うため、`Update*Input` をそのまま受ける汎用 `mergeUpdate` は持たず、フィールド単位の意図メソッドを生やす。
+    - `ListeningLogEntity`: `markAsFavorite()` / `unmarkAsFavorite()` / `rerate(rating)` / `rewriteMemo(memo)` / `correctListenedAt(listenedAt)` / `relinkPiece(pieceId)`
+    - `ComposerEntity`: `rename(name)` / `reclassifyEra(era)` / `reclassifyRegion(region)` / `updateImage(imageUrl)` / `recordLifeSpan(birthYear, deathYear)`。`reclassify*` / `updateImage` は `undefined` で当該フィールドを削除し、`recordLifeSpan` は `null` で個別に削除する（API 仕様の「空文字 / null でフィールドを削除」は `applyRevisions` 側で意図メソッドの引数に正規化する）
+    - `Update*Input` の partial を意図メソッドへ dispatch する責務はエンティティ側の static `applyRevisions(entity, input)` に閉じ、usecase は `XxxEntity.applyRevisions(current, input)` を呼ぶだけ
+  - **`mergeUpdate(input)` 系**（`PieceWorkEntity` / `PieceMovementEntity`）: `entity-helpers.ts:buildUpdateProps` を介して `Update*Input` をシャローマージする汎用更新メソッド。命名がドメイン語彙を反映していない貧血状態。Piece 側も意図メソッド化への移行を段階的に進める
 
 ### 8.4 読み取り専用集約（ListeningLogDetail）
 
