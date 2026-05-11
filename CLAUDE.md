@@ -212,6 +212,18 @@ type(scope): 日本語の説明
 - フロント・バックエンド共通の定数・型: `shared/constants.ts` に定義し、各パッケージの型定義ファイルから re-export する
 - 上記以外で両方に同じ型が必要な場合は重複を許容（パッケージを分離しているため）
 
+### Bash の `git push` が使えないときの代替手段
+
+サンドボックス制限やネットワーク制約で Bash の `git push` がリモートに到達できない環境では、GitHub MCP の `mcp__github__push_files` を代替手段として使う。
+
+- 対象リポジトリ: `konabe/classical-music-lake`
+- 事前にローカルで `git add` / `git commit` まで済ませ、コミットの差分ファイルを `push_files` の `files` 引数に並べる（パスはリポジトリルートからの相対パス、`content` はファイル全文）
+- `branch` には作業ブランチ名（例: `claude/ddd-code-review-EQPXj`）を指定する。`message` はローカルのコミットメッセージと揃える
+- push 後にローカルとリモートの SHA がずれるので、`git fetch origin <branch>` → `git reset --hard origin/<branch>` で同期させる（ローカルの未コミット変更がないことを確認してから実行）
+- バイナリ・巨大ファイル・部分差分のみの送信には不向き。テキストファイルの全文置き換えにのみ使用する
+
+通常は Bash の `git push -u origin <branch>` を優先し、上記はあくまでフォールバック。
+
 ---
 
 ## サブエージェントの活用方針
