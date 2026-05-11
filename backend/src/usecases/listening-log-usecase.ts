@@ -75,7 +75,7 @@ export class ListeningLogUsecase {
     userId: UserId,
   ): Promise<ListeningLog> {
     const current = await this.loadOwnedEntity(id, userId);
-    const updated = applyRevisions(current, input);
+    const updated = ListeningLogEntity.applyRevisions(current, input);
     await this.repo.saveWithOptimisticLock(updated.toPlain(), current.updatedAt);
     return this.toDetailDto(updated);
   }
@@ -192,35 +192,6 @@ export class ListeningLogUsecase {
     return map;
   }
 }
-
-/**
- * Update*Input の partial 仕様を、ListeningLogEntity の意図メソッド（markAsFavorite /
- * rerate / rewriteMemo / correctListenedAt / relinkPiece）へ dispatch する。
- * input にキーが含まれているフィールドのみ意図メソッドを適用する（順序は ListeningLog の
- * 意味的な観点で並べているが、partial update なので可換）。
- */
-const applyRevisions = (
-  entity: ListeningLogEntity,
-  input: UpdateListeningLogInput,
-): ListeningLogEntity => {
-  let next = entity;
-  if (input.isFavorite !== undefined) {
-    next = input.isFavorite ? next.markAsFavorite() : next.unmarkAsFavorite();
-  }
-  if (input.rating !== undefined) {
-    next = next.rerate(input.rating);
-  }
-  if (input.memo !== undefined) {
-    next = next.rewriteMemo(input.memo);
-  }
-  if (input.listenedAt !== undefined) {
-    next = next.correctListenedAt(input.listenedAt);
-  }
-  if (input.pieceId !== undefined) {
-    next = next.relinkPiece(input.pieceId);
-  }
-  return next;
-};
 
 const uniqueByValue = <T extends { value: string }>(ids: T[]): T[] => {
   const seen = new Set<string>();

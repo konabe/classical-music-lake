@@ -143,6 +143,46 @@ describe("ListeningLogEntity", () => {
     });
   });
 
+  describe("applyRevisions", () => {
+    it("input にキーが含まれるフィールドのみ意図メソッドへ dispatch する", () => {
+      const entity = ListeningLogEntity.reconstruct(baseData);
+      const next = ListeningLogEntity.applyRevisions(entity, {
+        isFavorite: true,
+        rating: 1,
+        memo: "updated",
+        listenedAt: "2024-09-01T00:00:00.000Z",
+        pieceId: PIECE_ID_2,
+      }).toPlain();
+      expect(next.isFavorite).toBe(true);
+      expect(next.rating).toBe(1);
+      expect(next.memo).toBe("updated");
+      expect(next.listenedAt).toBe("2024-09-01T00:00:00.000Z");
+      expect(next.pieceId).toBe(PIECE_ID_2);
+    });
+
+    it("undefined のフィールドは元の値を保つ（partial update）", () => {
+      const entity = ListeningLogEntity.reconstruct(baseData);
+      const next = ListeningLogEntity.applyRevisions(entity, { rating: 2 }).toPlain();
+      expect(next.rating).toBe(2);
+      expect(next.isFavorite).toBe(baseData.isFavorite);
+      expect(next.memo).toBe(baseData.memo);
+      expect(next.listenedAt).toBe(baseData.listenedAt);
+      expect(next.pieceId).toBe(baseData.pieceId);
+    });
+
+    it("isFavorite=false は unmarkAsFavorite に dispatch する", () => {
+      const entity = ListeningLogEntity.reconstruct({ ...baseData, isFavorite: true });
+      const next = ListeningLogEntity.applyRevisions(entity, { isFavorite: false }).toPlain();
+      expect(next.isFavorite).toBe(false);
+    });
+
+    it("空の input なら updatedAt も含めて変更されない", () => {
+      const entity = ListeningLogEntity.reconstruct(baseData);
+      const next = ListeningLogEntity.applyRevisions(entity, {});
+      expect(next).toBe(entity);
+    });
+  });
+
   describe("isOwnedBy", () => {
     it("同じ userId なら true", () => {
       const entity = ListeningLogEntity.create(makeInput());
