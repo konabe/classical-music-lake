@@ -131,6 +131,29 @@ export abstract class PieceComponent<
   abstract toPlain(): Piece;
 
   /**
+   * 派生クラスが自身の具象型でインスタンスを再生成するためのフック。
+   * `updateVideos` 等、props を貼り替えるだけの操作を基底クラスで共通実装するために使う。
+   */
+  protected abstract cloneWithProps(props: TProps): this;
+
+  /**
+   * 動画 URL の集合を貼り替える。`undefined` または空配列で動画を取り外す。
+   * Work / Movement で実装が同一なので基底クラスに集約する。
+   */
+  updateVideos(videoUrls: readonly string[] | undefined): this {
+    const now = new Date().toISOString();
+    if (videoUrls === undefined || videoUrls.length === 0) {
+      const { videoUrls: _omit, ...rest } = this.props;
+      return this.cloneWithProps({ ...(rest as TProps), updatedAt: now });
+    }
+    return this.cloneWithProps({
+      ...this.props,
+      videoUrls: videoUrls.map((u) => Url.of(u)),
+      updatedAt: now,
+    });
+  }
+
+  /**
    * `CreatePieceInput` から適切な Entity を生成するファクトリ。
    * 判別共用体の `kind` で分岐する。`default` 節は `never` 型で網羅性をコンパイル時検証し、
    * 想定外の `kind` が渡された場合は例外を投げる。
@@ -195,6 +218,10 @@ export class PieceWorkEntity extends PieceComponent<PieceWorkProps> {
     return "work";
   }
 
+  protected override cloneWithProps(props: PieceWorkProps): this {
+    return new PieceWorkEntity(props) as this;
+  }
+
   static create(input: CreateWorkInput): PieceWorkEntity {
     const now = new Date().toISOString();
     return new PieceWorkEntity({
@@ -228,23 +255,10 @@ export class PieceWorkEntity extends PieceComponent<PieceWorkProps> {
     return PieceWorkEntity.reconstruct(merged);
   }
 
-  /** 動画 URL の集合を貼り替える。`undefined` または空配列で動画を取り外す。 */
-  updateVideos(videoUrls: readonly string[] | undefined): PieceWorkEntity {
-    const now = new Date().toISOString();
-    if (videoUrls === undefined || videoUrls.length === 0) {
-      const { videoUrls: _omit, ...rest } = this.props;
-      return new PieceWorkEntity({ ...rest, updatedAt: now });
-    }
-    return new PieceWorkEntity({
-      ...this.props,
-      videoUrls: videoUrls.map((u) => Url.of(u)),
-      updatedAt: now,
-    });
-  }
-
   /**
    * `UpdateWorkInput` を `editMetadata` と `updateVideos` の 2 系統に dispatch する。
    * 動画 URL だけが意図として独立しており、それ以外は編集業務に集約する。
+   * `updateVideos` は基底 `PieceComponent` の共通実装を使う。
    */
   static applyRevisions(entity: PieceWorkEntity, input: UpdateWorkInput): PieceWorkEntity {
     let next = entity;
@@ -278,6 +292,10 @@ export class PieceMovementEntity extends PieceComponent<PieceMovementProps> {
 
   override get kind(): "movement" {
     return "movement";
+  }
+
+  protected override cloneWithProps(props: PieceMovementProps): this {
+    return new PieceMovementEntity(props) as this;
   }
 
   get parentId(): PieceId {
@@ -322,22 +340,9 @@ export class PieceMovementEntity extends PieceComponent<PieceMovementProps> {
     return PieceMovementEntity.reconstruct(merged);
   }
 
-  /** 動画 URL の集合を貼り替える。`undefined` または空配列で動画を取り外す。 */
-  updateVideos(videoUrls: readonly string[] | undefined): PieceMovementEntity {
-    const now = new Date().toISOString();
-    if (videoUrls === undefined || videoUrls.length === 0) {
-      const { videoUrls: _omit, ...rest } = this.props;
-      return new PieceMovementEntity({ ...rest, updatedAt: now });
-    }
-    return new PieceMovementEntity({
-      ...this.props,
-      videoUrls: videoUrls.map((u) => Url.of(u)),
-      updatedAt: now,
-    });
-  }
-
   /**
    * `UpdateMovementInput` を `editMetadata` と `updateVideos` の 2 系統に dispatch する。
+   * `updateVideos` は基底 `PieceComponent` の共通実装を使う。
    */
   static applyRevisions(
     entity: PieceMovementEntity,
