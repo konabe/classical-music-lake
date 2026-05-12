@@ -68,7 +68,7 @@ export class WorkUsecase {
   async update(id: PieceId, input: UpdateWorkInput): Promise<PieceWork> {
     const current = await findByIdOrNotFound((id) => this.repo.findRootById(id), id, ENTITY_NAME);
     const entity = PieceWorkEntity.reconstruct(current);
-    const updated = entity.mergeUpdate(input);
+    const updated = PieceWorkEntity.applyRevisions(entity, input);
     const plain = updated.toPlain();
     await this.repo.saveWorkWithOptimisticLock(plain, current.updatedAt);
     return plain;
@@ -106,7 +106,7 @@ export class MovementUsecase {
   async update(id: PieceId, input: UpdateMovementInput): Promise<PieceMovement> {
     const current = await this.get(id);
     const entity = PieceMovementEntity.reconstruct(current);
-    const updated = entity.mergeUpdate(input);
+    const updated = PieceMovementEntity.applyRevisions(entity, input);
     const plain = updated.toPlain();
     await this.repo.saveMovementWithOptimisticLock(plain, current.updatedAt);
     return plain;

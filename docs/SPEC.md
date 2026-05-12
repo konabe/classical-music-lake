@@ -589,13 +589,15 @@ cd cdk && pnpm install && cdk bootstrap && cdk deploy
 - `get id(): TId` / `get createdAt(): string` / `get updatedAt(): string`: 共通アクセサ
 - `equals(other: unknown)`: 「同じ具象クラス」かつ「同じ ID」のとき `true`。異なる派生クラス同士は `false`
 - 派生クラスの規約: `private constructor(props)` で `super(props)` を呼ぶ。`static create()` / `static reconstruct()` ファクトリは個別実装。`toPlain()` / `isOwnedBy()` は派生クラスで実装
-- 更新方法は派生クラスごとに 3 系統:
+- 更新方法は派生クラスごとに 3 系統。**汎用 `mergeUpdate` は全エンティティで撤去済み**で、`entity-helpers.ts:buildUpdateProps` は各エンティティの集約意図メソッド内部から呼び出す形でのみ残る。
   - **集約意図メソッド系**（`ConcertLogEntity`）: 鑑賞記録のドメイン操作は「過去に観測した事実の記録を訂正・追記する」という単一の意図に帰着する（コンサート運営者ではなく鑑賞者の語彙）。そのためフィールド単位の意図メソッドは生やさず、`revise(revision: ConcertLogRevision)` 1 メソッドに集約する。実装は内部で `entity-helpers.ts:buildUpdateProps` を呼ぶ
-  - **個別意図メソッド系**（`ListeningLogEntity` / `ComposerEntity`）: フィールドごとにドメインの意図がはっきり違うため、`Update*Input` をそのまま受ける汎用 `mergeUpdate` は持たず、フィールド単位の意図メソッドを生やす。
-    - `ListeningLogEntity`: `markAsFavorite()` / `unmarkAsFavorite()` / `rerate(rating)` / `rewriteMemo(memo)` / `correctListenedAt(listenedAt)` / `relinkPiece(pieceId)`
-    - `ComposerEntity`: `rename(name)` / `reclassifyEra(era)` / `reclassifyRegion(region)` / `updateImage(imageUrl)` / `recordLifeSpan(birthYear, deathYear)`。`reclassify*` / `updateImage` は `undefined` で当該フィールドを削除し、`recordLifeSpan` は `null` で個別に削除する（API 仕様の「空文字 / null でフィールドを削除」は `applyRevisions` 側で意図メソッドの引数に正規化する）
-    - `Update*Input` の partial を意図メソッドへ dispatch する責務はエンティティ側の static `applyRevisions(entity, input)` に閉じ、usecase は `XxxEntity.applyRevisions(current, input)` を呼ぶだけ
-  - **`mergeUpdate(input)` 系**（`PieceWorkEntity` / `PieceMovementEntity`）: `entity-helpers.ts:buildUpdateProps` を介して `Update*Input` をシャローマージする汎用更新メソッド。命名がドメイン語彙を反映していない貧血状態。Piece 側も意図メソッド化への移行を段階的に進める
+  - **集約意図メソッド + 独立意図メソッドのハイブリッド**（`ComposerEntity` / `PieceWorkEntity` / `PieceMovementEntity`）: マスタ情報の編集は「マスタ管理者が事実を訂正・追記する」という単一の編集意図に集約しつつ、外部リソース参照（画像 URL / 動画 URL）の貼り替えは独立した意図メソッドに分ける。
+    - `ComposerEntity`: `editProfile(revision: ComposerProfileRevision)` + `updateImage(imageUrl)`
+    - `PieceWorkEntity`: `editMetadata(revision: PieceWorkMetadataRevision)` + `updateVideos(videoUrls)`
+    - `PieceMovementEntity`: `editMetadata(revision: PieceMovementMetadataRevision)` + `updateVideos(videoUrls)`
+    - 集約意図メソッド側は内部で `buildUpdateProps` を呼び、API 仕様の「空文字 / null でフィールド削除」をそのまま尊重する
+    - `Update*Input` の partial を 2 系統に dispatch する責務はエンティティ側の static `applyRevisions(entity, input)` に閉じ、usecase は `XxxEntity.applyRevisions(current, input)` を呼ぶだけ
+  - **個別意図メソッド系**（`ListeningLogEntity`）: フィールドごとに鑑賞者ドメインの意図がはっきり違うため、フィールド単位の意図メソッド（`markAsFavorite()` / `unmarkAsFavorite()` / `rerate(rating)` / `rewriteMemo(memo)` / `correctListenedAt(listenedAt)` / `relinkPiece(pieceId)`）を生やす。dispatch 責務は `applyRevisions` に閉じる
 
 ### 8.4 読み取り専用集約（ListeningLogDetail）
 

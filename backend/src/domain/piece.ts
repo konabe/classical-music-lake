@@ -20,8 +20,24 @@ import { MovementIndex } from "./value-objects/movement-index";
 import { PieceTitle } from "./value-objects/piece-title";
 import { Url } from "./value-objects/url";
 
-const WORK_CLEARABLE_FIELDS = ["videoUrls", "genre", "era", "formation", "region"] as const;
-const MOVEMENT_CLEARABLE_FIELDS = ["videoUrls"] as const;
+const WORK_METADATA_CLEARABLE_FIELDS: readonly string[] = ["genre", "era", "formation", "region"];
+const MOVEMENT_METADATA_CLEARABLE_FIELDS: readonly string[] = [];
+
+/**
+ * 楽曲（Work）のメタデータを編集する差分。
+ * 曲名・作曲家・カテゴリ系（genre / era / formation / region）の訂正は
+ * 「マスタ管理者がメタデータを編集する」という単一の意図に帰着するため、
+ * フィールドごとに意図メソッドを生やさず 1 つの `editMetadata` に集約する。
+ * 動画 URL は外部リソース参照を貼り替える独立した意図なので、ここには含めない。
+ */
+export type PieceWorkMetadataRevision = Omit<UpdateWorkInput, "kind" | "videoUrls">;
+
+/**
+ * 楽章（Movement）のメタデータを編集する差分。
+ * 楽章名・親 Work 参照・演奏順 index の訂正は単一の編集意図に集約する。
+ * 動画 URL は外部リソース参照なので別メソッドで扱う。
+ */
+export type PieceMovementMetadataRevision = Omit<UpdateMovementInput, "kind" | "videoUrls">;
 
 /**
  * リポジトリ I/F。Composite 構造に合わせて root（Work）操作と子（Movement）操作を明確に分ける。
@@ -96,12 +112,17 @@ type PieceMovementProps = EntityProps<PieceId> & {
  * - `kind` は具象クラスで literal 型として実装する（判別共用体のタグ）。
  * - `title` / `videoUrls` は両方が共通で持つ。
  * - `toPlain()` は派生クラスで実装する（戻り値の判別共用体型を保つため）。
+ * - 編集系メソッド（`updateVideos` / `editMetadata` / `applyRevisions`）の実装本体は基底に集約し、
+ *   具象クラスは差分点（`clearableMetadataFields` / `cloneWithProps` / `reconstructFromPlain`）
+ *   だけを宣言する。
  * - `kind` に基づいて Work / Movement を振り分けるファクトリ（`create` / `reconstruct` /
  *   `applyUpdate`）を static メソッドとして集約する。トップレベル関数を増やさず、
  *   コンポジット階層のエントリポイントを Component 自身に閉じ込める。
  */
 export abstract class PieceComponent<
   TProps extends EntityProps<PieceId> & { title: PieceTitle; videoUrls?: Url[] },
+  TPlain extends Piece,
+  TUpdateInput extends UpdatePieceInput,
 > extends Entity<PieceId, TProps> {
   abstract get kind(): "work" | "movement";
 
@@ -113,7 +134,75 @@ export abstract class PieceComponent<
     return this.props.videoUrls;
   }
 
-  abstract toPlain(): Piece;
+  abstract toPlain(): TPlain;
+
+  /**
+   * 派生クラスが自身の具象型でインスタンスを再生成するためのフック。
+   * `updateVideos` 等、props を貼り替えるだけの操作を基底クラスで共通実装するために使う。
+   */
+  protected abstract cloneWithProps(props: TProps): this;
+
+  /**
+   * `editMetadata` で「空文字 / null / 空配列」がクリア指示として扱われるフィールド集合。
+   * 派生クラスごとに API 仕様（空文字で削除可能なフィールド）に合わせて宣言する。
+   */
+  protected abstract readonly clearableMetadataFields: readonly string[];
+
+  /**
+   * plain DTO から自身の具象型で Entity を再構築するフック。
+   * `editMetadata` 内で `buildUpdateProps` がマージした plain を派生クラスの
+   * `reconstruct` に流し込むために使う。
+   */
+  protected abstract reconstructFromPlain(plain: TPlain): this;
+
+  /**
+   * 動画 URL の集合を貼り替える。`undefined` または空配列で動画を取り外す。
+   * Work / Movement で実装が同一なので基底クラスに集約する。
+   */
+  updateVideos(videoUrls: readonly string[] | undefined): this {
+    const now = new Date().toISOString();
+    if (videoUrls === undefined || videoUrls.length === 0) {
+      const { videoUrls: _omit, ...rest } = this.props;
+      return this.cloneWithProps({ ...(rest as TProps), updatedAt: now });
+    }
+    return this.cloneWithProps({
+      ...this.props,
+      videoUrls: videoUrls.map((u) => Url.of(u)),
+      updatedAt: now,
+    });
+  }
+
+  /**
+   * メタデータを編集する。Work / Movement 共通の編集処理を基底に集約。
+   * 差分は `clearableMetadataFields`（派生クラスで宣言）のみ。
+   * 動画 URL はここでは扱わず `updateVideos` を使う。
+   */
+  editMetadata(revision: Omit<TUpdateInput, "kind" | "videoUrls">): this {
+    const merged = buildUpdateProps(this.toPlain(), revision, this.clearableMetadataFields);
+    return this.reconstructFromPlain(merged as TPlain);
+  }
+
+  /**
+   * `UpdateXxxInput` を `editMetadata` と `updateVideos` の 2 系統に dispatch する。
+   * 各派生クラスの `static applyRevisions(entity, input)` は本メソッドへの薄いラッパーとして
+   * 残し、usecase 層が呼ぶ static API を Composer / ListeningLog と一貫させる。
+   */
+  applyRevisions(input: TUpdateInput): this {
+    const { kind: _kind, videoUrls, ...metadata } = input;
+    const revision = metadata as Omit<TUpdateInput, "kind" | "videoUrls">;
+    const hasMetadata = Object.keys(revision).length > 0;
+
+    if (hasMetadata && videoUrls !== undefined) {
+      return this.editMetadata(revision).updateVideos(videoUrls);
+    }
+    if (hasMetadata) {
+      return this.editMetadata(revision);
+    }
+    if (videoUrls !== undefined) {
+      return this.updateVideos(videoUrls);
+    }
+    return this;
+  }
 
   /**
    * `CreatePieceInput` から適切な Entity を生成するファクトリ。
@@ -160,10 +249,10 @@ export abstract class PieceComponent<
     input: UpdatePieceInput,
   ): PieceWorkEntity | PieceMovementEntity {
     if (current instanceof PieceWorkEntity && input.kind === "work") {
-      return current.mergeUpdate(input);
+      return PieceWorkEntity.applyRevisions(current, input);
     }
     if (current instanceof PieceMovementEntity && input.kind === "movement") {
-      return current.mergeUpdate(input);
+      return PieceMovementEntity.applyRevisions(current, input);
     }
     throw new TypeError(
       `Piece kind mismatch: cannot update ${current.kind} with input of kind=${input.kind}`,
@@ -171,13 +260,23 @@ export abstract class PieceComponent<
   }
 }
 
-export class PieceWorkEntity extends PieceComponent<PieceWorkProps> {
+export class PieceWorkEntity extends PieceComponent<PieceWorkProps, PieceWork, UpdateWorkInput> {
+  protected readonly clearableMetadataFields = WORK_METADATA_CLEARABLE_FIELDS;
+
   private constructor(props: PieceWorkProps) {
     super(props);
   }
 
   override get kind(): "work" {
     return "work";
+  }
+
+  protected override cloneWithProps(props: PieceWorkProps): this {
+    return new PieceWorkEntity(props) as this;
+  }
+
+  protected override reconstructFromPlain(plain: PieceWork): this {
+    return PieceWorkEntity.reconstruct(plain) as this;
   }
 
   static create(input: CreateWorkInput): PieceWorkEntity {
@@ -203,10 +302,13 @@ export class PieceWorkEntity extends PieceComponent<PieceWorkProps> {
     });
   }
 
-  mergeUpdate(input: UpdateWorkInput): PieceWorkEntity {
-    const { kind: _kind, ...rest } = input;
-    const merged = buildUpdateProps(this.toPlain(), rest, WORK_CLEARABLE_FIELDS);
-    return PieceWorkEntity.reconstruct(merged);
+  /**
+   * usecase 層・テストが使う static API。`ComposerEntity` / `ListeningLogEntity` と
+   * 一貫した `XxxEntity.applyRevisions(current, input)` 形式を保つための薄いラッパー。
+   * 実装本体は基底クラスの instance method に集約している。
+   */
+  static applyRevisions(entity: PieceWorkEntity, input: UpdateWorkInput): PieceWorkEntity {
+    return entity.applyRevisions(input);
   }
 
   override toPlain(): PieceWork {
@@ -221,13 +323,27 @@ export class PieceWorkEntity extends PieceComponent<PieceWorkProps> {
   }
 }
 
-export class PieceMovementEntity extends PieceComponent<PieceMovementProps> {
+export class PieceMovementEntity extends PieceComponent<
+  PieceMovementProps,
+  PieceMovement,
+  UpdateMovementInput
+> {
+  protected readonly clearableMetadataFields = MOVEMENT_METADATA_CLEARABLE_FIELDS;
+
   private constructor(props: PieceMovementProps) {
     super(props);
   }
 
   override get kind(): "movement" {
     return "movement";
+  }
+
+  protected override cloneWithProps(props: PieceMovementProps): this {
+    return new PieceMovementEntity(props) as this;
+  }
+
+  protected override reconstructFromPlain(plain: PieceMovement): this {
+    return PieceMovementEntity.reconstruct(plain) as this;
   }
 
   get parentId(): PieceId {
@@ -263,10 +379,14 @@ export class PieceMovementEntity extends PieceComponent<PieceMovementProps> {
     });
   }
 
-  mergeUpdate(input: UpdateMovementInput): PieceMovementEntity {
-    const { kind: _kind, ...rest } = input;
-    const merged = buildUpdateProps(this.toPlain(), rest, MOVEMENT_CLEARABLE_FIELDS);
-    return PieceMovementEntity.reconstruct(merged);
+  /**
+   * usecase 層・テストが使う static API。基底クラスの instance method への薄いラッパー。
+   */
+  static applyRevisions(
+    entity: PieceMovementEntity,
+    input: UpdateMovementInput,
+  ): PieceMovementEntity {
+    return entity.applyRevisions(input);
   }
 
   override toPlain(): PieceMovement {

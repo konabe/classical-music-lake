@@ -50,16 +50,95 @@ describe("PieceWorkEntity", () => {
     expect(plain.updatedAt).toBe(data.updatedAt);
   });
 
-  it("mergeUpdate で title を更新できる", () => {
-    const entity = PieceWorkEntity.create(makeWorkInput());
-    const updated = entity.mergeUpdate({ kind: "work", title: "交響曲第5番" });
-    expect(updated.toPlain().title).toBe("交響曲第5番");
+  describe("editMetadata", () => {
+    it("title を訂正できる", () => {
+      const entity = PieceWorkEntity.create(makeWorkInput());
+      const updated = entity.editMetadata({ title: "交響曲第5番" });
+      expect(updated.toPlain().title).toBe("交響曲第5番");
+    });
+
+    it("era に空文字を渡すとフィールドが削除される", () => {
+      const entity = PieceWorkEntity.create(makeWorkInput({ era: "古典派" }));
+      const updated = entity.editMetadata({ era: "" });
+      expect(updated.toPlain().era).toBeUndefined();
+    });
+
+    it("genre / formation / region も空文字でクリアできる", () => {
+      const entity = PieceWorkEntity.create(
+        makeWorkInput({ genre: "交響曲", formation: "管弦楽", region: "ドイツ・オーストリア" }),
+      );
+      const updated = entity.editMetadata({ genre: "", formation: "", region: "" });
+      const plain = updated.toPlain();
+      expect(plain.genre).toBeUndefined();
+      expect(plain.formation).toBeUndefined();
+      expect(plain.region).toBeUndefined();
+    });
+
+    it("videoUrls は editMetadata の責務外（変更されない）", () => {
+      const entity = PieceWorkEntity.create(
+        makeWorkInput({ videoUrls: ["https://example.com/v"] }),
+      );
+      const updated = entity.editMetadata({ title: "別名" });
+      expect(updated.toPlain().videoUrls).toEqual(["https://example.com/v"]);
+    });
   });
 
-  it("mergeUpdate で era に空文字を渡すとフィールドが削除される", () => {
-    const entity = PieceWorkEntity.create(makeWorkInput({ era: "古典派" }));
-    const updated = entity.mergeUpdate({ kind: "work", era: "" });
-    expect(updated.toPlain().era).toBeUndefined();
+  describe("updateVideos", () => {
+    it("URL 配列で動画を貼り替える", () => {
+      const entity = PieceWorkEntity.create(makeWorkInput());
+      const updated = entity.updateVideos(["https://example.com/a", "https://example.com/b"]);
+      expect(updated.toPlain().videoUrls).toEqual([
+        "https://example.com/a",
+        "https://example.com/b",
+      ]);
+    });
+
+    it("空配列を渡すと videoUrls フィールドが消える", () => {
+      const entity = PieceWorkEntity.create(
+        makeWorkInput({ videoUrls: ["https://example.com/v"] }),
+      );
+      const updated = entity.updateVideos([]);
+      expect(updated.toPlain().videoUrls).toBeUndefined();
+    });
+
+    it("undefined を渡すと videoUrls フィールドが消える", () => {
+      const entity = PieceWorkEntity.create(
+        makeWorkInput({ videoUrls: ["https://example.com/v"] }),
+      );
+      const updated = entity.updateVideos(undefined);
+      expect(updated.toPlain().videoUrls).toBeUndefined();
+    });
+  });
+
+  describe("applyRevisions", () => {
+    it("editMetadata と updateVideos の両方へ dispatch する", () => {
+      const entity = PieceWorkEntity.create(makeWorkInput());
+      const next = PieceWorkEntity.applyRevisions(entity, {
+        kind: "work",
+        title: "別名",
+        era: "ロマン派",
+        videoUrls: ["https://example.com/a"],
+      }).toPlain();
+      expect(next.title).toBe("別名");
+      expect(next.era).toBe("ロマン派");
+      expect(next.videoUrls).toEqual(["https://example.com/a"]);
+    });
+
+    it("videoUrls だけが渡された場合は editMetadata に行かず updateVideos だけ走る", () => {
+      const entity = PieceWorkEntity.create(makeWorkInput({ title: "保持" }));
+      const next = PieceWorkEntity.applyRevisions(entity, {
+        kind: "work",
+        videoUrls: ["https://example.com/only"],
+      }).toPlain();
+      expect(next.title).toBe("保持");
+      expect(next.videoUrls).toEqual(["https://example.com/only"]);
+    });
+
+    it("空の input（kind のみ）なら entity をそのまま返す", () => {
+      const entity = PieceWorkEntity.create(makeWorkInput());
+      const next = PieceWorkEntity.applyRevisions(entity, { kind: "work" });
+      expect(next).toBe(entity);
+    });
   });
 });
 
@@ -90,18 +169,69 @@ describe("PieceMovementEntity", () => {
     expect(plain.title).toBe("第3楽章");
   });
 
-  it("mergeUpdate で title を更新できる", () => {
-    const entity = PieceMovementEntity.create(makeMovementInput());
-    const updated = entity.mergeUpdate({ kind: "movement", title: "Allegro" });
-    expect(updated.toPlain().title).toBe("Allegro");
+  describe("editMetadata", () => {
+    it("title を訂正できる", () => {
+      const entity = PieceMovementEntity.create(makeMovementInput());
+      const updated = entity.editMetadata({ title: "Allegro" });
+      expect(updated.toPlain().title).toBe("Allegro");
+    });
+
+    it("index を更新できる", () => {
+      const entity = PieceMovementEntity.create(makeMovementInput({ index: 0 }));
+      const updated = entity.editMetadata({ index: 3 });
+      expect(updated.toPlain().index).toBe(3);
+    });
+
+    it("videoUrls は editMetadata の責務外（変更されない）", () => {
+      const entity = PieceMovementEntity.create(
+        makeMovementInput({ videoUrls: ["https://example.com/v"] }),
+      );
+      const updated = entity.editMetadata({ title: "別名" });
+      expect(updated.toPlain().videoUrls).toEqual(["https://example.com/v"]);
+    });
   });
 
-  it("mergeUpdate で videoUrls を空配列で送るとフィールドが削除される", () => {
-    const entity = PieceMovementEntity.create(
-      makeMovementInput({ videoUrls: ["https://example.com/v"] }),
-    );
-    const updated = entity.mergeUpdate({ kind: "movement", videoUrls: [] });
-    expect(updated.toPlain().videoUrls).toBeUndefined();
+  describe("updateVideos", () => {
+    it("URL 配列で動画を貼り替える", () => {
+      const entity = PieceMovementEntity.create(makeMovementInput());
+      const updated = entity.updateVideos(["https://example.com/m"]);
+      expect(updated.toPlain().videoUrls).toEqual(["https://example.com/m"]);
+    });
+
+    it("空配列を渡すと videoUrls フィールドが消える", () => {
+      const entity = PieceMovementEntity.create(
+        makeMovementInput({ videoUrls: ["https://example.com/v"] }),
+      );
+      const updated = entity.updateVideos([]);
+      expect(updated.toPlain().videoUrls).toBeUndefined();
+    });
+
+    it("undefined を渡すと videoUrls フィールドが消える", () => {
+      const entity = PieceMovementEntity.create(
+        makeMovementInput({ videoUrls: ["https://example.com/v"] }),
+      );
+      const updated = entity.updateVideos(undefined);
+      expect(updated.toPlain().videoUrls).toBeUndefined();
+    });
+  });
+
+  describe("applyRevisions", () => {
+    it("editMetadata と updateVideos の両方へ dispatch する", () => {
+      const entity = PieceMovementEntity.create(makeMovementInput());
+      const next = PieceMovementEntity.applyRevisions(entity, {
+        kind: "movement",
+        title: "Allegro",
+        videoUrls: ["https://example.com/m"],
+      }).toPlain();
+      expect(next.title).toBe("Allegro");
+      expect(next.videoUrls).toEqual(["https://example.com/m"]);
+    });
+
+    it("空の input（kind のみ）なら entity をそのまま返す", () => {
+      const entity = PieceMovementEntity.create(makeMovementInput());
+      const next = PieceMovementEntity.applyRevisions(entity, { kind: "movement" });
+      expect(next).toBe(entity);
+    });
   });
 
   it("index に範囲外の値（-1）を渡すと例外", () => {
