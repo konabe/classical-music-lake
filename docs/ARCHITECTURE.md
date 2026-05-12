@@ -480,12 +480,20 @@ classical-music-lake/
 - **Piece 削除時のガード**: 上記の `PieceUsecase.delete` の参照ガードと組み合わせて dangling reference を防ぐ
 - **個別意図メソッド**: 更新フローは `markAsFavorite()` / `unmarkAsFavorite()` / `rerate(rating)` / `rewriteMemo(memo)` / `correctListenedAt(listenedAt)` / `relinkPiece(pieceId)` の 6 種に分解。`Update*Input` の partial を意図メソッドへ dispatch する責務はエンティティ側の static `applyRevisions(entity, input)` に閉じ、`ListeningLogUsecase.update` は `ListeningLogEntity.applyRevisions(current, input)` を呼ぶだけ。汎用 `mergeUpdate` は持たない（フィールドごとに鑑賞者ドメインの意図がはっきり違うため、ConcertLog の `revise` 集約とは別パターンを採る）
 
-### Composer 集約の個別意図メソッド (2026-05)
+### Composer / Piece 集約のハイブリッド意図メソッド (2026-05)
 
-`ComposerEntity` も `ListeningLogEntity` と同じ「個別意図メソッド系」に揃え、汎用 `mergeUpdate` を撤去した。
+マスタ系エンティティ（`ComposerEntity` / `PieceWorkEntity` / `PieceMovementEntity`）は「マスタ情報の編集」と「外部リソース参照（画像 / 動画）の貼り替え」の 2 つのドメイン操作に分かれる。前者はマスタ管理者が事実を訂正・追記する単一の編集業務として集約意図メソッドに、後者は外部リソース参照を貼り替える独立した操作として単独メソッドに分ける。汎用 `mergeUpdate` はいずれも撤去済み。
 
-- **意図メソッド 5 種**: `rename(name)` / `reclassifyEra(era)` / `reclassifyRegion(region)` / `updateImage(imageUrl)` / `recordLifeSpan(birthYear, deathYear)`
-- **クリア表現の閉じ込め**: API 仕様の「空文字でフィールド削除」（`era` / `region` / `imageUrl`）「null でフィールド削除」（`birthYear` / `deathYear`）はドメイン層には漏らさない。`ComposerEntity.applyRevisions(entity, input)` が API 入力を読み替え、意図メソッドの引数（`undefined` = 削除）に正規化してから dispatch する
-- **`recordLifeSpan` の二項引数**: 生年と没年は鑑賞者にとってもマスタ管理者にとっても 1 セットで扱う情報のため、`recordBirthYear` / `recordDeathYear` には分けず単一メソッドに集約する。片方だけ更新したい場合はもう片方に `undefined` を渡す。`null` を渡したフィールドだけが個別に削除される
-- **`touched` ヘルパー**: 「diff を適用しつつクリア対象キーを削除する」プライベートヘルパーを `ComposerEntity` 内に閉じる。`entity-helpers.ts:buildUpdateProps` への依存は `ComposerEntity` 側からは消える（`Piece*Entity` がまだ使用中なのでヘルパー自体は残る）
-- **`ComposerUsecase.update`**: `ComposerEntity.applyRevisions(current, input)` を呼ぶだけ。usecase 層には partial 仕様の解釈ロジックを持たない
+- **`ComposerEntity`**
+  - `editProfile(revision: ComposerProfileRevision)`: 名前・時代区分・地域・生没年の編集を 1 メソッドに集約。`era` / `region` は空文字、`birthYear` / `deathYear` は `null` で当該フィールド削除
+  - `updateImage(imageUrl: string | undefined)`: 肖像画像 URL を貼り替え／取り外す
+- **`PieceWorkEntity`**
+  - `editMetadata(revision: PieceWorkMetadataRevision)`: 曲名・作曲家参照・カテゴリ系（`genre` / `era` / `formation` / `region`）の編集を集約。カテゴリ系は空文字でフィールド削除
+  - `updateVideos(videoUrls: readonly string[] | undefined)`: 動画 URL 集合を貼り替え。`undefined` または空配列で取り外し
+- **`PieceMovementEntity`**
+  - `editMetadata(revision: PieceMovementMetadataRevision)`: 楽章名・親 Work 参照・演奏順 `index` の編集を集約
+  - `updateVideos(videoUrls)`: Work と同じ動画 URL 貼り替えメソッド
+- **`applyRevisions(entity, input)`**: API 入力（`UpdateXxxInput`）を編集業務側と外部リソース側に分割し、`editProfile`／`editMetadata` と `updateImage`／`updateVideos` にそれぞれ dispatch する。API 仕様の「空文字でクリア」もここで `undefined` 等に正規化し、ドメイン層には漏らさない
+- **`*Revision` 型**: `Omit<UpdateComposerInput, "imageUrl">` / `Omit<UpdateWorkInput, "kind" | "videoUrls">` / `Omit<UpdateMovementInput, "kind" | "videoUrls">` として「編集業務」の語彙を型で表現
+- **usecase 層の役割**: `ComposerUsecase.update` / `WorkUsecase.update` / `MovementUsecase.update` は `XxxEntity.applyRevisions(current, input)` を呼ぶだけ。partial 仕様の解釈ロジックを持たない
+- **`PieceComponent.applyUpdate`**: ファサードは kind を判別して `PieceWorkEntity.applyRevisions` / `PieceMovementEntity.applyRevisions` に dispatch する（Work ↔ Movement の昇格・降格はサポートしない）

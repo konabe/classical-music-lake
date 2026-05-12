@@ -20,8 +20,23 @@ import { MovementIndex } from "./value-objects/movement-index";
 import { PieceTitle } from "./value-objects/piece-title";
 import { Url } from "./value-objects/url";
 
-const WORK_CLEARABLE_FIELDS = ["videoUrls", "genre", "era", "formation", "region"] as const;
-const MOVEMENT_CLEARABLE_FIELDS = ["videoUrls"] as const;
+const WORK_METADATA_CLEARABLE_FIELDS = ["genre", "era", "formation", "region"] as const;
+
+/**
+ * 楽曲（Work）のメタデータを編集する差分。
+ * 曲名・作曲家・カテゴリ系（genre / era / formation / region）の訂正は
+ * 「マスタ管理者がメタデータを編集する」という単一の意図に帰着するため、
+ * フィールドごとに意図メソッドを生やさず 1 つの `editMetadata` に集約する。
+ * 動画 URL は外部リソース参照を貼り替える独立した意図なので、ここには含めない。
+ */
+export type PieceWorkMetadataRevision = Omit<UpdateWorkInput, "kind" | "videoUrls">;
+
+/**
+ * 楽章（Movement）のメタデータを編集する差分。
+ * 楽章名・親 Work 参照・演奏順 index の訂正は単一の編集意図に集約する。
+ * 動画 URL は外部リソース参照なので別メソッドで扱う。
+ */
+export type PieceMovementMetadataRevision = Omit<UpdateMovementInput, "kind" | "videoUrls">;
 
 /**
  * リポジトリ I/F。Composite 構造に合わせて root（Work）操作と子（Movement）操作を明確に分ける。
@@ -160,10 +175,10 @@ export abstract class PieceComponent<
     input: UpdatePieceInput,
   ): PieceWorkEntity | PieceMovementEntity {
     if (current instanceof PieceWorkEntity && input.kind === "work") {
-      return current.mergeUpdate(input);
+      return PieceWorkEntity.applyRevisions(current, input);
     }
     if (current instanceof PieceMovementEntity && input.kind === "movement") {
-      return current.mergeUpdate(input);
+      return PieceMovementEntity.applyRevisions(current, input);
     }
     throw new TypeError(
       `Piece kind mismatch: cannot update ${current.kind} with input of kind=${input.kind}`,
@@ -203,10 +218,45 @@ export class PieceWorkEntity extends PieceComponent<PieceWorkProps> {
     });
   }
 
-  mergeUpdate(input: UpdateWorkInput): PieceWorkEntity {
-    const { kind: _kind, ...rest } = input;
-    const merged = buildUpdateProps(this.toPlain(), rest, WORK_CLEARABLE_FIELDS);
+  /**
+   * Work のメタデータを編集する。曲名・作曲家・カテゴリ系の訂正を 1 つの編集操作として扱う。
+   * `genre` / `era` / `formation` / `region` は空文字を渡すと当該フィールドが削除される
+   * （API 仕様と一致）。動画 URL はここでは扱わず `updateVideos` を使う。
+   */
+  editMetadata(revision: PieceWorkMetadataRevision): PieceWorkEntity {
+    const merged = buildUpdateProps(this.toPlain(), revision, WORK_METADATA_CLEARABLE_FIELDS);
     return PieceWorkEntity.reconstruct(merged);
+  }
+
+  /** 動画 URL の集合を貼り替える。`undefined` または空配列で動画を取り外す。 */
+  updateVideos(videoUrls: readonly string[] | undefined): PieceWorkEntity {
+    const now = new Date().toISOString();
+    if (videoUrls === undefined || videoUrls.length === 0) {
+      const { videoUrls: _omit, ...rest } = this.props;
+      return new PieceWorkEntity({ ...rest, updatedAt: now });
+    }
+    return new PieceWorkEntity({
+      ...this.props,
+      videoUrls: videoUrls.map((u) => Url.of(u)),
+      updatedAt: now,
+    });
+  }
+
+  /**
+   * `UpdateWorkInput` を `editMetadata` と `updateVideos` の 2 系統に dispatch する。
+   * 動画 URL だけが意図として独立しており、それ以外は編集業務に集約する。
+   */
+  static applyRevisions(entity: PieceWorkEntity, input: UpdateWorkInput): PieceWorkEntity {
+    let next = entity;
+    const { kind: _kind, videoUrls, ...metadata } = input;
+
+    if (Object.keys(metadata).length > 0) {
+      next = next.editMetadata(metadata);
+    }
+    if (videoUrls !== undefined) {
+      next = next.updateVideos(videoUrls);
+    }
+    return next;
   }
 
   override toPlain(): PieceWork {
@@ -263,10 +313,46 @@ export class PieceMovementEntity extends PieceComponent<PieceMovementProps> {
     });
   }
 
-  mergeUpdate(input: UpdateMovementInput): PieceMovementEntity {
-    const { kind: _kind, ...rest } = input;
-    const merged = buildUpdateProps(this.toPlain(), rest, MOVEMENT_CLEARABLE_FIELDS);
+  /**
+   * Movement のメタデータを編集する。楽章名・親 Work 参照・演奏順 index の訂正を
+   * 1 つの編集操作として扱う。動画 URL はここでは扱わず `updateVideos` を使う。
+   */
+  editMetadata(revision: PieceMovementMetadataRevision): PieceMovementEntity {
+    const merged = buildUpdateProps(this.toPlain(), revision, []);
     return PieceMovementEntity.reconstruct(merged);
+  }
+
+  /** 動画 URL の集合を貼り替える。`undefined` または空配列で動画を取り外す。 */
+  updateVideos(videoUrls: readonly string[] | undefined): PieceMovementEntity {
+    const now = new Date().toISOString();
+    if (videoUrls === undefined || videoUrls.length === 0) {
+      const { videoUrls: _omit, ...rest } = this.props;
+      return new PieceMovementEntity({ ...rest, updatedAt: now });
+    }
+    return new PieceMovementEntity({
+      ...this.props,
+      videoUrls: videoUrls.map((u) => Url.of(u)),
+      updatedAt: now,
+    });
+  }
+
+  /**
+   * `UpdateMovementInput` を `editMetadata` と `updateVideos` の 2 系統に dispatch する。
+   */
+  static applyRevisions(
+    entity: PieceMovementEntity,
+    input: UpdateMovementInput,
+  ): PieceMovementEntity {
+    let next = entity;
+    const { kind: _kind, videoUrls, ...metadata } = input;
+
+    if (Object.keys(metadata).length > 0) {
+      next = next.editMetadata(metadata);
+    }
+    if (videoUrls !== undefined) {
+      next = next.updateVideos(videoUrls);
+    }
+    return next;
   }
 
   override toPlain(): PieceMovement {
