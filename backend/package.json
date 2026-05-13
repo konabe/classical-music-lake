@@ -37,7 +37,7 @@
     "@types/http-errors": "^2.0.5",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "fast-check": "^4.7.0",
+    "fast-check": "^4.8.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }
