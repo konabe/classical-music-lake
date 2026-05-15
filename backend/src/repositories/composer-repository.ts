@@ -13,6 +13,17 @@ export class DynamoDBComposerRepository implements ComposerRepository {
     return result.Item as Composer | undefined;
   }
 
+  /**
+   * 複数 ID を並列で取得する。BatchGetItem 化への差し替えを見据えた Branch by Abstraction。
+   */
+  async findByIds(ids: readonly ComposerId[]): Promise<Composer[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const results = await Promise.all(ids.map((id) => this.findById(id)));
+    return results.filter((c): c is Composer => c !== undefined);
+  }
+
   async findPage(options: {
     limit: number;
     exclusiveStartKey?: Record<string, unknown>;

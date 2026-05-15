@@ -1,5 +1,6 @@
 import type { Composer, ListeningLog, Piece, PieceWork } from "../types";
 import type { ListeningLogEntity } from "./listening-log";
+import { pieceDisplayNameUnder } from "./piece";
 
 /**
  * 鑑賞記録の詳細を表す読み取り専用集約。
@@ -44,17 +45,7 @@ export class ListeningLogDetail {
   }
 
   private get pieceTitle(): string {
-    switch (this.piece.kind) {
-      case "work":
-        return this.piece.title;
-      case "movement":
-        // Movement の場合、親 Work と楽章のタイトルを連結
-        return `${this.parentWork!.title} - ${this.piece.title}`;
-      default: {
-        const exhaustive: never = this.piece;
-        throw new TypeError(`Unknown piece kind: ${JSON.stringify(exhaustive)}`);
-      }
-    }
+    return pieceDisplayNameUnder(this.piece, this.parentWork);
   }
 
   private get composerId(): string {
