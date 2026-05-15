@@ -20,6 +20,7 @@ const mockRepo = vi.hoisted(() => ({
   findRootById: vi.fn(),
   findRootPage: vi.fn(),
   findById: vi.fn(),
+  findByIds: vi.fn().mockResolvedValue([]),
   findChildren: vi.fn(),
   saveMovement: vi.fn(),
   saveMovementWithOptimisticLock: vi.fn(),

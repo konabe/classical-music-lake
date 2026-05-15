@@ -476,7 +476,7 @@ classical-music-lake/
 - **`ListeningLogDetail`（読み取り専用集約）**: `domain/listening-log-detail.ts`。`ListeningLogEntity` + `Piece`（Work or Movement）+ 親 `PieceWork`（Movement の場合のみ）+ `Composer` を保持し、`toPlain()` で API レスポンス DTO（`ListeningLog`）を返す。派生値の解決:
   - `pieceTitle`: Work なら `piece.title`、Movement なら「親 Work title - 楽章 title」に整形
   - `composerId` / `composerName`: Work なら自身の `composerId`、Movement なら親 Work から継承
-- **N+1 抑制**: 一覧 API では `ListeningLogUsecase.toDetailDtoList` が同一 `pieceId` / `composerId` の重複取得を排除する（`fetchUnique` ヘルパー）。データ量が増え BatchGetItem が必要になったらリポジトリに `findByIds` を追加して差し替える前提
+- **N+1 抑制**: 一覧 API では `ListeningLogUsecase.toDetailDtoList` が重複排除した ID 群を `PieceRepository.findByIds` / `ComposerRepository.findByIds` に渡してまとめて取得する。実装は `Promise.all(findById)` の並列発行で、将来的な `BatchGetItem` 化（Branch by Abstraction）に向けたフックとして I/F を切ってある
 - **Piece 削除時のガード**: 上記の `PieceUsecase.delete` の参照ガードと組み合わせて dangling reference を防ぐ
 - **個別意図メソッド**: 更新フローは `markAsFavorite()` / `unmarkAsFavorite()` / `rerate(rating)` / `rewriteMemo(memo)` / `correctListenedAt(listenedAt)` / `relinkPiece(pieceId)` の 6 種に分解。`Update*Input` の partial を意図メソッドへ dispatch する責務はエンティティ側の static `applyRevisions(entity, input)` に閉じ、`ListeningLogUsecase.update` は `ListeningLogEntity.applyRevisions(current, input)` を呼ぶだけ。汎用 `mergeUpdate` は持たない（フィールドごとに鑑賞者ドメインの意図がはっきり違うため、ConcertLog の `revise` 集約とは別パターンを採る）
 

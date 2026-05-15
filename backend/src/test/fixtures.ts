@@ -151,6 +151,11 @@ export const makeListeningLogRepoMocks = () => {
     saveWorkWithOptimisticLock: vi.fn(),
     removeWorkCascade: vi.fn(),
     findById: vi.fn().mockResolvedValue(makePiece()),
+    findByIds: vi
+      .fn()
+      .mockImplementation(async (ids: { value: string }[]) =>
+        ids.length === 0 ? [] : [makePiece()],
+      ),
     findChildren: vi.fn().mockResolvedValue([]),
     saveMovement: vi.fn(),
     saveMovementWithOptimisticLock: vi.fn(),
@@ -159,6 +164,11 @@ export const makeListeningLogRepoMocks = () => {
   };
   const composerRepo = {
     findById: vi.fn().mockResolvedValue(makeComposer()),
+    findByIds: vi
+      .fn()
+      .mockImplementation(async (ids: { value: string }[]) =>
+        ids.length === 0 ? [] : [makeComposer()],
+      ),
     findPage: vi.fn(),
     save: vi.fn(),
     saveWithOptimisticLock: vi.fn(),

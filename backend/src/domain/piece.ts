@@ -63,6 +63,13 @@ export type PieceRepository = {
 
   /** kind を問わず id で取得する。Work でも Movement でも返す。 */
   findById(id: PieceId): Promise<Piece | undefined>;
+  /**
+   * 複数 ID をまとめて取得する（重複は呼び出し側で排除する前提）。
+   * 戻り値は見つかったものだけを含み、`id` の順序は保証しない（呼び出し側で Map 化する）。
+   * 現状の実装は `Promise.all(findById)` の並列発行で、必要になったら BatchGetItem に差し替える
+   * Branch by Abstraction 用フック。
+   */
+  findByIds(ids: readonly PieceId[]): Promise<Piece[]>;
   /** 親 Work 配下の Movement を `index` 昇順で全件取得する。 */
   findChildren(parentId: PieceId): Promise<PieceMovement[]>;
   saveMovement(movement: PieceMovement): Promise<void>;
@@ -402,3 +409,30 @@ export class PieceMovementEntity extends PieceComponent<
     };
   }
 }
+
+/**
+ * 楽曲の表示用タイトルを返す純粋関数。
+ *
+ * - Work: 自身の `title`
+ * - Movement: 親 Work とつないで「親Work title - 楽章 title」
+ *
+ * これまで `ListeningLogDetail` 側に直書きされていた整形ロジックを Piece の責務に寄せて
+ * Feature Envy を解消する。entity ではなく plain DTO を取るのは、呼び出し側（読み取り専用集約）が
+ * 永続化レコードのまま受け取るため。
+ */
+export const pieceDisplayNameUnder = (piece: Piece, parentWork: PieceWork | null): string => {
+  switch (piece.kind) {
+    case "work":
+      return piece.title;
+    case "movement": {
+      if (parentWork === null) {
+        throw new Error("pieceDisplayNameUnder: Movement requires parentWork");
+      }
+      return `${parentWork.title} - ${piece.title}`;
+    }
+    default: {
+      const exhaustive: never = piece;
+      throw new TypeError(`Unknown piece kind: ${JSON.stringify(exhaustive)}`);
+    }
+  }
+};
