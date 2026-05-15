@@ -90,5 +90,10 @@
     "typescript": "catalog:",
     "vitest": "catalog:",
     "yaml-eslint-parser": "^2.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "devalue": ">=5.8.1"
+    }
   }
 }
