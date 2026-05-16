@@ -144,6 +144,12 @@ export abstract class PieceComponent<
   abstract toPlain(): TPlain;
 
   /**
+   * 表示用タイトルを返す。Work は自身の title、Movement は「親 Work title - 楽章 title」。
+   * 呼び出し側に整形ロジックを染み出させないために polymorphism で各派生クラスに閉じる。
+   */
+  abstract displayNameUnder(parentWork: PieceWorkEntity | null): string;
+
+  /**
    * 派生クラスが自身の具象型でインスタンスを再生成するためのフック。
    * `updateVideos` 等、props を貼り替えるだけの操作を基底クラスで共通実装するために使う。
    */
@@ -328,6 +334,10 @@ export class PieceWorkEntity extends PieceComponent<PieceWorkProps, PieceWork, U
       videoUrls: this.props.videoUrls?.map((u) => u.value),
     };
   }
+
+  override displayNameUnder(_parentWork: PieceWorkEntity | null): string {
+    return this.props.title.value;
+  }
 }
 
 export class PieceMovementEntity extends PieceComponent<
@@ -408,31 +418,11 @@ export class PieceMovementEntity extends PieceComponent<
       updatedAt: this.props.updatedAt,
     };
   }
-}
 
-/**
- * 楽曲の表示用タイトルを返す純粋関数。
- *
- * - Work: 自身の `title`
- * - Movement: 親 Work とつないで「親Work title - 楽章 title」
- *
- * これまで `ListeningLogDetail` 側に直書きされていた整形ロジックを Piece の責務に寄せて
- * Feature Envy を解消する。entity ではなく plain DTO を取るのは、呼び出し側（読み取り専用集約）が
- * 永続化レコードのまま受け取るため。
- */
-export const pieceDisplayNameUnder = (piece: Piece, parentWork: PieceWork | null): string => {
-  switch (piece.kind) {
-    case "work":
-      return piece.title;
-    case "movement": {
-      if (parentWork === null) {
-        throw new Error("pieceDisplayNameUnder: Movement requires parentWork");
-      }
-      return `${parentWork.title} - ${piece.title}`;
+  override displayNameUnder(parentWork: PieceWorkEntity | null): string {
+    if (parentWork === null) {
+      throw new Error("PieceMovementEntity.displayNameUnder: parentWork is required");
     }
-    default: {
-      const exhaustive: never = piece;
-      throw new TypeError(`Unknown piece kind: ${JSON.stringify(exhaustive)}`);
-    }
+    return `${parentWork.title.value} - ${this.props.title.value}`;
   }
-};
+}

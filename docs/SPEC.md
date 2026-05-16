@@ -605,7 +605,7 @@ cd cdk && pnpm install && cdk bootstrap && cdk deploy
 
 - `ListeningLogEntity` は `pieceId` のみを保持し、楽曲名・作曲家名は持たない（DDD の集約境界に従い、関連集約は ID で参照）
 - 派生値の解決責任は `ListeningLogDetail` に閉じる:
-  - `pieceTitle`: Work なら `piece.title`、Movement なら「親 Work title - 楽章 title」に整形（整形ロジックは Piece ドメインの純粋関数 `pieceDisplayNameUnder` に集約）
+  - `pieceTitle`: Work なら `piece.title`、Movement なら「親 Work title - 楽章 title」に整形（整形ロジックは Piece エンティティの polymorphic メソッド `displayNameUnder(parentWork)` に集約）
   - `composerId` / `composerName`: Work なら自身の `composerId`、Movement なら親 Work から継承
 - ドメイン層は `repositories/` に依存しないため、必要な `Piece` / `Composer` は usecase 層が事前に取得して `ListeningLogDetail.from(log, piece, parentWork, composer)` に渡す
 - 一覧 API では `ListeningLogUsecase.toDetailDtoList` が重複排除した ID 群を `PieceRepository.findByIds` / `ComposerRepository.findByIds` に渡してまとめて取得し N+1 を抑制する（実装は `Promise.all(findById)` の並列発行、将来的な BatchGetItem 化のための Branch by Abstraction）

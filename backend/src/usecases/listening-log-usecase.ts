@@ -4,6 +4,7 @@ import type { ComposerRepository } from "../domain/composer";
 import { ListeningLogDetail } from "../domain/listening-log-detail";
 import { ListeningLogEntity } from "../domain/listening-log";
 import type { ListeningLogRepository } from "../domain/listening-log";
+import { PieceComponent, PieceWorkEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
 import { ComposerId, ListeningLogId, PieceId } from "../domain/value-objects/ids";
 import type { UserId } from "../domain/value-objects/ids";
@@ -91,7 +92,9 @@ export class ListeningLogUsecase {
     const parentWork = await this.resolveParentWork(piece);
     const composerId = this.resolveComposerId(piece, parentWork);
     const composer = await this.findComposerOrThrow(composerId);
-    return ListeningLogDetail.from(entity, piece, parentWork, composer).toPlain();
+    const pieceEntity = PieceComponent.reconstruct(piece);
+    const parentWorkEntity = parentWork === null ? null : PieceWorkEntity.reconstruct(parentWork);
+    return ListeningLogDetail.from(entity, pieceEntity, parentWorkEntity, composer).toPlain();
   }
 
   /**
@@ -131,7 +134,9 @@ export class ListeningLogUsecase {
       if (composer === undefined) {
         throw new createError.NotFound("Composer referenced by piece not found");
       }
-      return ListeningLogDetail.from(entity, piece, parentWork, composer).toPlain();
+      const pieceEntity = PieceComponent.reconstruct(piece);
+      const parentWorkEntity = parentWork === null ? null : PieceWorkEntity.reconstruct(parentWork);
+      return ListeningLogDetail.from(entity, pieceEntity, parentWorkEntity, composer).toPlain();
     });
   }
 

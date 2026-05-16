@@ -1,6 +1,8 @@
-import type { Composer, ListeningLog, Piece, PieceWork } from "../types";
+import type { Composer, ListeningLog } from "../types";
 import type { ListeningLogEntity } from "./listening-log";
-import { pieceDisplayNameUnder } from "./piece";
+import { PieceMovementEntity, type PieceWorkEntity } from "./piece";
+
+type PieceEntity = PieceWorkEntity | PieceMovementEntity;
 
 /**
  * 鑑賞記録の詳細を表す読み取り専用集約。
@@ -11,15 +13,14 @@ import { pieceDisplayNameUnder } from "./piece";
  * - Movement の `pieceTitle` は「親 Work title - 楽章 title」に整形する
  * - Movement の `composerId` は親 Work から継承する
  *
- * 構築は `ListeningLogDetail.from()` で行い、必要なエンティティ群を一括で受け取る。
- * リポジトリには依存しない（ドメイン層の純粋性を保つ）ため、組み立てに必要な
- * fetch は usecase 層が責任を持つ。
+ * 表示名の整形は Piece 側の polymorphic メソッド（`displayNameUnder`）に委譲し、
+ * 本集約には整形ロジックを持たない。
  */
 export class ListeningLogDetail {
   private constructor(
     private readonly log: ListeningLogEntity,
-    private readonly piece: Piece,
-    private readonly parentWork: PieceWork | null,
+    private readonly piece: PieceEntity,
+    private readonly parentWork: PieceWorkEntity | null,
     private readonly composer: Composer,
   ) {}
 
@@ -31,33 +32,29 @@ export class ListeningLogDetail {
    */
   static from(
     log: ListeningLogEntity,
-    piece: Piece,
-    parentWork: PieceWork | null,
+    piece: PieceEntity,
+    parentWork: PieceWorkEntity | null,
     composer: Composer,
   ): ListeningLogDetail {
-    if (piece.kind === "movement" && parentWork === null) {
+    if (piece instanceof PieceMovementEntity && parentWork === null) {
       throw new Error("ListeningLogDetail: Movement requires parentWork");
     }
-    if (piece.kind === "movement" && parentWork.id !== piece.parentId) {
+    if (
+      piece instanceof PieceMovementEntity &&
+      parentWork !== null &&
+      !parentWork.id.equals(piece.parentId)
+    ) {
       throw new Error("ListeningLogDetail: parentWork.id must match piece.parentId");
     }
     return new ListeningLogDetail(log, piece, parentWork, composer);
-  }
-
-  private get pieceTitle(): string {
-    return pieceDisplayNameUnder(this.piece, this.parentWork);
-  }
-
-  private get composerId(): string {
-    return this.composer.id;
   }
 
   toPlain(): ListeningLog {
     const record = this.log.toPlain();
     return {
       ...record,
-      pieceTitle: this.pieceTitle,
-      composerId: this.composerId,
+      pieceTitle: this.piece.displayNameUnder(this.parentWork),
+      composerId: this.composer.id,
       composerName: this.composer.name,
     };
   }
