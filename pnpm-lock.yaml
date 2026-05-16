@@ -169,13 +169,13 @@ importers:
         specifier: ^3.1038.0
         version: 3.1038.0
       '@aws-sdk/lib-dynamodb':
-        specifier: ^3.1045.0
+        specifier: ^3.1038.0
         version: 3.1047.0(@aws-sdk/client-dynamodb@3.1038.0)
       '@middy/core':
-        specifier: ^7.4.0
-        version: 7.4.0
-      '@middy/http-cors':
         specifier: ^7.5.0
+        version: 7.5.0
+      '@middy/http-cors':
+        specifier: ^7.3.3
         version: 7.5.0
       '@middy/http-error-handler':
         specifier: ^7.4.0
@@ -1467,8 +1467,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@middy/core@7.4.0':
-    resolution: {integrity: sha512-t6cjRLII5QSShsZ+zV4iFYvdqTKn43obAPLdnotvE/plOOWrOLRYEUmFA9OVh2eiZae77R8ZITLHWUfoJAVLyQ==}
+  '@middy/core@7.5.0':
+    resolution: {integrity: sha512-Mb5caomix1jEkwByysd9LMJKBfRmUYdnVnksVsqUQEKqUJkBYM99Ogg98oN2Fql/DaSKTmZcF2iIlgOWQS/SeQ==}
     engines: {node: '>=22'}
     peerDependencies:
       '@aws/durable-execution-sdk-js': ^1.0.0
@@ -8632,9 +8632,9 @@ snapshots:
       '@types/react': 19.2.14
       react: 19.2.5
 
-  '@middy/core@7.4.0':
+  '@middy/core@7.5.0':
     dependencies:
-      '@middy/util': 7.4.0
+      '@middy/util': 7.5.0
 
   '@middy/http-cors@7.5.0':
     dependencies:
