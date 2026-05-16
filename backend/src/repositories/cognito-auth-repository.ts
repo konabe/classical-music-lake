@@ -8,8 +8,8 @@ import {
   AdminLinkProviderForUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
-import { getEnv } from "../utils/env";
-import type { AuthRepository, AuthTokens, RefreshedTokens } from "../domain/auth";
+import { getEnv } from "@/utils/env";
+import type { AuthRepository, AuthTokens, RefreshedTokens } from "@/domain/auth";
 
 const cognito = new CognitoIdentityProviderClient({});
 

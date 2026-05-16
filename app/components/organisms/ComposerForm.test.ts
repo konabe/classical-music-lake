@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ComposerForm from "./ComposerForm.vue";
-import ButtonPrimary from "../atoms/ButtonPrimary.vue";
+import ComposerForm from "@/components/organisms/ComposerForm.vue";
+import ButtonPrimary from "@/components/atoms/ButtonPrimary.vue";
 
 describe("ComposerForm", () => {
   describe("デフォルト値でのレンダリング", () => {

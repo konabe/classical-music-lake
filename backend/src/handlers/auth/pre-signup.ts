@@ -1,6 +1,6 @@
 import type { PreSignUpTriggerHandler } from "aws-lambda";
 
-import { createAuthUsecase } from "../../usecases/auth-usecase";
+import { createAuthUsecase } from "@/usecases/auth-usecase";
 
 const usecase = createAuthUsecase();
 

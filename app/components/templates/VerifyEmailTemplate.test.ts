@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import VerifyEmailTemplate from "./VerifyEmailTemplate.vue";
+import VerifyEmailTemplate from "@/components/templates/VerifyEmailTemplate.vue";
 
 describe("VerifyEmailTemplate", () => {
   it("VerifyEmailForm が表示される", async () => {

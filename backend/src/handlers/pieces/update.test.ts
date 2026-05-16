@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import createError from "http-errors";
-import type { Piece, PieceWork } from "../../types";
+import type { Piece, PieceWork } from "@/types";
 
-import { handler } from "./update";
+import { handler } from "@/handlers/pieces/update";
 import {
   makeAdminEvent,
   makeAuthEvent,
@@ -12,7 +12,7 @@ import {
   mockContext,
   TEST_COMPOSER_ID,
   TEST_USER_ID,
-} from "../../test/fixtures";
+} from "@/test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   saveWork: vi.fn(),

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import TextInput from "./TextInput.vue";
+import TextInput from "@/components/atoms/TextInput.vue";
 
 const meta: Meta<typeof TextInput> = {
   title: "Atoms/TextInput",

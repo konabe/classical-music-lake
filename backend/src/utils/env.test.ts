@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 
-import { AppEnv } from "./env";
+import { AppEnv } from "@/utils/env";
 
 describe("AppEnv", () => {
   afterEach(() => {

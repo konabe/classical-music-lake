@@ -1,10 +1,10 @@
 import { StatusCodes } from "http-status-codes";
 
-import { mapCognitoError } from "../domain/auth-error";
-import type { AuthContext } from "../domain/auth-error";
-import type { AuthRepository } from "../domain/auth";
-import { CognitoAuthRepository } from "../repositories/cognito-auth-repository";
-import type { CognitoError } from "../types";
+import { mapCognitoError } from "@/domain/auth-error";
+import type { AuthContext } from "@/domain/auth-error";
+import type { AuthRepository } from "@/domain/auth";
+import { CognitoAuthRepository } from "@/repositories/cognito-auth-repository";
+import type { CognitoError } from "@/types";
 
 const providerNameMap: Record<string, string> = {
   google: "Google",

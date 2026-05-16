@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ConcertLogNewTemplate from "./ConcertLogNewTemplate.vue";
+import ConcertLogNewTemplate from "@/components/templates/ConcertLogNewTemplate.vue";
 
 describe("ConcertLogNewTemplate", () => {
   it("ページタイトルが表示される", async () => {

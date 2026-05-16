@@ -1,6 +1,6 @@
-import { withHandler } from "../../utils/handler";
-import { ok } from "../../utils/response";
-import { createListeningLogUsecase, ListeningLogId } from "../../usecases/listening-log-usecase";
+import { withHandler } from "@/utils/handler";
+import { ok } from "@/utils/response";
+import { createListeningLogUsecase, ListeningLogId } from "@/usecases/listening-log-usecase";
 
 const usecase = createListeningLogUsecase();
 

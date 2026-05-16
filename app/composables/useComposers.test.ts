@@ -1,8 +1,8 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import { useComposersAll, useComposer } from "./useComposers";
-import type { Composer } from "~/types";
-import { COMPOSERS_PAGE_SIZE_MAX } from "~/types";
-import { ID_TOKEN_KEY } from "./useAuth";
+import { useComposersAll, useComposer } from "@/composables/useComposers";
+import type { Composer } from "@/types";
+import { COMPOSERS_PAGE_SIZE_MAX } from "@/types";
+import { ID_TOKEN_KEY } from "@/composables/useAuth";
 
 const { mockUseFetch } = vi.hoisted(() => ({
   mockUseFetch: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock("#app", () => ({
 }));
 
 vi.mock("./useAuth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./useAuth")>();
+  const actual = await importOriginal<typeof import("@/composables/useAuth")>();
   return {
     ...actual,
     useAuth: () => ({

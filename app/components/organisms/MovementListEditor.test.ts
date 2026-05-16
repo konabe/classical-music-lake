@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import MovementListEditor from "./MovementListEditor.vue";
-import type { PieceMovement } from "~/types";
+import MovementListEditor from "@/components/organisms/MovementListEditor.vue";
+import type { PieceMovement } from "@/types";
 
 const mockReplaceMovements = vi.fn();
 

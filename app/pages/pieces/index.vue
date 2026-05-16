@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PieceWork } from "~/types";
+import type { PieceWork } from "@/types";
 
 const apiBase = useApiBase();
 const { items, pending, error, hasMore, loadMore, reset, retry } = usePiecesPaginated();

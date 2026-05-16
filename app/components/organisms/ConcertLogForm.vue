@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import draggable from "vuedraggable";
-import { nowAsDatetimeLocal, toDatetimeLocal } from "~/utils/date";
-import type { CreateConcertLogInput, PieceWork } from "~/types";
+import { nowAsDatetimeLocal, toDatetimeLocal } from "@/utils/date";
+import type { CreateConcertLogInput, PieceWork } from "@/types";
 
 const props = defineProps<{
   initialValues?: Partial<CreateConcertLogInput>;

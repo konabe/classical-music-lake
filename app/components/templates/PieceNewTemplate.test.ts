@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PieceNewTemplate from "./PieceNewTemplate.vue";
+import PieceNewTemplate from "@/components/templates/PieceNewTemplate.vue";
 
 const commonProps = { error: null, composers: [] } as const;
 

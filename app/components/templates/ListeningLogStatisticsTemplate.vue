@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ListeningLogStatistics } from "~/composables/useListeningLogStatistics";
+import type { ListeningLogStatistics } from "@/composables/useListeningLogStatistics";
 
 defineProps<{
   statistics: ListeningLogStatistics;

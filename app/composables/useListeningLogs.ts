@@ -1,6 +1,6 @@
-import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "~/types";
-import { useCrudResource, useCrudResourceItem } from "./useCrudResource";
-import { useAuthenticatedApi } from "./useAuthenticatedApi";
+import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "@/types";
+import { useCrudResource, useCrudResourceItem } from "@/composables/useCrudResource";
+import { useAuthenticatedApi } from "@/composables/useAuthenticatedApi";
 
 export const useListeningLogs = () => {
   const { deleteItem, ...rest } = useCrudResource<

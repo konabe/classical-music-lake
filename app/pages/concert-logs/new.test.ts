@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ConcertLogNewPage from "./new.vue";
-import type { CreateConcertLogInput } from "~/types";
+import ConcertLogNewPage from "@/pages/concert-logs/new.vue";
+import type { CreateConcertLogInput } from "@/types";
 
 const mockCreate = vi.fn();
 

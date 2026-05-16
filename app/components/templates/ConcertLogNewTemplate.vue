@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CreateConcertLogInput } from "~/types";
+import type { CreateConcertLogInput } from "@/types";
 
 defineProps<{
   error: string | null;

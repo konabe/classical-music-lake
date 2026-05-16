@@ -1,8 +1,8 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ListeningLogItem from "./ListeningLogItem.vue";
-import ButtonSecondary from "../atoms/ButtonSecondary.vue";
-import ButtonDanger from "../atoms/ButtonDanger.vue";
-import type { ListeningLog } from "~/types";
+import ListeningLogItem from "@/components/molecules/ListeningLogItem.vue";
+import ButtonSecondary from "@/components/atoms/ButtonSecondary.vue";
+import ButtonDanger from "@/components/atoms/ButtonDanger.vue";
+import type { ListeningLog } from "@/types";
 
 const sampleLog: ListeningLog = {
   id: "1",

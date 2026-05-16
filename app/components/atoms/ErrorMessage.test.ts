@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ErrorMessage from "./ErrorMessage.vue";
+import ErrorMessage from "@/components/atoms/ErrorMessage.vue";
 
 describe("ErrorMessage", () => {
   it("メッセージが表示される", async () => {

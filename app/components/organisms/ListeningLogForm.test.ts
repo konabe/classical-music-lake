@@ -1,7 +1,7 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
-import ListeningLogForm from "./ListeningLogForm.vue";
-import ButtonPrimary from "../atoms/ButtonPrimary.vue";
-import type { Composer, PieceWork } from "~/types";
+import ListeningLogForm from "@/components/organisms/ListeningLogForm.vue";
+import ButtonPrimary from "@/components/atoms/ButtonPrimary.vue";
+import type { Composer, PieceWork } from "@/types";
 
 const { mockPieces, mockComposers } = vi.hoisted(() => {
   const BEETHOVEN = "00000000-0000-4000-8000-000000000001";

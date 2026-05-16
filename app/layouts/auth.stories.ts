@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import AuthLayout from "./auth.vue";
+import AuthLayout from "@/layouts/auth.vue";
 
 const meta: Meta<typeof AuthLayout> = {
   title: "Layouts/AuthLayout",

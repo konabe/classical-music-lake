@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import LoginPage from "./login.vue";
+import LoginPage from "@/pages/auth/login.vue";
 
 const mockLogin = vi.fn();
 

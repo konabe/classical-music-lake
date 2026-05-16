@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import ComposerForm from "./ComposerForm.vue";
+import ComposerForm from "@/components/organisms/ComposerForm.vue";
 
 const meta: Meta<typeof ComposerForm> = {
   title: "Organisms/ComposerForm",

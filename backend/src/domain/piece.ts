@@ -12,13 +12,13 @@ import type {
   UpdateMovementInput,
   UpdatePieceInput,
   UpdateWorkInput,
-} from "../types";
-import { Entity, type EntityProps } from "./entity";
-import { buildUpdateProps } from "./entity-helpers";
-import { ComposerId, PieceId } from "./value-objects/ids";
-import { MovementIndex } from "./value-objects/movement-index";
-import { PieceTitle } from "./value-objects/piece-title";
-import { Url } from "./value-objects/url";
+} from "@/types";
+import { Entity, type EntityProps } from "@/domain/entity";
+import { buildUpdateProps } from "@/domain/entity-helpers";
+import { ComposerId, PieceId } from "@/domain/value-objects/ids";
+import { MovementIndex } from "@/domain/value-objects/movement-index";
+import { PieceTitle } from "@/domain/value-objects/piece-title";
+import { Url } from "@/domain/value-objects/url";
 
 const WORK_METADATA_CLEARABLE_FIELDS: readonly string[] = ["genre", "era", "formation", "region"];
 const MOVEMENT_METADATA_CLEARABLE_FIELDS: readonly string[] = [];

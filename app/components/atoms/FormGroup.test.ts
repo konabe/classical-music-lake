@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import FormGroup from "./FormGroup.vue";
+import FormGroup from "@/components/atoms/FormGroup.vue";
 
 describe("FormGroup", () => {
   describe("表示", () => {

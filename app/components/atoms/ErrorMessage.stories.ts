@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import ErrorMessage from "./ErrorMessage.vue";
+import ErrorMessage from "@/components/atoms/ErrorMessage.vue";
 
 const meta: Meta<typeof ErrorMessage> = {
   title: "Atoms/ErrorMessage",

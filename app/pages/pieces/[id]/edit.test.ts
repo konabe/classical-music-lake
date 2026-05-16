@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import PieceEditPage from "./edit.vue";
-import type { PieceWork, UpdatePieceInput } from "~/types";
+import PieceEditPage from "@/pages/pieces/[id]/edit.vue";
+import type { PieceWork, UpdatePieceInput } from "@/types";
 
 const mockUpdatePiece = vi.fn();
 

@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import PieceDetailPage from "./index.vue";
-import type { Composer, ListeningLog, PieceWork, Rating } from "~/types";
+import PieceDetailPage from "@/pages/pieces/[id]/index.vue";
+import type { Composer, ListeningLog, PieceWork, Rating } from "@/types";
 
 vi.mock("~/composables/useAuth", () => ({
   ACCESS_TOKEN_KEY: "accessToken",
@@ -76,7 +76,7 @@ const sampleLogs: ListeningLog[] = [
   },
 ];
 
-const usePieceData = ref<PieceWork | import("~/types").PieceMovement | null>(samplePiece);
+const usePieceData = ref<PieceWork | import("@/types").PieceMovement | null>(samplePiece);
 
 vi.mock("~/composables/usePieces", () => ({
   usePiecesPaginated: vi.fn(),
@@ -124,7 +124,7 @@ beforeEach(async () => {
   vi.stubGlobal("$fetch", mockDollarFetch);
   // デフォルトは Work
   usePieceData.value = samplePiece;
-  const { useAuth } = await import("~/composables/useAuth");
+  const { useAuth } = await import("@/composables/useAuth");
   vi.mocked(useAuth).mockReturnValue({
     isAdmin: () => false,
     isAuthenticated: () => true,
@@ -192,7 +192,7 @@ describe("PieceDetailPage", () => {
     });
 
     it("未認証時は鑑賞記録を取得せず空配列を渡す", async () => {
-      const { useAuth } = await import("~/composables/useAuth");
+      const { useAuth } = await import("@/composables/useAuth");
       vi.mocked(useAuth).mockReturnValue({
         isAdmin: () => false,
         isAuthenticated: () => false,
@@ -209,7 +209,7 @@ describe("PieceDetailPage", () => {
 
   describe("楽章一覧（Work）", () => {
     it("Work の場合 GET /pieces/{id}/children を呼んで movements にセットする", async () => {
-      const sampleMovements: import("~/types").PieceMovement[] = [
+      const sampleMovements: import("@/types").PieceMovement[] = [
         {
           kind: "movement",
           id: "movement-1",
@@ -229,7 +229,7 @@ describe("PieceDetailPage", () => {
       const wrapper = await mountSuspended(PieceDetailPage);
       await flushPromises();
       const template = wrapper.findComponent({ name: "PieceDetailTemplate" });
-      const movements = template.props("movements") as import("~/types").PieceMovement[];
+      const movements = template.props("movements") as import("@/types").PieceMovement[];
       expect(movements).toHaveLength(1);
       expect(movements[0].id).toBe("movement-1");
     });
@@ -238,7 +238,7 @@ describe("PieceDetailPage", () => {
   describe("Movement 詳細", () => {
     const PARENT_ID = "parent-work";
     const MOVEMENT_ID = "movement-99";
-    const movementSample: import("~/types").PieceMovement = {
+    const movementSample: import("@/types").PieceMovement = {
       kind: "movement",
       id: MOVEMENT_ID,
       parentId: PARENT_ID,

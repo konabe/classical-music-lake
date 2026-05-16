@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ListeningLogsTemplate from "./ListeningLogsTemplate.vue";
-import type { ListeningLog } from "~/types";
-import type { ListeningLogFilterState } from "~/composables/useListeningLogFilter";
+import ListeningLogsTemplate from "@/components/templates/ListeningLogsTemplate.vue";
+import type { ListeningLog } from "@/types";
+import type { ListeningLogFilterState } from "@/composables/useListeningLogFilter";
 
 const sampleLogs: ListeningLog[] = [
   {

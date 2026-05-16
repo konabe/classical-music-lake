@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { formatDatetime } from "~/utils/date";
-import type { ListeningLog } from "~/types";
+import { formatDatetime } from "@/utils/date";
+import type { ListeningLog } from "@/types";
 
 const props = defineProps<{
   log: ListeningLog;

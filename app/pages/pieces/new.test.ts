@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import PieceNewPage from "./new.vue";
-import type { CreatePieceInput } from "~/types";
+import PieceNewPage from "@/pages/pieces/new.vue";
+import type { CreatePieceInput } from "@/types";
 
 const mockCreatePiece = vi.fn();
 

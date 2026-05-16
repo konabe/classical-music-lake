@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UpdateConcertLogInput } from "~/types";
+import type { UpdateConcertLogInput } from "@/types";
 
 definePageMeta({ middleware: "auth" });
 

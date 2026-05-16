@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { handler } from "./list";
-import { makeEvent, makePiece, mockContext, mockCallback } from "../../test/fixtures";
-import { encodeCursor } from "../../utils/cursor";
-import { PIECES_PAGE_SIZE_DEFAULT, PIECES_PAGE_SIZE_MAX } from "../../types";
-import type { Paginated, Piece } from "../../types";
+import { handler } from "@/handlers/pieces/list";
+import { makeEvent, makePiece, mockContext, mockCallback } from "@/test/fixtures";
+import { encodeCursor } from "@/utils/cursor";
+import { PIECES_PAGE_SIZE_DEFAULT, PIECES_PAGE_SIZE_MAX } from "@/types";
+import type { Paginated, Piece } from "@/types";
 
 const mockRepo = vi.hoisted(() => ({
   saveWork: vi.fn(),

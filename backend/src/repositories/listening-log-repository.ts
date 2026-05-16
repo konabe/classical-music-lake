@@ -1,14 +1,14 @@
 import { DeleteCommand, GetCommand, PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
-import type { ListeningLogId, PieceId, UserId } from "../domain/value-objects/ids";
+import type { ListeningLogId, PieceId, UserId } from "@/domain/value-objects/ids";
 import {
   dynamo,
   putItemWithOptimisticLock,
   queryItemsByUserId,
   TABLE_LISTENING_LOGS,
-} from "../utils/dynamodb";
-import type { ListeningLogRecord } from "../types";
-import type { ListeningLogRepository } from "../domain/listening-log";
+} from "@/utils/dynamodb";
+import type { ListeningLogRecord } from "@/types";
+import type { ListeningLogRepository } from "@/domain/listening-log";
 
 export class DynamoDBListeningLogRepository implements ListeningLogRepository {
   async findById(id: ListeningLogId): Promise<ListeningLogRecord | undefined> {

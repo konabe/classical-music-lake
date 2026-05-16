@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import FavoriteIndicator from "./FavoriteIndicator.vue";
+import FavoriteIndicator from "@/components/molecules/FavoriteIndicator.vue";
 
 describe("FavoriteIndicator", () => {
   it("isFavorite が true のとき ♥ が表示される", async () => {

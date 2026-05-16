@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import PasswordInput from "./PasswordInput.vue";
+import PasswordInput from "@/components/molecules/PasswordInput.vue";
 
 const meta: Meta<typeof PasswordInput> = {
   title: "Molecules/PasswordInput",

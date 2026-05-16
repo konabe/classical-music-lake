@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { formatDatetime } from "~/utils/date";
-import type { ConcertLog, PieceWork } from "~/types";
+import { formatDatetime } from "@/utils/date";
+import type { ConcertLog, PieceWork } from "@/types";
 
 const props = defineProps<{
   log: ConcertLog;

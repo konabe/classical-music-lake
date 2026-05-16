@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
-import { handler } from "./create";
-import { makeEvent, makeAuthEvent } from "../../test/fixtures";
+import { handler } from "@/handlers/concert-logs/create";
+import { makeEvent, makeAuthEvent } from "@/test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),

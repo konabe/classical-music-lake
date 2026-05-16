@@ -72,6 +72,7 @@ export class MigrationsStack extends cdk.Stack {
         minify: true,
         sourceMap: false,
         target: "es2022",
+        tsconfig: path.join(backendSrcDir, "..", "tsconfig.json"),
       },
       role: this.makeMigrationRole("MigratePieceKindBackfillRole", [piecesTable]),
     });

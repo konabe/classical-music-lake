@@ -1,5 +1,5 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
-import ListeningLogNewTemplate from "./ListeningLogNewTemplate.vue";
+import ListeningLogNewTemplate from "@/components/templates/ListeningLogNewTemplate.vue";
 
 mockNuxtImport("usePiecesAll", () =>
   vi

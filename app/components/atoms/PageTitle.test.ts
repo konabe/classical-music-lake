@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PageTitle from "./PageTitle.vue";
+import PageTitle from "@/components/atoms/PageTitle.vue";
 
 describe("PageTitle", () => {
   it("スロットのテキストが表示される", async () => {

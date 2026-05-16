@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import QuickLogForm from "./QuickLogForm.vue";
-import ButtonPrimary from "../atoms/ButtonPrimary.vue";
+import QuickLogForm from "@/components/organisms/QuickLogForm.vue";
+import ButtonPrimary from "@/components/atoms/ButtonPrimary.vue";
 
 const defaultProps = { composer: "ベートーヴェン", piece: "交響曲第9番 ニ短調" };
 

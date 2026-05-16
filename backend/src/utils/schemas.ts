@@ -13,7 +13,7 @@ import {
   COMPOSERS_PAGE_SIZE_DEFAULT,
   COMPOSERS_PAGE_SIZE_MAX,
   COMPOSERS_PAGE_SIZE_MIN,
-} from "../types/index.js";
+} from "@/types/index.js";
 
 const ratingSchema = z
   .number({ error: () => "rating must be between 1 and 5" })

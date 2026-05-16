@@ -1,5 +1,5 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
-import DefaultLayout from "./default.vue";
+import DefaultLayout from "@/layouts/default.vue";
 
 const mockLogout = vi.fn();
 const mockIsAuthenticated = vi.fn();

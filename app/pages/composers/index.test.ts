@@ -1,7 +1,7 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ComposersPage from "./index.vue";
-import type { Composer } from "~/types";
+import ComposersPage from "@/pages/composers/index.vue";
+import type { Composer } from "@/types";
 
 const { sampleComposers, mockRefresh, mockDeleteComposer } = vi.hoisted(() => {
   const sampleComposers: Composer[] = [

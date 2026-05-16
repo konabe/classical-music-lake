@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { PieceWork } from "~/types";
-import FeaturedPiece from "~/components/organisms/FeaturedPiece.vue";
+import type { PieceWork } from "@/types";
+import FeaturedPiece from "@/components/organisms/FeaturedPiece.vue";
 
 defineProps<{
   pieces: PieceWork[];

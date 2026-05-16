@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ListeningLogStatisticsTemplate from "./ListeningLogStatisticsTemplate.vue";
-import type { ListeningLogStatistics } from "~/composables/useListeningLogStatistics";
+import ListeningLogStatisticsTemplate from "@/components/templates/ListeningLogStatisticsTemplate.vue";
+import type { ListeningLogStatistics } from "@/composables/useListeningLogStatistics";
 
 const stats: ListeningLogStatistics = {
   total: 3,

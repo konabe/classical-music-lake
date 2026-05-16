@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ConcertLogsTemplate from "./ConcertLogsTemplate.vue";
-import type { ConcertLog } from "~/types";
+import ConcertLogsTemplate from "@/components/templates/ConcertLogsTemplate.vue";
+import type { ConcertLog } from "@/types";
 
 const sampleLogs: ConcertLog[] = [
   {

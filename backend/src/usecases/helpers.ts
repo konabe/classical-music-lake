@@ -1,8 +1,8 @@
 import createError from "http-errors";
 
-import type { EntityId, UserId } from "../domain/value-objects/ids";
-import type { Paginated } from "../types";
-import { encodeCursor } from "../utils/cursor";
+import type { EntityId, UserId } from "@/domain/value-objects/ids";
+import type { Paginated } from "@/types";
+import { encodeCursor } from "@/utils/cursor";
 
 type Owned = { isOwnedBy(userId: UserId): boolean };
 

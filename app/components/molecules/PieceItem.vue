@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { PieceWork } from "~/types";
-import { isYouTubeUrl } from "~/utils/video";
+import type { PieceWork } from "@/types";
+import { isYouTubeUrl } from "@/utils/video";
 
 const props = defineProps<{
   piece: PieceWork;

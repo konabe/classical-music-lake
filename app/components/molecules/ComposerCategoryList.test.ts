@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ComposerCategoryList from "./ComposerCategoryList.vue";
+import ComposerCategoryList from "@/components/molecules/ComposerCategoryList.vue";
 
 describe("ComposerCategoryList", () => {
   describe("表示", () => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Composer, PieceMovement, PieceWork, UpdatePieceInput } from "~/types";
+import type { Composer, PieceMovement, PieceWork, UpdatePieceInput } from "@/types";
 
 defineProps<{
   piece: PieceWork | null;

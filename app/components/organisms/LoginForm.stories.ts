@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import LoginForm from "./LoginForm.vue";
+import LoginForm from "@/components/organisms/LoginForm.vue";
 
 const meta: Meta<typeof LoginForm> = {
   title: "Organisms/LoginForm",

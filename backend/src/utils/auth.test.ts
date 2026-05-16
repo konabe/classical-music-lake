@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { getUserId, getUserGroups, isAdmin, requireAdmin } from "./auth";
+import { getUserId, getUserGroups, isAdmin, requireAdmin } from "@/utils/auth";
 
 const makeEvent = (authorizer: unknown): APIGatewayProxyEvent =>
   ({

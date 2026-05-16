@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import CategoryBadge from "./CategoryBadge.vue";
+import CategoryBadge from "@/components/atoms/CategoryBadge.vue";
 
 describe("CategoryBadge", () => {
   describe("表示", () => {

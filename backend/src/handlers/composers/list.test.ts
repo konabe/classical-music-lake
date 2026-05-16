@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { handler } from "./list";
-import { makeEvent, makeComposer, mockContext, mockCallback } from "../../test/fixtures";
-import { encodeCursor } from "../../utils/cursor";
-import { COMPOSERS_PAGE_SIZE_DEFAULT, COMPOSERS_PAGE_SIZE_MAX } from "../../types";
-import type { Composer, Paginated } from "../../types";
+import { handler } from "@/handlers/composers/list";
+import { makeEvent, makeComposer, mockContext, mockCallback } from "@/test/fixtures";
+import { encodeCursor } from "@/utils/cursor";
+import { COMPOSERS_PAGE_SIZE_DEFAULT, COMPOSERS_PAGE_SIZE_MAX } from "@/types";
+import type { Composer, Paginated } from "@/types";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),

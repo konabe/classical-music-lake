@@ -1,7 +1,7 @@
 import createError from "http-errors";
 import type { ZodType } from "zod";
 
-import { decodeCursor, InvalidCursorError } from "./cursor";
+import { decodeCursor, InvalidCursorError } from "@/utils/cursor";
 
 export function parseRequestBody<T>(body: unknown, schema?: ZodType<T>): T {
   if (body === null || body === undefined) {

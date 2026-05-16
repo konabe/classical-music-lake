@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import PieceListInfinite from "./PieceListInfinite.vue";
-import type { PieceWork } from "~/types";
+import PieceListInfinite from "@/components/organisms/PieceListInfinite.vue";
+import type { PieceWork } from "@/types";
 
 const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 const composerNameById = { [COMPOSER_ID]: "ベートーヴェン" };

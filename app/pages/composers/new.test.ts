@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ComposerNewPage from "./new.vue";
-import type { CreateComposerInput } from "~/types";
+import ComposerNewPage from "@/pages/composers/new.vue";
+import type { CreateComposerInput } from "@/types";
 
 const mockCreateComposer = vi.fn();
 

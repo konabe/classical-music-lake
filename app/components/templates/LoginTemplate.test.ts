@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import LoginTemplate from "./LoginTemplate.vue";
+import LoginTemplate from "@/components/templates/LoginTemplate.vue";
 
 const defaultErrors = { email: "", password: "", general: "" };
 

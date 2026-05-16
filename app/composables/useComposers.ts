@@ -1,7 +1,7 @@
-import { COMPOSERS_PAGE_SIZE_MAX } from "~/types";
-import type { Composer, CreateComposerInput, UpdateComposerInput } from "~/types";
-import { useAuthenticatedApi } from "./useAuthenticatedApi";
-import { fetchCursorPage } from "./usePaginatedList";
+import { COMPOSERS_PAGE_SIZE_MAX } from "@/types";
+import type { Composer, CreateComposerInput, UpdateComposerInput } from "@/types";
+import { useAuthenticatedApi } from "@/composables/useAuthenticatedApi";
+import { fetchCursorPage } from "@/composables/usePaginatedList";
 
 const fetchComposersPage = (apiBase: string, options: { limit: number; cursor?: string }) =>
   fetchCursorPage<Composer>(`${apiBase}/composers`, options);

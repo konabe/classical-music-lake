@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { ListeningLog } from "~/types";
-import type { ListeningLogFilterState } from "~/composables/useListeningLogFilter";
-import ListeningLogsTemplate from "./ListeningLogsTemplate.vue";
+import type { ListeningLog } from "@/types";
+import type { ListeningLogFilterState } from "@/composables/useListeningLogFilter";
+import ListeningLogsTemplate from "@/components/templates/ListeningLogsTemplate.vue";
 
 const meta: Meta<typeof ListeningLogsTemplate> = {
   title: "Templates/ListeningLogsTemplate",

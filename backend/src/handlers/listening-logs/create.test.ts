@@ -1,14 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "aws-lambda";
 
-import { handler } from "./create";
-import {
-  makeAuthEvent,
-  makeComposer,
-  makeEvent,
-  makePiece,
-  TEST_PIECE_ID,
-} from "../../test/fixtures";
+import { handler } from "@/handlers/listening-logs/create";
+import { makeAuthEvent, makeComposer, makeEvent, makePiece, TEST_PIECE_ID } from "@/test/fixtures";
 
 const mocks = vi.hoisted(() => ({
   listeningLogRepo: {

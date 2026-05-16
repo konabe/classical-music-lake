@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { handler } from "./create";
+import { handler } from "@/handlers/composers/create";
 import {
   makeAdminEvent,
   makeAuthEvent,
@@ -8,7 +8,7 @@ import {
   mockCallback,
   mockContext,
   TEST_USER_ID,
-} from "../../test/fixtures";
+} from "@/test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),

@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import CallbackPage from "./callback.vue";
+import CallbackPage from "@/pages/auth/callback.vue";
 
 const mockHandleOAuthCallback = vi.fn();
 

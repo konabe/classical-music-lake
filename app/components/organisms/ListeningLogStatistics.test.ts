@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ListeningLogStatistics from "./ListeningLogStatistics.vue";
-import type { ListeningLogStatistics as Stats } from "~/composables/useListeningLogStatistics";
+import ListeningLogStatistics from "@/components/organisms/ListeningLogStatistics.vue";
+import type { ListeningLogStatistics as Stats } from "@/composables/useListeningLogStatistics";
 
 const emptyStats: Stats = {
   total: 0,

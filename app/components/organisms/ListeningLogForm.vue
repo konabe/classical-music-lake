@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { nowAsDatetimeLocal, toDatetimeLocal } from "~/utils/date";
-import type { CreateListeningLogInput } from "~/types";
+import { nowAsDatetimeLocal, toDatetimeLocal } from "@/utils/date";
+import type { CreateListeningLogInput } from "@/types";
 
 const props = defineProps<{
   initialValues?: Partial<CreateListeningLogInput>;

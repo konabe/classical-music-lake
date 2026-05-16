@@ -1,6 +1,6 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
-import ListeningLogEditTemplate from "./ListeningLogEditTemplate.vue";
-import type { ListeningLog } from "~/types";
+import ListeningLogEditTemplate from "@/components/templates/ListeningLogEditTemplate.vue";
+import type { ListeningLog } from "@/types";
 
 const { PIECE_ID, COMPOSER_ID } = vi.hoisted(() => ({
   PIECE_ID: "00000000-0000-4000-8000-00000000aaaa",

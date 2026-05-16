@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { MovementIndex } from "./movement-index";
+import { MovementIndex } from "@/domain/value-objects/movement-index";
 
 describe("MovementIndex", () => {
   describe("of", () => {

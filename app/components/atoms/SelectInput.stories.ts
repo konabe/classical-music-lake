@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import SelectInput from "./SelectInput.vue";
-import { PIECE_GENRES } from "~/types";
+import SelectInput from "@/components/atoms/SelectInput.vue";
+import { PIECE_GENRES } from "@/types";
 
 const genreOptions = PIECE_GENRES.map((v) => ({ value: v, label: v }));
 

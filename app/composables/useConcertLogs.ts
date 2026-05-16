@@ -1,5 +1,5 @@
-import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "~/types";
-import { useCrudResource, useCrudResourceItem } from "./useCrudResource";
+import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "@/types";
+import { useCrudResource, useCrudResourceItem } from "@/composables/useCrudResource";
 
 export const useConcertLogs = () => {
   const { deleteItem, ...rest } = useCrudResource<

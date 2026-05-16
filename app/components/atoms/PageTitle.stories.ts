@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import PageTitle from "./PageTitle.vue";
+import PageTitle from "@/components/atoms/PageTitle.vue";
 
 const meta: Meta<typeof PageTitle> = {
   title: "Atoms/PageTitle",

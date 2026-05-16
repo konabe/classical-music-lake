@@ -1,11 +1,11 @@
 import createError from "http-errors";
 
-import type { ListeningLogRepository } from "../domain/listening-log";
-import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "../domain/piece";
-import type { PieceRepository } from "../domain/piece";
-import { ComposerId, PieceId } from "../domain/value-objects/ids";
-import { DynamoDBListeningLogRepository } from "../repositories/listening-log-repository";
-import { DynamoDBPieceRepository } from "../repositories/piece-repository";
+import type { ListeningLogRepository } from "@/domain/listening-log";
+import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "@/domain/piece";
+import type { PieceRepository } from "@/domain/piece";
+import { ComposerId, PieceId } from "@/domain/value-objects/ids";
+import { DynamoDBListeningLogRepository } from "@/repositories/listening-log-repository";
+import { DynamoDBPieceRepository } from "@/repositories/piece-repository";
 import type {
   CreateMovementInput,
   CreatePieceInput,
@@ -17,8 +17,8 @@ import type {
   UpdateMovementInput,
   UpdatePieceInput,
   UpdateWorkInput,
-} from "../types";
-import { findByIdOrNotFound, toPaginatedResult } from "./helpers";
+} from "@/types";
+import { findByIdOrNotFound, toPaginatedResult } from "@/usecases/helpers";
 
 // handlers 層は domain へ直接アクセスできないため、ID 値オブジェクトを usecase 層経由で公開する
 export { PieceId };

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { getIdParam } from "./path-params";
-import { PieceId } from "../domain/value-objects/ids";
+import { getIdParam } from "@/utils/path-params";
+import { PieceId } from "@/domain/value-objects/ids";
 
 const makeEvent = (pathParameters: Record<string, string> | null): APIGatewayProxyEvent =>
   ({ pathParameters }) as unknown as APIGatewayProxyEvent;

@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ComposerDetailTemplate from "./ComposerDetailTemplate.vue";
-import type { Composer, PieceWork } from "~/types";
+import ComposerDetailTemplate from "@/components/templates/ComposerDetailTemplate.vue";
+import type { Composer, PieceWork } from "@/types";
 
 const sample: Composer = {
   id: "1",

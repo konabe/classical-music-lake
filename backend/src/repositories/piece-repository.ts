@@ -8,10 +8,10 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 
-import type { PieceRepository } from "../domain/piece";
-import type { PieceId } from "../domain/value-objects/ids";
-import type { Piece, PieceMovement, PieceWork } from "../types";
-import { dynamo, putItemWithOptimisticLock, scanPage, TABLE_PIECES } from "../utils/dynamodb";
+import type { PieceRepository } from "@/domain/piece";
+import type { PieceId } from "@/domain/value-objects/ids";
+import type { Piece, PieceMovement, PieceWork } from "@/types";
+import { dynamo, putItemWithOptimisticLock, scanPage, TABLE_PIECES } from "@/utils/dynamodb";
 
 type LegacyVideoUrlPiece = Piece & { videoUrl?: string };
 

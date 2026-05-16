@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { Rating } from "./rating";
+import { Rating } from "@/domain/value-objects/rating";
 
 describe("Rating", () => {
   describe("of", () => {

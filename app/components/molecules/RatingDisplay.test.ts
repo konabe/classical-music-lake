@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import RatingDisplay from "./RatingDisplay.vue";
+import RatingDisplay from "@/components/molecules/RatingDisplay.vue";
 
 describe("RatingDisplay", () => {
   it("評価5のとき★5つが表示される", async () => {

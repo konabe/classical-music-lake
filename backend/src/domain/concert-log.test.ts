@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 
-import { ConcertLogEntity } from "./concert-log";
-import { UserId } from "./value-objects/ids";
-import type { ConcertLog, CreateConcertLogInput } from "../types";
+import { ConcertLogEntity } from "@/domain/concert-log";
+import { UserId } from "@/domain/value-objects/ids";
+import type { ConcertLog, CreateConcertLogInput } from "@/types";
 
 const USER_ID = "cognito-sub-user-1";
 const OTHER_USER_ID = "cognito-sub-user-2";

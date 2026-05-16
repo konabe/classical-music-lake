@@ -4,7 +4,7 @@ import {
   ID_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
   TOKEN_EXPIRES_AT_KEY,
-} from "./useAuth";
+} from "@/composables/useAuth";
 
 const mockFetch = vi.fn();
 const mockRouterPush = vi.fn();

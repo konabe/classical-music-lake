@@ -1,8 +1,8 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PieceItem from "./PieceItem.vue";
-import ButtonSecondary from "../atoms/ButtonSecondary.vue";
-import ButtonDanger from "../atoms/ButtonDanger.vue";
-import type { PieceWork } from "~/types";
+import PieceItem from "@/components/molecules/PieceItem.vue";
+import ButtonSecondary from "@/components/atoms/ButtonSecondary.vue";
+import ButtonDanger from "@/components/atoms/ButtonDanger.vue";
+import type { PieceWork } from "@/types";
 
 const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 

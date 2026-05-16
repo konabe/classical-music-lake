@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PieceForm from "./PieceForm.vue";
-import ButtonPrimary from "../atoms/ButtonPrimary.vue";
-import type { Composer } from "~/types";
+import PieceForm from "@/components/organisms/PieceForm.vue";
+import ButtonPrimary from "@/components/atoms/ButtonPrimary.vue";
+import type { Composer } from "@/types";
 
 const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
 const COMPOSER_ID_MOZART = "00000000-0000-4000-8000-000000000002";

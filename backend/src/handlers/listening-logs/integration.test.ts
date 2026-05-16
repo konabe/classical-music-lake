@@ -5,13 +5,13 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { Composer, ListeningLogRecord, Piece } from "../../types";
+import type { Composer, ListeningLogRecord, Piece } from "@/types";
 
-import { handler as createHandler } from "./create";
-import { handler as listHandler } from "./list";
-import { handler as getHandler } from "./get";
-import { handler as updateHandler } from "./update";
-import { handler as deleteHandler } from "./delete";
+import { handler as createHandler } from "@/handlers/listening-logs/create";
+import { handler as listHandler } from "@/handlers/listening-logs/list";
+import { handler as getHandler } from "@/handlers/listening-logs/get";
+import { handler as updateHandler } from "@/handlers/listening-logs/update";
+import { handler as deleteHandler } from "@/handlers/listening-logs/delete";
 import { GetCommand, PutCommand, DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 const { mockSend } = vi.hoisted(() => ({ mockSend: vi.fn() }));

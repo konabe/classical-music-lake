@@ -1,9 +1,9 @@
-import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "../types";
-import { Entity, type EntityProps } from "./entity";
-import { buildUpdateProps } from "./entity-helpers";
-import { ConcertTitle } from "./value-objects/concert-title";
-import { ConcertLogId, PieceId, UserId } from "./value-objects/ids";
-import { Venue } from "./value-objects/venue";
+import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "@/types";
+import { Entity, type EntityProps } from "@/domain/entity";
+import { buildUpdateProps } from "@/domain/entity-helpers";
+import { ConcertTitle } from "@/domain/value-objects/concert-title";
+import { ConcertLogId, PieceId, UserId } from "@/domain/value-objects/ids";
+import { Venue } from "@/domain/value-objects/venue";
 
 export type ConcertLogRepository = {
   findById(id: ConcertLogId): Promise<ConcertLog | undefined>;

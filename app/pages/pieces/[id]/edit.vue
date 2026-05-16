@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PieceWork, UpdatePieceInput } from "~/types";
+import type { PieceWork, UpdatePieceInput } from "@/types";
 
 definePageMeta({ middleware: ["admin"] });
 

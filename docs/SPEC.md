@@ -528,6 +528,26 @@ cd cdk && pnpm install && cdk bootstrap && cdk deploy
 
 ## 8. 型定義管理方針
 
+### 8.0 import エイリアス方針
+
+フロント・バックエンド・テストの全ファイルで相対 import（`./` `../`）と Nuxt の `~/` は使わず、`@/` `@shared/` エイリアスに統一する。
+
+- フロントエンド（`app/` 配下）: `@/` → `app/` ルート（Nuxt 標準）/ `@shared/` → リポジトリルートの `shared/`（`nuxt.config.ts` の `alias` で定義）
+- バックエンド（`backend/src/` 配下）: `@/` → `backend/src/` / `@shared/` → `shared/`（`backend/tsconfig.json` の `paths` と `backend/vitest.config.mts` の `resolve.alias` で定義）
+- NodejsFunction の esbuild バンドルは `bundling.tsconfig` で backend の tsconfig を明示しているため、Lambda ビルド時もエイリアスが解決される
+
+例:
+
+```ts
+// 良い
+import { PIECE_GENRES } from "@shared/constants";
+import { ListeningLogEntity } from "@/domain/listening-log";
+
+// 悪い（相対 import / ~/ は禁止）
+import { PIECE_GENRES } from "../../shared/constants";
+import type { PieceWork } from "~/types";
+```
+
 ### 8.1 フロント・バックエンド共通型の管理
 
 フロントエンド（`app/types/index.ts`）とバックエンド（`backend/src/types/index.ts`）はパッケージが分離されているため、共有型は両ファイルに重複定義する。ただしフロント・バックエンドで共通の定数・型は `shared/` ディレクトリに一元管理し、各パッケージの型定義ファイルから re-export する。

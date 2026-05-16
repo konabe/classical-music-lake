@@ -1,5 +1,5 @@
 import { useRouter } from "#app";
-import { useAuth, ID_TOKEN_KEY } from "./useAuth";
+import { useAuth, ID_TOKEN_KEY } from "@/composables/useAuth";
 
 export const useAuthenticatedApi = () => {
   const router = useRouter();

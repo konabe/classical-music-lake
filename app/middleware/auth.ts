@@ -1,4 +1,4 @@
-import { ACCESS_TOKEN_KEY } from "~/composables/useAuth";
+import { ACCESS_TOKEN_KEY } from "@/composables/useAuth";
 
 export default defineNuxtRouteMiddleware(async () => {
   if (import.meta.server) {

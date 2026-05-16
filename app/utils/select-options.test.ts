@@ -1,4 +1,4 @@
-import { toSelectOptions } from "./select-options";
+import { toSelectOptions } from "@/utils/select-options";
 
 describe("toSelectOptions", () => {
   it("文字列配列を { value, label } 配列に変換する", () => {

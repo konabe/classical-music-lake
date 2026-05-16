@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "~/types";
+import type { CreateListeningLogInput, ListeningLog, UpdateListeningLogInput } from "@/types";
 
 const props = defineProps<{
   log: ListeningLog;

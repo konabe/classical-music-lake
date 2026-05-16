@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ListeningLogEditPage from "./edit.vue";
-import type { ListeningLog, UpdateListeningLogInput } from "~/types";
+import ListeningLogEditPage from "@/pages/listening-logs/[id]/edit.vue";
+import type { ListeningLog, UpdateListeningLogInput } from "@/types";
 
 const mockUpdate = vi.fn();
 

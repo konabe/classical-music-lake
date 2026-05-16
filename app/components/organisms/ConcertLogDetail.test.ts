@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ConcertLogDetail from "./ConcertLogDetail.vue";
-import type { ConcertLog, PieceWork } from "~/types";
+import ConcertLogDetail from "@/components/organisms/ConcertLogDetail.vue";
+import type { ConcertLog, PieceWork } from "@/types";
 
 const COMPOSER_ID_BEETHOVEN = "00000000-0000-4000-8000-000000000001";
 const COMPOSER_ID_TCHAIKOVSKY = "00000000-0000-4000-8000-000000000002";

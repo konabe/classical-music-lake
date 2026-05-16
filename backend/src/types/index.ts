@@ -1,5 +1,5 @@
 // 楽曲カテゴリ（shared/constants.ts から re-export）
-import type { PieceGenre, PieceEra, PieceFormation, PieceRegion } from "../../../shared/constants";
+import type { PieceGenre, PieceEra, PieceFormation, PieceRegion } from "@shared/constants";
 export {
   PIECE_GENRES,
   PIECE_ERAS,
@@ -17,15 +17,15 @@ export {
   COMPOSERS_PAGE_SIZE_MIN,
   COMPOSERS_PAGE_SIZE_MAX,
   COMPOSERS_PAGE_SIZE_DEFAULT,
-} from "../../../shared/constants";
+} from "@shared/constants";
 export type {
   PieceGenre,
   PieceEra,
   PieceFormation,
   PieceRegion,
   PieceKind,
-} from "../../../shared/constants";
-export type { Paginated } from "../../../shared/constants";
+} from "@shared/constants";
+export type { Paginated } from "@shared/constants";
 
 export type Rating = 1 | 2 | 3 | 4 | 5;
 

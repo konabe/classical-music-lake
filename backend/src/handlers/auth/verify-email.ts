@@ -1,7 +1,7 @@
-import { createHandler, jsonBodyParser } from "../../utils/middleware";
-import { parseRequestBody } from "../../utils/parsing";
-import { verifyEmailSchema } from "../../utils/schemas";
-import { createAuthUsecase } from "../../usecases/auth-usecase";
+import { createHandler, jsonBodyParser } from "@/utils/middleware";
+import { parseRequestBody } from "@/utils/parsing";
+import { verifyEmailSchema } from "@/utils/schemas";
+import { createAuthUsecase } from "@/usecases/auth-usecase";
 
 const usecase = createAuthUsecase();
 

@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PasswordInput from "./PasswordInput.vue";
+import PasswordInput from "@/components/molecules/PasswordInput.vue";
 
 describe("PasswordInput", () => {
   describe("表示", () => {

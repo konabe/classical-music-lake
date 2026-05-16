@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ListeningLogFilterState } from "~/composables/useListeningLogFilter";
+import type { ListeningLogFilterState } from "@/composables/useListeningLogFilter";
 
 defineProps<{
   modelValue: ListeningLogFilterState;

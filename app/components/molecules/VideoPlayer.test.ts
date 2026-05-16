@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import VideoPlayer from "./VideoPlayer.vue";
+import VideoPlayer from "@/components/molecules/VideoPlayer.vue";
 
 const youtubeUrl = "https://www.youtube.com/watch?v=abc123";
 const nonYoutubeUrl = "https://example.com/video";

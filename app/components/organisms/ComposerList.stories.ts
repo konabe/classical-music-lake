@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import ComposerList from "./ComposerList.vue";
-import type { Composer } from "~/types";
+import ComposerList from "@/components/organisms/ComposerList.vue";
+import type { Composer } from "@/types";
 
 const meta: Meta<typeof ComposerList> = {
   title: "Organisms/ComposerList",

@@ -1,4 +1,4 @@
-import { formatDate, formatDatetime, toDatetimeLocal, nowAsDatetimeLocal } from "./date";
+import { formatDate, formatDatetime, toDatetimeLocal, nowAsDatetimeLocal } from "@/utils/date";
 
 describe("formatDate", () => {
   it("ISO 8601 文字列から日付部分（YYYY-MM-DD）のみを返す", () => {

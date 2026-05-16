@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import FormActions from "./FormActions.vue";
-import ButtonPrimary from "../atoms/ButtonPrimary.vue";
-import ButtonSecondary from "../atoms/ButtonSecondary.vue";
+import FormActions from "@/components/molecules/FormActions.vue";
+import ButtonPrimary from "@/components/atoms/ButtonPrimary.vue";
+import ButtonSecondary from "@/components/atoms/ButtonSecondary.vue";
 
 const globalComponents = { global: { components: { ButtonPrimary, ButtonSecondary } } };
 

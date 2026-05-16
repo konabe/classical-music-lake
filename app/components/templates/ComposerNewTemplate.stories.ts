@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import ComposerNewTemplate from "./ComposerNewTemplate.vue";
+import ComposerNewTemplate from "@/components/templates/ComposerNewTemplate.vue";
 
 const meta: Meta<typeof ComposerNewTemplate> = {
   title: "Templates/ComposerNewTemplate",

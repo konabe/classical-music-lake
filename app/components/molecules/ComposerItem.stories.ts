@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import ComposerItem from "./ComposerItem.vue";
+import ComposerItem from "@/components/molecules/ComposerItem.vue";
 
 const meta: Meta<typeof ComposerItem> = {
   title: "Molecules/ComposerItem",

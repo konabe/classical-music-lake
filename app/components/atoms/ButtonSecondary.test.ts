@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ButtonSecondary from "./ButtonSecondary.vue";
+import ButtonSecondary from "@/components/atoms/ButtonSecondary.vue";
 
 describe("ButtonSecondary", () => {
   describe("表示", () => {

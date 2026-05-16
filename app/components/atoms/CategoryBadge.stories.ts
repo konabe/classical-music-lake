@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import CategoryBadge from "./CategoryBadge.vue";
+import CategoryBadge from "@/components/atoms/CategoryBadge.vue";
 
 const meta: Meta<typeof CategoryBadge> = {
   title: "Atoms/CategoryBadge",

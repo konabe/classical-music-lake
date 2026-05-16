@@ -1,7 +1,7 @@
-import { createHandler } from "../../utils/middleware";
-import { getIdParam } from "../../utils/path-params";
-import { ok } from "../../utils/response";
-import { createMovementUsecase, PieceId } from "../../usecases/piece-usecase";
+import { createHandler } from "@/utils/middleware";
+import { getIdParam } from "@/utils/path-params";
+import { ok } from "@/utils/response";
+import { createMovementUsecase, PieceId } from "@/usecases/piece-usecase";
 
 const usecase = createMovementUsecase();
 

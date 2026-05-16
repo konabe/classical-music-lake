@@ -1,8 +1,12 @@
+import { fileURLToPath } from "node:url";
 import { codecovVitePlugin } from "@codecov/vite-plugin";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-01-01",
+  alias: {
+    "@shared": fileURLToPath(new URL("./shared", import.meta.url)),
+  },
   ssr: false,
   devtools: { enabled: true },
   // NOTE: 3000だとなぜか起動できない

@@ -1,8 +1,8 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ComposerItem from "./ComposerItem.vue";
-import ButtonSecondary from "../atoms/ButtonSecondary.vue";
-import ButtonDanger from "../atoms/ButtonDanger.vue";
-import type { Composer } from "~/types";
+import ComposerItem from "@/components/molecules/ComposerItem.vue";
+import ButtonSecondary from "@/components/atoms/ButtonSecondary.vue";
+import ButtonDanger from "@/components/atoms/ButtonDanger.vue";
+import type { Composer } from "@/types";
 
 const sampleComposer: Composer = {
   id: "1",

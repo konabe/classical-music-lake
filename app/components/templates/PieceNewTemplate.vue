@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Composer, CreatePieceInput } from "~/types";
+import type { Composer, CreatePieceInput } from "@/types";
 
 defineProps<{
   error: string | null;

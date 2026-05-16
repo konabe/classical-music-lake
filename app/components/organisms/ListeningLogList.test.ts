@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ListeningLogList from "./ListeningLogList.vue";
-import type { ListeningLog } from "~/types";
+import ListeningLogList from "@/components/organisms/ListeningLogList.vue";
+import type { ListeningLog } from "@/types";
 
 const makeLogs = (): ListeningLog[] => [
   {

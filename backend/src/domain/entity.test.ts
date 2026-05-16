@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Entity, type EntityProps } from "./entity";
-import { ComposerId, PieceId } from "./value-objects/ids";
+import { Entity, type EntityProps } from "@/domain/entity";
+import { ComposerId, PieceId } from "@/domain/value-objects/ids";
 
 type DummyPieceProps = EntityProps<PieceId> & { label: string };
 type DummyComposerProps = EntityProps<ComposerId> & { label: string };

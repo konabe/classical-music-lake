@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import type { ListeningLogRepository } from "../domain/listening-log";
-import type { PieceRepository } from "../domain/piece";
-import { PieceId } from "../domain/value-objects/ids";
-import type { CreateMovementInput, CreateWorkInput, PieceMovement, PieceWork } from "../types";
-import { MovementUsecase, PieceUsecase, WorkUsecase } from "./piece-usecase";
+import type { ListeningLogRepository } from "@/domain/listening-log";
+import type { PieceRepository } from "@/domain/piece";
+import { PieceId } from "@/domain/value-objects/ids";
+import type { CreateMovementInput, CreateWorkInput, PieceMovement, PieceWork } from "@/types";
+import { MovementUsecase, PieceUsecase, WorkUsecase } from "@/usecases/piece-usecase";
 
 const TEST_COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 const TEST_WORK_ID = "00000000-0000-4000-8000-00000000aaaa";

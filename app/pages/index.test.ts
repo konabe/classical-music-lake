@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import IndexPage from "./index.vue";
+import IndexPage from "@/pages/index.vue";
 
 describe("IndexPage", () => {
   it("楽曲を探すリンクが表示される", async () => {

@@ -1,4 +1,4 @@
-import { useAuthenticatedApi } from "./useAuthenticatedApi";
+import { useAuthenticatedApi } from "@/composables/useAuthenticatedApi";
 
 /**
  * 認証付きで単一のリソースエンドポイントに対する CRUD 操作を提供する汎用 composable。

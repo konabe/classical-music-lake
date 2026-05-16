@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Composer, PieceWork } from "~/types";
-import { formatLifespan } from "~/utils/lifespan";
+import type { Composer, PieceWork } from "@/types";
+import { formatLifespan } from "@/utils/lifespan";
 
 const props = defineProps<{
   composer: Composer | null;

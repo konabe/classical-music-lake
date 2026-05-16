@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import PageHeader from "./PageHeader.vue";
+import PageHeader from "@/components/molecules/PageHeader.vue";
 
 const meta: Meta<typeof PageHeader> = {
   title: "Molecules/PageHeader",

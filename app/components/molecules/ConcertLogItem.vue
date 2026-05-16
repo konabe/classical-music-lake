@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { formatDate } from "~/utils/date";
-import type { ConcertLog } from "~/types";
+import { formatDate } from "@/utils/date";
+import type { ConcertLog } from "@/types";
 
 defineProps<{
   concertLog: ConcertLog;
