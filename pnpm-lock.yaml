@@ -172,8 +172,8 @@ importers:
         specifier: ^3.1038.0
         version: 3.1038.0(@aws-sdk/client-dynamodb@3.1038.0)
       '@middy/core':
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.5.0
+        version: 7.5.0
       '@middy/http-cors':
         specifier: ^7.3.3
         version: 7.3.3
@@ -1465,8 +1465,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@middy/core@7.4.0':
-    resolution: {integrity: sha512-t6cjRLII5QSShsZ+zV4iFYvdqTKn43obAPLdnotvE/plOOWrOLRYEUmFA9OVh2eiZae77R8ZITLHWUfoJAVLyQ==}
+  '@middy/core@7.5.0':
+    resolution: {integrity: sha512-Mb5caomix1jEkwByysd9LMJKBfRmUYdnVnksVsqUQEKqUJkBYM99Ogg98oN2Fql/DaSKTmZcF2iIlgOWQS/SeQ==}
     engines: {node: '>=22'}
     peerDependencies:
       '@aws/durable-execution-sdk-js': ^1.0.0
@@ -1496,6 +1496,10 @@ packages:
 
   '@middy/util@7.4.0':
     resolution: {integrity: sha512-TeXuwTICbLBQqiP/l54e8evbd9v7n9Mj/pMtoG2mlnfiEQ2W7uuRcN5Xq3IzcJrBD73ef4USs6eANGFkYOPgCg==}
+    engines: {node: '>=22'}
+
+  '@middy/util@7.5.0':
+    resolution: {integrity: sha512-EiP4sNNSHjSEc59SLdCJQ/Efr9olDYkuE/rPlHW42Z4pfyqQZt64sGIg410WFVsd/W5l/sSbgTo6bqeChJEPYQ==}
     engines: {node: '>=22'}
 
   '@napi-rs/wasm-runtime@0.2.12':
@@ -6910,8 +6914,8 @@ packages:
   vue-component-type-helpers@3.2.7:
     resolution: {integrity: sha512-+gPp5YGmhfsj1IN+xUo7y0fb4clfnOiiUA39y07yW1VzCRjzVgwLbtmdWlghh7mXrPsEaYc7rrIir/HT6C8vYQ==}
 
-  vue-component-type-helpers@3.2.8:
-    resolution: {integrity: sha512-9689efAXhN/EV86plgkL/XFiJSXhGtWPG6JDboZ+QnjlUWUUQrQ0ILKQtw4iQsuwIwu5k6Aw+JnehDe7161e7A==}
+  vue-component-type-helpers@3.2.9:
+    resolution: {integrity: sha512-S3BiWYaLSzHxTpln665ELSrMR9UYmrIDUmhik7nVZxmJjTKL2/a+ew1hvGxksKelivm0ujjWfG1fYOiU/2e8rA==}
 
   vue-devtools-stub@0.1.0:
     resolution: {integrity: sha512-RutnB7X8c5hjq39NceArgXg28WZtZpGc3+J16ljMiYnFhKvd8hITxSWQSQ5bvldxMDU6gG5mkxl1MTQLXckVSQ==}
@@ -8733,9 +8737,9 @@ snapshots:
       '@types/react': 19.2.14
       react: 19.2.5
 
-  '@middy/core@7.4.0':
+  '@middy/core@7.5.0':
     dependencies:
-      '@middy/util': 7.4.0
+      '@middy/util': 7.5.0
 
   '@middy/http-cors@7.3.3':
     dependencies:
@@ -8756,6 +8760,8 @@ snapshots:
   '@middy/util@7.3.3': {}
 
   '@middy/util@7.4.0': {}
+
+  '@middy/util@7.5.0': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -10368,7 +10374,7 @@ snapshots:
       storybook: 10.3.5(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       type-fest: 2.19.0
       vue: 3.5.33(typescript@6.0.3)
-      vue-component-type-helpers: 3.2.8
+      vue-component-type-helpers: 3.2.9
 
   '@stryker-mutator/api@9.6.1':
     dependencies:
@@ -14899,7 +14905,7 @@ snapshots:
 
   vue-component-type-helpers@3.2.7: {}
 
-  vue-component-type-helpers@3.2.8: {}
+  vue-component-type-helpers@3.2.9: {}
 
   vue-devtools-stub@0.1.0: {}
 
