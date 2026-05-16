@@ -5,7 +5,7 @@
  * - 範囲は 0 〜 999。1 楽曲に持てる楽章数の現実的な上限を考慮。
  * - 値の取り出しは `.value` または `toString()`、等価判定は `.equals(other)`。
  */
-import { MOVEMENT_INDEX_MAX, MOVEMENT_INDEX_MIN } from "../../../../shared/constants";
+import { MOVEMENT_INDEX_MAX, MOVEMENT_INDEX_MIN } from "@shared/constants";
 
 export class MovementIndex {
   public readonly value: number;

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
-import { ComposerEntity } from "./composer";
-import type { Composer, CreateComposerInput } from "../types";
+import { ComposerEntity } from "@/domain/composer";
+import type { Composer, CreateComposerInput } from "@/types";
 
 const makeInput = (overrides: Partial<CreateComposerInput> = {}): CreateComposerInput => ({
   name: "ベートーヴェン",

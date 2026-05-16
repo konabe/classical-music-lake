@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import MovementListItem from "./MovementListItem.vue";
-import type { PieceMovement } from "~/types";
+import MovementListItem from "@/components/molecules/MovementListItem.vue";
+import type { PieceMovement } from "@/types";
 
 const baseMovement: PieceMovement = {
   kind: "movement",

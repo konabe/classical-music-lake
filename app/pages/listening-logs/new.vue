@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CreateListeningLogInput } from "~/types";
+import type { CreateListeningLogInput } from "@/types";
 
 definePageMeta({ middleware: "auth" });
 

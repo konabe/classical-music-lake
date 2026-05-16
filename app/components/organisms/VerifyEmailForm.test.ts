@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import VerifyEmailForm from "./VerifyEmailForm.vue";
-import ErrorMessage from "../atoms/ErrorMessage.vue";
-import ButtonPrimary from "../atoms/ButtonPrimary.vue";
+import VerifyEmailForm from "@/components/organisms/VerifyEmailForm.vue";
+import ErrorMessage from "@/components/atoms/ErrorMessage.vue";
+import ButtonPrimary from "@/components/atoms/ButtonPrimary.vue";
 
 describe("VerifyEmailForm", () => {
   const defaultProps = {

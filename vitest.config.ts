@@ -1,6 +1,12 @@
+import path from "node:path";
 import { defineVitestConfig } from "@nuxt/test-utils/config";
 
 export default defineVitestConfig({
+  resolve: {
+    alias: {
+      "@shared": path.resolve(__dirname, "./shared"),
+    },
+  },
   test: {
     globals: true,
     environment: "nuxt",

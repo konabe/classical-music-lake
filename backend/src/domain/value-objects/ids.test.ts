@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { ComposerId, ConcertLogId, ListeningLogId, PieceId, UserId } from "./ids";
+import {
+  ComposerId,
+  ConcertLogId,
+  ListeningLogId,
+  PieceId,
+  UserId,
+} from "@/domain/value-objects/ids";
 
 describe("IdValueObject", () => {
   describe("生成と値参照", () => {

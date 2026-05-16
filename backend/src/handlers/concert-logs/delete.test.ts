@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { handler } from "./delete";
+import { handler } from "@/handlers/concert-logs/delete";
 import {
   mockContext,
   mockCallback,
   TEST_USER_ID,
   OTHER_USER_ID,
   makeDeleteEvent,
-} from "../../test/fixtures";
+} from "@/test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),

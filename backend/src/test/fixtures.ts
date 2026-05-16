@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import type { Composer, ListeningLog, ListeningLogRecord, Piece } from "../types";
+import type { Composer, ListeningLog, ListeningLogRecord, Piece } from "@/types";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 export const TEST_COMPOSER_ID = "00000000-0000-4000-8000-000000000001";

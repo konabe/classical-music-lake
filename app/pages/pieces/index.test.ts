@@ -1,7 +1,7 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import PiecesPage from "./index.vue";
-import type { PieceWork } from "~/types";
+import PiecesPage from "@/pages/pieces/index.vue";
+import type { PieceWork } from "@/types";
 
 const { samplePieces, sampleComposers, mockLoadMore, mockReset, mockRetry } = vi.hoisted(() => {
   const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";

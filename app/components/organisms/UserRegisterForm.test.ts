@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import UserRegisterForm from "./UserRegisterForm.vue";
+import UserRegisterForm from "@/components/organisms/UserRegisterForm.vue";
 
 const defaultErrors = { email: "", password: "" };
 

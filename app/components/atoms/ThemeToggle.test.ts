@@ -1,5 +1,5 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
-import ThemeToggle from "./ThemeToggle.vue";
+import ThemeToggle from "@/components/atoms/ThemeToggle.vue";
 
 const colorModeState = reactive({
   preference: "light",

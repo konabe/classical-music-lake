@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SubmittableButtonProps, ButtonSlots } from "./button-props";
+import type { SubmittableButtonProps, ButtonSlots } from "@/components/atoms/button-props";
 
 defineProps<SubmittableButtonProps>();
 defineSlots<ButtonSlots>();

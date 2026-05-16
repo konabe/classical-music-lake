@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CommonButtonProps, ButtonSlots } from "./button-props";
+import type { CommonButtonProps, ButtonSlots } from "@/components/atoms/button-props";
 
 defineProps<CommonButtonProps>();
 defineSlots<ButtonSlots>();

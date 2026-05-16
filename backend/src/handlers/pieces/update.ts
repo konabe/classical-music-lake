@@ -1,9 +1,9 @@
-import { createAdminHandler, jsonBodyParser } from "../../utils/middleware";
-import { parseRequestBody } from "../../utils/parsing";
-import { updatePieceSchema } from "../../utils/schemas";
-import { getIdParam } from "../../utils/path-params";
-import { ok } from "../../utils/response";
-import { createPieceUsecase, PieceId } from "../../usecases/piece-usecase";
+import { createAdminHandler, jsonBodyParser } from "@/utils/middleware";
+import { parseRequestBody } from "@/utils/parsing";
+import { updatePieceSchema } from "@/utils/schemas";
+import { getIdParam } from "@/utils/path-params";
+import { ok } from "@/utils/response";
+import { createPieceUsecase, PieceId } from "@/usecases/piece-usecase";
 
 const usecase = createPieceUsecase();
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { PageResult } from "~/composables/usePaginatedList";
-import type { PieceWork } from "~/types";
+import type { PageResult } from "@/composables/usePaginatedList";
+import type { PieceWork } from "@/types";
 
 const apiBase = useApiBase();
 const { data, pending } = useFetch<PageResult<PieceWork>>(`${apiBase}/pieces`);

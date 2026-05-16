@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 
-import { encodeCursor, decodeCursor, InvalidCursorError } from "./cursor";
+import { encodeCursor, decodeCursor, InvalidCursorError } from "@/utils/cursor";
 
 describe("encodeCursor / decodeCursor", () => {
   it("LastEvaluatedKey をエンコードしてデコードすると元の値に戻る", () => {

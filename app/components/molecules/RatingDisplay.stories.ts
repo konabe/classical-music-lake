@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import RatingDisplay from "./RatingDisplay.vue";
+import RatingDisplay from "@/components/molecules/RatingDisplay.vue";
 
 const meta: Meta<typeof RatingDisplay> = {
   title: "Molecules/RatingDisplay",

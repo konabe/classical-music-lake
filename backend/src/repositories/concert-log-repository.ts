@@ -1,14 +1,14 @@
 import { DeleteCommand, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 
-import type { ConcertLogId, UserId } from "../domain/value-objects/ids";
+import type { ConcertLogId, UserId } from "@/domain/value-objects/ids";
 import {
   dynamo,
   putItemWithOptimisticLock,
   queryItemsByUserId,
   TABLE_CONCERT_LOGS,
-} from "../utils/dynamodb";
-import type { ConcertLog } from "../types";
-import type { ConcertLogRepository } from "../domain/concert-log";
+} from "@/utils/dynamodb";
+import type { ConcertLog } from "@/types";
+import type { ConcertLogRepository } from "@/domain/concert-log";
 
 export class DynamoDBConcertLogRepository implements ConcertLogRepository {
   async findById(id: ConcertLogId): Promise<ConcertLog | undefined> {

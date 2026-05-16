@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import VerifyEmailPage from "./verify-email.vue";
+import VerifyEmailPage from "@/pages/auth/verify-email.vue";
 
 const mockVerifyEmail = vi.fn();
 const mockResendVerificationCode = vi.fn();

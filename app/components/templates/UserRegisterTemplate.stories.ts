@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import UserRegisterTemplate from "./UserRegisterTemplate.vue";
+import UserRegisterTemplate from "@/components/templates/UserRegisterTemplate.vue";
 
 const meta: Meta<typeof UserRegisterTemplate> = {
   title: "Templates/UserRegisterTemplate",

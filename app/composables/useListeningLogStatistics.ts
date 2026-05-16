@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import type { ListeningLog, Rating } from "~/types";
+import type { ListeningLog, Rating } from "@/types";
 
 export type RatingDistribution = Record<1 | 2 | 3 | 4 | 5, number>;
 

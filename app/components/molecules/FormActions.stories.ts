@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import FormActions from "./FormActions.vue";
+import FormActions from "@/components/molecules/FormActions.vue";
 
 const meta: Meta<typeof FormActions> = {
   title: "Molecules/FormActions",

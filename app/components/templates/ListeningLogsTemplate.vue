@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ListeningLog } from "~/types";
-import type { ListeningLogFilterState } from "~/composables/useListeningLogFilter";
+import type { ListeningLog } from "@/types";
+import type { ListeningLogFilterState } from "@/composables/useListeningLogFilter";
 
 const props = defineProps<{
   logs: ListeningLog[];

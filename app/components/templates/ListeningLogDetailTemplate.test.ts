@@ -1,9 +1,9 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ListeningLogDetailTemplate from "./ListeningLogDetailTemplate.vue";
-import ButtonDanger from "~/components/atoms/ButtonDanger.vue";
-import ButtonSecondary from "~/components/atoms/ButtonSecondary.vue";
-import type { ListeningLog } from "~/types";
+import ListeningLogDetailTemplate from "@/components/templates/ListeningLogDetailTemplate.vue";
+import ButtonDanger from "@/components/atoms/ButtonDanger.vue";
+import ButtonSecondary from "@/components/atoms/ButtonSecondary.vue";
+import type { ListeningLog } from "@/types";
 
 const mockDeleteLog = vi.fn();
 

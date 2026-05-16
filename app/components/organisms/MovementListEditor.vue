@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import draggable from "vuedraggable";
-import type { PieceMovement } from "~/types";
+import type { PieceMovement } from "@/types";
 
 const props = defineProps<{
   workId: string;

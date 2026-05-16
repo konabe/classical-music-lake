@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ButtonDanger from "./ButtonDanger.vue";
+import ButtonDanger from "@/components/atoms/ButtonDanger.vue";
 
 describe("ButtonDanger", () => {
   describe("表示", () => {

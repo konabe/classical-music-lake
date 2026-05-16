@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import EmptyState from "./EmptyState.vue";
+import EmptyState from "@/components/atoms/EmptyState.vue";
 
 describe("EmptyState", () => {
   it("スロットのテキストが表示される", async () => {

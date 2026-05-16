@@ -3,7 +3,7 @@ import {
   ID_TOKEN_KEY,
   TOKEN_EXPIRES_AT_KEY,
   REFRESH_TOKEN_KEY,
-} from "~/composables/useAuth";
+} from "@/composables/useAuth";
 
 const { mockNavigateTo, mockRefreshTokens, mockIsTokenExpired } = vi.hoisted(() => ({
   mockNavigateTo: vi.fn(),
@@ -20,7 +20,7 @@ vi.mock("#app/composables/router", async (importOriginal) => {
 });
 
 vi.mock("~/composables/useAuth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("~/composables/useAuth")>();
+  const actual = await importOriginal<typeof import("@/composables/useAuth")>();
   return {
     ...actual,
     useAuth: () => ({
@@ -59,7 +59,7 @@ beforeEach(() => {
 });
 
 async function runMiddleware(path: string) {
-  const { default: authMiddleware } = await import("./auth");
+  const { default: authMiddleware } = await import("@/middleware/auth");
   const to = { path, fullPath: path, query: {} } as Parameters<typeof authMiddleware>[0];
   const from = {} as Parameters<typeof authMiddleware>[1];
   return authMiddleware(to, from);

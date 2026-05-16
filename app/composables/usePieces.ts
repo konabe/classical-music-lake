@@ -2,10 +2,10 @@ import {
   PIECES_ALL_MAX_EMPTY_PAGES,
   PIECES_ALL_MAX_TOTAL,
   PIECES_PAGE_SIZE_DEFAULT,
-} from "~/types";
-import type { CreatePieceInput, Piece, PieceWork, UpdatePieceInput } from "~/types";
-import { useAuthenticatedApi } from "./useAuthenticatedApi";
-import { fetchCursorPage, usePaginatedList } from "./usePaginatedList";
+} from "@/types";
+import type { CreatePieceInput, Piece, PieceWork, UpdatePieceInput } from "@/types";
+import { useAuthenticatedApi } from "@/composables/useAuthenticatedApi";
+import { fetchCursorPage, usePaginatedList } from "@/composables/usePaginatedList";
 
 // `GET /pieces` は root の Work のみを返す（楽章は `GET /pieces/{id}/children` 経由）。
 const fetchPiecesPage = (apiBase: string, options: { limit: number; cursor?: string }) =>

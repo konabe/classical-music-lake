@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ConcertLog, UpdateConcertLogInput } from "~/types";
+import type { ConcertLog, UpdateConcertLogInput } from "@/types";
 
 defineProps<{
   log: ConcertLog;

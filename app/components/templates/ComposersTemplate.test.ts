@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ComposersTemplate from "./ComposersTemplate.vue";
+import ComposersTemplate from "@/components/templates/ComposersTemplate.vue";
 
 describe("ComposersTemplate", () => {
   it("管理者の場合 '+ 新しい作曲家' リンクが表示される", async () => {

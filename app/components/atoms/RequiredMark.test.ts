@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import RequiredMark from "./RequiredMark.vue";
+import RequiredMark from "@/components/atoms/RequiredMark.vue";
 
 describe("RequiredMark", () => {
   it("「required」テキストが表示される", async () => {

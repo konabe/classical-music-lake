@@ -1,8 +1,8 @@
-import { createAdminHandler, jsonBodyParser } from "../../utils/middleware";
-import { parseRequestBody } from "../../utils/parsing";
-import { createPieceSchema } from "../../utils/schemas";
-import { created } from "../../utils/response";
-import { createPieceUsecase } from "../../usecases/piece-usecase";
+import { createAdminHandler, jsonBodyParser } from "@/utils/middleware";
+import { parseRequestBody } from "@/utils/parsing";
+import { createPieceSchema } from "@/utils/schemas";
+import { created } from "@/utils/response";
+import { createPieceUsecase } from "@/usecases/piece-usecase";
 
 const usecase = createPieceUsecase();
 

@@ -1,12 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { handler } from "./resend-verification-code";
-import {
-  makeEvent,
-  mockContext,
-  mockCallback,
-  describeInvalidBodyCases,
-} from "../../test/fixtures";
+import { handler } from "@/handlers/auth/resend-verification-code";
+import { makeEvent, mockContext, mockCallback, describeInvalidBodyCases } from "@/test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   signUp: vi.fn(),

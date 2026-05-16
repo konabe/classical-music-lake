@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { formatDate } from "~/utils/date";
-import type { ListeningLog, Piece, PieceMovement, PieceWork, Rating } from "~/types";
+import { formatDate } from "@/utils/date";
+import type { ListeningLog, Piece, PieceMovement, PieceWork, Rating } from "@/types";
 
 const props = defineProps<{
   piece: Piece | null;

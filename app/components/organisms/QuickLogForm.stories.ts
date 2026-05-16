@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import QuickLogForm from "./QuickLogForm.vue";
+import QuickLogForm from "@/components/organisms/QuickLogForm.vue";
 
 const meta: Meta<typeof QuickLogForm> = {
   title: "Organisms/QuickLogForm",

@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ComposerNewTemplate from "./ComposerNewTemplate.vue";
+import ComposerNewTemplate from "@/components/templates/ComposerNewTemplate.vue";
 
 describe("ComposerNewTemplate", () => {
   it("タイトルが表示される", async () => {

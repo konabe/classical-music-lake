@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import UserRegisterPage from "./user-register.vue";
+import UserRegisterPage from "@/pages/auth/user-register.vue";
 
 const mockRegister = vi.fn();
 const mockValidateEmail = vi.fn();

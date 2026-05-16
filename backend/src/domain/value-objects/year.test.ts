@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { Year } from "./year";
+import { Year } from "@/domain/value-objects/year";
 
 describe("Year", () => {
   describe("of", () => {

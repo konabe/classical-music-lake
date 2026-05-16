@@ -1,4 +1,4 @@
-import { isYouTubeUrl, extractYouTubeVideoId, toYouTubeEmbedUrl } from "./video";
+import { isYouTubeUrl, extractYouTubeVideoId, toYouTubeEmbedUrl } from "@/utils/video";
 
 describe("isYouTubeUrl", () => {
   it("youtube.com/watch?v= を含む URL は true", () => {

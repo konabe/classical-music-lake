@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Composer, CreatePieceInput, CreateWorkInput } from "~/types";
-import { PIECE_ERAS, PIECE_FORMATIONS, PIECE_GENRES, PIECE_REGIONS } from "~/types";
-import { toSelectOptions } from "~/utils/select-options";
+import type { Composer, CreatePieceInput, CreateWorkInput } from "@/types";
+import { PIECE_ERAS, PIECE_FORMATIONS, PIECE_GENRES, PIECE_REGIONS } from "@/types";
+import { toSelectOptions } from "@/utils/select-options";
 
 const genreOptions = toSelectOptions(PIECE_GENRES);
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Composer } from "~/types";
+import type { Composer } from "@/types";
 
 type Kind = "era" | "region";
 

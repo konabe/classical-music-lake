@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import FavoriteIndicator from "./FavoriteIndicator.vue";
+import FavoriteIndicator from "@/components/molecules/FavoriteIndicator.vue";
 
 const meta: Meta<typeof FavoriteIndicator> = {
   title: "Molecules/FavoriteIndicator",

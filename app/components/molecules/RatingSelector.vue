@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Rating } from "~/types";
+import type { Rating } from "@/types";
 
 defineProps<{
   modelValue: Rating;

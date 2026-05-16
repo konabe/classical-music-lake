@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ListeningLog, Piece, PieceMovement, PieceWork, Rating } from "~/types";
+import type { ListeningLog, Piece, PieceMovement, PieceWork, Rating } from "@/types";
 
 const route = useRoute();
 const apiBase = useApiBase();

@@ -1,4 +1,4 @@
-import { formatLifespan } from "./lifespan";
+import { formatLifespan } from "@/utils/lifespan";
 
 describe("formatLifespan", () => {
   it("両方未指定なら空文字を返す", () => {

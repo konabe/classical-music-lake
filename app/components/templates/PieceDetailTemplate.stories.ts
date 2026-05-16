@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { ListeningLog, PieceMovement, PieceWork } from "~/types";
-import PieceDetailTemplate from "./PieceDetailTemplate.vue";
+import type { ListeningLog, PieceMovement, PieceWork } from "@/types";
+import PieceDetailTemplate from "@/components/templates/PieceDetailTemplate.vue";
 
 const meta: Meta<typeof PieceDetailTemplate> = {
   title: "Templates/PieceDetailTemplate",

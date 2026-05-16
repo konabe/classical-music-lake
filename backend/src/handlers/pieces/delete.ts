@@ -1,7 +1,7 @@
-import { createAdminHandler } from "../../utils/middleware";
-import { getIdParam } from "../../utils/path-params";
-import { noContent } from "../../utils/response";
-import { createPieceUsecase, PieceId } from "../../usecases/piece-usecase";
+import { createAdminHandler } from "@/utils/middleware";
+import { getIdParam } from "@/utils/path-params";
+import { noContent } from "@/utils/response";
+import { createPieceUsecase, PieceId } from "@/usecases/piece-usecase";
 
 const usecase = createPieceUsecase();
 

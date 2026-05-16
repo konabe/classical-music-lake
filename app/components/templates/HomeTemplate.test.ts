@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import HomeTemplate from "./HomeTemplate.vue";
+import HomeTemplate from "@/components/templates/HomeTemplate.vue";
 
 const stubs = { FeaturedPiece: true };
 

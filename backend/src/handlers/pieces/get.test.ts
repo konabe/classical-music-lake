@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { Piece, PieceWork } from "../../types";
+import type { Piece, PieceWork } from "@/types";
 
-import { handler } from "./get";
+import { handler } from "@/handlers/pieces/get";
 
 const mockRepo = vi.hoisted(() => ({
   saveWork: vi.fn(),

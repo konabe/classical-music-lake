@@ -1,6 +1,6 @@
 import { useRouter } from "#app";
-import { useApiBase } from "./useApiBase";
-import { useCognitoConfig } from "./useCognitoConfig";
+import { useApiBase } from "@/composables/useApiBase";
+import { useCognitoConfig } from "@/composables/useCognitoConfig";
 
 const ADMIN_GROUP_NAME = "admin";
 

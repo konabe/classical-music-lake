@@ -1,6 +1,11 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import { useConcertLogs } from "./useConcertLogs";
-import { ACCESS_TOKEN_KEY, ID_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRES_AT_KEY } from "./useAuth";
+import { useConcertLogs } from "@/composables/useConcertLogs";
+import {
+  ACCESS_TOKEN_KEY,
+  ID_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  TOKEN_EXPIRES_AT_KEY,
+} from "@/composables/useAuth";
 
 const mockFetch = vi.fn();
 const mockRouterPush = vi.fn();
@@ -15,7 +20,7 @@ vi.mock("#app", () => ({
 }));
 
 vi.mock("./useAuth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./useAuth")>();
+  const actual = await importOriginal<typeof import("@/composables/useAuth")>();
   return {
     ...actual,
     useAuth: () => ({

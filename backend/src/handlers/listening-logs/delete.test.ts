@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { handler } from "./delete";
+import { handler } from "@/handlers/listening-logs/delete";
 import {
   mockContext,
   mockCallback,
@@ -8,7 +8,7 @@ import {
   OTHER_USER_ID,
   makeDeleteEvent,
   makeLogRecord,
-} from "../../test/fixtures";
+} from "@/test/fixtures";
 
 const mocks = vi.hoisted(() => ({
   listeningLogRepo: {

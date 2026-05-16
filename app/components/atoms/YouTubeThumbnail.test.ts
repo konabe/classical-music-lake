@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import YouTubeThumbnail from "./YouTubeThumbnail.vue";
+import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail.vue";
 
 const VIDEO_ID = "dQw4w9WgXcQ";
 const STANDARD_URL = `https://www.youtube.com/watch?v=${VIDEO_ID}`;

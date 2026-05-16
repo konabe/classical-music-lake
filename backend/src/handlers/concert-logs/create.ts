@@ -1,9 +1,9 @@
-import { createHandler, jsonBodyParser } from "../../utils/middleware";
-import { parseRequestBody } from "../../utils/parsing";
-import { createConcertLogSchema } from "../../utils/schemas";
-import { getUserId } from "../../utils/auth";
-import { created } from "../../utils/response";
-import { createConcertLogUsecase } from "../../usecases/concert-log-usecase";
+import { createHandler, jsonBodyParser } from "@/utils/middleware";
+import { parseRequestBody } from "@/utils/parsing";
+import { createConcertLogSchema } from "@/utils/schemas";
+import { getUserId } from "@/utils/auth";
+import { created } from "@/utils/response";
+import { createConcertLogUsecase } from "@/usecases/concert-log-usecase";
 
 const usecase = createConcertLogUsecase();
 

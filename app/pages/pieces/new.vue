@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CreatePieceInput } from "~/types";
+import type { CreatePieceInput } from "@/types";
 
 definePageMeta({ middleware: ["admin"] });
 

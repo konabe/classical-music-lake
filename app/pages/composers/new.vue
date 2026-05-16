@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CreateComposerInput } from "~/types";
+import type { CreateComposerInput } from "@/types";
 
 definePageMeta({ middleware: ["admin"] });
 

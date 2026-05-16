@@ -1,8 +1,8 @@
-import { createHandler } from "../../utils/middleware";
-import { parseListQuery } from "../../utils/parsing";
-import { ok } from "../../utils/response";
-import { listComposersQuerySchema } from "../../utils/schemas";
-import { createComposerUsecase } from "../../usecases/composer-usecase";
+import { createHandler } from "@/utils/middleware";
+import { parseListQuery } from "@/utils/parsing";
+import { ok } from "@/utils/response";
+import { listComposersQuerySchema } from "@/utils/schemas";
+import { createComposerUsecase } from "@/usecases/composer-usecase";
 
 const usecase = createComposerUsecase();
 

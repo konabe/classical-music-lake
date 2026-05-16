@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ListeningLogsPage from "./index.vue";
-import type { ListeningLog } from "~/types";
+import ListeningLogsPage from "@/pages/listening-logs/index.vue";
+import type { ListeningLog } from "@/types";
 
 const mockDeleteLog = vi.fn();
 const mockRefresh = vi.fn();

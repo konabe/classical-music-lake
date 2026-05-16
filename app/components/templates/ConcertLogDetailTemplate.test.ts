@@ -1,9 +1,9 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ConcertLogDetailTemplate from "./ConcertLogDetailTemplate.vue";
-import ButtonDanger from "~/components/atoms/ButtonDanger.vue";
-import ButtonSecondary from "~/components/atoms/ButtonSecondary.vue";
-import type { ConcertLog, PieceWork } from "~/types";
+import ConcertLogDetailTemplate from "@/components/templates/ConcertLogDetailTemplate.vue";
+import ButtonDanger from "@/components/atoms/ButtonDanger.vue";
+import ButtonSecondary from "@/components/atoms/ButtonSecondary.vue";
+import type { ConcertLog, PieceWork } from "@/types";
 
 const mockDeleteLog = vi.fn();
 

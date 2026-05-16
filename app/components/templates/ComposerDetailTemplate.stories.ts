@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import ComposerDetailTemplate from "./ComposerDetailTemplate.vue";
-import type { Composer, PieceWork } from "~/types";
+import ComposerDetailTemplate from "@/components/templates/ComposerDetailTemplate.vue";
+import type { Composer, PieceWork } from "@/types";
 
 const meta: Meta<typeof ComposerDetailTemplate> = {
   title: "Templates/ComposerDetailTemplate",

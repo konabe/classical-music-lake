@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { extractYouTubeVideoId, isYouTubeUrl } from "~/utils/video";
+import { extractYouTubeVideoId, isYouTubeUrl } from "@/utils/video";
 
 const props = defineProps<{
   videoUrl: string | undefined;

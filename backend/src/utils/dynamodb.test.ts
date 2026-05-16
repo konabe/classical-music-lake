@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 
-import { putItemWithOptimisticLock, queryItemsByUserId, scanAllItems, scanPage } from "./dynamodb";
+import {
+  putItemWithOptimisticLock,
+  queryItemsByUserId,
+  scanAllItems,
+  scanPage,
+} from "@/utils/dynamodb";
 
 const { mockSend } = vi.hoisted(() => ({
   mockSend: vi.fn(),

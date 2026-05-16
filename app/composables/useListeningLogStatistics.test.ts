@@ -1,5 +1,8 @@
-import { computeStatistics, useListeningLogStatistics } from "./useListeningLogStatistics";
-import type { ListeningLog } from "~/types";
+import {
+  computeStatistics,
+  useListeningLogStatistics,
+} from "@/composables/useListeningLogStatistics";
+import type { ListeningLog } from "@/types";
 
 const log = (overrides: Partial<ListeningLog> = {}): ListeningLog => ({
   id: "log-1",

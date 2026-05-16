@@ -1,6 +1,6 @@
-import { withHandler } from "../../utils/handler";
-import { ok } from "../../utils/response";
-import { ComposerId, createComposerUsecase } from "../../usecases/composer-usecase";
+import { withHandler } from "@/utils/handler";
+import { ok } from "@/utils/response";
+import { ComposerId, createComposerUsecase } from "@/usecases/composer-usecase";
 
 const usecase = createComposerUsecase();
 

@@ -1,9 +1,9 @@
 import { DeleteCommand, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 
-import type { ComposerId } from "../domain/value-objects/ids";
-import { dynamo, putItemWithOptimisticLock, scanPage, TABLE_COMPOSERS } from "../utils/dynamodb";
-import type { Composer } from "../types";
-import type { ComposerRepository } from "../domain/composer";
+import type { ComposerId } from "@/domain/value-objects/ids";
+import { dynamo, putItemWithOptimisticLock, scanPage, TABLE_COMPOSERS } from "@/utils/dynamodb";
+import type { Composer } from "@/types";
+import type { ComposerRepository } from "@/domain/composer";
 
 export class DynamoDBComposerRepository implements ComposerRepository {
   async findById(id: ComposerId): Promise<Composer | undefined> {

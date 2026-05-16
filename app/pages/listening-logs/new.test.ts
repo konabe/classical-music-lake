@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ListeningLogNewPage from "./new.vue";
-import type { CreateListeningLogInput } from "~/types";
+import ListeningLogNewPage from "@/pages/listening-logs/new.vue";
+import type { CreateListeningLogInput } from "@/types";
 
 const mockCreate = vi.fn();
 

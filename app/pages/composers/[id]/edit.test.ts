@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ComposerEditPage from "./edit.vue";
-import type { Composer, UpdateComposerInput } from "~/types";
+import ComposerEditPage from "@/pages/composers/[id]/edit.vue";
+import type { Composer, UpdateComposerInput } from "@/types";
 
 const mockUpdateComposer = vi.fn();
 

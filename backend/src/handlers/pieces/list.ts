@@ -1,8 +1,8 @@
-import { createHandler } from "../../utils/middleware";
-import { parseListQuery } from "../../utils/parsing";
-import { ok } from "../../utils/response";
-import { listPiecesQuerySchema } from "../../utils/schemas";
-import { createPieceUsecase } from "../../usecases/piece-usecase";
+import { createHandler } from "@/utils/middleware";
+import { parseListQuery } from "@/utils/parsing";
+import { ok } from "@/utils/response";
+import { listPiecesQuerySchema } from "@/utils/schemas";
+import { createPieceUsecase } from "@/usecases/piece-usecase";
 
 const usecase = createPieceUsecase();
 

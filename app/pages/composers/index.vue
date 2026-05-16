@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Composer } from "~/types";
+import type { Composer } from "@/types";
 
 const router = useRouter();
 const { data, pending, error, refresh, deleteComposer } = useComposersAll();

@@ -1,8 +1,8 @@
-import { withHandler } from "../../utils/handler";
-import { updateListeningLogSchema } from "../../utils/schemas";
-import { ok } from "../../utils/response";
-import { createListeningLogUsecase, ListeningLogId } from "../../usecases/listening-log-usecase";
-import type { UpdateListeningLogInput } from "../../types";
+import { withHandler } from "@/utils/handler";
+import { updateListeningLogSchema } from "@/utils/schemas";
+import { ok } from "@/utils/response";
+import { createListeningLogUsecase, ListeningLogId } from "@/usecases/listening-log-usecase";
+import type { UpdateListeningLogInput } from "@/types";
 
 const usecase = createListeningLogUsecase();
 

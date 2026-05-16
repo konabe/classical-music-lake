@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import AuthFormContainer from "./AuthFormContainer.vue";
+import AuthFormContainer from "@/components/molecules/AuthFormContainer.vue";
 
 describe("AuthFormContainer", () => {
   it("title が h1 に表示される", async () => {

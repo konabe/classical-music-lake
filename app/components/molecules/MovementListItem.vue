@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { PieceMovement } from "~/types";
-import { isYouTubeUrl, toYouTubeEmbedUrl } from "~/utils/video";
+import type { PieceMovement } from "@/types";
+import { isYouTubeUrl, toYouTubeEmbedUrl } from "@/utils/video";
 
 const props = defineProps<{
   movement: PieceMovement;

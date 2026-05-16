@@ -1,11 +1,11 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import type { ZodType } from "zod";
 
-import { getUserId, requireAdmin } from "./auth";
-import { createAdminHandler, createHandler, jsonBodyParser } from "./middleware";
-import { parseRequestBody } from "./parsing";
-import { getIdParam } from "./path-params";
-import type { UserId } from "../domain/value-objects/ids";
+import { getUserId, requireAdmin } from "@/utils/auth";
+import { createAdminHandler, createHandler, jsonBodyParser } from "@/utils/middleware";
+import { parseRequestBody } from "@/utils/parsing";
+import { getIdParam } from "@/utils/path-params";
+import type { UserId } from "@/domain/value-objects/ids";
 
 type IdFactory<TId> = (value: string) => TId;
 

@@ -10,12 +10,12 @@ import {
   verifyEmailSchema,
   resendVerificationCodeSchema,
   listPiecesQuerySchema,
-} from "./schemas";
+} from "@/utils/schemas";
 import {
   PIECES_PAGE_SIZE_DEFAULT,
   PIECES_PAGE_SIZE_MAX,
   PIECES_PAGE_SIZE_MIN,
-} from "../types/index.js";
+} from "@/types/index.js";
 
 const fails = (result: { success: boolean }): boolean => !result.success;
 const succeeds = (result: { success: boolean }): boolean => result.success;

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import YouTubeThumbnail from "./YouTubeThumbnail.vue";
+import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail.vue";
 
 const meta: Meta<typeof YouTubeThumbnail> = {
   title: "Atoms/YouTubeThumbnail",

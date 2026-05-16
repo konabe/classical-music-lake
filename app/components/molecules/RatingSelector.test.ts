@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import RatingSelector from "./RatingSelector.vue";
+import RatingSelector from "@/components/molecules/RatingSelector.vue";
 
 describe("RatingSelector", () => {
   it("星ボタンが5つ表示される", async () => {

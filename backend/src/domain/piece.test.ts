@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 
-import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "./piece";
-import { PieceId } from "./value-objects/ids";
-import type { CreateMovementInput, CreateWorkInput, PieceMovement, PieceWork } from "../types";
+import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "@/domain/piece";
+import { PieceId } from "@/domain/value-objects/ids";
+import type { CreateMovementInput, CreateWorkInput, PieceMovement, PieceWork } from "@/types";
 
 const COMPOSER_ID = "00000000-0000-4000-8000-000000000001";
 const PARENT_ID = "00000000-0000-4000-8000-0000000000aa";

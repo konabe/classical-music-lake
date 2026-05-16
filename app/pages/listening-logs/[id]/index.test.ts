@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import ListeningLogDetailPage from "./index.vue";
-import type { ListeningLog } from "~/types";
+import ListeningLogDetailPage from "@/pages/listening-logs/[id]/index.vue";
+import type { ListeningLog } from "@/types";
 
 vi.mock("~/composables/useAuth", () => ({
   ACCESS_TOKEN_KEY: "accessToken",

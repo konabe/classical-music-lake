@@ -1,10 +1,10 @@
-import { ConcertLogEntity } from "../domain/concert-log";
-import type { ConcertLogRepository } from "../domain/concert-log";
-import { ConcertLogId } from "../domain/value-objects/ids";
-import type { UserId } from "../domain/value-objects/ids";
-import { DynamoDBConcertLogRepository } from "../repositories/concert-log-repository";
-import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "../types";
-import { loadOwnedEntityOrNotFound } from "./helpers";
+import { ConcertLogEntity } from "@/domain/concert-log";
+import type { ConcertLogRepository } from "@/domain/concert-log";
+import { ConcertLogId } from "@/domain/value-objects/ids";
+import type { UserId } from "@/domain/value-objects/ids";
+import { DynamoDBConcertLogRepository } from "@/repositories/concert-log-repository";
+import type { ConcertLog, CreateConcertLogInput, UpdateConcertLogInput } from "@/types";
+import { loadOwnedEntityOrNotFound } from "@/usecases/helpers";
 
 // handlers 層は domain へ直接アクセスできないため、ID 値オブジェクトを usecase 層経由で公開する
 export { ConcertLogId };

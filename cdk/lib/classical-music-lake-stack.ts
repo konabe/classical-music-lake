@@ -377,6 +377,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
         minify: true,
         sourceMap: false,
         target: "es2022",
+        tsconfig: path.join(backendSrcDir, "..", "tsconfig.json"),
       },
     };
 

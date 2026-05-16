@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ConcertLog } from "../../types";
+import type { ConcertLog } from "@/types";
 
-import { UserId } from "../../domain/value-objects/ids";
-import { handler } from "./list";
-import { makeAuthEvent } from "../../test/fixtures";
+import { UserId } from "@/domain/value-objects/ids";
+import { handler } from "@/handlers/concert-logs/list";
+import { makeAuthEvent } from "@/test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),

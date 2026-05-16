@@ -1,5 +1,5 @@
 import { mountSuspended, mockNuxtImport } from "@nuxt/test-utils/runtime";
-import AuthLayout from "./auth.vue";
+import AuthLayout from "@/layouts/auth.vue";
 
 const colorModeState = reactive({
   preference: "light",

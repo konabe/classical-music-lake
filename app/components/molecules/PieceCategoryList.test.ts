@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PieceCategoryList from "./PieceCategoryList.vue";
-import type { PieceWork } from "~/types";
+import PieceCategoryList from "@/components/molecules/PieceCategoryList.vue";
+import type { PieceWork } from "@/types";
 
 const allCategories: Pick<PieceWork, "genre" | "era" | "formation" | "region"> = {
   genre: "交響曲",

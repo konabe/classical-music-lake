@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PageHeader from "./PageHeader.vue";
-import ButtonPrimary from "../atoms/ButtonPrimary.vue";
+import PageHeader from "@/components/molecules/PageHeader.vue";
+import ButtonPrimary from "@/components/atoms/ButtonPrimary.vue";
 
 vi.mock("~/composables/useAuth", () => ({
   ACCESS_TOKEN_KEY: "accessToken",

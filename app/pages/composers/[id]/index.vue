@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Composer } from "~/types";
+import type { Composer } from "@/types";
 
 const route = useRoute();
 const composerId = computed(() => route.params.id as string);

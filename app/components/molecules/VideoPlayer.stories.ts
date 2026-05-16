@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import VideoPlayer from "./VideoPlayer.vue";
+import VideoPlayer from "@/components/molecules/VideoPlayer.vue";
 
 const meta: Meta<typeof VideoPlayer> = {
   title: "Molecules/VideoPlayer",

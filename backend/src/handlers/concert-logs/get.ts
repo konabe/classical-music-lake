@@ -1,8 +1,8 @@
-import { createHandler } from "../../utils/middleware";
-import { getIdParam } from "../../utils/path-params";
-import { getUserId } from "../../utils/auth";
-import { ok } from "../../utils/response";
-import { ConcertLogId, createConcertLogUsecase } from "../../usecases/concert-log-usecase";
+import { createHandler } from "@/utils/middleware";
+import { getIdParam } from "@/utils/path-params";
+import { getUserId } from "@/utils/auth";
+import { ok } from "@/utils/response";
+import { ConcertLogId, createConcertLogUsecase } from "@/usecases/concert-log-usecase";
 
 const usecase = createConcertLogUsecase();
 

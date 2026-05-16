@@ -1,6 +1,6 @@
-import type { Composer, ListeningLog } from "../types";
-import type { ListeningLogEntity } from "./listening-log";
-import { PieceMovementEntity, type PieceWorkEntity } from "./piece";
+import type { Composer, ListeningLog } from "@/types";
+import type { ListeningLogEntity } from "@/domain/listening-log";
+import { PieceMovementEntity, type PieceWorkEntity } from "@/domain/piece";
 
 type PieceEntity = PieceWorkEntity | PieceMovementEntity;
 

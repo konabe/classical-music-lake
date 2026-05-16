@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PieceEditTemplate from "./PieceEditTemplate.vue";
-import type { Composer, PieceMovement, PieceWork } from "~/types";
+import PieceEditTemplate from "@/components/templates/PieceEditTemplate.vue";
+import type { Composer, PieceMovement, PieceWork } from "@/types";
 
 const mockReplaceMovements = vi.fn();
 

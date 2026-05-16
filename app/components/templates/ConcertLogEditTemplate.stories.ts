@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { ConcertLog } from "~/types";
-import ConcertLogEditTemplate from "./ConcertLogEditTemplate.vue";
+import type { ConcertLog } from "@/types";
+import ConcertLogEditTemplate from "@/components/templates/ConcertLogEditTemplate.vue";
 
 const meta: Meta<typeof ConcertLogEditTemplate> = {
   title: "Templates/ConcertLogEditTemplate",

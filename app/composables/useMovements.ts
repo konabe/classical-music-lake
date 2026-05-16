@@ -1,5 +1,5 @@
-import type { PieceMovement } from "~/types";
-import { useAuthenticatedApi } from "./useAuthenticatedApi";
+import type { PieceMovement } from "@/types";
+import { useAuthenticatedApi } from "@/composables/useAuthenticatedApi";
 
 /**
  * 親 Work 配下の楽章一覧を取得する composable。

@@ -1,4 +1,4 @@
-import type { IdValueObject } from "./value-objects/ids";
+import type { IdValueObject } from "@/domain/value-objects/ids";
 
 export type EntityProps<TId extends IdValueObject> = {
   id: TId;

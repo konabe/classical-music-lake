@@ -1,5 +1,5 @@
-import { filterListeningLogs, useListeningLogFilter } from "./useListeningLogFilter";
-import type { ListeningLog } from "~/types";
+import { filterListeningLogs, useListeningLogFilter } from "@/composables/useListeningLogFilter";
+import type { ListeningLog } from "@/types";
 
 const log = (overrides: Partial<ListeningLog> = {}): ListeningLog => ({
   id: "log-1",

@@ -5,8 +5,8 @@ import httpResponseSerializer from "@middy/http-response-serializer";
 import type { HttpError } from "http-errors";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 
-import { requireAdmin } from "./auth";
-import { getEnv } from "./env";
+import { requireAdmin } from "@/utils/auth";
+import { getEnv } from "@/utils/env";
 
 export type LambdaHandler = (
   event: APIGatewayProxyEvent,

@@ -1,7 +1,7 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ConcertLogItem from "./ConcertLogItem.vue";
-import ButtonSecondary from "../atoms/ButtonSecondary.vue";
-import type { ConcertLog } from "~/types";
+import ConcertLogItem from "@/components/molecules/ConcertLogItem.vue";
+import ButtonSecondary from "@/components/atoms/ButtonSecondary.vue";
+import type { ConcertLog } from "@/types";
 
 const sampleLog: ConcertLog = {
   id: "1",

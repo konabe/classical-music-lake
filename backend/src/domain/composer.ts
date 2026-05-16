@@ -4,13 +4,13 @@ import type {
   PieceEra,
   PieceRegion,
   UpdateComposerInput,
-} from "../types";
-import { Entity, type EntityProps } from "./entity";
-import { buildUpdateProps } from "./entity-helpers";
-import { ComposerName } from "./value-objects/composer-name";
-import { ComposerId } from "./value-objects/ids";
-import { Url } from "./value-objects/url";
-import { Year } from "./value-objects/year";
+} from "@/types";
+import { Entity, type EntityProps } from "@/domain/entity";
+import { buildUpdateProps } from "@/domain/entity-helpers";
+import { ComposerName } from "@/domain/value-objects/composer-name";
+import { ComposerId } from "@/domain/value-objects/ids";
+import { Url } from "@/domain/value-objects/url";
+import { Year } from "@/domain/value-objects/year";
 
 export type ComposerRepository = {
   findById(id: ComposerId): Promise<Composer | undefined>;

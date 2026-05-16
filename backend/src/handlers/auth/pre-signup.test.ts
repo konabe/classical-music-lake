@@ -1,6 +1,6 @@
 import type { PreSignUpTriggerEvent } from "aws-lambda";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { handler } from "./pre-signup";
+import { handler } from "@/handlers/auth/pre-signup";
 
 const mockRepo = vi.hoisted(() => ({
   signUp: vi.fn(),

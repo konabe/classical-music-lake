@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ListeningLogFilter from "./ListeningLogFilter.vue";
-import type { ListeningLogFilterState } from "~/composables/useListeningLogFilter";
+import ListeningLogFilter from "@/components/molecules/ListeningLogFilter.vue";
+import type { ListeningLogFilterState } from "@/composables/useListeningLogFilter";
 
 const initialState: ListeningLogFilterState = {
   keyword: "",

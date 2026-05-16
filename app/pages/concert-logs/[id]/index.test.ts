@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ConcertLogDetailPage from "./index.vue";
-import type { ConcertLog } from "~/types";
+import ConcertLogDetailPage from "@/pages/concert-logs/[id]/index.vue";
+import type { ConcertLog } from "@/types";
 
 const sampleLog: ConcertLog = {
   id: "cl-123",

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import DefaultLayout from "./default.vue";
+import DefaultLayout from "@/layouts/default.vue";
 
 const meta: Meta<typeof DefaultLayout> = {
   title: "Layouts/DefaultLayout",

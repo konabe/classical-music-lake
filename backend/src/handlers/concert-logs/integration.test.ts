@@ -5,12 +5,12 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { ConcertLog } from "../../types";
+import type { ConcertLog } from "@/types";
 
-import { handler as createHandler } from "./create";
-import { handler as listHandler } from "./list";
-import { handler as getHandler } from "./get";
-import { handler as deleteHandler } from "./delete";
+import { handler as createHandler } from "@/handlers/concert-logs/create";
+import { handler as listHandler } from "@/handlers/concert-logs/list";
+import { handler as getHandler } from "@/handlers/concert-logs/get";
+import { handler as deleteHandler } from "@/handlers/concert-logs/delete";
 import { GetCommand, PutCommand, QueryCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 
 const { mockSend } = vi.hoisted(() => ({ mockSend: vi.fn() }));

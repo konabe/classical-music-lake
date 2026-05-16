@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { ListeningLog } from "~/types";
-import ListeningLogList from "./ListeningLogList.vue";
+import type { ListeningLog } from "@/types";
+import ListeningLogList from "@/components/organisms/ListeningLogList.vue";
 
 const meta: Meta<typeof ListeningLogList> = {
   title: "Organisms/ListeningLogList",

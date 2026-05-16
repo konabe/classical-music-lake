@@ -1,11 +1,7 @@
-import type {
-  CreateListeningLogInput,
-  ListeningLogRecord,
-  UpdateListeningLogInput,
-} from "../types";
-import { Entity, type EntityProps } from "./entity";
-import { Rating } from "./value-objects/rating";
-import { ListeningLogId, PieceId, UserId } from "./value-objects/ids";
+import type { CreateListeningLogInput, ListeningLogRecord, UpdateListeningLogInput } from "@/types";
+import { Entity, type EntityProps } from "@/domain/entity";
+import { Rating } from "@/domain/value-objects/rating";
+import { ListeningLogId, PieceId, UserId } from "@/domain/value-objects/ids";
 
 export type ListeningLogRepository = {
   findById(id: ListeningLogId): Promise<ListeningLogRecord | undefined>;

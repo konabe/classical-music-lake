@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import ThemeToggle from "./ThemeToggle.vue";
+import ThemeToggle from "@/components/atoms/ThemeToggle.vue";
 
 const meta: Meta<typeof ThemeToggle> = {
   title: "Atoms/ThemeToggle",

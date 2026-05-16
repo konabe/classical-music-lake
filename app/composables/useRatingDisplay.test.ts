@@ -1,4 +1,4 @@
-import { useRatingDisplay } from "./useRatingDisplay";
+import { useRatingDisplay } from "@/composables/useRatingDisplay";
 
 describe("useRatingDisplay", () => {
   it("ratingStars: 評価0のとき☆5つを返す", () => {

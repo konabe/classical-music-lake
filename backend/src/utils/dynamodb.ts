@@ -7,7 +7,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 
-import { getEnv } from "./env";
+import { getEnv } from "@/utils/env";
 
 const client = new DynamoDBClient({ region: getEnv().awsRegion });
 

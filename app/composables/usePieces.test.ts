@@ -1,13 +1,13 @@
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import { usePiecesPaginated, usePiecesAll, usePiece } from "./usePieces";
-import type { PageResult } from "./usePaginatedList";
-import type { PieceWork } from "~/types";
-import { ID_TOKEN_KEY } from "./useAuth";
+import { usePiecesPaginated, usePiecesAll, usePiece } from "@/composables/usePieces";
+import type { PageResult } from "@/composables/usePaginatedList";
+import type { PieceWork } from "@/types";
+import { ID_TOKEN_KEY } from "@/composables/useAuth";
 import {
   PIECES_PAGE_SIZE_DEFAULT,
   PIECES_ALL_MAX_EMPTY_PAGES,
   PIECES_ALL_MAX_TOTAL,
-} from "~/types";
+} from "@/types";
 
 const { mockUseFetch } = vi.hoisted(() => ({
   mockUseFetch: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock("#app", () => ({
 }));
 
 vi.mock("./useAuth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./useAuth")>();
+  const actual = await importOriginal<typeof import("@/composables/useAuth")>();
   return {
     ...actual,
     useAuth: () => ({

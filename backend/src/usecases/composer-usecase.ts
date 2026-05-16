@@ -1,9 +1,9 @@
-import { ComposerEntity } from "../domain/composer";
-import type { ComposerRepository } from "../domain/composer";
-import { ComposerId } from "../domain/value-objects/ids";
-import { DynamoDBComposerRepository } from "../repositories/composer-repository";
-import type { Composer, CreateComposerInput, Paginated, UpdateComposerInput } from "../types";
-import { findByIdOrNotFound, toPaginatedResult } from "./helpers";
+import { ComposerEntity } from "@/domain/composer";
+import type { ComposerRepository } from "@/domain/composer";
+import { ComposerId } from "@/domain/value-objects/ids";
+import { DynamoDBComposerRepository } from "@/repositories/composer-repository";
+import type { Composer, CreateComposerInput, Paginated, UpdateComposerInput } from "@/types";
+import { findByIdOrNotFound, toPaginatedResult } from "@/usecases/helpers";
 
 // handlers 層は domain へ直接アクセスできないため、ID 値オブジェクトを usecase 層経由で公開する
 export { ComposerId };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isYouTubeUrl, toYouTubeEmbedUrl } from "~/utils/video";
+import { isYouTubeUrl, toYouTubeEmbedUrl } from "@/utils/video";
 
 const props = defineProps<{
   videoUrl: string;

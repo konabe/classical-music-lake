@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import ConcertLogForm from "./ConcertLogForm.vue";
-import type { PieceWork } from "~/types";
+import ConcertLogForm from "@/components/organisms/ConcertLogForm.vue";
+import type { PieceWork } from "@/types";
 
 const mockPieces: PieceWork[] = [
   {

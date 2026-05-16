@@ -1,5 +1,5 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import SelectInput from "./SelectInput.vue";
+import SelectInput from "@/components/atoms/SelectInput.vue";
 
 const options = [
   { value: "交響曲", label: "交響曲" },

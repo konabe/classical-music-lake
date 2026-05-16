@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { PieceWork } from "~/types";
-import PieceItem from "./PieceItem.vue";
+import type { PieceWork } from "@/types";
+import PieceItem from "@/components/molecules/PieceItem.vue";
 
 const meta: Meta<typeof PieceItem> = {
   title: "Molecules/PieceItem",

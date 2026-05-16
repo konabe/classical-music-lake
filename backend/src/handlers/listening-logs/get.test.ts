@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
-import { handler } from "./get";
-import { makeComposer, makeLogRecord, makePiece } from "../../test/fixtures";
+import { handler } from "@/handlers/listening-logs/get";
+import { makeComposer, makeLogRecord, makePiece } from "@/test/fixtures";
 
 const mocks = vi.hoisted(() => ({
   listeningLogRepo: {

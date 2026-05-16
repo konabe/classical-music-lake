@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
-import PieceDetailTemplate from "./PieceDetailTemplate.vue";
-import type { ListeningLog, PieceMovement, PieceWork } from "~/types";
+import PieceDetailTemplate from "@/components/templates/PieceDetailTemplate.vue";
+import type { ListeningLog, PieceMovement, PieceWork } from "@/types";
 
 const pieceWithVideo: PieceWork = {
   kind: "work",

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import type { PieceMovement } from "~/types";
-import MovementListItem from "./MovementListItem.vue";
+import type { PieceMovement } from "@/types";
+import MovementListItem from "@/components/molecules/MovementListItem.vue";
 
 const meta: Meta<typeof MovementListItem> = {
   title: "Molecules/MovementListItem",

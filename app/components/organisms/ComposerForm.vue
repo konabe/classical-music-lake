@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { CreateComposerInput } from "~/types";
-import { PIECE_ERAS, PIECE_REGIONS } from "~/types";
-import { toSelectOptions } from "~/utils/select-options";
+import type { CreateComposerInput } from "@/types";
+import { PIECE_ERAS, PIECE_REGIONS } from "@/types";
+import { toSelectOptions } from "@/utils/select-options";
 
 const eraOptions = toSelectOptions(PIECE_ERAS);
 const regionOptions = toSelectOptions(PIECE_REGIONS);

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import LoginTemplate from "./LoginTemplate.vue";
+import LoginTemplate from "@/components/templates/LoginTemplate.vue";
 
 const meta: Meta<typeof LoginTemplate> = {
   title: "Templates/LoginTemplate",

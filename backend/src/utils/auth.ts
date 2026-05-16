@@ -1,7 +1,7 @@
 import createError from "http-errors";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
-import { UserId } from "../domain/value-objects/ids";
+import { UserId } from "@/domain/value-objects/ids";
 
 type CognitoAuthorizerContext = {
   claims: {

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
-import AuthFormContainer from "./AuthFormContainer.vue";
+import AuthFormContainer from "@/components/molecules/AuthFormContainer.vue";
 
 const meta: Meta<typeof AuthFormContainer> = {
   title: "Molecules/AuthFormContainer",

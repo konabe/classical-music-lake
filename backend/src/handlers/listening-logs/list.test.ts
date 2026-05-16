@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ListeningLog } from "../../types";
+import type { ListeningLog } from "@/types";
 
-import { UserId } from "../../domain/value-objects/ids";
-import { handler } from "./list";
+import { UserId } from "@/domain/value-objects/ids";
+import { handler } from "@/handlers/listening-logs/list";
 import {
   makeAuthEvent,
   makeComposer,
   makeLogRecord,
   makePiece,
   TEST_PIECE_ID,
-} from "../../test/fixtures";
+} from "@/test/fixtures";
 
 const mocks = vi.hoisted(() => ({
   listeningLogRepo: {
