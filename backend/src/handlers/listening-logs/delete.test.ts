@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
     saveWorkWithOptimisticLock: vi.fn(),
     removeWorkCascade: vi.fn(),
     findById: vi.fn(),
+    findByIds: vi.fn().mockResolvedValue([]),
     findChildren: vi.fn(),
     saveMovement: vi.fn(),
     saveMovementWithOptimisticLock: vi.fn(),
@@ -34,6 +35,7 @@ const mocks = vi.hoisted(() => ({
   },
   composerRepo: {
     findById: vi.fn(),
+    findByIds: vi.fn().mockResolvedValue([]),
     findPage: vi.fn(),
     save: vi.fn(),
     saveWithOptimisticLock: vi.fn(),

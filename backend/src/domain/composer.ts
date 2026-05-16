@@ -14,6 +14,12 @@ import { Year } from "./value-objects/year";
 
 export type ComposerRepository = {
   findById(id: ComposerId): Promise<Composer | undefined>;
+  /**
+   * 複数 ID をまとめて取得する（重複は呼び出し側で排除する前提）。
+   * 戻り値は見つかったものだけを含み、`id` の順序は保証しない。
+   * 現状は `Promise.all(findById)` の並列発行で、BatchGetItem への差し替え用フック。
+   */
+  findByIds(ids: readonly ComposerId[]): Promise<Composer[]>;
   findPage(options: {
     limit: number;
     exclusiveStartKey?: Record<string, unknown>;

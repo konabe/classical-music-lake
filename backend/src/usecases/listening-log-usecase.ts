@@ -4,6 +4,7 @@ import type { ComposerRepository } from "../domain/composer";
 import { ListeningLogDetail } from "../domain/listening-log-detail";
 import { ListeningLogEntity } from "../domain/listening-log";
 import type { ListeningLogRepository } from "../domain/listening-log";
+import { PieceComponent, PieceWorkEntity } from "../domain/piece";
 import type { PieceRepository } from "../domain/piece";
 import { ComposerId, ListeningLogId, PieceId } from "../domain/value-objects/ids";
 import type { UserId } from "../domain/value-objects/ids";
@@ -91,29 +92,32 @@ export class ListeningLogUsecase {
     const parentWork = await this.resolveParentWork(piece);
     const composerId = this.resolveComposerId(piece, parentWork);
     const composer = await this.findComposerOrThrow(composerId);
-    return ListeningLogDetail.from(entity, piece, parentWork, composer).toPlain();
+    const pieceEntity = PieceComponent.reconstruct(piece);
+    const parentWorkEntity = parentWork === null ? null : PieceWorkEntity.reconstruct(parentWork);
+    return ListeningLogDetail.from(entity, pieceEntity, parentWorkEntity, composer).toPlain();
   }
 
   /**
-   * 一覧用の Detail 組み立て。重複する pieceId / composerId をまとめて取得し、
-   * N+1 アクセスを避ける（個人利用前提でデータ量は小さいが、線形リクエスト数の悪化は避ける）。
+   * 一覧用の Detail 組み立て。重複する pieceId / composerId をリポジトリの `findByIds` に
+   * 委ねることで N+1 アクセスを避ける（重複排除は呼び出し側、まとめての並列 fetch ／ 将来的な
+   * BatchGetItem 化はリポジトリ側の責務とする）。
    */
   private async toDetailDtoList(entities: ListeningLogEntity[]): Promise<ListeningLog[]> {
     if (entities.length === 0) {
       return [];
     }
     const uniquePieceIds = uniqueByValue(entities.map((e) => e.pieceId));
-    const pieces = await this.fetchUnique<PieceId, Piece>(uniquePieceIds, (id) =>
-      this.pieceRepo.findById(id),
-    );
+    const pieces = indexByIdValue(await this.pieceRepo.findByIds(uniquePieceIds));
+
     const parentWorkIds = collectParentWorkIds(pieces.values());
-    const parentWorks = await this.fetchUnique<PieceId, PieceWork>(parentWorkIds, (id) =>
-      this.pieceRepo.findRootById(id),
+    const parentWorks = indexByIdValue(
+      (await this.pieceRepo.findByIds(parentWorkIds)).filter(
+        (p): p is PieceWork => p.kind === "work",
+      ),
     );
+
     const composerIds = collectComposerIds(pieces.values(), parentWorks);
-    const composers = await this.fetchUnique<ComposerId, Composer>(composerIds, (id) =>
-      this.composerRepo.findById(id),
-    );
+    const composers = indexByIdValue(await this.composerRepo.findByIds(composerIds));
 
     return entities.map((entity) => {
       const piece = pieces.get(entity.pieceId.value);
@@ -130,7 +134,9 @@ export class ListeningLogUsecase {
       if (composer === undefined) {
         throw new createError.NotFound("Composer referenced by piece not found");
       }
-      return ListeningLogDetail.from(entity, piece, parentWork, composer).toPlain();
+      const pieceEntity = PieceComponent.reconstruct(piece);
+      const parentWorkEntity = parentWork === null ? null : PieceWorkEntity.reconstruct(parentWork);
+      return ListeningLogDetail.from(entity, pieceEntity, parentWorkEntity, composer).toPlain();
     });
   }
 
@@ -167,31 +173,15 @@ export class ListeningLogUsecase {
     }
     return composer;
   }
-
-  /**
-   * 重複排除した ID 群を順次 fetch して `value -> entity` の Map にする。
-   *
-   * `BatchGetItem` が利用できる場面ではそちらが理想だが、Piece / Composer リポジトリの
-   * 公開 I/F が単件 `findById` しか持たないため、ここでは「同一 ID は最大 1 回だけ fetch する」
-   * という最低限の重複排除に留める。データ量が増え BatchGet が必要になったら、
-   * リポジトリ側に `findByIds` を追加して差し替える。
-   */
-  private async fetchUnique<TId extends { value: string }, TItem>(
-    ids: TId[],
-    fetch: (id: TId) => Promise<TItem | undefined>,
-  ): Promise<Map<string, TItem>> {
-    const map = new Map<string, TItem>();
-    await Promise.all(
-      ids.map(async (id) => {
-        const item = await fetch(id);
-        if (item !== undefined) {
-          map.set(id.value, item);
-        }
-      }),
-    );
-    return map;
-  }
 }
+
+const indexByIdValue = <T extends { id: string }>(items: T[]): Map<string, T> => {
+  const map = new Map<string, T>();
+  for (const item of items) {
+    map.set(item.id, item);
+  }
+  return map;
+};
 
 const uniqueByValue = <T extends { value: string }>(ids: T[]): T[] => {
   const seen = new Set<string>();

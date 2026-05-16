@@ -1,14 +1,11 @@
-import { createHandler } from "../../utils/middleware";
-import { getIdParam } from "../../utils/path-params";
-import { getUserId } from "../../utils/auth";
+import { withHandler } from "../../utils/handler";
 import { ok } from "../../utils/response";
 import { createListeningLogUsecase, ListeningLogId } from "../../usecases/listening-log-usecase";
 
 const usecase = createListeningLogUsecase();
 
-export const handler = createHandler(async (event) => {
-  const id = getIdParam(event, ListeningLogId.from);
-  const userId = getUserId(event);
-  const log = await usecase.get(id, userId);
-  return ok(log);
+export const handler = withHandler({
+  idFrom: ListeningLogId.from,
+  userId: true,
+  handler: async ({ id, userId }) => ok(await usecase.get(id, userId)),
 });

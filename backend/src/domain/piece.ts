@@ -63,6 +63,13 @@ export type PieceRepository = {
 
   /** kind を問わず id で取得する。Work でも Movement でも返す。 */
   findById(id: PieceId): Promise<Piece | undefined>;
+  /**
+   * 複数 ID をまとめて取得する（重複は呼び出し側で排除する前提）。
+   * 戻り値は見つかったものだけを含み、`id` の順序は保証しない（呼び出し側で Map 化する）。
+   * 現状の実装は `Promise.all(findById)` の並列発行で、必要になったら BatchGetItem に差し替える
+   * Branch by Abstraction 用フック。
+   */
+  findByIds(ids: readonly PieceId[]): Promise<Piece[]>;
   /** 親 Work 配下の Movement を `index` 昇順で全件取得する。 */
   findChildren(parentId: PieceId): Promise<PieceMovement[]>;
   saveMovement(movement: PieceMovement): Promise<void>;
@@ -135,6 +142,12 @@ export abstract class PieceComponent<
   }
 
   abstract toPlain(): TPlain;
+
+  /**
+   * 表示用タイトルを返す。Work は自身の title、Movement は「親 Work title - 楽章 title」。
+   * 呼び出し側に整形ロジックを染み出させないために polymorphism で各派生クラスに閉じる。
+   */
+  abstract displayNameUnder(parentWork: PieceWorkEntity | null): string;
 
   /**
    * 派生クラスが自身の具象型でインスタンスを再生成するためのフック。
@@ -321,6 +334,10 @@ export class PieceWorkEntity extends PieceComponent<PieceWorkProps, PieceWork, U
       videoUrls: this.props.videoUrls?.map((u) => u.value),
     };
   }
+
+  override displayNameUnder(_parentWork: PieceWorkEntity | null): string {
+    return this.props.title.value;
+  }
 }
 
 export class PieceMovementEntity extends PieceComponent<
@@ -400,5 +417,12 @@ export class PieceMovementEntity extends PieceComponent<
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
     };
+  }
+
+  override displayNameUnder(parentWork: PieceWorkEntity | null): string {
+    if (parentWork === null) {
+      throw new Error("PieceMovementEntity.displayNameUnder: parentWork is required");
+    }
+    return `${parentWork.title.value} - ${this.props.title.value}`;
   }
 }

@@ -147,6 +147,18 @@ export class DynamoDBPieceRepository implements PieceRepository {
   }
 
   /**
+   * 複数 ID を並列で取得する。BatchGetItem 化への差し替えを見据えた Branch by Abstraction。
+   * 個人利用前提でデータ量が小さく、まずは Promise.all で素直に並列発行する。
+   */
+  async findByIds(ids: readonly PieceId[]): Promise<Piece[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const results = await Promise.all(ids.map((id) => this.findById(id)));
+    return results.filter((p): p is Piece => p !== undefined);
+  }
+
+  /**
    * 親 Work 配下の Movement を `parentId-index-index` GSI で `index` 昇順に全件取得する。
    * `Limit` は付けず（楽章は最大 {@link MOVEMENTS_PER_WORK_MAX} 件想定）、
    * 1 ページに収まらない場合は `LastEvaluatedKey` で全件を吸収する。

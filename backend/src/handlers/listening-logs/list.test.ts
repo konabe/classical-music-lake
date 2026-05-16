@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => ({
     saveWorkWithOptimisticLock: vi.fn(),
     removeWorkCascade: vi.fn(),
     findById: vi.fn(),
+    findByIds: vi.fn().mockResolvedValue([]),
     findChildren: vi.fn(),
     saveMovement: vi.fn(),
     saveMovementWithOptimisticLock: vi.fn(),
@@ -35,6 +36,7 @@ const mocks = vi.hoisted(() => ({
   },
   composerRepo: {
     findById: vi.fn(),
+    findByIds: vi.fn().mockResolvedValue([]),
     findPage: vi.fn(),
     save: vi.fn(),
     saveWithOptimisticLock: vi.fn(),
@@ -68,8 +70,10 @@ describe("GET /listening-logs (list)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.pieceRepo.findById.mockResolvedValue(makePiece());
+    mocks.pieceRepo.findByIds.mockResolvedValue([makePiece()]);
     mocks.pieceRepo.findRootById.mockResolvedValue(makePiece());
     mocks.composerRepo.findById.mockResolvedValue(makeComposer());
+    mocks.composerRepo.findByIds.mockResolvedValue([makeComposer()]);
   });
 
   it("空リストの場合は 200 で空配列を返す", async () => {
