@@ -16,8 +16,7 @@ export const useAuthenticatedApi = () => {
 
     const { refreshTokens, clearTokens } = useAuth();
     const refreshed = await refreshTokens();
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
-    if (refreshed === true) {
+    if (refreshed) {
       return true;
     }
 
@@ -72,8 +71,7 @@ export const useAuthenticatedApi = () => {
 
     if (response.status === 401) {
       const refreshed = await handleAuthError(response.status);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
-      if (refreshed === true) {
+      if (refreshed) {
         const retried = await doFetch(url, options);
         if (retried.status === 401) {
           const { clearTokens } = useAuth();

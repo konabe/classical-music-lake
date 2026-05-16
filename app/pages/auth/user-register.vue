@@ -15,7 +15,7 @@ async function handleSubmit(email: string, password: string) {
   errors.email = "";
   errors.password = "";
 
-  if (validateEmail(email) === false) {
+  if (!validateEmail(email)) {
     errors.email = "有効なメールアドレスを入力してください";
     return;
   }
@@ -25,7 +25,7 @@ async function handleSubmit(email: string, password: string) {
   try {
     const result = await register(email, password);
 
-    if (result.success === true) {
+    if (result.success) {
       sessionStorage.setItem("pendingPassword", password);
       router.push({ path: "/auth/verify-email", state: { email } });
       return;
@@ -37,7 +37,7 @@ async function handleSubmit(email: string, password: string) {
       errors.email = message;
     } else if (result.errorType === "password") {
       errors.password = message;
-    } else if (message.includes("already") === true || message.includes("既に") === true) {
+    } else if (message.includes("already") || message.includes("既に")) {
       errors.email = "このメールアドレスは既に登録されています";
     } else {
       errors.email = message;

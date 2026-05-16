@@ -29,7 +29,7 @@ async function handleSubmit(code: string) {
 
   try {
     const verifyResult = await verifyEmail(email.value, code);
-    if (verifyResult.success === false) {
+    if (!verifyResult.success) {
       error.value =
         verifyResult.error !== undefined && verifyResult.error !== ""
           ? verifyResult.error
@@ -39,7 +39,7 @@ async function handleSubmit(code: string) {
 
     const loginResult = await login(email.value, password.value);
     sessionStorage.removeItem("pendingPassword");
-    if (loginResult.success === false) {
+    if (!loginResult.success) {
       error.value =
         "確認は完了しましたが、ログインに失敗しました。ログイン画面からログインしてください。";
       return;
@@ -58,7 +58,7 @@ async function handleResend() {
 
   try {
     const result = await resendVerificationCode(email.value);
-    if (result.success === true) {
+    if (result.success) {
       infoMessage.value = "認証コードを再送しました。メールをご確認ください。";
     } else {
       error.value =

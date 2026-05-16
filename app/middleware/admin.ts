@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware(() => {
   }
 
   const { isAdmin } = useAuth();
-  if (isAdmin() !== true) {
+  if (!isAdmin()) {
     return navigateTo("/", { replace: true });
   }
 });

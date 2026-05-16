@@ -28,10 +28,10 @@ export const usePaginatedList = <T>(fetchPage: (cursor?: string) => Promise<Page
   const hasMore = ref<boolean>(true);
 
   const loadMore = async () => {
-    if (pending.value === true) {
+    if (pending.value) {
       return;
     }
-    if (hasMore.value === false) {
+    if (!hasMore.value) {
       return;
     }
     pending.value = true;

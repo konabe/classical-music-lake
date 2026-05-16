@@ -13,9 +13,9 @@ export default defineNuxtRouteMiddleware(async () => {
   }
 
   const { isTokenExpired, refreshTokens, clearTokens } = useAuth();
-  if (isTokenExpired() === true) {
+  if (isTokenExpired()) {
     const refreshed = await refreshTokens();
-    if (refreshed !== true) {
+    if (!refreshed) {
       clearTokens();
       return navigateTo("/auth/login", { replace: true });
     }

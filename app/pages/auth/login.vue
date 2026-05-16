@@ -21,7 +21,7 @@ async function handleSubmit(email: string, password: string) {
   try {
     const result = await login(email, password);
 
-    if (result.success === true) {
+    if (result.success) {
       await router.push("/");
     } else if (result.errorType === "email") {
       errors.email = "有効なメールアドレスを入力してください";

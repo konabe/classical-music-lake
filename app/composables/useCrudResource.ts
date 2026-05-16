@@ -16,8 +16,7 @@ export const useCrudResource = <TEntity, TCreateInput, TUpdateInput>(resourceNam
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
-      if (refreshed === true) {
+      if (refreshed) {
         await list.refresh();
       }
     },
@@ -64,8 +63,7 @@ export const useCrudResourceItem = <TEntity>(resourceName: string, id: () => str
     headers: computed(() => getAuthHeaders()),
     async onResponseError({ response }) {
       const refreshed = await handleAuthError(response.status);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare -- 自動インポートにより any として解決される環境があるため
-      if (refreshed === true) {
+      if (refreshed) {
         await result.refresh();
       }
     },

@@ -70,7 +70,7 @@ watch(
 const canAddVideoUrl = computed<boolean>(() => form.videoUrls.length < VIDEO_URLS_MAX);
 
 function addVideoUrl() {
-  if (canAddVideoUrl.value === true) {
+  if (canAddVideoUrl.value) {
     form.videoUrls.push("");
   }
 }
@@ -110,8 +110,8 @@ function handleSubmit() {
         v-model="form.composerId"
         required
         :options="composerOptions"
-        :disabled="composersPending === true"
-        :placeholder="composersPending === true ? '読み込み中...' : '作曲家を選択'"
+        :disabled="composersPending"
+        :placeholder="composersPending ? '読み込み中...' : '作曲家を選択'"
       />
     </FormGroup>
 
