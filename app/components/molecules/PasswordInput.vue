@@ -14,7 +14,7 @@ defineEmits<{
 const isVisible = ref(false);
 
 function toggleVisibility() {
-  isVisible.value = isVisible.value === false;
+  isVisible.value = !isVisible.value;
 }
 </script>
 

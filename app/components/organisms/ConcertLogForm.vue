@@ -66,7 +66,7 @@ function addPiece() {
   if (piece === undefined) {
     return;
   }
-  if (selectedPieces.value.some((p) => p.id === piece.id) === true) {
+  if (selectedPieces.value.some((p) => p.id === piece.id)) {
     return;
   }
   selectedPieces.value.push(piece);

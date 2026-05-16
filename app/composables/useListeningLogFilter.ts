@@ -82,7 +82,7 @@ export const useListeningLogFilter = (logs: Ref<ListeningLog[] | null | undefine
     return (
       s.keyword.length > 0 ||
       s.rating !== "" ||
-      s.favoriteOnly === true ||
+      s.favoriteOnly ||
       s.fromDate.length > 0 ||
       s.toDate.length > 0
     );
