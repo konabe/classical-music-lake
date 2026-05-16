@@ -13,9 +13,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node", "vitest/globals"],
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@shared/*": ["../shared/*"]
     }
   },
