@@ -1,5 +1,11 @@
 import { handler } from "@/handlers/auth/verify-email";
-import { makeEvent, mockContext, mockCallback, describeInvalidBodyCases } from "@/test/fixtures";
+import {
+  makeEvent,
+  mockContext,
+  mockCallback,
+  describeInvalidBodyCases,
+  makeCognitoError,
+} from "@/test/fixtures";
 import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
 vi.mock("@/repositories/cognito-auth-repository");
@@ -9,6 +15,9 @@ const validInput = {
   code: "123456",
 };
 
+const makeVerifyEmailEvent = (body: object = validInput) =>
+  makeEvent({ body: JSON.stringify(body), httpMethod: "POST", path: "/auth/verify-email" });
+
 describe("POST /auth/verify-email", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -16,40 +25,10 @@ describe("POST /auth/verify-email", () => {
 
   describeInvalidBodyCases(handler, "/auth/verify-email");
 
-  describe("必須フィールド検証", () => {
-    it("email が存在しない場合は 400 を返す", async () => {
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify({ code: validInput.code }),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(400);
-    });
-
-    it("code が存在しない場合は 400 を返す", async () => {
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify({ email: validInput.email }),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(400);
-    });
-
+  describe("バリデーション", () => {
     it("email が無効な場合は 400 を返す", async () => {
       const result = await handler(
-        makeEvent({
-          body: JSON.stringify({ ...validInput, email: "invalid-email" }),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
+        makeVerifyEmailEvent({ ...validInput, email: "invalid-email" }),
         mockContext,
         mockCallback,
       );
@@ -57,16 +36,12 @@ describe("POST /auth/verify-email", () => {
       expect(JSON.parse(result?.body ?? "{}").message).toContain("email");
     });
 
-    it("code が空の場合は 400 を返す", async () => {
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify({ ...validInput, code: "" }),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
+    it.each([
+      [{ code: validInput.code }],
+      [{ email: validInput.email }],
+      [{ ...validInput, code: "" }],
+    ])("必須フィールドが欠けている・空の場合は 400 を返す: %o", async (body) => {
+      const result = await handler(makeVerifyEmailEvent(body), mockContext, mockCallback);
       expect(result?.statusCode).toBe(400);
     });
   });
@@ -75,15 +50,7 @@ describe("POST /auth/verify-email", () => {
     it("有効な email と code で確認に成功し、200 を返す", async () => {
       mockRepo.confirmSignUp.mockResolvedValueOnce();
 
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify(validInput),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
+      const result = await handler(makeVerifyEmailEvent(), mockContext, mockCallback);
 
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? "{}");
@@ -93,98 +60,21 @@ describe("POST /auth/verify-email", () => {
   });
 
   describe("Cognito エラー系", () => {
-    it("コードが不一致の場合は 400 を返す", async () => {
-      const error = Object.assign(new Error("Invalid code"), { name: "CodeMismatchException" });
-      mockRepo.confirmSignUp.mockRejectedValueOnce(error);
+    it.each<[string, number, string | undefined]>([
+      ["CodeMismatchException", 400, "CodeMismatch"],
+      ["ExpiredCodeException", 400, "ExpiredCode"],
+      ["NotAuthorizedException", 400, "NotAuthorized"],
+      ["TooManyRequestsException", 429, undefined],
+      ["ServiceUnavailableException", 500, undefined],
+    ])("%s のとき %i を返す", async (name, statusCode, errorCode) => {
+      mockRepo.confirmSignUp.mockRejectedValueOnce(makeCognitoError(name));
 
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify(validInput),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
+      const result = await handler(makeVerifyEmailEvent(), mockContext, mockCallback);
 
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").error).toBe("CodeMismatch");
-    });
-
-    it("コードが期限切れの場合は 400 を返す", async () => {
-      const error = Object.assign(new Error("Expired code"), { name: "ExpiredCodeException" });
-      mockRepo.confirmSignUp.mockRejectedValueOnce(error);
-
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify(validInput),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
-
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").error).toBe("ExpiredCode");
-    });
-
-    it("既に確認済みの場合は 400 を返す", async () => {
-      const error = Object.assign(new Error("User cannot be confirmed"), {
-        name: "NotAuthorizedException",
-      });
-      mockRepo.confirmSignUp.mockRejectedValueOnce(error);
-
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify(validInput),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
-
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").error).toBe("NotAuthorized");
-    });
-
-    it("リクエスト過多時に 429 を返す", async () => {
-      const error = Object.assign(new Error("Too many requests"), {
-        name: "TooManyRequestsException",
-      });
-      mockRepo.confirmSignUp.mockRejectedValueOnce(error);
-
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify(validInput),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
-
-      expect(result?.statusCode).toBe(429);
-    });
-
-    it("その他の Cognito エラー時に 500 を返す", async () => {
-      const error = Object.assign(new Error("Service unavailable"), {
-        name: "ServiceUnavailableException",
-      });
-      mockRepo.confirmSignUp.mockRejectedValueOnce(error);
-
-      const result = await handler(
-        makeEvent({
-          body: JSON.stringify(validInput),
-          httpMethod: "POST",
-          path: "/auth/verify-email",
-        }),
-        mockContext,
-        mockCallback,
-      );
-
-      expect(result?.statusCode).toBe(500);
+      expect(result?.statusCode).toBe(statusCode);
+      if (errorCode !== undefined) {
+        expect(JSON.parse(result?.body ?? "{}").error).toBe(errorCode);
+      }
     });
   });
 });

@@ -183,6 +183,9 @@ type HandlerFn = (
   callback: unknown,
 ) => Promise<{ statusCode?: number; body?: string } | null | undefined>;
 
+export const makeCognitoError = (name: string, message = "error") =>
+  Object.assign(new Error(message), { name });
+
 export const describeInvalidBodyCases = (handler: HandlerFn, path: string) => {
   describe("リクエストボディ異常系", () => {
     it.each<[string | null, number, string]>([
