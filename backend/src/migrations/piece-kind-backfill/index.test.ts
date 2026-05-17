@@ -1,5 +1,3 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
 import { runMigration } from "@/migrations/piece-kind-backfill/index";
 
 type PieceRecord = {

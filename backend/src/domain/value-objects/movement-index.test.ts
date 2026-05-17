@@ -1,5 +1,3 @@
-import { describe, it, expect } from "vitest";
-
 import { MovementIndex } from "@/domain/value-objects/movement-index";
 
 describe("MovementIndex", () => {

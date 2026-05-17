@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 import { ok, badRequest, tooManyRequests, internalError } from "@/utils/response";
 
 describe("response helpers", () => {

@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import createError from "http-errors";
 

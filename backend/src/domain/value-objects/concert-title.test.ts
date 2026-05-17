@@ -1,5 +1,3 @@
-import { describe, it, expect } from "vitest";
-
 import { ConcertTitle } from "@/domain/value-objects/concert-title";
 
 describe("ConcertTitle", () => {

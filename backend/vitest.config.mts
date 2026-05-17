@@ -17,6 +17,7 @@ export default defineConfig({
   test: {
     root: __dirname,
     setupFiles: ["./src/test/setup.ts"],
+    globals: true,
     environment: "node",
     exclude: ["node_modules/**", "dist/**"],
     coverage: {

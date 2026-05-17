@@ -1,5 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
 import { handler } from "@/handlers/pieces/list";
 import { makeEvent, makePiece, mockContext, mockCallback } from "@/test/fixtures";
 import { encodeCursor } from "@/utils/cursor";

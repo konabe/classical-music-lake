@@ -1,5 +1,3 @@
-import { describe, it, expect } from "vitest";
-
 import { PieceComponent, PieceMovementEntity, PieceWorkEntity } from "@/domain/piece";
 import { PieceId } from "@/domain/value-objects/ids";
 import type { CreateMovementInput, CreateWorkInput, PieceMovement, PieceWork } from "@/types";

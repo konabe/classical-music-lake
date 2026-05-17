@@ -1,5 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
 import { handler } from "@/handlers/auth/resend-verification-code";
 import { makeEvent, mockContext, mockCallback, describeInvalidBodyCases } from "@/test/fixtures";
 

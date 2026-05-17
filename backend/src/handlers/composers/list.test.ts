@@ -1,5 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
 import { handler } from "@/handlers/composers/list";
 import { makeEvent, makeComposer, mockContext, mockCallback } from "@/test/fixtures";
 import { encodeCursor } from "@/utils/cursor";

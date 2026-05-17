@@ -1,5 +1,3 @@
-import { describe, it, expect } from "vitest";
-
 import { ConcertLogEntity } from "@/domain/concert-log";
 import { UserId } from "@/domain/value-objects/ids";
 import type { ConcertLog, CreateConcertLogInput } from "@/types";

@@ -1,5 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
 import { handler } from "@/handlers/listening-logs/delete";
 import {
   mockContext,
