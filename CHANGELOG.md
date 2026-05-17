@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.12.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.12.1...classical-music-lake-v2.12.2) (2026-05-17)
+
+
+### Bug Fixes
+
+* **backend:** tsconfig の moduleResolution を bundler に切り替えて型解決を回復 ([#696](https://github.com/konabe/classical-music-lake/issues/696)) ([17d99f8](https://github.com/konabe/classical-music-lake/commit/17d99f8373274e4042a2877a6bf3502afaa380f6))
+
+
+### Code Refactoring
+
+* **backend:** event.body の不要な as unknown キャストを削除 ([#701](https://github.com/konabe/classical-music-lake/issues/701)) ([064f6f2](https://github.com/konabe/classical-music-lake/commit/064f6f2a5e898a23ce04dc838e2a566b724dd5db))
+* **backend:** vitest globals を有効化し明示インポートを削除 ([#702](https://github.com/konabe/classical-music-lake/issues/702)) ([18cf36c](https://github.com/konabe/classical-music-lake/commit/18cf36cf3a282a5d85e5815a1316c5048f2b6c5a))
+* **backend:** コンサート記録の title を ConcertTitle 値オブジェクト化 ([#674](https://github.com/konabe/classical-music-lake/issues/674)) ([2bfcc20](https://github.com/konabe/classical-music-lake/commit/2bfcc20a57f812be78aacf2de305a23709bd6e85))
+* **backend:** コンサート記録の更新を集約意図メソッド revise に書き直す ([#681](https://github.com/konabe/classical-music-lake/issues/681)) ([ef2e9e9](https://github.com/konabe/classical-music-lake/commit/ef2e9e9c1f0efcffb740b2a086b17aa2deb810e5))
+* **backend:** コンサート記録の更新を集約経由のドメインパターンに統一 ([#680](https://github.com/konabe/classical-music-lake/issues/680)) ([c08d2ac](https://github.com/konabe/classical-music-lake/commit/c08d2ac4202cf3dd45f658c2d45f0b7721c65809))
+* **backend:** ファウラー原則に沿って 3 点リファクタ ([#693](https://github.com/konabe/classical-music-lake/issues/693)) ([62bf91d](https://github.com/konabe/classical-music-lake/commit/62bf91dfc968bd7f7d112d5a2ce5c3d923ea1c85))
+* **backend:** 作曲家マスタの更新を個別意図メソッドに分解する ([#684](https://github.com/konabe/classical-music-lake/issues/684)) ([2684b9d](https://github.com/konabe/classical-music-lake/commit/2684b9dbb5c7c4584f93cfa0577fc73955c6d39d))
+* **backend:** 楽曲マスタの編集を editMetadata + updateVideos に分解する ([#685](https://github.com/konabe/classical-music-lake/issues/685)) ([216967b](https://github.com/konabe/classical-music-lake/commit/216967b2ca765f95a5072b2fb5852c035e4f3f40))
+* **backend:** 鑑賞ログの更新を個別意図メソッドに分解しドメイン語彙に揃える ([#682](https://github.com/konabe/classical-music-lake/issues/682)) ([85033b8](https://github.com/konabe/classical-music-lake/commit/85033b88ba077cb47748acfa9bb8d44cd3097992))
+* import エイリアスを @/ と @shared/ に統一 ([#694](https://github.com/konabe/classical-music-lake/issues/694)) ([28e594b](https://github.com/konabe/classical-music-lake/commit/28e594b4c8ae7aa941df1bcbd8c07d79c9b54dbd))
+* 不要な真偽リテラル比較を削除して if (x) に統一 ([#695](https://github.com/konabe/classical-music-lake/issues/695)) ([fdea1f9](https://github.com/konabe/classical-music-lake/commit/fdea1f91273811ae1824e7d1f9809e012a215616))
+
 ## [2.12.1](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.12.0...classical-music-lake-v2.12.1) (2026-05-10)
 
 
