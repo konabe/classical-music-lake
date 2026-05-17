@@ -1,21 +1,8 @@
 import type { PreSignUpTriggerEvent } from "aws-lambda";
 import { handler } from "@/handlers/auth/pre-signup";
+import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  signUp: vi.fn(),
-  initiateAuth: vi.fn(),
-  confirmSignUp: vi.fn(),
-  resendConfirmationCode: vi.fn(),
-  refreshToken: vi.fn(),
-  listUsersByEmail: vi.fn(),
-  linkProviderForUser: vi.fn(),
-}));
-
-vi.mock("../../repositories/cognito-auth-repository", () => ({
-  CognitoAuthRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/cognito-auth-repository");
 
 const makeEvent = (overrides: Partial<PreSignUpTriggerEvent> = {}): PreSignUpTriggerEvent =>
   ({
