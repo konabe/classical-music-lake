@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Conflict } from "http-errors";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ConcertLog } from "@/types";

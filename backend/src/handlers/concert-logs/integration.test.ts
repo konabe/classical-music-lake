@@ -3,7 +3,6 @@
  * utils/dynamodb.ts の実コード（テーブル名・DynamoDBDocumentClient設定）と
  * Lambda ハンドラーの結合を検証する。
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ConcertLog } from "@/types";
 

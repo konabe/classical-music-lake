@@ -170,7 +170,7 @@ export default withNuxt(
       "vue/multi-word-component-names": "off",
     },
   },
-  // Nuxt 3 / vitest globals が自動インポートするものの明示的インポートを禁止
+  // Nuxt 3 が自動インポートする vue API の明示的インポートを禁止
   {
     files: ["app/**/*.{ts,vue}"],
     rules: {
@@ -202,6 +202,19 @@ export default withNuxt(
               ],
               message: "Nuxt 3 が自動インポートします。明示的なインポートは不要です。",
             },
+          ],
+        },
+      ],
+    },
+  },
+  // vitest globals が有効なため明示的インポートを禁止（フロント・バック共通）
+  {
+    files: ["app/**/*.{ts,vue}", "backend/src/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
             {
               name: "vitest",
               importNames: [

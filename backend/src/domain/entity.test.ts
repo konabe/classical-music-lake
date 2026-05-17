@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import { Entity, type EntityProps } from "@/domain/entity";
 import { ComposerId, PieceId } from "@/domain/value-objects/ids";
 

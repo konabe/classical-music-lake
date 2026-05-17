@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ConcertLog } from "@/types";
 
 import { UserId } from "@/domain/value-objects/ids";

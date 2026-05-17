@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { getIdParam } from "@/utils/path-params";
 import { PieceId } from "@/domain/value-objects/ids";
