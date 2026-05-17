@@ -10,7 +10,7 @@ const usecase = createConcertLogUsecase();
 
 export const handler = createHandler(async (event) => {
   const id = getIdParam(event, ConcertLogId.from);
-  const input = parseRequestBody(event.body as unknown, updateConcertLogSchema);
+  const input = parseRequestBody(event.body, updateConcertLogSchema);
   const userId = getUserId(event);
   const updated = await usecase.update(id, input, userId);
   return ok(updated);

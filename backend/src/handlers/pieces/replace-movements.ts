@@ -22,7 +22,7 @@ const usecase = createMovementUsecase();
  */
 export const handler = createAdminHandler(async (event) => {
   const workId = getIdParam(event, PieceId.from);
-  const input = parseRequestBody(event.body as unknown, replaceMovementsSchema);
+  const input = parseRequestBody(event.body, replaceMovementsSchema);
   const movements = await usecase.replaceAll(workId, input.movements);
   return ok({ movements });
 }).use(jsonBodyParser);

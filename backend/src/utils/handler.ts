@@ -50,7 +50,7 @@ export const withHandler = <TBody = undefined, TId = undefined>(options: {
         : (undefined as unknown as TId);
     const body =
       options.schema !== undefined
-        ? parseRequestBody(event.body as unknown, options.schema)
+        ? parseRequestBody(event.body, options.schema)
         : (undefined as unknown as TBody);
     const userId = options.userId === true ? getUserId(event) : (undefined as unknown as UserId);
     return options.handler({ event, body, id, userId });

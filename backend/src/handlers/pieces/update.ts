@@ -9,7 +9,7 @@ const usecase = createPieceUsecase();
 
 export const handler = createAdminHandler(async (event) => {
   const id = getIdParam(event, PieceId.from);
-  const input = parseRequestBody(event.body as unknown, updatePieceSchema);
+  const input = parseRequestBody(event.body, updatePieceSchema);
   const piece = await usecase.update(id, input);
   return ok(piece);
 }).use(jsonBodyParser);
