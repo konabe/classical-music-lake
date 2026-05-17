@@ -6,6 +6,6 @@ import { createAuthUsecase } from "@/usecases/auth-usecase";
 const usecase = createAuthUsecase();
 
 export const handler = createHandler(async (event) => {
-  const input = parseRequestBody(event.body as unknown, verifyEmailSchema);
+  const input = parseRequestBody(event.body, verifyEmailSchema);
   return usecase.verifyEmail(input.email, input.code);
 }).use(jsonBodyParser);
