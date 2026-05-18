@@ -1,15 +1,16 @@
-import { createAdminHandler, jsonBodyParser } from "@/utils/middleware";
-import { parseRequestBody } from "@/utils/parsing";
+import { withHandler } from "@/utils/handler";
 import { updatePieceSchema } from "@/utils/schemas";
-import { getIdParam } from "@/utils/path-params";
 import { ok } from "@/utils/response";
 import { createPieceUsecase, PieceId } from "@/usecases/piece-usecase";
 
 const usecase = createPieceUsecase();
 
-export const handler = createAdminHandler(async (event) => {
-  const id = getIdParam(event, PieceId.from);
-  const input = parseRequestBody(event.body, updatePieceSchema);
-  const piece = await usecase.update(id, input);
-  return ok(piece);
-}).use(jsonBodyParser);
+export const handler = withHandler({
+  admin: true,
+  idFrom: PieceId.from,
+  schema: updatePieceSchema,
+  handler: async ({ id, body }) => {
+    const piece = await usecase.update(id, body);
+    return ok(piece);
+  },
+});

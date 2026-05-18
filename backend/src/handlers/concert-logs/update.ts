@@ -1,17 +1,16 @@
-import { createHandler, jsonBodyParser } from "@/utils/middleware";
-import { parseRequestBody } from "@/utils/parsing";
+import { withHandler } from "@/utils/handler";
 import { updateConcertLogSchema } from "@/utils/schemas";
-import { getIdParam } from "@/utils/path-params";
-import { getUserId } from "@/utils/auth";
 import { ok } from "@/utils/response";
 import { ConcertLogId, createConcertLogUsecase } from "@/usecases/concert-log-usecase";
 
 const usecase = createConcertLogUsecase();
 
-export const handler = createHandler(async (event) => {
-  const id = getIdParam(event, ConcertLogId.from);
-  const input = parseRequestBody(event.body, updateConcertLogSchema);
-  const userId = getUserId(event);
-  const updated = await usecase.update(id, input, userId);
-  return ok(updated);
-}).use(jsonBodyParser);
+export const handler = withHandler({
+  idFrom: ConcertLogId.from,
+  schema: updateConcertLogSchema,
+  userId: true,
+  handler: async ({ id, body, userId }) => {
+    const updated = await usecase.update(id, body, userId);
+    return ok(updated);
+  },
+});

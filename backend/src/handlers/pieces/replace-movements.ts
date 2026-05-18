@@ -1,6 +1,4 @@
-import { createAdminHandler, jsonBodyParser } from "@/utils/middleware";
-import { parseRequestBody } from "@/utils/parsing";
-import { getIdParam } from "@/utils/path-params";
+import { withHandler } from "@/utils/handler";
 import { ok } from "@/utils/response";
 import { replaceMovementsSchema } from "@/utils/schemas";
 import { createMovementUsecase, PieceId } from "@/usecases/piece-usecase";
@@ -20,9 +18,12 @@ const usecase = createMovementUsecase();
  *   競合時は 409 Conflict を返す。
  * - 上限: `MOVEMENTS_PER_WORK_MAX = 49` 件まで。
  */
-export const handler = createAdminHandler(async (event) => {
-  const workId = getIdParam(event, PieceId.from);
-  const input = parseRequestBody(event.body, replaceMovementsSchema);
-  const movements = await usecase.replaceAll(workId, input.movements);
-  return ok({ movements });
-}).use(jsonBodyParser);
+export const handler = withHandler({
+  admin: true,
+  idFrom: PieceId.from,
+  schema: replaceMovementsSchema,
+  handler: async ({ id, body }) => {
+    const movements = await usecase.replaceAll(id, body.movements);
+    return ok({ movements });
+  },
+});
