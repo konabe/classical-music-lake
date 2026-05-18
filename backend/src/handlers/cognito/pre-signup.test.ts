@@ -1,5 +1,5 @@
 import type { PreSignUpTriggerEvent } from "aws-lambda";
-import { handler } from "@/handlers/auth/pre-signup";
+import { handler } from "@/handlers/cognito/pre-signup";
 import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
 vi.mock("@/repositories/cognito-auth-repository");

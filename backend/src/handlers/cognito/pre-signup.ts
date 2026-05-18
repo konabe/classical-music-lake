@@ -1,3 +1,4 @@
+// AWS Cognito User Pool PreSignUp Lambda trigger
 import type { PreSignUpTriggerHandler } from "aws-lambda";
 
 import { createAuthUsecase } from "@/usecases/auth-usecase";
