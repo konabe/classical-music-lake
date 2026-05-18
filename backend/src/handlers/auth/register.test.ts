@@ -52,7 +52,7 @@ describe("POST /auth/register", () => {
 
   describe("成功系", () => {
     it("有効なメール・パスワードで登録に成功し、201 を返す", async () => {
-      mockRepo.signUp.mockResolvedValueOnce();
+      mockRepo.signUp.mockResolvedValueOnce(undefined);
 
       const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
 

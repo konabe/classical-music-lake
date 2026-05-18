@@ -98,7 +98,7 @@ describe("POST /composers (create)", () => {
   });
 
   it("必須項目のみで正常に作成して 201 を返す", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -120,7 +120,7 @@ describe("POST /composers (create)", () => {
   });
 
   it("作成アイテムに UUID が付与される", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -139,7 +139,7 @@ describe("POST /composers (create)", () => {
     vi.useFakeTimers();
     vi.setSystemTime(now);
 
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAdminEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -157,7 +157,7 @@ describe("POST /composers (create)", () => {
 
   describe("カテゴリフィールド", () => {
     it("era と region を指定して作成できる", async () => {
-      mockRepo.save.mockResolvedValueOnce();
+      mockRepo.save.mockResolvedValueOnce(undefined);
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({
@@ -204,7 +204,7 @@ describe("POST /composers (create)", () => {
     });
 
     it("imageUrl を指定して作成できる", async () => {
-      mockRepo.save.mockResolvedValueOnce();
+      mockRepo.save.mockResolvedValueOnce(undefined);
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({
@@ -239,7 +239,7 @@ describe("POST /composers (create)", () => {
     });
 
     it("birthYear と deathYear を指定して作成できる", async () => {
-      mockRepo.save.mockResolvedValueOnce();
+      mockRepo.save.mockResolvedValueOnce(undefined);
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, birthYear: 1770, deathYear: 1827 }),
@@ -256,7 +256,7 @@ describe("POST /composers (create)", () => {
     });
 
     it("birthYear のみ指定（存命作曲家）で作成できる", async () => {
-      mockRepo.save.mockResolvedValueOnce();
+      mockRepo.save.mockResolvedValueOnce(undefined);
       const result = await handler(
         makeAdminEvent(TEST_USER_ID, {
           body: JSON.stringify({ ...validInput, birthYear: 1958 }),

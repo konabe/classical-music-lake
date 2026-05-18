@@ -48,7 +48,7 @@ describe("POST /auth/verify-email", () => {
 
   describe("成功系", () => {
     it("有効な email と code で確認に成功し、200 を返す", async () => {
-      mockRepo.confirmSignUp.mockResolvedValueOnce();
+      mockRepo.confirmSignUp.mockResolvedValueOnce(undefined);
 
       const result = await handler(makeVerifyEmailEvent(), mockContext, mockCallback);
 

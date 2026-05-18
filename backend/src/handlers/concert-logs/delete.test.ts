@@ -70,7 +70,7 @@ describe("DELETE /concert-logs/:id (delete)", () => {
 
   it("正常削除して 204 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingItem);
-    mockRepo.remove.mockResolvedValueOnce();
+    mockRepo.remove.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeDeleteEvent("concert-logs", "abc-123", TEST_USER_ID),
       mockContext,
