@@ -54,14 +54,14 @@ describe("DELETE /composers/{id} (delete)", () => {
   });
 
   it("正常に削除して 204 を返す", async () => {
-    mockRepo.remove.mockResolvedValueOnce();
+    mockRepo.remove.mockResolvedValueOnce(undefined);
     const result = await handler(makeEvent("test-id-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
   });
 
   it("正しい id で Repository.remove を呼び出す", async () => {
-    mockRepo.remove.mockResolvedValueOnce();
+    mockRepo.remove.mockResolvedValueOnce(undefined);
     await handler(makeEvent("test-id-123"), mockContext, mockCallback);
 
     expect(mockRepo.remove).toHaveBeenCalledWith(ComposerId.from("test-id-123"));

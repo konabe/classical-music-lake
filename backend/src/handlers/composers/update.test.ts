@@ -105,7 +105,7 @@ describe("PUT /composers/{id} (update)", () => {
 
   it("正常更新して 200 を返す", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingComposer);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ name: "モーツァルト" })),
@@ -121,7 +121,7 @@ describe("PUT /composers/{id} (update)", () => {
 
   it("createdAt は上書きされない", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingComposer);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ name: "モーツァルト" })),
@@ -134,7 +134,7 @@ describe("PUT /composers/{id} (update)", () => {
 
   it("era と region を追加して更新できる", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingComposer);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ era: "古典派", region: "ドイツ・オーストリア" })),
@@ -154,7 +154,7 @@ describe("PUT /composers/{id} (update)", () => {
       region: "ドイツ・オーストリア",
     };
     mockRepo.findById.mockResolvedValueOnce(existing);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ era: "", region: "" })),
@@ -169,7 +169,7 @@ describe("PUT /composers/{id} (update)", () => {
 
   it("imageUrl を追加して更新できる", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingComposer);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent(
@@ -188,7 +188,7 @@ describe("PUT /composers/{id} (update)", () => {
 
   it("birthYear と deathYear を追加して更新できる", async () => {
     mockRepo.findById.mockResolvedValueOnce(existingComposer);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ birthYear: 1770, deathYear: 1827 })),
@@ -204,7 +204,7 @@ describe("PUT /composers/{id} (update)", () => {
   it("birthYear を null で送信すると削除される", async () => {
     const existing: Composer = { ...existingComposer, birthYear: 1770, deathYear: 1827 };
     mockRepo.findById.mockResolvedValueOnce(existing);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ birthYear: null, deathYear: null })),
@@ -233,7 +233,7 @@ describe("PUT /composers/{id} (update)", () => {
       imageUrl: "https://example.com/beethoven.jpg",
     };
     mockRepo.findById.mockResolvedValueOnce(existing);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce();
+    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ imageUrl: "" })),

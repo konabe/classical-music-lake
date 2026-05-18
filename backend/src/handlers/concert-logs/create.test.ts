@@ -128,7 +128,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("正常に作成して 201 を返す", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -148,7 +148,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("任意フィールドを含めて正常に作成して 201 を返す", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify({
@@ -172,7 +172,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("作成アイテムに UUID が付与される", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -187,7 +187,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("createdAt と updatedAt が同じ値で設定される", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -202,7 +202,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("userId が保存される", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -218,7 +218,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("レスポンスボディに userId が含まれる", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify(validInput),
@@ -247,7 +247,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("pieceIds を含めて正常に作成して 201 を返す", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const pieceIds = [
       "550e8400-e29b-41d4-a716-446655440000",
       "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
@@ -267,7 +267,7 @@ describe("POST /concert-logs (create)", () => {
   });
 
   it("pieceIds が空配列でも正常に作成できる", async () => {
-    mockRepo.save.mockResolvedValueOnce();
+    mockRepo.save.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeAuthEvent(TEST_USER_ID, {
         body: JSON.stringify({ ...validInput, pieceIds: [] }),

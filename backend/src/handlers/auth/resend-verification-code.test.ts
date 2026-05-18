@@ -40,7 +40,7 @@ describe("POST /auth/resend-verification-code", () => {
 
   describe("成功系", () => {
     it("有効な email で再送信に成功し、200 を返す", async () => {
-      mockRepo.resendConfirmationCode.mockResolvedValueOnce();
+      mockRepo.resendConfirmationCode.mockResolvedValueOnce(undefined);
 
       const result = await handler(makeResendEvent(), mockContext, mockCallback);
 
