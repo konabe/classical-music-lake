@@ -1,5 +1,4 @@
-import { createHandler } from "@/utils/middleware";
-import { getIdParam } from "@/utils/path-params";
+import { withHandler } from "@/utils/handler";
 import { ok } from "@/utils/response";
 import { createMovementUsecase, PieceId } from "@/usecases/piece-usecase";
 
@@ -14,8 +13,10 @@ const usecase = createMovementUsecase();
  * Movement のレスポンスには `composerId` は含まれない（親 Work から継承）。
  * 親が存在しない場合は空配列を返す（GSI Query は親 Work の存在を要求しない）。
  */
-export const handler = createHandler(async (event) => {
-  const id = getIdParam(event, PieceId.from);
-  const movements = await usecase.listChildren(id);
-  return ok(movements);
+export const handler = withHandler({
+  idFrom: PieceId.from,
+  handler: async ({ id }) => {
+    const movements = await usecase.listChildren(id);
+    return ok(movements);
+  },
 });

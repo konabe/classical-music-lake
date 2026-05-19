@@ -31,16 +31,9 @@ const mocks = vi.hoisted(() => ({
     removeMovement: vi.fn(),
     replaceMovements: vi.fn(),
   },
-  composerRepo: {
-    findById: vi.fn(),
-    findByIds: vi.fn().mockResolvedValue([]),
-    findPage: vi.fn(),
-    save: vi.fn(),
-    saveWithOptimisticLock: vi.fn(),
-    remove: vi.fn(),
-  },
 }));
 
+vi.mock("@/repositories/composer-repository");
 vi.mock("../../repositories/listening-log-repository", () => ({
   DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
     return mocks.listeningLogRepo;
@@ -49,11 +42,6 @@ vi.mock("../../repositories/listening-log-repository", () => ({
 vi.mock("../../repositories/piece-repository", () => ({
   DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
     return mocks.pieceRepo;
-  }),
-}));
-vi.mock("../../repositories/composer-repository", () => ({
-  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
-    return mocks.composerRepo;
   }),
 }));
 

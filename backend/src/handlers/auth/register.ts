@@ -1,11 +1,10 @@
-import { createHandler, jsonBodyParser } from "@/utils/middleware";
-import { parseRequestBody } from "@/utils/parsing";
+import { withHandler } from "@/utils/handler";
 import { registerSchema } from "@/utils/schemas";
 import { createAuthUsecase } from "@/usecases/auth-usecase";
 
 const usecase = createAuthUsecase();
 
-export const handler = createHandler(async (event) => {
-  const input = parseRequestBody(event.body, registerSchema);
-  return usecase.register(input.email, input.password);
-}).use(jsonBodyParser);
+export const handler = withHandler({
+  schema: registerSchema,
+  handler: async ({ body }) => usecase.register(body.email, body.password),
+});
