@@ -9,6 +9,7 @@ import {
   makePiece,
   TEST_PIECE_ID,
 } from "@/test/fixtures";
+import { mockComposerRepo } from "@/repositories/__mocks__/composer-repository";
 
 const mocks = vi.hoisted(() => ({
   listeningLogRepo: {
@@ -33,16 +34,9 @@ const mocks = vi.hoisted(() => ({
     removeMovement: vi.fn(),
     replaceMovements: vi.fn(),
   },
-  composerRepo: {
-    findById: vi.fn(),
-    findByIds: vi.fn().mockResolvedValue([]),
-    findPage: vi.fn(),
-    save: vi.fn(),
-    saveWithOptimisticLock: vi.fn(),
-    remove: vi.fn(),
-  },
 }));
 
+vi.mock("@/repositories/composer-repository");
 vi.mock("../../repositories/listening-log-repository", () => ({
   DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
     return mocks.listeningLogRepo;
@@ -51,11 +45,6 @@ vi.mock("../../repositories/listening-log-repository", () => ({
 vi.mock("../../repositories/piece-repository", () => ({
   DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
     return mocks.pieceRepo;
-  }),
-}));
-vi.mock("../../repositories/composer-repository", () => ({
-  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
-    return mocks.composerRepo;
   }),
 }));
 
@@ -71,8 +60,8 @@ describe("GET /listening-logs (list)", () => {
     mocks.pieceRepo.findById.mockResolvedValue(makePiece());
     mocks.pieceRepo.findByIds.mockResolvedValue([makePiece()]);
     mocks.pieceRepo.findRootById.mockResolvedValue(makePiece());
-    mocks.composerRepo.findById.mockResolvedValue(makeComposer());
-    mocks.composerRepo.findByIds.mockResolvedValue([makeComposer()]);
+    mockComposerRepo.findById.mockResolvedValue(makeComposer());
+    mockComposerRepo.findByIds.mockResolvedValue([makeComposer()]);
   });
 
   it("空リストの場合は 200 で空配列を返す", async () => {

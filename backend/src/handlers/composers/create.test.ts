@@ -7,20 +7,9 @@ import {
   mockContext,
   TEST_USER_ID,
 } from "@/test/fixtures";
+import { mockComposerRepo as mockRepo } from "@/repositories/__mocks__/composer-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findPage: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
-
-vi.mock("../../repositories/composer-repository", () => ({
-  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/composer-repository");
 
 const validInput = {
   name: "ベートーヴェン",

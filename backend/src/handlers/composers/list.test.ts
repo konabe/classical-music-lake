@@ -4,19 +4,9 @@ import { encodeCursor } from "@/utils/cursor";
 import { COMPOSERS_PAGE_SIZE_DEFAULT, COMPOSERS_PAGE_SIZE_MAX } from "@/types";
 import type { Composer, Paginated } from "@/types";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findPage: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
+import { mockComposerRepo as mockRepo } from "@/repositories/__mocks__/composer-repository";
 
-vi.mock("../../repositories/composer-repository", () => ({
-  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/composer-repository");
 
 const parseBody = (result: { body?: string } | null | undefined): Paginated<Composer> =>
   JSON.parse(result?.body ?? '{"items":[],"nextCursor":null}') as Paginated<Composer>;

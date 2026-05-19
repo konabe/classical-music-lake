@@ -3,19 +3,9 @@ import type { Composer } from "@/types";
 
 import { handler } from "@/handlers/composers/get";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findPage: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
+import { mockComposerRepo as mockRepo } from "@/repositories/__mocks__/composer-repository";
 
-vi.mock("../../repositories/composer-repository", () => ({
-  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/composer-repository");
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };

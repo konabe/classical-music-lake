@@ -12,19 +12,9 @@ import {
   TEST_USER_ID,
 } from "@/test/fixtures";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findPage: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
+import { mockComposerRepo as mockRepo } from "@/repositories/__mocks__/composer-repository";
 
-vi.mock("../../repositories/composer-repository", () => ({
-  DynamoDBComposerRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/composer-repository");
 
 type AuthMode = "admin" | "non-admin" | "none";
 
