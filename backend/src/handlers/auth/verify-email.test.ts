@@ -23,7 +23,9 @@ describe("POST /auth/verify-email", () => {
     vi.clearAllMocks();
   });
 
-  describeInvalidBodyCases(handler, "/auth/verify-email");
+  describeInvalidBodyCases(handler, (body) =>
+    makeEvent({ body, httpMethod: "POST", path: "/auth/verify-email" }),
+  );
 
   describe("バリデーション", () => {
     it("email が無効な場合は 400 を返す", async () => {

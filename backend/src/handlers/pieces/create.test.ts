@@ -1,5 +1,6 @@
 import { handler } from "@/handlers/pieces/create";
 import {
+  describeInvalidBodyCases,
   makeAdminEvent,
   makeAuthEvent,
   makeEvent,
@@ -43,22 +44,9 @@ describe("POST /pieces (create)", () => {
     vi.useRealTimers();
   });
 
-  describe("リクエストボディ異常系", () => {
-    it.each<[string | null, number, string]>([
-      [null, 400, "Request body is required"],
-      ["null", 400, "Request body is required"],
-      ["[]", 400, "Request body must be a JSON object"],
-      ["invalid json", 422, "Invalid or malformed JSON was provided"],
-    ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(
-        makeAdminEvent(TEST_USER_ID, { body, httpMethod: "POST", path: "/pieces" }),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(statusCode);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
-    });
-  });
+  describeInvalidBodyCases(handler, (body) =>
+    makeAdminEvent(TEST_USER_ID, { body, httpMethod: "POST", path: "/pieces" }),
+  );
 
   it("title がない場合は 400 を返す", async () => {
     const result = await handler(
