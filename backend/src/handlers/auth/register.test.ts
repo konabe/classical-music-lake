@@ -23,7 +23,9 @@ describe("POST /auth/register", () => {
     vi.clearAllMocks();
   });
 
-  describeInvalidBodyCases(handler, "/auth/register");
+  describeInvalidBodyCases(handler, (body) =>
+    makeEvent({ body, httpMethod: "POST", path: "/auth/register" }),
+  );
 
   describe("バリデーション", () => {
     it.each([

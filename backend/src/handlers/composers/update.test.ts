@@ -4,6 +4,7 @@ import type { Composer } from "@/types";
 
 import { handler } from "@/handlers/composers/update";
 import {
+  describeInvalidBodyCases,
   makeAdminEvent,
   makeAuthEvent,
   makeEvent as makeBaseEvent,
@@ -59,6 +60,8 @@ describe("PUT /composers/{id} (update)", () => {
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
   });
+
+  describeInvalidBodyCases(handler, (body) => makeEvent("abc-123", body));
 
   it.each(["", "   ", "\t"])(
     "name が空または空白のみ（%j）の場合は 400 を返す",

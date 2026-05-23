@@ -26,7 +26,9 @@ describe("POST /auth/resend-verification-code", () => {
     vi.clearAllMocks();
   });
 
-  describeInvalidBodyCases(handler, "/auth/resend-verification-code");
+  describeInvalidBodyCases(handler, (body) =>
+    makeEvent({ body, httpMethod: "POST", path: "/auth/resend-verification-code" }),
+  );
 
   describe("バリデーション", () => {
     it.each([[{ email: "invalid-email" }], [{}]])(
