@@ -170,8 +170,8 @@ importers:
         specifier: ^7.6.4
         version: 7.6.5
       '@middy/http-cors':
-        specifier: ^7.3.3
-        version: 7.5.0
+        specifier: ^7.6.4
+        version: 7.6.5
       '@middy/http-error-handler':
         specifier: ^7.6.4
         version: 7.6.5
@@ -1445,8 +1445,8 @@ packages:
       '@aws/durable-execution-sdk-js':
         optional: true
 
-  '@middy/http-cors@7.5.0':
-    resolution: {integrity: sha512-5Jv/nbePErL7mXeYSSW+yXBSQvnjLMYYX1SH29Q72ToZI2A5NmTZ1PnhMVMXLrKOFX3xVNTmVRiK6wTHogHpHA==}
+  '@middy/http-cors@7.6.5':
+    resolution: {integrity: sha512-1UIRh7b3AhIyc+QiaEi9MJmWqJ/8QUdc2k/b8xsoJl/ESY7mw+nfo+IvDHzSi45C7uKobrwGYiX0GylPOYTFbg==}
     engines: {node: '>=22'}
 
   '@middy/http-error-handler@7.6.5':
@@ -8442,9 +8442,9 @@ snapshots:
     dependencies:
       '@middy/util': 7.6.5
 
-  '@middy/http-cors@7.5.0':
+  '@middy/http-cors@7.6.5':
     dependencies:
-      '@middy/util': 7.5.0
+      '@middy/util': 7.6.5
 
   '@middy/http-error-handler@7.6.5':
     dependencies:
