@@ -64,31 +64,20 @@ describe("POST /auth/register", () => {
   });
 
   describe("Cognito エラー系", () => {
-    it("メール重複時に 400 を返す", async () => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError("UsernameExistsException"));
-      const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").message).toContain("already");
-    });
+    it.each<[string, number, string | undefined]>([
+      ["UsernameExistsException", 400, "already"],
+      ["InvalidPasswordException", 400, "password"],
+      ["TooManyRequestsException", 429, "again later"],
+      ["ServiceUnavailableException", 500, undefined],
+    ])("%s のとき %i を返す", async (name, statusCode, messageSubstring) => {
+      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError(name));
 
-    it("無効なパスワード時に 400 を返す", async () => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError("InvalidPasswordException"));
       const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").message.toLowerCase()).toContain("password");
-    });
 
-    it("リクエスト過多時に 429 を返す", async () => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError("TooManyRequestsException"));
-      const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(429);
-      expect(JSON.parse(result?.body ?? "{}").message).toContain("again later");
-    });
-
-    it("その他の Cognito エラー時に 500 を返す", async () => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError("ServiceUnavailableException"));
-      const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(500);
+      expect(result?.statusCode).toBe(statusCode);
+      if (messageSubstring !== undefined) {
+        expect(JSON.parse(result?.body ?? "{}").message.toLowerCase()).toContain(messageSubstring);
+      }
     });
   });
 });
