@@ -1,8 +1,17 @@
 import { Conflict } from "http-errors";
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { handler } from "@/handlers/listening-logs/update";
-import { makeComposer, makeLogRecord, makePiece } from "@/test/fixtures";
+import {
+  describeInvalidBodyCases,
+  makeComposer,
+  makeLogRecord,
+  makePiece,
+  makeUserPutEvent,
+  mockCallback,
+  mockContext,
+  OTHER_USER_ID,
+  TEST_USER_ID,
+} from "@/test/fixtures";
 import { mockComposerRepo } from "@/repositories/__mocks__/composer-repository";
 import { mockListeningLogRepo } from "@/repositories/__mocks__/listening-log-repository";
 import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
@@ -11,30 +20,8 @@ vi.mock("@/repositories/composer-repository");
 vi.mock("@/repositories/listening-log-repository");
 vi.mock("@/repositories/piece-repository");
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
-
-const TEST_USER_ID = "cognito-sub-user-123";
-const OTHER_USER_ID = "cognito-sub-other-user";
-
-function makeEvent(id?: string, body?: string | null, userId?: string): APIGatewayProxyEvent {
-  return {
-    body: body === undefined ? null : body,
-    headers: {},
-    multiValueHeaders: {},
-    httpMethod: "PUT",
-    isBase64Encoded: false,
-    path: `/listening-logs/${id ?? ""}`,
-    pathParameters: id === undefined ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {
-      authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
-    } as APIGatewayProxyEvent["requestContext"],
-    resource: "",
-  };
-}
+const makeEvent = (id?: string, body?: string | null, userId?: string) =>
+  makeUserPutEvent("listening-logs", id, body, userId);
 
 const existingLog = makeLogRecord("abc-123", "2024-01-15T20:00:00.000Z", TEST_USER_ID);
 
@@ -55,22 +42,9 @@ describe("PUT /listening-logs/:id (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
   });
 
-  describe("リクエストボディ異常系", () => {
-    it.each<[string | null, number, string]>([
-      [null, 400, "Request body is required"],
-      ["null", 400, "Request body is required"],
-      ["[]", 400, "Request body must be a JSON object"],
-      ["invalid json", 422, "Invalid or malformed JSON was provided"],
-    ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(
-        makeEvent("abc-123", body, TEST_USER_ID),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(statusCode);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
-    });
-  });
+  describeInvalidBodyCases(handler, "/listening-logs/abc-123", (body) =>
+    makeEvent("abc-123", body, TEST_USER_ID),
+  );
 
   it.each([0, 6, -1, 1.5, "5", null])(
     "rating が不正な値（%s）の場合は 400 を返す",

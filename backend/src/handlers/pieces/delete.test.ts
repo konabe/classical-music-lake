@@ -1,14 +1,11 @@
-import type { APIGatewayProxyEvent } from "aws-lambda";
-
 import { PieceId } from "@/domain/value-objects/ids";
 import { handler } from "@/handlers/pieces/delete";
 import {
-  makeAdminEvent,
-  makeAuthEvent,
-  makeEvent as makeBaseEvent,
+  describeAdminForbiddenCases,
+  makeAdminDeleteEvent,
   mockCallback,
   mockContext,
-  TEST_USER_ID,
+  type WriteAuthMode,
 } from "@/test/fixtures";
 import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 import { mockListeningLogRepo } from "@/repositories/__mocks__/listening-log-repository";
@@ -16,22 +13,8 @@ import { mockListeningLogRepo } from "@/repositories/__mocks__/listening-log-rep
 vi.mock("@/repositories/piece-repository");
 vi.mock("@/repositories/listening-log-repository");
 
-type AuthMode = "admin" | "non-admin" | "none";
-
-function makeEvent(id: string | null, auth: AuthMode = "admin"): APIGatewayProxyEvent {
-  const overrides: Partial<APIGatewayProxyEvent> = {
-    httpMethod: "DELETE",
-    path: `/pieces/${id ?? ""}`,
-    pathParameters: id === null ? null : { id },
-  };
-  if (auth === "admin") {
-    return makeAdminEvent(TEST_USER_ID, overrides);
-  }
-  if (auth === "non-admin") {
-    return makeAuthEvent(TEST_USER_ID, overrides);
-  }
-  return makeBaseEvent(overrides);
-}
+const makeEvent = (id: string | null, auth: WriteAuthMode = "admin") =>
+  makeAdminDeleteEvent("pieces", id, auth);
 
 const workItem = {
   kind: "work" as const,
@@ -126,26 +109,8 @@ describe("DELETE /pieces/{id} (delete)", () => {
     expect(result?.statusCode).toBe(500);
   });
 
-  describe("認可", () => {
-    it("admin グループに属さないユーザーは 403 を返し、削除しない", async () => {
-      const result = await handler(
-        makeEvent("test-id-123", "non-admin"),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(403);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockPieceRepo.findById).not.toHaveBeenCalled();
-      expect(mockPieceRepo.removeWorkCascade).not.toHaveBeenCalled();
-      expect(mockPieceRepo.removeMovement).not.toHaveBeenCalled();
-    });
-
-    it("認証クレームがない場合は 403 を返し、削除しない", async () => {
-      const result = await handler(makeEvent("test-id-123", "none"), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(403);
-      expect(mockPieceRepo.findById).not.toHaveBeenCalled();
-      expect(mockPieceRepo.removeWorkCascade).not.toHaveBeenCalled();
-      expect(mockPieceRepo.removeMovement).not.toHaveBeenCalled();
-    });
-  });
+  describeAdminForbiddenCases(
+    (auth) => handler(makeEvent("test-id-123", auth), mockContext, mockCallback),
+    [mockPieceRepo.findById, mockPieceRepo.removeWorkCascade, mockPieceRepo.removeMovement],
+  );
 });

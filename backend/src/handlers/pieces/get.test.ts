@@ -1,30 +1,12 @@
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Piece, PieceWork } from "@/types";
 
 import { handler } from "@/handlers/pieces/get";
+import { makeGetEvent, mockCallback, mockContext } from "@/test/fixtures";
 import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 
 vi.mock("@/repositories/piece-repository");
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
-
-function makeEvent(id?: string): APIGatewayProxyEvent {
-  return {
-    body: null,
-    headers: {},
-    multiValueHeaders: {},
-    httpMethod: "GET",
-    isBase64Encoded: false,
-    path: `/pieces/${id ?? ""}`,
-    pathParameters: id === undefined ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
-    resource: "",
-  };
-}
+const makeEvent = (id?: string) => makeGetEvent("pieces", id);
 
 const testPiece: PieceWork = {
   kind: "work",

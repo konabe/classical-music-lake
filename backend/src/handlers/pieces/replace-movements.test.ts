@@ -1,15 +1,14 @@
-import type { APIGatewayProxyEvent } from "aws-lambda";
 import createError from "http-errors";
 
 import { handler } from "@/handlers/pieces/replace-movements";
 import {
-  makeAdminEvent,
-  makeAuthEvent,
-  makeEvent as makeBaseEvent,
+  describeAdminForbiddenCases,
+  describeInvalidBodyCases,
+  makeWriteEvent,
   mockCallback,
   mockContext,
   TEST_COMPOSER_ID,
-  TEST_USER_ID,
+  type WriteAuthMode,
 } from "@/test/fixtures";
 import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 
@@ -26,27 +25,16 @@ const existingWork = {
   updatedAt: "2024-01-15T20:00:00.000Z",
 };
 
-type AuthMode = "admin" | "non-admin" | "none";
-
-function makeEvent(
-  workId?: string,
-  body?: string | null,
-  auth: AuthMode = "admin",
-): APIGatewayProxyEvent {
-  const overrides: Partial<APIGatewayProxyEvent> = {
-    body: body === undefined ? null : body,
-    httpMethod: "PUT",
-    path: `/pieces/${workId ?? ""}/movements`,
-    pathParameters: workId === undefined ? null : { id: workId },
-  };
-  if (auth === "admin") {
-    return makeAdminEvent(TEST_USER_ID, overrides);
-  }
-  if (auth === "non-admin") {
-    return makeAuthEvent(TEST_USER_ID, overrides);
-  }
-  return makeBaseEvent(overrides);
-}
+const makeEvent = (workId?: string, body?: string | null, auth: WriteAuthMode = "admin") =>
+  makeWriteEvent(
+    {
+      body: body === undefined ? null : body,
+      httpMethod: "PUT",
+      path: `/pieces/${workId ?? ""}/movements`,
+      pathParameters: workId === undefined ? null : { id: workId },
+    },
+    auth,
+  );
 
 describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
   beforeEach(() => {
@@ -63,18 +51,9 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
   });
 
-  describe("リクエストボディ異常系", () => {
-    it.each<[string | null, number, string]>([
-      [null, 400, "Request body is required"],
-      ["null", 400, "Request body is required"],
-      ["[]", 400, "Request body must be a JSON object"],
-      ["invalid json", 422, "Invalid or malformed JSON was provided"],
-    ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(makeEvent(TEST_WORK_ID, body), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(statusCode);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
-    });
-  });
+  describeInvalidBodyCases(handler, `/pieces/${TEST_WORK_ID}/movements`, (body) =>
+    makeEvent(TEST_WORK_ID, body),
+  );
 
   it("movements に index 重複があると 400 を返す", async () => {
     const result = await handler(
@@ -210,35 +189,17 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
     expect(result?.statusCode).toBe(500);
   });
 
-  describe("認可", () => {
-    it("admin グループに属さないユーザーは 403 を返す", async () => {
-      const result = await handler(
+  describeAdminForbiddenCases(
+    (auth) =>
+      handler(
         makeEvent(
           TEST_WORK_ID,
           JSON.stringify({ movements: [{ index: 0, title: "第1楽章" }] }),
-          "non-admin",
+          auth,
         ),
         mockContext,
         mockCallback,
-      );
-      expect(result?.statusCode).toBe(403);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockPieceRepo.findRootById).not.toHaveBeenCalled();
-      expect(mockPieceRepo.replaceMovements).not.toHaveBeenCalled();
-    });
-
-    it("認証クレームがない場合は 403 を返す", async () => {
-      const result = await handler(
-        makeEvent(
-          TEST_WORK_ID,
-          JSON.stringify({ movements: [{ index: 0, title: "第1楽章" }] }),
-          "none",
-        ),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(403);
-      expect(mockPieceRepo.replaceMovements).not.toHaveBeenCalled();
-    });
-  });
+      ),
+    [mockPieceRepo.findRootById, mockPieceRepo.replaceMovements],
+  );
 });

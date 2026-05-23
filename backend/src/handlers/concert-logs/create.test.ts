@@ -1,13 +1,15 @@
-import type { Context } from "aws-lambda";
-
 import { handler } from "@/handlers/concert-logs/create";
-import { makeEvent, makeAuthEvent } from "@/test/fixtures";
+import {
+  describeInvalidBodyCases,
+  makeAuthEvent,
+  makeEvent,
+  mockCallback,
+  mockContext,
+  TEST_USER_ID,
+} from "@/test/fixtures";
 import { mockConcertLogRepo } from "@/repositories/__mocks__/concert-log-repository";
 
 vi.mock("@/repositories/concert-log-repository");
-
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
 
 const validInput = {
   title: "定期演奏会 第123回",
@@ -15,29 +17,12 @@ const validInput = {
   venue: "サントリーホール",
 };
 
-const TEST_USER_ID = "cognito-sub-user-123";
-
 describe("POST /concert-logs (create)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe("リクエストボディ異常系", () => {
-    it.each<[string | null, number, string]>([
-      [null, 400, "Request body is required"],
-      ["null", 400, "Request body is required"],
-      ["[]", 400, "Request body must be a JSON object"],
-      ["invalid json", 422, "Invalid or malformed JSON was provided"],
-    ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(
-        makeEvent({ body, httpMethod: "POST", path: "/concert-logs" }),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(statusCode);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
-    });
-  });
+  describeInvalidBodyCases(handler, "/concert-logs");
 
   it.each(["   ", "\t", "\n"])(
     "venue が空白のみ（%j）の場合は 400 を返す",
