@@ -499,6 +499,16 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     listeningLogsTable.grantWriteData(listeningLogsCreate);
     listeningLogsTable.grantReadWriteData(listeningLogsUpdate);
     listeningLogsTable.grantWriteData(listeningLogsDelete);
+    // ListeningLogDetail の組み立てで pieceRepo / composerRepo を参照するため Read 権限が必要
+    // （list / get / create / update はレスポンスに派生値を載せる。delete は noContent のため不要）
+    piecesTable.grantReadData(listeningLogsList);
+    piecesTable.grantReadData(listeningLogsGet);
+    piecesTable.grantReadData(listeningLogsCreate);
+    piecesTable.grantReadData(listeningLogsUpdate);
+    composersTable.grantReadData(listeningLogsList);
+    composersTable.grantReadData(listeningLogsGet);
+    composersTable.grantReadData(listeningLogsCreate);
+    composersTable.grantReadData(listeningLogsUpdate);
     piecesTable.grantReadData(listPieces);
     piecesTable.grantWriteData(createPiece);
     piecesTable.grantReadData(getPiece);

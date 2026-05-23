@@ -414,6 +414,7 @@ interface ConcertLog {
 - **関数数**: 28 個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
   - 視聴ログ × 5 / 楽曲マスタ × 7（CRUD 5 + `getPieceChildren` + `replacePieceMovements`）/ 作曲家マスタ × 5 / コンサート記録 × 5 / 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）/ PreSignUp トリガー × 1
 - **環境変数**: `DYNAMO_TABLE_{LISTENING_LOGS,PIECES,CONCERT_LOGS,COMPOSERS}`、`COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID`（認証系のみ）、`CORS_ALLOW_ORIGIN`
+- **IAM 権限ポリシー（視聴ログ系）**: `list` / `get` / `create` / `update` の各 Lambda は `ListeningLogDetail` の組み立てで `PieceRepository` / `ComposerRepository` を参照するため、`listening-logs` テーブルに加えて `pieces` テーブルと `composers` テーブルへの Read 権限も必要。`delete` は `204 No Content` を返すだけなので不要
 
 #### Cognito
 
