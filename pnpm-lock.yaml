@@ -173,8 +173,8 @@ importers:
         specifier: ^7.3.3
         version: 7.5.0
       '@middy/http-error-handler':
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.6.4
+        version: 7.6.5
       '@middy/http-json-body-parser':
         specifier: ^7.4.0
         version: 7.4.0
@@ -1477,8 +1477,8 @@ packages:
     resolution: {integrity: sha512-5Jv/nbePErL7mXeYSSW+yXBSQvnjLMYYX1SH29Q72ToZI2A5NmTZ1PnhMVMXLrKOFX3xVNTmVRiK6wTHogHpHA==}
     engines: {node: '>=22'}
 
-  '@middy/http-error-handler@7.4.0':
-    resolution: {integrity: sha512-EwnnqC35CSpCsgF/Mo5Zl1R7A/aOFsnE3ltndycLuUd+67ai27Y/giG9bbS7mYrPmizxTPCyyHG2PEqHXtlaxg==}
+  '@middy/http-error-handler@7.6.5':
+    resolution: {integrity: sha512-Ef31YcBXxAN/FPaqCXMTfCoTcVxWlXuZlKFUWGbwkIvyZSrMjreI8Xf7/tyo6RDkqu0AQaxHQ9XIJPocQjmKKA==}
     engines: {node: '>=22'}
 
   '@middy/http-json-body-parser@7.4.0':
@@ -1495,6 +1495,10 @@ packages:
 
   '@middy/util@7.5.0':
     resolution: {integrity: sha512-EiP4sNNSHjSEc59SLdCJQ/Efr9olDYkuE/rPlHW42Z4pfyqQZt64sGIg410WFVsd/W5l/sSbgTo6bqeChJEPYQ==}
+    engines: {node: '>=22'}
+
+  '@middy/util@7.6.5':
+    resolution: {integrity: sha512-xXx5SmKfs6TK6P9jvUVBxnYq743LI3Gv7St/ITswtSjKMvuUHvbS30RMM+tbN6tC+8e4l6Gt/iyiz20C9/PyXA==}
     engines: {node: '>=22'}
 
   '@napi-rs/wasm-runtime@0.2.12':
@@ -6883,6 +6887,9 @@ packages:
   vue-component-type-helpers@3.2.9:
     resolution: {integrity: sha512-S3BiWYaLSzHxTpln665ELSrMR9UYmrIDUmhik7nVZxmJjTKL2/a+ew1hvGxksKelivm0ujjWfG1fYOiU/2e8rA==}
 
+  vue-component-type-helpers@3.3.1:
+    resolution: {integrity: sha512-pu58kqxmVyEH6VfNYW1UyEfR3XAnJ27ZXT3yzXxxpjLxVzAbyC35Zk/nm/RMs7ijWnJNSd9fWkeex2OhUsx3MA==}
+
   vue-devtools-stub@0.1.0:
     resolution: {integrity: sha512-RutnB7X8c5hjq39NceArgXg28WZtZpGc3+J16ljMiYnFhKvd8hITxSWQSQ5bvldxMDU6gG5mkxl1MTQLXckVSQ==}
 
@@ -8528,9 +8535,9 @@ snapshots:
     dependencies:
       '@middy/util': 7.5.0
 
-  '@middy/http-error-handler@7.4.0':
+  '@middy/http-error-handler@7.6.5':
     dependencies:
-      '@middy/util': 7.4.0
+      '@middy/util': 7.6.5
 
   '@middy/http-json-body-parser@7.4.0':
     dependencies:
@@ -8543,6 +8550,8 @@ snapshots:
   '@middy/util@7.4.0': {}
 
   '@middy/util@7.5.0': {}
+
+  '@middy/util@7.6.5': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -9922,7 +9931,7 @@ snapshots:
       storybook: 10.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.2.14)(prettier@3.8.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       type-fest: 2.19.0
       vue: 3.5.34(typescript@6.0.3)
-      vue-component-type-helpers: 3.2.9
+      vue-component-type-helpers: 3.3.1
 
   '@stryker-mutator/api@9.6.1':
     dependencies:
@@ -14481,6 +14490,8 @@ snapshots:
   vue-component-type-helpers@2.2.12: {}
 
   vue-component-type-helpers@3.2.9: {}
+
+  vue-component-type-helpers@3.3.1: {}
 
   vue-devtools-stub@0.1.0: {}
 
