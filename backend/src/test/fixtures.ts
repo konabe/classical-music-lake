@@ -186,10 +186,7 @@ type HandlerFn = (
 export const makeCognitoError = (name: string, message = "error") =>
   Object.assign(new Error(message), { name });
 
-export const describeInvalidBodyCases = (
-  handler: HandlerFn,
-  eventFactory: (body: string | null) => APIGatewayProxyEvent,
-) => {
+export const describeInvalidBodyCases = (handler: HandlerFn, path: string) => {
   describe("リクエストボディ異常系", () => {
     it.each<[string | null, number, string]>([
       [null, 400, "Request body is required"],
@@ -197,7 +194,11 @@ export const describeInvalidBodyCases = (
       ["[]", 400, "Request body must be a JSON object"],
       ["invalid json", 422, "Invalid or malformed JSON was provided"],
     ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(eventFactory(body), mockContext, mockCallback);
+      const result = await handler(
+        makeEvent({ body, httpMethod: "POST", path }),
+        mockContext,
+        mockCallback,
+      );
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
     });

@@ -23,9 +23,7 @@ describe("POST /auth/login", () => {
     vi.clearAllMocks();
   });
 
-  describeInvalidBodyCases(handler, (body) =>
-    makeEvent({ body, httpMethod: "POST", path: "/auth/login" }),
-  );
+  describeInvalidBodyCases(handler, "/auth/login");
 
   describe("バリデーション", () => {
     it("メールアドレスが無効な場合は 400 を返す", async () => {

@@ -22,9 +22,7 @@ describe("POST /auth/refresh", () => {
     vi.clearAllMocks();
   });
 
-  describeInvalidBodyCases(handler, (body) =>
-    makeEvent({ body, httpMethod: "POST", path: "/auth/refresh" }),
-  );
+  describeInvalidBodyCases(handler, "/auth/refresh");
 
   describe("バリデーション", () => {
     it.each([[{ refreshToken: "" }], [{}]])(

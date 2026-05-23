@@ -3,7 +3,6 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ConcertLog } from "@/types";
 
 import { handler } from "@/handlers/concert-logs/update";
-import { describeInvalidBodyCases } from "@/test/fixtures";
 
 const mockRepo = vi.hoisted(() => ({
   save: vi.fn(),
@@ -70,7 +69,22 @@ describe("PUT /concert-logs/:id (update)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
   });
 
-  describeInvalidBodyCases(handler, (body) => makeEvent("abc-123", body, TEST_USER_ID));
+  describe("リクエストボディ異常系", () => {
+    it.each<[string | null, number, string]>([
+      [null, 400, "Request body is required"],
+      ["null", 400, "Request body is required"],
+      ["[]", 400, "Request body must be a JSON object"],
+      ["invalid json", 422, "Invalid or malformed JSON was provided"],
+    ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
+      const result = await handler(
+        makeEvent("abc-123", body, TEST_USER_ID),
+        mockContext,
+        mockCallback,
+      );
+      expect(result?.statusCode).toBe(statusCode);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
+    });
+  });
 
   it.each(["   ", "\t", "\n"])(
     "venue が空白のみ（%j）の場合は 400 を返す",
