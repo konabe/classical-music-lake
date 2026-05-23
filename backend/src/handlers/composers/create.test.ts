@@ -1,5 +1,7 @@
 import { handler } from "@/handlers/composers/create";
 import {
+  describeAdminForbiddenCases,
+  describeInvalidBodyCases,
   makeAdminEvent,
   makeAuthEvent,
   makeEvent,
@@ -24,22 +26,9 @@ describe("POST /composers (create)", () => {
     vi.useRealTimers();
   });
 
-  describe("リクエストボディ異常系", () => {
-    it.each<[string | null, number, string]>([
-      [null, 400, "Request body is required"],
-      ["null", 400, "Request body is required"],
-      ["[]", 400, "Request body must be a JSON object"],
-      ["invalid json", 422, "Invalid or malformed JSON was provided"],
-    ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(
-        makeAdminEvent(TEST_USER_ID, { body, httpMethod: "POST", path: "/composers" }),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(statusCode);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
-    });
-  });
+  describeInvalidBodyCases(handler, "/composers", (body) =>
+    makeAdminEvent(TEST_USER_ID, { body, httpMethod: "POST", path: "/composers" }),
+  );
 
   it("name がない場合は 400 を返す", async () => {
     const result = await handler(
@@ -304,30 +293,17 @@ describe("POST /composers (create)", () => {
     expect(result?.statusCode).toBe(500);
   });
 
-  describe("認可", () => {
-    it("admin グループに属さないユーザーは 403 を返し、データを保存しない", async () => {
-      const result = await handler(
-        makeAuthEvent(TEST_USER_ID, {
-          body: JSON.stringify(validInput),
-          httpMethod: "POST",
-          path: "/composers",
-        }),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(403);
-      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockRepo.save).not.toHaveBeenCalled();
-    });
-
-    it("認証クレームがない場合は 403 を返し、データを保存しない", async () => {
-      const result = await handler(
-        makeEvent({ body: JSON.stringify(validInput), httpMethod: "POST", path: "/composers" }),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(403);
-      expect(mockRepo.save).not.toHaveBeenCalled();
-    });
-  });
+  describeAdminForbiddenCases(
+    (auth) => {
+      const overrides = {
+        body: JSON.stringify(validInput),
+        httpMethod: "POST",
+        path: "/composers",
+      };
+      const event =
+        auth === "non-admin" ? makeAuthEvent(TEST_USER_ID, overrides) : makeEvent(overrides);
+      return handler(event, mockContext, mockCallback);
+    },
+    [mockRepo.save],
+  );
 });

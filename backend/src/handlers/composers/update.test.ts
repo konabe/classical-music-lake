@@ -1,42 +1,21 @@
-import type { APIGatewayProxyEvent } from "aws-lambda";
 import createError from "http-errors";
 import type { Composer } from "@/types";
 
 import { handler } from "@/handlers/composers/update";
 import {
-  makeAdminEvent,
-  makeAuthEvent,
-  makeEvent as makeBaseEvent,
+  describeAdminForbiddenCases,
+  makeAdminPutEvent,
   mockCallback,
   mockContext,
-  TEST_USER_ID,
+  type WriteAuthMode,
 } from "@/test/fixtures";
 
 import { mockComposerRepo as mockRepo } from "@/repositories/__mocks__/composer-repository";
 
 vi.mock("@/repositories/composer-repository");
 
-type AuthMode = "admin" | "non-admin" | "none";
-
-function makeEvent(
-  id?: string,
-  body?: string | null,
-  auth: AuthMode = "admin",
-): APIGatewayProxyEvent {
-  const overrides: Partial<APIGatewayProxyEvent> = {
-    body: body === undefined ? null : body,
-    httpMethod: "PUT",
-    path: `/composers/${id ?? ""}`,
-    pathParameters: id === undefined ? null : { id },
-  };
-  if (auth === "admin") {
-    return makeAdminEvent(TEST_USER_ID, overrides);
-  }
-  if (auth === "non-admin") {
-    return makeAuthEvent(TEST_USER_ID, overrides);
-  }
-  return makeBaseEvent(overrides);
-}
+const makeEvent = (id?: string, body?: string | null, auth: WriteAuthMode = "admin") =>
+  makeAdminPutEvent("composers", id, body, auth);
 
 const existingComposer: Composer = {
   id: "abc-123",
@@ -259,26 +238,13 @@ describe("PUT /composers/{id} (update)", () => {
     expect(result?.statusCode).toBe(409);
   });
 
-  describe("認可", () => {
-    it("admin グループに属さないユーザーは 403 を返し、データを更新しない", async () => {
-      const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ name: "新しい名前" }), "non-admin"),
+  describeAdminForbiddenCases(
+    (auth) =>
+      handler(
+        makeEvent("abc-123", JSON.stringify({ name: "新しい名前" }), auth),
         mockContext,
         mockCallback,
-      );
-      expect(result?.statusCode).toBe(403);
-      expect(mockRepo.findById).not.toHaveBeenCalled();
-      expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
-    });
-
-    it("認証クレームがない場合は 403 を返し、データを更新しない", async () => {
-      const result = await handler(
-        makeEvent("abc-123", JSON.stringify({ name: "新しい名前" }), "none"),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(403);
-      expect(mockRepo.findById).not.toHaveBeenCalled();
-    });
-  });
+      ),
+    [mockRepo.findById, mockRepo.saveWithOptimisticLock],
+  );
 });

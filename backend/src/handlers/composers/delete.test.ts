@@ -1,36 +1,19 @@
-import type { APIGatewayProxyEvent } from "aws-lambda";
-
 import { ComposerId } from "@/domain/value-objects/ids";
 import { handler } from "@/handlers/composers/delete";
 import {
-  makeAdminEvent,
-  makeAuthEvent,
-  makeEvent as makeBaseEvent,
+  describeAdminForbiddenCases,
+  makeAdminDeleteEvent,
   mockCallback,
   mockContext,
-  TEST_USER_ID,
+  type WriteAuthMode,
 } from "@/test/fixtures";
 
 import { mockComposerRepo as mockRepo } from "@/repositories/__mocks__/composer-repository";
 
 vi.mock("@/repositories/composer-repository");
 
-type AuthMode = "admin" | "non-admin" | "none";
-
-function makeEvent(id: string | null, auth: AuthMode = "admin"): APIGatewayProxyEvent {
-  const overrides: Partial<APIGatewayProxyEvent> = {
-    httpMethod: "DELETE",
-    path: `/composers/${id ?? ""}`,
-    pathParameters: id === null ? null : { id },
-  };
-  if (auth === "admin") {
-    return makeAdminEvent(TEST_USER_ID, overrides);
-  }
-  if (auth === "non-admin") {
-    return makeAuthEvent(TEST_USER_ID, overrides);
-  }
-  return makeBaseEvent(overrides);
-}
+const makeEvent = (id: string | null, auth: WriteAuthMode = "admin") =>
+  makeAdminDeleteEvent("composers", id, auth);
 
 describe("DELETE /composers/{id} (delete)", () => {
   beforeEach(() => {
@@ -63,21 +46,8 @@ describe("DELETE /composers/{id} (delete)", () => {
     expect(result?.statusCode).toBe(500);
   });
 
-  describe("認可", () => {
-    it("admin グループに属さないユーザーは 403 を返し、削除しない", async () => {
-      const result = await handler(
-        makeEvent("test-id-123", "non-admin"),
-        mockContext,
-        mockCallback,
-      );
-      expect(result?.statusCode).toBe(403);
-      expect(mockRepo.remove).not.toHaveBeenCalled();
-    });
-
-    it("認証クレームがない場合は 403 を返し、削除しない", async () => {
-      const result = await handler(makeEvent("test-id-123", "none"), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(403);
-      expect(mockRepo.remove).not.toHaveBeenCalled();
-    });
-  });
+  describeAdminForbiddenCases(
+    (auth) => handler(makeEvent("test-id-123", auth), mockContext, mockCallback),
+    [mockRepo.remove],
+  );
 });

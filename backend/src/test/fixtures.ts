@@ -131,6 +131,102 @@ export const makeDeleteEvent = (
 });
 
 /**
+ * 参照系ハンドラ（GET /{prefix}/{id}）のイベントを生成する。
+ * `userId` を渡すとユーザースコープの authorizer クレームを付与する（参照公開系では省略）。
+ */
+export const makeGetEvent = (
+  pathPrefix: string,
+  id?: string,
+  userId?: string,
+): APIGatewayProxyEvent => ({
+  ...makeEvent({
+    httpMethod: "GET",
+    path: `/${pathPrefix}/${id ?? ""}`,
+    pathParameters: id === undefined ? null : { id },
+  }),
+  requestContext: {
+    authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
+  } as APIGatewayProxyEvent["requestContext"],
+});
+
+/**
+ * admin 限定の書き込み系ハンドラで、認可状態を切り替えてイベントを生成するための区分。
+ * - `admin`: admin グループ所属の認証済みユーザー
+ * - `non-admin`: 認証済みだが admin グループ非所属
+ * - `none`: 認証クレームなし
+ */
+export type WriteAuthMode = "admin" | "non-admin" | "none";
+
+/**
+ * 認可区分に応じて admin / 非 admin / 認証なしのイベントを生成する。
+ * admin 書き込み系のうち、パスが定型でないエンドポイント（例: PUT /pieces/{id}/movements）でも
+ * overrides を直接組み立てて再利用できる。
+ */
+export const makeWriteEvent = (
+  overrides: Partial<APIGatewayProxyEvent>,
+  auth: WriteAuthMode,
+): APIGatewayProxyEvent => {
+  if (auth === "admin") {
+    return makeAdminEvent(TEST_USER_ID, overrides);
+  }
+  if (auth === "non-admin") {
+    return makeAuthEvent(TEST_USER_ID, overrides);
+  }
+  return makeEvent(overrides);
+};
+
+export const makeAdminPutEvent = (
+  pathPrefix: string,
+  id?: string,
+  body?: string | null,
+  auth: WriteAuthMode = "admin",
+): APIGatewayProxyEvent =>
+  makeWriteEvent(
+    {
+      body: body === undefined ? null : body,
+      httpMethod: "PUT",
+      path: `/${pathPrefix}/${id ?? ""}`,
+      pathParameters: id === undefined ? null : { id },
+    },
+    auth,
+  );
+
+export const makeAdminDeleteEvent = (
+  pathPrefix: string,
+  id: string | null,
+  auth: WriteAuthMode = "admin",
+): APIGatewayProxyEvent =>
+  makeWriteEvent(
+    {
+      httpMethod: "DELETE",
+      path: `/${pathPrefix}/${id ?? ""}`,
+      pathParameters: id === null ? null : { id },
+    },
+    auth,
+  );
+
+/**
+ * ユーザースコープの更新系ハンドラ（PUT /{prefix}/{id}）のイベントを生成する。
+ * `userId` を渡すと authorizer クレームを付与する。
+ */
+export const makeUserPutEvent = (
+  pathPrefix: string,
+  id?: string,
+  body?: string | null,
+  userId?: string,
+): APIGatewayProxyEvent => ({
+  ...makeEvent({
+    body: body === undefined ? null : body,
+    httpMethod: "PUT",
+    path: `/${pathPrefix}/${id ?? ""}`,
+    pathParameters: id === undefined ? null : { id },
+  }),
+  requestContext: {
+    authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
+  } as APIGatewayProxyEvent["requestContext"],
+});
+
+/**
  * ListeningLog 系ハンドラ／ユースケースのテストで使うリポジトリモック群を生成する。
  * ListeningLogUsecase が `pieceRepo.findById` / `composerRepo.findById` を呼ぶため、
  * これらの戻り値も既定で fixture から提供する（必要に応じて override 可能）。
@@ -226,7 +322,17 @@ export const describeCognitoErrorCases = (
   });
 };
 
-export const describeInvalidBodyCases = (handler: HandlerFn, path: string) => {
+/**
+ * リクエストボディの欠落・型不正・JSON 破損に対するハンドラ応答を共通検証する。
+ * 既定では認証なしの POST イベントを使うが、admin 必須エンドポイントや PUT など
+ * 別のイベント生成が必要な場合は `makeBodyEvent` でファクトリを差し替える。
+ */
+export const describeInvalidBodyCases = (
+  handler: HandlerFn,
+  path: string,
+  makeBodyEvent: (body: string | null) => APIGatewayProxyEvent = (body) =>
+    makeEvent({ body, httpMethod: "POST", path }),
+) => {
   describe("リクエストボディ異常系", () => {
     it.each<[string | null, number, string]>([
       [null, 400, "Request body is required"],
@@ -234,13 +340,36 @@ export const describeInvalidBodyCases = (handler: HandlerFn, path: string) => {
       ["[]", 400, "Request body must be a JSON object"],
       ["invalid json", 422, "Invalid or malformed JSON was provided"],
     ])("body=%j のとき %i を返す", async (body, statusCode, message) => {
-      const result = await handler(
-        makeEvent({ body, httpMethod: "POST", path }),
-        mockContext,
-        mockCallback,
-      );
+      const result = await handler(makeBodyEvent(body), mockContext, mockCallback);
       expect(result?.statusCode).toBe(statusCode);
       expect(JSON.parse(result?.body ?? "{}").message).toBe(message);
+    });
+  });
+};
+
+/**
+ * admin 限定の書き込み系ハンドラに共通する「認可」ブロックを共通化する。
+ * 非 admin・認証クレームなしのいずれでも 403 を返し、副作用（リポジトリ書き込み等）が
+ * 起きないことを検証する。`invoke` は認可区分を受け取りハンドラを呼び出す。
+ */
+type HandlerResult = { statusCode?: number; body?: string } | null | undefined;
+
+export const describeAdminForbiddenCases = (
+  invoke: (auth: "non-admin" | "none") => HandlerResult | Promise<HandlerResult>,
+  notCalledMocks: Mock[],
+) => {
+  describe("認可", () => {
+    it("admin グループに属さないユーザーは 403 を返し、副作用を起こさない", async () => {
+      const result = await invoke("non-admin");
+      expect(result?.statusCode).toBe(403);
+      expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
+      notCalledMocks.forEach((mock) => expect(mock).not.toHaveBeenCalled());
+    });
+
+    it("認証クレームがない場合は 403 を返し、副作用を起こさない", async () => {
+      const result = await invoke("none");
+      expect(result?.statusCode).toBe(403);
+      notCalledMocks.forEach((mock) => expect(mock).not.toHaveBeenCalled());
     });
   });
 };

@@ -1,35 +1,18 @@
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ConcertLog } from "@/types";
 
 import { handler } from "@/handlers/concert-logs/get";
+import {
+  makeGetEvent,
+  mockCallback,
+  mockContext,
+  OTHER_USER_ID,
+  TEST_USER_ID,
+} from "@/test/fixtures";
 import { mockConcertLogRepo } from "@/repositories/__mocks__/concert-log-repository";
 
 vi.mock("@/repositories/concert-log-repository");
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
-
-const TEST_USER_ID = "cognito-sub-user-123";
-const OTHER_USER_ID = "cognito-sub-other-user";
-
-function makeEvent(id?: string, userId?: string): APIGatewayProxyEvent {
-  return {
-    body: null,
-    headers: {},
-    multiValueHeaders: {},
-    httpMethod: "GET",
-    isBase64Encoded: false,
-    path: `/concert-logs/${id ?? ""}`,
-    pathParameters: id === undefined ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {
-      authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
-    } as APIGatewayProxyEvent["requestContext"],
-    resource: "",
-  };
-}
+const makeEvent = (id?: string, userId?: string) => makeGetEvent("concert-logs", id, userId);
 
 const testLog: ConcertLog = {
   id: "abc-123",

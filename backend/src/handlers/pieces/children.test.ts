@@ -1,29 +1,15 @@
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-
 import { handler } from "@/handlers/pieces/children";
+import { makeEvent, mockCallback, mockContext } from "@/test/fixtures";
 import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 
 vi.mock("@/repositories/piece-repository");
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
-
-function makeEvent(id?: string): APIGatewayProxyEvent {
-  return {
-    body: null,
-    headers: {},
-    multiValueHeaders: {},
+const makeChildrenEvent = (id?: string) =>
+  makeEvent({
     httpMethod: "GET",
-    isBase64Encoded: false,
     path: `/pieces/${id ?? ""}/children`,
     pathParameters: id === undefined ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
-    resource: "",
-  };
-}
+  });
 
 describe("GET /pieces/{id}/children (children)", () => {
   beforeEach(() => {
@@ -31,7 +17,7 @@ describe("GET /pieces/{id}/children (children)", () => {
   });
 
   it("id がない場合は 400 を返す", async () => {
-    const result = await handler(makeEvent(), mockContext, mockCallback);
+    const result = await handler(makeChildrenEvent(), mockContext, mockCallback);
     expect(result?.statusCode).toBe(400);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("id is required");
   });
@@ -59,7 +45,7 @@ describe("GET /pieces/{id}/children (children)", () => {
     ];
     mockPieceRepo.findChildren.mockResolvedValueOnce(movements);
 
-    const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
+    const result = await handler(makeChildrenEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "[]");
     expect(body).toHaveLength(2);
@@ -71,14 +57,14 @@ describe("GET /pieces/{id}/children (children)", () => {
   it("該当する子 Movement が無ければ空配列を返す", async () => {
     mockPieceRepo.findChildren.mockResolvedValueOnce([]);
 
-    const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
+    const result = await handler(makeChildrenEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
     expect(JSON.parse(result?.body ?? "[]")).toEqual([]);
   });
 
   it("Repository エラー時に 500 を返す", async () => {
     mockPieceRepo.findChildren.mockRejectedValueOnce(new Error("DynamoDB error"));
-    const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
+    const result = await handler(makeChildrenEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });
 });

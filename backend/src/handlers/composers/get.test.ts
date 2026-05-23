@@ -1,31 +1,13 @@
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Composer } from "@/types";
 
 import { handler } from "@/handlers/composers/get";
+import { makeGetEvent, mockCallback, mockContext } from "@/test/fixtures";
 
 import { mockComposerRepo as mockRepo } from "@/repositories/__mocks__/composer-repository";
 
 vi.mock("@/repositories/composer-repository");
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
-
-function makeEvent(id?: string): APIGatewayProxyEvent {
-  return {
-    body: null,
-    headers: {},
-    multiValueHeaders: {},
-    httpMethod: "GET",
-    isBase64Encoded: false,
-    path: `/composers/${id ?? ""}`,
-    pathParameters: id === undefined ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {} as APIGatewayProxyEvent["requestContext"],
-    resource: "",
-  };
-}
+const makeEvent = (id?: string) => makeGetEvent("composers", id);
 
 const testComposer: Composer = {
   id: "abc-123",

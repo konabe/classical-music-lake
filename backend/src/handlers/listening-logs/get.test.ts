@@ -1,7 +1,14 @@
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-
 import { handler } from "@/handlers/listening-logs/get";
-import { makeComposer, makeLogRecord, makePiece } from "@/test/fixtures";
+import {
+  makeComposer,
+  makeGetEvent,
+  makeLogRecord,
+  makePiece,
+  mockCallback,
+  mockContext,
+  OTHER_USER_ID,
+  TEST_USER_ID,
+} from "@/test/fixtures";
 import { mockComposerRepo } from "@/repositories/__mocks__/composer-repository";
 import { mockListeningLogRepo } from "@/repositories/__mocks__/listening-log-repository";
 import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
@@ -10,30 +17,7 @@ vi.mock("@/repositories/composer-repository");
 vi.mock("@/repositories/listening-log-repository");
 vi.mock("@/repositories/piece-repository");
 
-const mockContext = {} as Context;
-const mockCallback = { signal: new AbortController().signal };
-
-const TEST_USER_ID = "cognito-sub-user-123";
-const OTHER_USER_ID = "cognito-sub-other-user";
-
-function makeEvent(id?: string, userId?: string): APIGatewayProxyEvent {
-  return {
-    body: null,
-    headers: {},
-    multiValueHeaders: {},
-    httpMethod: "GET",
-    isBase64Encoded: false,
-    path: `/listening-logs/${id ?? ""}`,
-    pathParameters: id === undefined ? null : { id },
-    queryStringParameters: null,
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    requestContext: {
-      authorizer: userId === undefined ? undefined : { claims: { sub: userId } },
-    } as APIGatewayProxyEvent["requestContext"],
-    resource: "",
-  };
-}
+const makeEvent = (id?: string, userId?: string) => makeGetEvent("listening-logs", id, userId);
 
 describe("GET /listening-logs/:id (get)", () => {
   beforeEach(() => {
