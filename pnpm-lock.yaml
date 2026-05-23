@@ -232,8 +232,8 @@ importers:
         specifier: 'catalog:'
         version: 25.6.0
       aws-cdk:
-        specifier: ^2.1120.0
-        version: 2.1121.0
+        specifier: ^2.1124.0
+        version: 2.1124.1
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
@@ -3424,8 +3424,8 @@ packages:
       - yaml
       - mime-types
 
-  aws-cdk@2.1121.0:
-    resolution: {integrity: sha512-cG7CHt/SytYTfwrK+BUNQpqmS1dwhjt8z6ExKL6GK4n+8/6ZCwFzxlZWA/jUd2+Y9xPc+Q8cLKfMqGmgxEXbkg==}
+  aws-cdk@2.1124.1:
+    resolution: {integrity: sha512-sRYdPMdkX+02EHaT946AFV0w0CMfbHKWpLZPv525xTCkaVu1eYu6DzHFuTdimxdSN0uGQ2D4LHrD1sr94tRhow==}
     engines: {node: '>= 18.0.0'}
     hasBin: true
 
@@ -6883,6 +6883,9 @@ packages:
   vue-component-type-helpers@3.2.9:
     resolution: {integrity: sha512-S3BiWYaLSzHxTpln665ELSrMR9UYmrIDUmhik7nVZxmJjTKL2/a+ew1hvGxksKelivm0ujjWfG1fYOiU/2e8rA==}
 
+  vue-component-type-helpers@3.3.1:
+    resolution: {integrity: sha512-pu58kqxmVyEH6VfNYW1UyEfR3XAnJ27ZXT3yzXxxpjLxVzAbyC35Zk/nm/RMs7ijWnJNSd9fWkeex2OhUsx3MA==}
+
   vue-devtools-stub@0.1.0:
     resolution: {integrity: sha512-RutnB7X8c5hjq39NceArgXg28WZtZpGc3+J16ljMiYnFhKvd8hITxSWQSQ5bvldxMDU6gG5mkxl1MTQLXckVSQ==}
 
@@ -9922,7 +9925,7 @@ snapshots:
       storybook: 10.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.2.14)(prettier@3.8.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       type-fest: 2.19.0
       vue: 3.5.34(typescript@6.0.3)
-      vue-component-type-helpers: 3.2.9
+      vue-component-type-helpers: 3.3.1
 
   '@stryker-mutator/api@9.6.1':
     dependencies:
@@ -10693,7 +10696,7 @@ snapshots:
       '@aws-cdk/cloud-assembly-schema': 53.24.0
       constructs: 10.6.0
 
-  aws-cdk@2.1121.0: {}
+  aws-cdk@2.1124.1: {}
 
   axe-core@4.11.4: {}
 
@@ -14481,6 +14484,8 @@ snapshots:
   vue-component-type-helpers@2.2.12: {}
 
   vue-component-type-helpers@3.2.9: {}
+
+  vue-component-type-helpers@3.3.1: {}
 
   vue-devtools-stub@0.1.0: {}
 
