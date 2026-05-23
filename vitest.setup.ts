@@ -1,28 +1,15 @@
+import { afterEach, vi } from "vitest";
+
 /**
- * @nuxt/test-utils のルート遅延解決に起因する EnvironmentTeardownError を抑制する。
+ * mountSuspended() でページコンポーネントをマウントすると、Nuxt ルーターが
+ * すべてのルートを遅延的に解決し、その動的 import がテスト環境の teardown 後に
+ * 完了して EnvironmentTeardownError（unhandled rejection）として表面化することがある。
  *
- * mountSuspended() でページコンポーネントをマウントすると、Nuxt のルーターが
- * すべてのルートを遅延的に解決し始める。一部の動的インポートが vitest 4.1+ の
- * テスト環境ティアダウン後に完了するため、EnvironmentTeardownError が
- * unhandled rejection として発生する。テスト自体はすべて合格しており、
- * クリーンアップのタイミング問題にすぎない。
- *
- * Vite の reviveInvokeError が元の EnvironmentTeardownError を通常の Error でラップ
- * するため、name だけでなく message でも判定する。
- *
- * TODO: vitest の上流修正が入ったらこのファイルごと削除する。
- *   - 上流 issue: https://github.com/vitest-dev/vitest/issues/9872
- *   - トラッキング: https://github.com/konabe/classical-music-lake/issues/574
- *   検証履歴: vitest 4.1.5 + @nuxt/test-utils 4.0.3 の組み合わせでも未解消（2026-04-29 時点）。
+ * 各テスト終了時に保留中の動的 import を待ち合わせ、teardown 前に確実に
+ * 解決させることでこのレースを根本から防ぐ。上流 vitest はこれをバグではなく
+ * dynamicImportSettled の利用案件として扱っている。
+ *   - https://github.com/vitest-dev/vitest/issues/9872
  */
-process.on("unhandledRejection", (reason: unknown) => {
-  if (
-    reason instanceof Error &&
-    (reason.name === "EnvironmentTeardownError" ||
-      reason.message.includes("after the environment was torn down") ||
-      (reason.cause instanceof Error && reason.cause.name === "EnvironmentTeardownError"))
-  ) {
-    return;
-  }
-  throw reason;
+afterEach(async () => {
+  await vi.dynamicImportSettled();
 });
