@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, type Mock } from "vitest";
 import type { Composer, ListeningLog, ListeningLogRecord, Piece } from "@/types";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
@@ -185,6 +185,46 @@ type HandlerFn = (
 
 export const makeCognitoError = (name: string, message = "error") =>
   Object.assign(new Error(message), { name });
+
+/**
+ * Cognito 例外を投げたときのハンドラ応答（ステータスコードと error / message）を
+ * テーブル駆動で検証する。auth 系ハンドラに共通する「Cognito エラー系」ブロックを共通化する。
+ *
+ * - `error`: レスポンスボディの `error` フィールドの完全一致を検証する
+ * - `messageIncludes`: レスポンスボディの `message` の部分一致を検証する（大文字小文字を無視）
+ */
+type CognitoErrorCase = {
+  name: string;
+  statusCode: number;
+  error?: string;
+  messageIncludes?: string;
+};
+
+export const describeCognitoErrorCases = (
+  mockMethod: Mock,
+  invoke: () => Promise<{ statusCode?: number; body?: string } | null | undefined>,
+  cases: CognitoErrorCase[],
+) => {
+  describe("Cognito エラー系", () => {
+    it.each(cases)(
+      "$name のとき $statusCode を返す",
+      async ({ name, statusCode, error, messageIncludes }) => {
+        mockMethod.mockRejectedValueOnce(makeCognitoError(name));
+
+        const result = await invoke();
+
+        expect(result?.statusCode).toBe(statusCode);
+        const body = JSON.parse(result?.body ?? "{}");
+        if (error !== undefined) {
+          expect(body.error).toBe(error);
+        }
+        if (messageIncludes !== undefined) {
+          expect(String(body.message).toLowerCase()).toContain(messageIncludes.toLowerCase());
+        }
+      },
+    );
+  });
+};
 
 export const describeInvalidBodyCases = (handler: HandlerFn, path: string) => {
   describe("リクエストボディ異常系", () => {

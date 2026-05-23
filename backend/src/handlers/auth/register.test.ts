@@ -4,7 +4,7 @@ import {
   mockContext,
   mockCallback,
   describeInvalidBodyCases,
-  makeCognitoError,
+  describeCognitoErrorCases,
 } from "@/test/fixtures";
 import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
@@ -63,21 +63,14 @@ describe("POST /auth/register", () => {
     });
   });
 
-  describe("Cognito エラー系", () => {
-    it.each<[string, number, string | undefined]>([
-      ["UsernameExistsException", 400, "already"],
-      ["InvalidPasswordException", 400, "password"],
-      ["TooManyRequestsException", 429, "again later"],
-      ["ServiceUnavailableException", 500, undefined],
-    ])("%s のとき %i を返す", async (name, statusCode, messageSubstring) => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError(name));
-
-      const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-
-      expect(result?.statusCode).toBe(statusCode);
-      if (messageSubstring !== undefined) {
-        expect(JSON.parse(result?.body ?? "{}").message.toLowerCase()).toContain(messageSubstring);
-      }
-    });
-  });
+  describeCognitoErrorCases(
+    mockRepo.signUp,
+    () => handler(makeRegisterEvent(), mockContext, mockCallback),
+    [
+      { name: "UsernameExistsException", statusCode: 400, messageIncludes: "already" },
+      { name: "InvalidPasswordException", statusCode: 400, messageIncludes: "password" },
+      { name: "TooManyRequestsException", statusCode: 429, messageIncludes: "again later" },
+      { name: "ServiceUnavailableException", statusCode: 500 },
+    ],
+  );
 });
