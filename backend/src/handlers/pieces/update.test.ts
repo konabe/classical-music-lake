@@ -12,25 +12,9 @@ import {
   TEST_COMPOSER_ID,
   TEST_USER_ID,
 } from "@/test/fixtures";
+import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  saveWork: vi.fn(),
-  saveWorkWithOptimisticLock: vi.fn(),
-  removeWorkCascade: vi.fn(),
-  findRootById: vi.fn(),
-  findRootPage: vi.fn(),
-  findById: vi.fn(),
-  saveMovement: vi.fn(),
-  saveMovementWithOptimisticLock: vi.fn(),
-  removeMovement: vi.fn(),
-  replaceMovements: vi.fn(),
-}));
-
-vi.mock("../../repositories/piece-repository", () => ({
-  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/piece-repository");
 
 type AuthMode = "admin" | "non-admin" | "none";
 
@@ -138,8 +122,8 @@ describe("PUT /pieces/{id} (update)", () => {
   );
 
   it("title を含まない更新は title のバリデーションをスキップする", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", work({ composerId: OTHER_COMPOSER_ID })),
@@ -150,7 +134,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", work({ title: "新タイトル" })),
       mockContext,
@@ -160,8 +144,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("正常更新して 200 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", work({ title: "交響曲第5番", composerId: OTHER_COMPOSER_ID })),
@@ -178,8 +162,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("updatedAt が更新されること", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const before = new Date(existingPiece.updatedAt).getTime();
     const result = await handler(
@@ -192,8 +176,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("createdAt は上書きされない", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", work({ title: "交響曲第5番" })),
@@ -205,8 +189,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("id は上書きされない", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", work({ title: "交響曲第5番" })),
@@ -218,8 +202,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWorkWithOptimisticLock.mockRejectedValueOnce(
+    mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockPieceRepo.saveWorkWithOptimisticLock.mockRejectedValueOnce(
       new createError.Conflict("Piece was updated by another request"),
     );
 
@@ -233,7 +217,7 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockPieceRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", work({ title: "交響曲第5番" })),
       mockContext,
@@ -243,8 +227,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("videoUrls を追加して更新できる", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPiece);
-    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+    mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const urls = ["https://www.youtube.com/watch?v=xyz", "https://www.youtube.com/watch?v=qrs"];
     const result = await handler(
@@ -258,8 +242,8 @@ describe("PUT /pieces/{id} (update)", () => {
   });
 
   it("videoUrls を空配列で送信すると削除される", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingPieceWithVideoUrls);
-    mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(existingPieceWithVideoUrls);
+    mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", work({ videoUrls: [] })),
@@ -273,8 +257,8 @@ describe("PUT /pieces/{id} (update)", () => {
 
   describe("カテゴリフィールド", () => {
     it("カテゴリを追加して更新できる", async () => {
-      mockRepo.findById.mockResolvedValueOnce(existingPiece);
-      mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+      mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+      mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
         makeEvent(
@@ -303,8 +287,8 @@ describe("PUT /pieces/{id} (update)", () => {
         genre: "交響曲",
         era: "古典派",
       };
-      mockRepo.findById.mockResolvedValueOnce(existingWithCategory);
-      mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+      mockPieceRepo.findById.mockResolvedValueOnce(existingWithCategory);
+      mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
         makeEvent("abc-123", work({ genre: "協奏曲", era: "ロマン派" })),
@@ -325,8 +309,8 @@ describe("PUT /pieces/{id} (update)", () => {
         formation: "管弦楽",
         region: "ドイツ・オーストリア",
       };
-      mockRepo.findById.mockResolvedValueOnce(existingWithCategory);
-      mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+      mockPieceRepo.findById.mockResolvedValueOnce(existingWithCategory);
+      mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
         makeEvent("abc-123", work({ genre: "", era: "", formation: "", region: "" })),
@@ -342,8 +326,8 @@ describe("PUT /pieces/{id} (update)", () => {
     });
 
     it("一部のカテゴリのみ更新できる", async () => {
-      mockRepo.findById.mockResolvedValueOnce(existingPiece);
-      mockRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
+      mockPieceRepo.findById.mockResolvedValueOnce(existingPiece);
+      mockPieceRepo.saveWorkWithOptimisticLock.mockResolvedValueOnce(undefined);
 
       const result = await handler(
         makeEvent("abc-123", work({ genre: "室内楽" })),
@@ -412,8 +396,8 @@ describe("PUT /pieces/{id} (update)", () => {
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockRepo.findById).not.toHaveBeenCalled();
-      expect(mockRepo.saveWorkWithOptimisticLock).not.toHaveBeenCalled();
+      expect(mockPieceRepo.findById).not.toHaveBeenCalled();
+      expect(mockPieceRepo.saveWorkWithOptimisticLock).not.toHaveBeenCalled();
     });
 
     it("認証クレームがない場合は 403 を返し、データを更新しない", async () => {
@@ -423,8 +407,8 @@ describe("PUT /pieces/{id} (update)", () => {
         mockCallback,
       );
       expect(result?.statusCode).toBe(403);
-      expect(mockRepo.findById).not.toHaveBeenCalled();
-      expect(mockRepo.saveWorkWithOptimisticLock).not.toHaveBeenCalled();
+      expect(mockPieceRepo.findById).not.toHaveBeenCalled();
+      expect(mockPieceRepo.saveWorkWithOptimisticLock).not.toHaveBeenCalled();
     });
   });
 });

@@ -4,43 +4,12 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { handler } from "@/handlers/listening-logs/update";
 import { makeComposer, makeLogRecord, makePiece } from "@/test/fixtures";
 import { mockComposerRepo } from "@/repositories/__mocks__/composer-repository";
-
-const mocks = vi.hoisted(() => ({
-  listeningLogRepo: {
-    save: vi.fn(),
-    findById: vi.fn(),
-    findByUserId: vi.fn(),
-    existsByPieceIds: vi.fn(),
-    saveWithOptimisticLock: vi.fn(),
-    remove: vi.fn(),
-  },
-  pieceRepo: {
-    findRootById: vi.fn(),
-    findRootPage: vi.fn(),
-    saveWork: vi.fn(),
-    saveWorkWithOptimisticLock: vi.fn(),
-    removeWorkCascade: vi.fn(),
-    findById: vi.fn(),
-    findByIds: vi.fn().mockResolvedValue([]),
-    findChildren: vi.fn(),
-    saveMovement: vi.fn(),
-    saveMovementWithOptimisticLock: vi.fn(),
-    removeMovement: vi.fn(),
-    replaceMovements: vi.fn(),
-  },
-}));
+import { mockListeningLogRepo } from "@/repositories/__mocks__/listening-log-repository";
+import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 
 vi.mock("@/repositories/composer-repository");
-vi.mock("../../repositories/listening-log-repository", () => ({
-  DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
-    return mocks.listeningLogRepo;
-  }),
-}));
-vi.mock("../../repositories/piece-repository", () => ({
-  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
-    return mocks.pieceRepo;
-  }),
-}));
+vi.mock("@/repositories/listening-log-repository");
+vi.mock("@/repositories/piece-repository");
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
@@ -72,7 +41,7 @@ const existingLog = makeLogRecord("abc-123", "2024-01-15T20:00:00.000Z", TEST_US
 describe("PUT /listening-logs/:id (update)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.pieceRepo.findById.mockResolvedValue(makePiece());
+    mockPieceRepo.findById.mockResolvedValue(makePiece());
     mockComposerRepo.findById.mockResolvedValue(makeComposer());
   });
 
@@ -136,18 +105,18 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("他ユーザーのアイテムを更新しようとした場合は 404 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(existingLog);
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), OTHER_USER_ID),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(404);
-    expect(mocks.listeningLogRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+    expect(mockListeningLogRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(undefined);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,
@@ -157,8 +126,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("rating を含まない更新は rating のバリデーションをスキップする", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
-    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockListeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ isFavorite: true }), TEST_USER_ID),
@@ -169,8 +138,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("正常更新して 200 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
-    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockListeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4, isFavorite: true }), TEST_USER_ID),
@@ -189,8 +158,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("updatedAt が更新されること", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
-    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockListeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const before = new Date(existingLog.updatedAt).getTime();
     const result = await handler(
@@ -203,8 +172,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("id は上書きされない", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
-    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockListeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ id: "tampered-id", rating: 4 }), TEST_USER_ID),
@@ -216,8 +185,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("pieceId を別の UUID に更新できる", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
-    mocks.listeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockListeningLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const newPieceId = "00000000-0000-4000-8000-00000000aaaa";
     const result = await handler(
@@ -241,8 +210,8 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(existingLog);
-    mocks.listeningLogRepo.saveWithOptimisticLock.mockRejectedValueOnce(
+    mockListeningLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockListeningLogRepo.saveWithOptimisticLock.mockRejectedValueOnce(
       new Conflict("Listening log was updated by another request"),
     );
     const result = await handler(
@@ -257,7 +226,7 @@ describe("PUT /listening-logs/:id (update)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockListeningLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ rating: 4 }), TEST_USER_ID),
       mockContext,

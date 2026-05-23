@@ -3,20 +3,9 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ConcertLog } from "@/types";
 
 import { handler } from "@/handlers/concert-logs/update";
+import { mockConcertLogRepo } from "@/repositories/__mocks__/concert-log-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
-
-vi.mock("../../repositories/concert-log-repository", () => ({
-  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/concert-log-repository");
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
@@ -131,18 +120,18 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("他ユーザーのアイテムを更新しようとした場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(existingLog);
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), OTHER_USER_ID),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(404);
-    expect(mockRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
+    expect(mockConcertLogRepo.saveWithOptimisticLock).not.toHaveBeenCalled();
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(undefined);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
@@ -152,8 +141,8 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("正常更新して 200 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockConcertLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
@@ -165,15 +154,15 @@ describe("PUT /concert-logs/:id (update)", () => {
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.id).toBe("abc-123");
     expect(body.venue).toBe("東京文化会館");
-    expect(mockRepo.saveWithOptimisticLock).toHaveBeenCalledWith(
+    expect(mockConcertLogRepo.saveWithOptimisticLock).toHaveBeenCalledWith(
       expect.objectContaining({ id: "abc-123", venue: "東京文化会館" }),
       existingLog.updatedAt,
     );
   });
 
   it("venue のみ更新して concertDate はそのままであること", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockConcertLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
@@ -186,8 +175,8 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockRejectedValueOnce(
+    mockConcertLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockConcertLogRepo.saveWithOptimisticLock.mockRejectedValueOnce(
       new Conflict("Concert log was updated by another request"),
     );
     const result = await handler(
@@ -202,7 +191,7 @@ describe("PUT /concert-logs/:id (update)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockConcertLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ venue: "東京文化会館" }), TEST_USER_ID),
       mockContext,
@@ -213,8 +202,8 @@ describe("PUT /concert-logs/:id (update)", () => {
 
   it("pieceIds を更新できる", async () => {
     const pieceId = "550e8400-e29b-41d4-a716-446655440000";
-    mockRepo.findById.mockResolvedValueOnce(existingLog);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(existingLog);
+    mockConcertLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [pieceId] }), TEST_USER_ID),
@@ -231,8 +220,8 @@ describe("PUT /concert-logs/:id (update)", () => {
       ...existingLog,
       pieceIds: ["550e8400-e29b-41d4-a716-446655440000"],
     };
-    mockRepo.findById.mockResolvedValueOnce(existingLogWithPieces);
-    mockRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(existingLogWithPieces);
+    mockConcertLogRepo.saveWithOptimisticLock.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent("abc-123", JSON.stringify({ pieceIds: [] }), TEST_USER_ID),

@@ -6,20 +6,9 @@ import {
   OTHER_USER_ID,
   makeDeleteEvent,
 } from "@/test/fixtures";
+import { mockConcertLogRepo } from "@/repositories/__mocks__/concert-log-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
-
-vi.mock("../../repositories/concert-log-repository", () => ({
-  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/concert-log-repository");
 
 const existingItem = {
   id: "abc-123",
@@ -48,7 +37,7 @@ describe("DELETE /concert-logs/:id (delete)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(undefined);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeDeleteEvent("concert-logs", "not-found-id", TEST_USER_ID),
       mockContext,
@@ -58,19 +47,19 @@ describe("DELETE /concert-logs/:id (delete)", () => {
   });
 
   it("他ユーザーのアイテムを削除しようとした場合は 404 を返す（存在を隠蔽）", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingItem);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(existingItem);
     const result = await handler(
       makeDeleteEvent("concert-logs", "abc-123", OTHER_USER_ID),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(404);
-    expect(mockRepo.remove).not.toHaveBeenCalled();
+    expect(mockConcertLogRepo.remove).not.toHaveBeenCalled();
   });
 
   it("正常削除して 204 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(existingItem);
-    mockRepo.remove.mockResolvedValueOnce(undefined);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(existingItem);
+    mockConcertLogRepo.remove.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeDeleteEvent("concert-logs", "abc-123", TEST_USER_ID),
       mockContext,
@@ -78,11 +67,11 @@ describe("DELETE /concert-logs/:id (delete)", () => {
     );
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
-    expect(mockRepo.remove).toHaveBeenCalledTimes(1);
+    expect(mockConcertLogRepo.remove).toHaveBeenCalledTimes(1);
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockConcertLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeDeleteEvent("concert-logs", "abc-123", TEST_USER_ID),
       mockContext,

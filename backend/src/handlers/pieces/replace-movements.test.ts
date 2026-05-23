@@ -11,27 +11,9 @@ import {
   TEST_COMPOSER_ID,
   TEST_USER_ID,
 } from "@/test/fixtures";
+import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  saveWork: vi.fn(),
-  saveWorkWithOptimisticLock: vi.fn(),
-  removeWorkCascade: vi.fn(),
-  findRootById: vi.fn(),
-  findRootPage: vi.fn(),
-  findById: vi.fn(),
-  findByIds: vi.fn().mockResolvedValue([]),
-  findChildren: vi.fn(),
-  saveMovement: vi.fn(),
-  saveMovementWithOptimisticLock: vi.fn(),
-  removeMovement: vi.fn(),
-  replaceMovements: vi.fn(),
-}));
-
-vi.mock("../../repositories/piece-repository", () => ({
-  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/piece-repository");
 
 const TEST_WORK_ID = "00000000-0000-4000-8000-00000000aaaa";
 
@@ -112,7 +94,7 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
     expect(JSON.parse(result?.body ?? "{}").message).toBe(
       "movements must not contain duplicate index values",
     );
-    expect(mockRepo.replaceMovements).not.toHaveBeenCalled();
+    expect(mockPieceRepo.replaceMovements).not.toHaveBeenCalled();
   });
 
   it("movements に title が空の項目があると 400 を返す", async () => {
@@ -140,7 +122,7 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
   });
 
   it("Work が存在しない場合は 404 を返す", async () => {
-    mockRepo.findRootById.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findRootById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent(TEST_WORK_ID, JSON.stringify({ movements: [{ index: 0, title: "第1楽章" }] })),
       mockContext,
@@ -150,9 +132,9 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
   });
 
   it("正常に置換して 200 と movements 配列を返す", async () => {
-    mockRepo.findRootById.mockResolvedValueOnce(existingWork);
-    mockRepo.findChildren.mockResolvedValueOnce([]);
-    mockRepo.replaceMovements.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findRootById.mockResolvedValueOnce(existingWork);
+    mockPieceRepo.findChildren.mockResolvedValueOnce([]);
+    mockPieceRepo.replaceMovements.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent(
@@ -186,9 +168,9 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
       createdAt: "2024-01-15T20:00:00.000Z",
       updatedAt: "2024-01-15T20:00:00.000Z",
     };
-    mockRepo.findRootById.mockResolvedValueOnce(existingWork);
-    mockRepo.findChildren.mockResolvedValueOnce([existingMovement]);
-    mockRepo.replaceMovements.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findRootById.mockResolvedValueOnce(existingWork);
+    mockPieceRepo.findChildren.mockResolvedValueOnce([existingMovement]);
+    mockPieceRepo.replaceMovements.mockResolvedValueOnce(undefined);
 
     const result = await handler(
       makeEvent(TEST_WORK_ID, JSON.stringify({ movements: [] })),
@@ -200,9 +182,9 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
   });
 
   it("楽観的ロック競合時に 409 を返す", async () => {
-    mockRepo.findRootById.mockResolvedValueOnce(existingWork);
-    mockRepo.findChildren.mockResolvedValueOnce([]);
-    mockRepo.replaceMovements.mockRejectedValueOnce(
+    mockPieceRepo.findRootById.mockResolvedValueOnce(existingWork);
+    mockPieceRepo.findChildren.mockResolvedValueOnce([]);
+    mockPieceRepo.replaceMovements.mockRejectedValueOnce(
       new createError.Conflict("Piece was updated by another request"),
     );
 
@@ -216,9 +198,9 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findRootById.mockResolvedValueOnce(existingWork);
-    mockRepo.findChildren.mockResolvedValueOnce([]);
-    mockRepo.replaceMovements.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockPieceRepo.findRootById.mockResolvedValueOnce(existingWork);
+    mockPieceRepo.findChildren.mockResolvedValueOnce([]);
+    mockPieceRepo.replaceMovements.mockRejectedValueOnce(new Error("DynamoDB error"));
 
     const result = await handler(
       makeEvent(TEST_WORK_ID, JSON.stringify({ movements: [{ index: 0, title: "第1楽章" }] })),
@@ -241,8 +223,8 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
       );
       expect(result?.statusCode).toBe(403);
       expect(JSON.parse(result?.body ?? "{}").message).toBe("Admin privilege required");
-      expect(mockRepo.findRootById).not.toHaveBeenCalled();
-      expect(mockRepo.replaceMovements).not.toHaveBeenCalled();
+      expect(mockPieceRepo.findRootById).not.toHaveBeenCalled();
+      expect(mockPieceRepo.replaceMovements).not.toHaveBeenCalled();
     });
 
     it("認証クレームがない場合は 403 を返す", async () => {
@@ -256,7 +238,7 @@ describe("PUT /pieces/{workId}/movements (replace-movements)", () => {
         mockCallback,
       );
       expect(result?.statusCode).toBe(403);
-      expect(mockRepo.replaceMovements).not.toHaveBeenCalled();
+      expect(mockPieceRepo.replaceMovements).not.toHaveBeenCalled();
     });
   });
 });
