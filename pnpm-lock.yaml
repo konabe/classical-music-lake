@@ -179,8 +179,8 @@ importers:
         specifier: ^7.4.0
         version: 7.4.0
       '@middy/http-response-serializer':
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.6.4
+        version: 7.6.5
       http-errors:
         specifier: ^2.0.1
         version: 2.0.1
@@ -1485,8 +1485,8 @@ packages:
     resolution: {integrity: sha512-IrnDgOjLNtQat9CH4OvzTY4nA5bjY13JoxMRaapWuWj8jPlKtFm9eXEPkYSGdruU7Xtnb1xHg8edo+888OykKQ==}
     engines: {node: '>=22'}
 
-  '@middy/http-response-serializer@7.4.0':
-    resolution: {integrity: sha512-fi7MKFJ74jB4pxCQQrF+zN0/+yT9hPW23M/ju0akrwXEJKVA+syA/LuLZZ7svzFhY3E6v3YeNWeqy3GkwcalNw==}
+  '@middy/http-response-serializer@7.6.5':
+    resolution: {integrity: sha512-WE6YLT3e8ZibPZmsW7makzLvOcWddUe6lkzc4yQusGA8s0yT06/iQqCTsAtKKm5DFTfkIHPE6EENHeBJpcmIew==}
     engines: {node: '>=22'}
 
   '@middy/util@7.4.0':
@@ -1495,6 +1495,10 @@ packages:
 
   '@middy/util@7.5.0':
     resolution: {integrity: sha512-EiP4sNNSHjSEc59SLdCJQ/Efr9olDYkuE/rPlHW42Z4pfyqQZt64sGIg410WFVsd/W5l/sSbgTo6bqeChJEPYQ==}
+    engines: {node: '>=22'}
+
+  '@middy/util@7.6.5':
+    resolution: {integrity: sha512-xXx5SmKfs6TK6P9jvUVBxnYq743LI3Gv7St/ITswtSjKMvuUHvbS30RMM+tbN6tC+8e4l6Gt/iyiz20C9/PyXA==}
     engines: {node: '>=22'}
 
   '@napi-rs/wasm-runtime@0.2.12':
@@ -8539,13 +8543,15 @@ snapshots:
     dependencies:
       '@middy/util': 7.4.0
 
-  '@middy/http-response-serializer@7.4.0':
+  '@middy/http-response-serializer@7.6.5':
     dependencies:
-      '@middy/util': 7.4.0
+      '@middy/util': 7.6.5
 
   '@middy/util@7.4.0': {}
 
   '@middy/util@7.5.0': {}
+
+  '@middy/util@7.6.5': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
