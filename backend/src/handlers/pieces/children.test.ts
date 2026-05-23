@@ -1,27 +1,9 @@
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { handler } from "@/handlers/pieces/children";
+import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  saveWork: vi.fn(),
-  saveWorkWithOptimisticLock: vi.fn(),
-  removeWorkCascade: vi.fn(),
-  findRootById: vi.fn(),
-  findRootPage: vi.fn(),
-  findById: vi.fn(),
-  findByIds: vi.fn().mockResolvedValue([]),
-  findChildren: vi.fn(),
-  saveMovement: vi.fn(),
-  saveMovementWithOptimisticLock: vi.fn(),
-  removeMovement: vi.fn(),
-  replaceMovements: vi.fn(),
-}));
-
-vi.mock("../../repositories/piece-repository", () => ({
-  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/piece-repository");
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
@@ -75,7 +57,7 @@ describe("GET /pieces/{id}/children (children)", () => {
         updatedAt: "2024-01-15T21:00:00.000Z",
       },
     ];
-    mockRepo.findChildren.mockResolvedValueOnce(movements);
+    mockPieceRepo.findChildren.mockResolvedValueOnce(movements);
 
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
@@ -87,7 +69,7 @@ describe("GET /pieces/{id}/children (children)", () => {
   });
 
   it("該当する子 Movement が無ければ空配列を返す", async () => {
-    mockRepo.findChildren.mockResolvedValueOnce([]);
+    mockPieceRepo.findChildren.mockResolvedValueOnce([]);
 
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
@@ -95,7 +77,7 @@ describe("GET /pieces/{id}/children (children)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findChildren.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockPieceRepo.findChildren.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });

@@ -2,25 +2,9 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Piece, PieceWork } from "@/types";
 
 import { handler } from "@/handlers/pieces/get";
+import { mockPieceRepo } from "@/repositories/__mocks__/piece-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  saveWork: vi.fn(),
-  saveWorkWithOptimisticLock: vi.fn(),
-  removeWorkCascade: vi.fn(),
-  findRootById: vi.fn(),
-  findRootPage: vi.fn(),
-  findById: vi.fn(),
-  saveMovement: vi.fn(),
-  saveMovementWithOptimisticLock: vi.fn(),
-  removeMovement: vi.fn(),
-  replaceMovements: vi.fn(),
-}));
-
-vi.mock("../../repositories/piece-repository", () => ({
-  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/piece-repository");
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
@@ -63,14 +47,14 @@ describe("GET /pieces/{id} (get)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(undefined);
+    mockPieceRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(makeEvent("not-found-id"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
     expect(JSON.parse(result?.body ?? "{}").message).toBe("Piece not found");
   });
 
   it("正常に取得して 200 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(testPiece);
+    mockPieceRepo.findById.mockResolvedValueOnce(testPiece);
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
 
@@ -82,7 +66,7 @@ describe("GET /pieces/{id} (get)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockPieceRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });
@@ -97,7 +81,7 @@ describe("GET /pieces/{id} (get)", () => {
       createdAt: "2024-01-15T21:00:00.000Z",
       updatedAt: "2024-01-15T21:00:00.000Z",
     };
-    mockRepo.findById.mockResolvedValueOnce(movement);
+    mockPieceRepo.findById.mockResolvedValueOnce(movement);
     const result = await handler(makeEvent("mov-1"), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result?.body ?? "{}");

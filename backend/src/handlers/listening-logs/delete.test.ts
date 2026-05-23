@@ -7,43 +7,11 @@ import {
   makeDeleteEvent,
   makeLogRecord,
 } from "@/test/fixtures";
-
-const mocks = vi.hoisted(() => ({
-  listeningLogRepo: {
-    save: vi.fn(),
-    findById: vi.fn(),
-    findByUserId: vi.fn(),
-    existsByPieceIds: vi.fn(),
-    saveWithOptimisticLock: vi.fn(),
-    remove: vi.fn(),
-  },
-  pieceRepo: {
-    findRootById: vi.fn(),
-    findRootPage: vi.fn(),
-    saveWork: vi.fn(),
-    saveWorkWithOptimisticLock: vi.fn(),
-    removeWorkCascade: vi.fn(),
-    findById: vi.fn(),
-    findByIds: vi.fn().mockResolvedValue([]),
-    findChildren: vi.fn(),
-    saveMovement: vi.fn(),
-    saveMovementWithOptimisticLock: vi.fn(),
-    removeMovement: vi.fn(),
-    replaceMovements: vi.fn(),
-  },
-}));
+import { mockListeningLogRepo } from "@/repositories/__mocks__/listening-log-repository";
 
 vi.mock("@/repositories/composer-repository");
-vi.mock("../../repositories/listening-log-repository", () => ({
-  DynamoDBListeningLogRepository: vi.fn().mockImplementation(function () {
-    return mocks.listeningLogRepo;
-  }),
-}));
-vi.mock("../../repositories/piece-repository", () => ({
-  DynamoDBPieceRepository: vi.fn().mockImplementation(function () {
-    return mocks.pieceRepo;
-  }),
-}));
+vi.mock("@/repositories/listening-log-repository");
+vi.mock("@/repositories/piece-repository");
 
 describe("DELETE /listening-logs/:id (delete)", () => {
   beforeEach(() => {
@@ -63,7 +31,7 @@ describe("DELETE /listening-logs/:id (delete)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(undefined);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeDeleteEvent("listening-logs", "not-found-id", TEST_USER_ID),
       mockContext,
@@ -73,19 +41,19 @@ describe("DELETE /listening-logs/:id (delete)", () => {
   });
 
   it("他ユーザーのアイテムを削除しようとした場合は 404 を返す（存在を隠蔽）", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(ownItem);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(ownItem);
     const result = await handler(
       makeDeleteEvent("listening-logs", "abc-123", OTHER_USER_ID),
       mockContext,
       mockCallback,
     );
     expect(result?.statusCode).toBe(404);
-    expect(mocks.listeningLogRepo.remove).not.toHaveBeenCalled();
+    expect(mockListeningLogRepo.remove).not.toHaveBeenCalled();
   });
 
   it("正常削除して 204 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockResolvedValueOnce(ownItem);
-    mocks.listeningLogRepo.remove.mockResolvedValueOnce(undefined);
+    mockListeningLogRepo.findById.mockResolvedValueOnce(ownItem);
+    mockListeningLogRepo.remove.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeDeleteEvent("listening-logs", "abc-123", TEST_USER_ID),
       mockContext,
@@ -93,11 +61,11 @@ describe("DELETE /listening-logs/:id (delete)", () => {
     );
     expect(result?.statusCode).toBe(204);
     expect(result?.body).toBe("");
-    expect(mocks.listeningLogRepo.remove).toHaveBeenCalledTimes(1);
+    expect(mockListeningLogRepo.remove).toHaveBeenCalledTimes(1);
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mocks.listeningLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockListeningLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(
       makeDeleteEvent("listening-logs", "abc-123", TEST_USER_ID),
       mockContext,

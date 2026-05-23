@@ -2,20 +2,9 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { ConcertLog } from "@/types";
 
 import { handler } from "@/handlers/concert-logs/get";
+import { mockConcertLogRepo } from "@/repositories/__mocks__/concert-log-repository";
 
-const mockRepo = vi.hoisted(() => ({
-  save: vi.fn(),
-  findById: vi.fn(),
-  findByUserId: vi.fn(),
-  saveWithOptimisticLock: vi.fn(),
-  remove: vi.fn(),
-}));
-
-vi.mock("../../repositories/concert-log-repository", () => ({
-  DynamoDBConcertLogRepository: vi.fn().mockImplementation(function () {
-    return mockRepo;
-  }),
-}));
+vi.mock("@/repositories/concert-log-repository");
 
 const mockContext = {} as Context;
 const mockCallback = { signal: new AbortController().signal };
@@ -66,7 +55,7 @@ describe("GET /concert-logs/:id (get)", () => {
   });
 
   it("アイテムが存在しない場合は 404 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(undefined);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(undefined);
     const result = await handler(
       makeEvent("not-found-id", TEST_USER_ID),
       mockContext,
@@ -76,13 +65,13 @@ describe("GET /concert-logs/:id (get)", () => {
   });
 
   it("他ユーザーのアイテムにアクセスした場合は 404 を返す（存在を隠蔽）", async () => {
-    mockRepo.findById.mockResolvedValueOnce(testLog);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(testLog);
     const result = await handler(makeEvent("abc-123", OTHER_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(404);
   });
 
   it("正常取得して 200 を返す", async () => {
-    mockRepo.findById.mockResolvedValueOnce(testLog);
+    mockConcertLogRepo.findById.mockResolvedValueOnce(testLog);
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(200);
 
@@ -93,14 +82,14 @@ describe("GET /concert-logs/:id (get)", () => {
   });
 
   it("Repository エラー時に 500 を返す", async () => {
-    mockRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
+    mockConcertLogRepo.findById.mockRejectedValueOnce(new Error("DynamoDB error"));
     const result = await handler(makeEvent("abc-123", TEST_USER_ID), mockContext, mockCallback);
     expect(result?.statusCode).toBe(500);
   });
 
   it("pieceIds を含むログを正常取得して 200 を返す", async () => {
     const pieceId = "550e8400-e29b-41d4-a716-446655440000";
-    mockRepo.findById.mockResolvedValueOnce({
+    mockConcertLogRepo.findById.mockResolvedValueOnce({
       ...testLog,
       pieceIds: [pieceId],
     });
