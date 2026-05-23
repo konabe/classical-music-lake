@@ -4,7 +4,7 @@ import {
   mockContext,
   mockCallback,
   describeInvalidBodyCases,
-  makeCognitoError,
+  describeCognitoErrorCases,
 } from "@/test/fixtures";
 import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
@@ -63,32 +63,14 @@ describe("POST /auth/register", () => {
     });
   });
 
-  describe("Cognito エラー系", () => {
-    it("メール重複時に 400 を返す", async () => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError("UsernameExistsException"));
-      const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").message).toContain("already");
-    });
-
-    it("無効なパスワード時に 400 を返す", async () => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError("InvalidPasswordException"));
-      const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(400);
-      expect(JSON.parse(result?.body ?? "{}").message.toLowerCase()).toContain("password");
-    });
-
-    it("リクエスト過多時に 429 を返す", async () => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError("TooManyRequestsException"));
-      const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(429);
-      expect(JSON.parse(result?.body ?? "{}").message).toContain("again later");
-    });
-
-    it("その他の Cognito エラー時に 500 を返す", async () => {
-      mockRepo.signUp.mockRejectedValueOnce(makeCognitoError("ServiceUnavailableException"));
-      const result = await handler(makeRegisterEvent(), mockContext, mockCallback);
-      expect(result?.statusCode).toBe(500);
-    });
-  });
+  describeCognitoErrorCases(
+    mockRepo.signUp,
+    () => handler(makeRegisterEvent(), mockContext, mockCallback),
+    [
+      { name: "UsernameExistsException", statusCode: 400, messageIncludes: "already" },
+      { name: "InvalidPasswordException", statusCode: 400, messageIncludes: "password" },
+      { name: "TooManyRequestsException", statusCode: 429, messageIncludes: "again later" },
+      { name: "ServiceUnavailableException", statusCode: 500 },
+    ],
+  );
 });

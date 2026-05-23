@@ -4,7 +4,7 @@ import {
   mockContext,
   mockCallback,
   describeInvalidBodyCases,
-  makeCognitoError,
+  describeCognitoErrorCases,
 } from "@/test/fixtures";
 import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
@@ -55,20 +55,13 @@ describe("POST /auth/refresh", () => {
     });
   });
 
-  describe("Cognito エラー系", () => {
-    it.each<[string, number, string | undefined]>([
-      ["NotAuthorizedException", 401, "InvalidRefreshToken"],
-      ["TooManyRequestsException", 429, "TooManyRequests"],
-      ["ServiceUnavailableException", 500, undefined],
-    ])("%s のとき %i を返す", async (name, statusCode, errorCode) => {
-      mockRepo.refreshToken.mockRejectedValueOnce(makeCognitoError(name));
-
-      const result = await handler(makeRefreshEvent(), mockContext, mockCallback);
-
-      expect(result?.statusCode).toBe(statusCode);
-      if (errorCode !== undefined) {
-        expect(JSON.parse(result?.body ?? "{}").error).toBe(errorCode);
-      }
-    });
-  });
+  describeCognitoErrorCases(
+    mockRepo.refreshToken,
+    () => handler(makeRefreshEvent(), mockContext, mockCallback),
+    [
+      { name: "NotAuthorizedException", statusCode: 401, error: "InvalidRefreshToken" },
+      { name: "TooManyRequestsException", statusCode: 429, error: "TooManyRequests" },
+      { name: "ServiceUnavailableException", statusCode: 500 },
+    ],
+  );
 });

@@ -4,7 +4,7 @@ import {
   mockContext,
   mockCallback,
   describeInvalidBodyCases,
-  makeCognitoError,
+  describeCognitoErrorCases,
 } from "@/test/fixtures";
 import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
@@ -51,21 +51,14 @@ describe("POST /auth/resend-verification-code", () => {
     });
   });
 
-  describe("Cognito エラー系", () => {
-    it.each<[string, number, string | undefined]>([
-      ["InvalidParameterException", 400, "UserAlreadyConfirmed"],
-      ["UserNotFoundException", 400, undefined],
-      ["TooManyRequestsException", 429, undefined],
-      ["ServiceUnavailableException", 500, undefined],
-    ])("%s のとき %i を返す", async (name, statusCode, errorCode) => {
-      mockRepo.resendConfirmationCode.mockRejectedValueOnce(makeCognitoError(name));
-
-      const result = await handler(makeResendEvent(), mockContext, mockCallback);
-
-      expect(result?.statusCode).toBe(statusCode);
-      if (errorCode !== undefined) {
-        expect(JSON.parse(result?.body ?? "{}").error).toBe(errorCode);
-      }
-    });
-  });
+  describeCognitoErrorCases(
+    mockRepo.resendConfirmationCode,
+    () => handler(makeResendEvent(), mockContext, mockCallback),
+    [
+      { name: "InvalidParameterException", statusCode: 400, error: "UserAlreadyConfirmed" },
+      { name: "UserNotFoundException", statusCode: 400 },
+      { name: "TooManyRequestsException", statusCode: 429 },
+      { name: "ServiceUnavailableException", statusCode: 500 },
+    ],
+  );
 });

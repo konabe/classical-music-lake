@@ -4,7 +4,7 @@ import {
   mockContext,
   mockCallback,
   describeInvalidBodyCases,
-  makeCognitoError,
+  describeCognitoErrorCases,
 } from "@/test/fixtures";
 import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
@@ -78,22 +78,15 @@ describe("POST /auth/login", () => {
     });
   });
 
-  describe("Cognito エラー系", () => {
-    it.each<[string, number, string | undefined]>([
-      ["NotAuthorizedException", 401, "InvalidCredentials"],
-      ["UserNotFoundException", 401, "InvalidCredentials"],
-      ["UserNotConfirmedException", 403, "UserNotConfirmed"],
-      ["TooManyRequestsException", 429, "TooManyRequests"],
-      ["ServiceUnavailableException", 500, undefined],
-    ])("%s のとき %i を返す", async (name, statusCode, errorCode) => {
-      mockRepo.initiateAuth.mockRejectedValueOnce(makeCognitoError(name, "error"));
-
-      const result = await handler(makeLoginEvent(), mockContext, mockCallback);
-
-      expect(result?.statusCode).toBe(statusCode);
-      if (errorCode !== undefined) {
-        expect(JSON.parse(result?.body ?? "{}").error).toBe(errorCode);
-      }
-    });
-  });
+  describeCognitoErrorCases(
+    mockRepo.initiateAuth,
+    () => handler(makeLoginEvent(), mockContext, mockCallback),
+    [
+      { name: "NotAuthorizedException", statusCode: 401, error: "InvalidCredentials" },
+      { name: "UserNotFoundException", statusCode: 401, error: "InvalidCredentials" },
+      { name: "UserNotConfirmedException", statusCode: 403, error: "UserNotConfirmed" },
+      { name: "TooManyRequestsException", statusCode: 429, error: "TooManyRequests" },
+      { name: "ServiceUnavailableException", statusCode: 500 },
+    ],
+  );
 });

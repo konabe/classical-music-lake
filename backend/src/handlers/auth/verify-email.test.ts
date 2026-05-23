@@ -4,7 +4,7 @@ import {
   mockContext,
   mockCallback,
   describeInvalidBodyCases,
-  makeCognitoError,
+  describeCognitoErrorCases,
 } from "@/test/fixtures";
 import { mockCognitoAuthRepo as mockRepo } from "@/repositories/__mocks__/cognito-auth-repository";
 
@@ -59,22 +59,15 @@ describe("POST /auth/verify-email", () => {
     });
   });
 
-  describe("Cognito エラー系", () => {
-    it.each<[string, number, string | undefined]>([
-      ["CodeMismatchException", 400, "CodeMismatch"],
-      ["ExpiredCodeException", 400, "ExpiredCode"],
-      ["NotAuthorizedException", 400, "NotAuthorized"],
-      ["TooManyRequestsException", 429, undefined],
-      ["ServiceUnavailableException", 500, undefined],
-    ])("%s のとき %i を返す", async (name, statusCode, errorCode) => {
-      mockRepo.confirmSignUp.mockRejectedValueOnce(makeCognitoError(name));
-
-      const result = await handler(makeVerifyEmailEvent(), mockContext, mockCallback);
-
-      expect(result?.statusCode).toBe(statusCode);
-      if (errorCode !== undefined) {
-        expect(JSON.parse(result?.body ?? "{}").error).toBe(errorCode);
-      }
-    });
-  });
+  describeCognitoErrorCases(
+    mockRepo.confirmSignUp,
+    () => handler(makeVerifyEmailEvent(), mockContext, mockCallback),
+    [
+      { name: "CodeMismatchException", statusCode: 400, error: "CodeMismatch" },
+      { name: "ExpiredCodeException", statusCode: 400, error: "ExpiredCode" },
+      { name: "NotAuthorizedException", statusCode: 400, error: "NotAuthorized" },
+      { name: "TooManyRequestsException", statusCode: 429 },
+      { name: "ServiceUnavailableException", statusCode: 500 },
+    ],
+  );
 });
