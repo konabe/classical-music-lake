@@ -1,3 +1,5 @@
+import { BoundedText } from "@/domain/value-objects/non-empty-text";
+
 /**
  * コンサートのタイトルを表す値オブジェクト。
  *
@@ -7,32 +9,12 @@
  */
 const MAX_LENGTH = 200;
 
-export class ConcertTitle {
-  public readonly value: string;
-
+export class ConcertTitle extends BoundedText {
   private constructor(value: string) {
-    this.value = value;
+    super(value, "ConcertTitle", MAX_LENGTH);
   }
 
   static of(value: string): ConcertTitle {
-    if (typeof value !== "string") {
-      throw new TypeError("ConcertTitle must be a string");
-    }
-    const trimmed = value.trim();
-    if (trimmed.length === 0) {
-      throw new RangeError("ConcertTitle must be a non-empty string");
-    }
-    if (trimmed.length > MAX_LENGTH) {
-      throw new RangeError(`ConcertTitle must be ${MAX_LENGTH} characters or less`);
-    }
-    return new ConcertTitle(trimmed);
-  }
-
-  equals(other: ConcertTitle): boolean {
-    return other instanceof ConcertTitle && this.value === other.value;
-  }
-
-  toString(): string {
-    return this.value;
+    return new ConcertTitle(value);
   }
 }

@@ -1,3 +1,5 @@
+import { BoundedInteger } from "@/domain/value-objects/bounded-integer";
+
 /**
  * 鑑賞ログの評価を表す値オブジェクト。
  *
@@ -9,25 +11,12 @@
  */
 export type RatingValue = 1 | 2 | 3 | 4 | 5;
 
-export class Rating {
-  public readonly value: RatingValue;
-
-  private constructor(value: RatingValue) {
-    this.value = value;
+export class Rating extends BoundedInteger<RatingValue> {
+  private constructor(value: number) {
+    super(value, "Rating", 1, 5);
   }
 
   static of(value: number): Rating {
-    if (!Number.isInteger(value) || value < 1 || value > 5) {
-      throw new RangeError("Rating must be an integer between 1 and 5");
-    }
-    return new Rating(value as RatingValue);
-  }
-
-  equals(other: Rating): boolean {
-    return other instanceof Rating && this.value === other.value;
-  }
-
-  toString(): string {
-    return String(this.value);
+    return new Rating(value);
   }
 }

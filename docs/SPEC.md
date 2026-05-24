@@ -647,6 +647,8 @@ ID 以外のドメイン概念も不変条件を VO で保証する。すべて 
 | `Year`          | -3000〜9999 の整数（西暦。BC は負数で表現） | `ComposerEntity.props.birthYear` / `props.deathYear`              |
 
 - 生成は `Xxx.of(value)`。範囲外・文字列以外・空文字・形式不正は `RangeError` / `TypeError` を投げる
+- 共通の不変条件は基底クラスに集約している。テキスト系（`ComposerName` / `ConcertTitle` / `PieceTitle` / `Venue`）は `non-empty-text.ts` の `NonEmptyText`（trim + 空文字拒否）/ `BoundedText`（最大長）を継承し、`Url` は `NonEmptyText` を継承して URL パース検証を加える。数値系（`Rating` / `MovementIndex` / `Year`）は `bounded-integer.ts` の `BoundedInteger<T>`（整数 + 範囲）を継承する。各具象クラスは `static of` とラベル・範囲指定のみを持つ
+- `equals(other)` は基底側で `other instanceof <基底>` かつ `this.constructor === other.constructor` を判定し、同値でも異なる具象クラス同士は等しくない（`ids.ts` の `IdValueObject` と同方針）
 - テキスト系 VO は `value.trim()` を内部適用。最大長は Zod スキーマと数値を揃え二重検証
 - `Url` はスキーム制限なし（Zod の `z.url()` と同等）。空文字は明示削除として VO 化前にハンドラ／ユースケース層で処理する
 - DTO 境界（`types/index.ts`）は従来どおり primitive。VO はエンティティ内部の props 型としてのみ扱い、ハンドラ・ユースケース・リポジトリは引き続き string ベースの DTO を受け渡す
