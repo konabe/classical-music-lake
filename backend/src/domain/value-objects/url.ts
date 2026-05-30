@@ -1,3 +1,5 @@
+import { NonEmptyText } from "@/domain/value-objects/non-empty-text";
+
 /**
  * URL を表す値オブジェクト。
  *
@@ -9,34 +11,17 @@
  * 不変条件をドメイン層で単独に保証する。videoUrl / imageUrl など
  * URL を扱うフィールド全般で共通利用することを想定している。
  */
-export class Url {
-  public readonly value: string;
-
+export class Url extends NonEmptyText {
   private constructor(value: string) {
-    this.value = value;
-  }
-
-  static of(value: string): Url {
-    if (typeof value !== "string") {
-      throw new TypeError("Url must be a string");
-    }
-    const trimmed = value.trim();
-    if (trimmed.length === 0) {
-      throw new RangeError("Url must be a non-empty string");
-    }
+    super(value, "Url");
     try {
-      new URL(trimmed);
+      new URL(this.value);
     } catch {
       throw new RangeError("Url must be a valid URL");
     }
-    return new Url(trimmed);
   }
 
-  equals(other: Url): boolean {
-    return other instanceof Url && this.value === other.value;
-  }
-
-  toString(): string {
-    return this.value;
+  static of(value: string): Url {
+    return new Url(value);
   }
 }
