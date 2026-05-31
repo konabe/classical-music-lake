@@ -176,8 +176,8 @@ importers:
         specifier: ^7.6.4
         version: 7.6.5
       '@middy/http-json-body-parser':
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.6.5
+        version: 7.6.5
       '@middy/http-response-serializer':
         specifier: ^7.6.4
         version: 7.6.5
@@ -1453,16 +1453,12 @@ packages:
     resolution: {integrity: sha512-Ef31YcBXxAN/FPaqCXMTfCoTcVxWlXuZlKFUWGbwkIvyZSrMjreI8Xf7/tyo6RDkqu0AQaxHQ9XIJPocQjmKKA==}
     engines: {node: '>=22'}
 
-  '@middy/http-json-body-parser@7.4.0':
-    resolution: {integrity: sha512-IrnDgOjLNtQat9CH4OvzTY4nA5bjY13JoxMRaapWuWj8jPlKtFm9eXEPkYSGdruU7Xtnb1xHg8edo+888OykKQ==}
+  '@middy/http-json-body-parser@7.6.5':
+    resolution: {integrity: sha512-euj5hdq86TRHinvexQVBpqjlPpNC9uEeJFTdXqAgaiD1JJ8NtaD7QNbeLoORvykrJT489YeHi5zXt2TppLTGqg==}
     engines: {node: '>=22'}
 
   '@middy/http-response-serializer@7.6.5':
     resolution: {integrity: sha512-WE6YLT3e8ZibPZmsW7makzLvOcWddUe6lkzc4yQusGA8s0yT06/iQqCTsAtKKm5DFTfkIHPE6EENHeBJpcmIew==}
-    engines: {node: '>=22'}
-
-  '@middy/util@7.4.0':
-    resolution: {integrity: sha512-TeXuwTICbLBQqiP/l54e8evbd9v7n9Mj/pMtoG2mlnfiEQ2W7uuRcN5Xq3IzcJrBD73ef4USs6eANGFkYOPgCg==}
     engines: {node: '>=22'}
 
   '@middy/util@7.6.5':
@@ -8452,15 +8448,13 @@ snapshots:
     dependencies:
       '@middy/util': 7.6.5
 
-  '@middy/http-json-body-parser@7.4.0':
+  '@middy/http-json-body-parser@7.6.5':
     dependencies:
-      '@middy/util': 7.4.0
+      '@middy/util': 7.6.5
 
   '@middy/http-response-serializer@7.6.5':
     dependencies:
       '@middy/util': 7.6.5
-
-  '@middy/util@7.4.0': {}
 
   '@middy/util@7.6.5': {}
 
