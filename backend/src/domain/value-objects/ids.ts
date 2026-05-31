@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 
+import { ValueObject } from "@/domain/value-objects/value-object";
+
 /**
  * エンティティ ID の値オブジェクト基底クラス。
  *
@@ -10,23 +12,14 @@ import { randomUUID } from "node:crypto";
  * - UUID 形式の厳密な検証は行わない（既存データとの後方互換性のため）。
  *   入力側のスキーマ検証（Zod の `z.uuid()`）と responsibility を分ける。
  * - 空文字・非文字列のみ拒否する。
+ * - 等価判定・`toString` は `ValueObject` の実装に従う（同じ具象クラスかつ同値で `true`）。
  */
-export abstract class IdValueObject {
-  public readonly value: string;
-
+export abstract class IdValueObject extends ValueObject<string> {
   protected constructor(value: string) {
     if (typeof value !== "string" || value.length === 0) {
       throw new TypeError("ID value object must be a non-empty string");
     }
-    this.value = value;
-  }
-
-  toString(): string {
-    return this.value;
-  }
-
-  equals(other: IdValueObject): boolean {
-    return this.constructor === other.constructor && this.value === other.value;
+    super(value);
   }
 }
 
