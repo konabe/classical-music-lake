@@ -1,17 +1,12 @@
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
-import {
-  DeleteCommand,
-  GetCommand,
-  PutCommand,
-  QueryCommand,
-  TransactWriteCommand,
-} from "@aws-sdk/lib-dynamodb";
+import { QueryCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 import createError from "http-errors";
 
 import type { PieceRepository } from "@/domain/piece";
 import type { PieceId } from "@/domain/value-objects/ids";
 import type { Piece, PieceMovement, PieceWork } from "@/types";
-import { dynamo, putItemWithOptimisticLock, scanPage, TABLE_PIECES } from "@/utils/dynamodb";
+import { dynamo, scanPage, TABLE_PIECES } from "@/utils/dynamodb";
+import { DynamoDBTableRepository } from "@/repositories/dynamodb-table-repository";
 
 type LegacyVideoUrlPiece = Piece & { videoUrl?: string };
 
@@ -27,7 +22,13 @@ const MOVEMENTS_GSI_INDEX_NAME = "parentId-index-index";
  */
 const TRANSACT_WRITE_MAX_ITEMS = 100;
 
-export class DynamoDBPieceRepository implements PieceRepository {
+export class DynamoDBPieceRepository
+  extends DynamoDBTableRepository<Piece, PieceId>
+  implements PieceRepository
+{
+  protected readonly tableName = TABLE_PIECES;
+  protected readonly conflictMessage = "Piece was updated by another request";
+
   /**
    * 旧データ（`videoUrl: string`）を新スキーマ（`videoUrls: string[]`）へ正規化する。
    * 1 楽曲に複数動画を持てるようにフィールド名を変更したため、未マイグレーションのレコード
@@ -98,16 +99,11 @@ export class DynamoDBPieceRepository implements PieceRepository {
   }
 
   async saveWork(work: PieceWork): Promise<void> {
-    await dynamo.send(new PutCommand({ TableName: TABLE_PIECES, Item: work }));
+    await this.save(work);
   }
 
   async saveWorkWithOptimisticLock(work: PieceWork, prevUpdatedAt: string): Promise<void> {
-    await putItemWithOptimisticLock({
-      tableName: TABLE_PIECES,
-      item: work,
-      prevUpdatedAt,
-      conflictMessage: "Piece was updated by another request",
-    });
+    await this.saveWithOptimisticLock(work, prevUpdatedAt);
   }
 
   /**
@@ -118,7 +114,7 @@ export class DynamoDBPieceRepository implements PieceRepository {
   async removeWorkCascade(id: PieceId): Promise<void> {
     const children = await this.findChildren(id);
     if (children.length === 0) {
-      await dynamo.send(new DeleteCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }));
+      await this.remove(id);
       return;
     }
     const totalItems = children.length + 1;
@@ -139,23 +135,9 @@ export class DynamoDBPieceRepository implements PieceRepository {
     );
   }
 
-  async findById(id: PieceId): Promise<Piece | undefined> {
-    const result = await dynamo.send(
-      new GetCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }),
-    );
-    return DynamoDBPieceRepository.readPiece(result.Item as Piece | undefined);
-  }
-
-  /**
-   * 複数 ID を並列で取得する。BatchGetItem 化への差し替えを見据えた Branch by Abstraction。
-   * 個人利用前提でデータ量が小さく、まずは Promise.all で素直に並列発行する。
-   */
-  async findByIds(ids: readonly PieceId[]): Promise<Piece[]> {
-    if (ids.length === 0) {
-      return [];
-    }
-    const results = await Promise.all(ids.map((id) => this.findById(id)));
-    return results.filter((p): p is Piece => p !== undefined);
+  /** レガシーレコードの正規化（{@link readPiece}）を挟むため基底実装を上書きする。`findByIds` も本実装を経由する。 */
+  override async findById(id: PieceId): Promise<Piece | undefined> {
+    return DynamoDBPieceRepository.readPiece(await super.findById(id));
   }
 
   /**
@@ -186,19 +168,14 @@ export class DynamoDBPieceRepository implements PieceRepository {
   }
 
   async saveMovement(movement: PieceMovement): Promise<void> {
-    await dynamo.send(new PutCommand({ TableName: TABLE_PIECES, Item: movement }));
+    await this.save(movement);
   }
 
   async saveMovementWithOptimisticLock(
     movement: PieceMovement,
     prevUpdatedAt: string,
   ): Promise<void> {
-    await putItemWithOptimisticLock({
-      tableName: TABLE_PIECES,
-      item: movement,
-      prevUpdatedAt,
-      conflictMessage: "Piece was updated by another request",
-    });
+    await this.saveWithOptimisticLock(movement, prevUpdatedAt);
   }
 
   async removeMovement(id: PieceId): Promise<void> {
@@ -206,7 +183,7 @@ export class DynamoDBPieceRepository implements PieceRepository {
     if (!DynamoDBPieceRepository.isMovement(item)) {
       return;
     }
-    await dynamo.send(new DeleteCommand({ TableName: TABLE_PIECES, Key: { id: id.value } }));
+    await this.remove(id);
   }
 
   /**

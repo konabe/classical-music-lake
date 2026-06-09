@@ -1,22 +1,17 @@
-import { DeleteCommand, GetCommand, PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 import type { ListeningLogId, PieceId, UserId } from "@/domain/value-objects/ids";
-import {
-  dynamo,
-  putItemWithOptimisticLock,
-  queryItemsByUserId,
-  TABLE_LISTENING_LOGS,
-} from "@/utils/dynamodb";
+import { dynamo, queryItemsByUserId, TABLE_LISTENING_LOGS } from "@/utils/dynamodb";
 import type { ListeningLogRecord } from "@/types";
 import type { ListeningLogRepository } from "@/domain/listening-log";
+import { DynamoDBTableRepository } from "@/repositories/dynamodb-table-repository";
 
-export class DynamoDBListeningLogRepository implements ListeningLogRepository {
-  async findById(id: ListeningLogId): Promise<ListeningLogRecord | undefined> {
-    const result = await dynamo.send(
-      new GetCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id: id.value } }),
-    );
-    return result.Item as ListeningLogRecord | undefined;
-  }
+export class DynamoDBListeningLogRepository
+  extends DynamoDBTableRepository<ListeningLogRecord, ListeningLogId>
+  implements ListeningLogRepository
+{
+  protected readonly tableName = TABLE_LISTENING_LOGS;
+  protected readonly conflictMessage = "Listening log was updated by another request";
 
   async findByUserId(userId: UserId): Promise<ListeningLogRecord[]> {
     return queryItemsByUserId<ListeningLogRecord>(TABLE_LISTENING_LOGS, userId.value);
@@ -55,24 +50,5 @@ export class DynamoDBListeningLogRepository implements ListeningLogRepository {
       exclusiveStartKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
     } while (exclusiveStartKey !== undefined);
     return false;
-  }
-
-  async save(item: ListeningLogRecord): Promise<void> {
-    await dynamo.send(new PutCommand({ TableName: TABLE_LISTENING_LOGS, Item: item }));
-  }
-
-  async saveWithOptimisticLock(item: ListeningLogRecord, prevUpdatedAt: string): Promise<void> {
-    await putItemWithOptimisticLock({
-      tableName: TABLE_LISTENING_LOGS,
-      item,
-      prevUpdatedAt,
-      conflictMessage: "Listening log was updated by another request",
-    });
-  }
-
-  async remove(id: ListeningLogId): Promise<void> {
-    await dynamo.send(
-      new DeleteCommand({ TableName: TABLE_LISTENING_LOGS, Key: { id: id.value } }),
-    );
   }
 }
