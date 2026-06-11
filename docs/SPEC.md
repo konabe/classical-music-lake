@@ -654,6 +654,14 @@ ID 以外のドメイン概念も不変条件を VO で保証する。すべて 
 - `Url` はスキーム制限なし（Zod の `z.url()` と同等）。空文字は明示削除として VO 化前にハンドラ／ユースケース層で処理する
 - DTO 境界（`types/index.ts`）は従来どおり primitive。VO はエンティティ内部の props 型としてのみ扱い、ハンドラ・ユースケース・リポジトリは引き続き string ベースの DTO を受け渡す
 
+### 8.6 リポジトリ実装の共通基底（バックエンドのみ）
+
+DynamoDB リポジトリの共通操作は `backend/src/repositories/dynamodb-table-repository.ts` の抽象基底クラス `DynamoDBTableRepository<TItem, TId>` に集約する。`id` を PK とするテーブルの `findById` / `findByIds`（`Promise.all(findById)` の並列発行、BatchGetItem への差し替え用フック）/ `save` / `saveWithOptimisticLock` / `remove` を提供し、各リポジトリは `tableName` と `conflictMessage`（楽観的ロック競合時の 409 メッセージ）のみ指定する。
+
+- `DynamoDBComposerRepository` / `DynamoDBConcertLogRepository` / `DynamoDBListeningLogRepository` / `DynamoDBPieceRepository` がこれを継承し、テーブル固有のクエリ（GSI 検索・ページング・トランザクション等）のみ個別実装する
+- `DynamoDBPieceRepository` は `findById` をオーバーライドしてレガシーレコードの正規化（`kind` / `videoUrls` 補完）を挟む。継承した `findByIds` もこのオーバーライドを経由する
+- ドメイン層のリポジトリ I/F（`ComposerRepository` 等）は従来どおり変更なし。基底クラスはあくまで `repositories/` 層内部の実装共有であり、レイヤー依存方向（repositories → domain / utils）にも影響しない
+
 ---
 
 ## 9. 制限事項・今後の課題

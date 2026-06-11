@@ -94,6 +94,7 @@
   "pnpm": {
     "overrides": {
       "devalue": ">=5.8.1",
+      "shell-quote": ">=1.8.4",
       "vite": "7.3.1"
     }
   }
