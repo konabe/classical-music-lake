@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.12.3](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.12.2...classical-music-lake-v2.12.3) (2026-06-11)
+
+
+### Code Refactoring
+
+* **backend:** リポジトリ共通の DynamoDB 操作を基底クラスへ集約 ([#738](https://github.com/konabe/classical-music-lake/issues/738)) ([ea8a0df](https://github.com/konabe/classical-music-lake/commit/ea8a0df9095eb057fd290dd8cf0b614bea5f709b))
+* **backend:** 値オブジェクトの共通不変条件を基底クラスへ集約 ([#724](https://github.com/konabe/classical-music-lake/issues/724)) ([3f61032](https://github.com/konabe/classical-music-lake/commit/3f610324e5f553f5df4c6490249c88340cdc1909))
+* **backend:** 値オブジェクトの抽象基底 ValueObject を導入 ([#731](https://github.com/konabe/classical-music-lake/issues/731)) ([b3138b5](https://github.com/konabe/classical-music-lake/commit/b3138b5eabb90ddf05d475aa730744a97c623116))
+
 ## [2.12.2](https://github.com/konabe/classical-music-lake/compare/classical-music-lake-v2.12.1...classical-music-lake-v2.12.2) (2026-05-23)
 
 
