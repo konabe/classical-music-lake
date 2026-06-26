@@ -18,8 +18,8 @@
 ### デプロイパイプライン
 
 ```text
-[GitHub (main ブランチ)]
-        ↓ push
+[GitHub (release published / workflow_dispatch)]
+        ↓ prod へフルデプロイ
 [GitHub Actions]
   ├── pnpm run generate  → S3 へアップロード
   └── cdk deploy        → Lambda / API Gateway / DynamoDB 更新
@@ -434,8 +434,8 @@ classical-music-lake/
 
 ### CORS オリジン制限
 
-- **設定**: prod・stg は CloudFront URL のみ許可。dev 環境のみ `http://localhost:3010` を追加で許可
-- **実装**: CDK が各環境に応じた `CORS_ALLOW_ORIGIN` 環境変数を Lambda に設定し、API Gateway プリフライトも同じオリジンに限定
+- **設定**: 本番カスタムドメイン（`nocturne-app.com`）の URL のみ許可。`localhost` 許可は廃止（dev / stg 環境の撤去に伴う）
+- **実装**: CDK が `CORS_ALLOW_ORIGIN` 環境変数を Lambda に設定し、API Gateway プリフライトも同じオリジンに限定
 
 ### フロントエンド・バックエンドの型定義が分離
 

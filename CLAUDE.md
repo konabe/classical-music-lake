@@ -262,8 +262,8 @@ type(scope): 日本語の説明
 - `any` 型の使用禁止
 - 認証なしの API を新規追加しないこと。マスタの参照系（`GET /pieces` `GET /composers`）以外はすべて Cognito Authorizer で保護する
 - 個人情報（視聴ログ・コンサート記録）を扱う API は GSI1（`userId`）で必ずユーザースコープに絞り込むこと
-- DynamoDB の削除ポリシーを変更しないこと:
-  - `ListeningLogs` / `Pieces` / `Composers`: 全環境 RETAIN
-  - `ConcertLogs`: prod は RETAIN、stg/dev は DESTROY
+- DynamoDB の削除ポリシーを変更しないこと（prod 単一環境運用）:
+  - `ListeningLogs` / `Pieces` / `Composers`: RETAIN
+  - `ConcertLogs`: RETAIN（本番のみ運用）
 - 環境変数（`.env`）をコミットしないこと
 - バックエンドのレイヤー依存方向（handlers → usecases → domain / repositories）に違反しないこと（ESLint で error）

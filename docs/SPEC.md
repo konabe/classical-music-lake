@@ -29,7 +29,7 @@
 
 ```text
 [ユーザー]
-    ↓ nocturne-app.com / stg.nocturne-app.com / dev.nocturne-app.com
+    ↓ nocturne-app.com
 [Route53] → [CloudFront + ACM証明書] ← S3 (静的ホスティング)
     ↓
 [Nuxt.js SPA]
@@ -113,7 +113,7 @@
 
 - **テーブル名**: `classical-music-listening-logs`
 - **PK**: `id` (String) / **GSI1**: `userId` + `createdAt` — ユーザー別一覧取得に使用
-- **削除ポリシー**: 全環境 RETAIN
+- **削除ポリシー**: RETAIN（本番のみ運用）
 
 ```typescript
 type Rating = 1 | 2 | 3 | 4 | 5;
@@ -150,7 +150,7 @@ type ListeningLogRecord = Omit<ListeningLog, "pieceTitle" | "composerId" | "comp
 - **テーブル名**: `classical-music-pieces`
 - **PK**: `id` (String)
 - **GSI**: `parentId-index-index` — PartitionKey=`parentId` (String) / SortKey=`index` (Number) / ProjectionType=ALL。Work 配下の Movement を `index` 昇順で取得するために使用する（`DynamoDBPieceRepository.findChildren` / `removeWorkCascade` / `replaceMovements` から参照）。Work レコードは `parentId` を持たないため当該 GSI には射影されず、Query は Movement のみを返す
-- **削除ポリシー**: 全環境 RETAIN
+- **削除ポリシー**: RETAIN（本番のみ運用）
 
 楽曲は `kind` で判別されるコンポジット（Work / Movement）として扱う。Work は親楽曲、Movement は楽章であり、同じ DynamoDB テーブルに格納する（kind 不明な既存データは読み込み時に `kind: "work"` を補完する互換ロジックを `DynamoDBPieceRepository` に持つ）。
 
@@ -214,7 +214,7 @@ type Piece = PieceWork | PieceMovement;
 
 - **テーブル名**: `classical-music-composers`
 - **PK**: `id` (String)
-- **削除ポリシー**: 全環境 RETAIN
+- **削除ポリシー**: RETAIN（本番のみ運用）
 
 ```typescript
 interface Composer {
@@ -236,7 +236,7 @@ interface Composer {
 
 - **テーブル名**: `classical-music-concert-logs`
 - **PK**: `id` (String) / **GSI1**: `userId` + `createdAt` — ユーザー別一覧取得に使用
-- **削除ポリシー**: prod は RETAIN、stg/dev は DESTROY
+- **削除ポリシー**: RETAIN（本番のみ運用）
 
 ```typescript
 interface ConcertLog {
@@ -276,7 +276,7 @@ interface ConcertLog {
   | `/concert-logs/*` | 必須 | 自データのみ |
   | `POST/PUT/DELETE /pieces` | 必須 | `admin` グループ |
   | `POST/PUT/DELETE /composers` | 必須 | `admin` グループ |
-- **CORS**: カスタムドメイン URL のみ許可（プリフライト・GatewayResponse の両方で設定。dev のみ `http://localhost:3010` を追加）
+- **CORS**: 本番カスタムドメイン URL（`nocturne-app.com`）のみ許可（プリフライト・GatewayResponse の両方で設定）
 - **エラーレスポンス形式**: `{ "message": "..." }` / 一部認証 API は `{ "error": "...", "message": "..." }`
 
 ### 4.2 認証API
@@ -413,7 +413,9 @@ interface ConcertLog {
 - **ランタイム**: Node.js 24.x
 - **関数数**: 28 個（本スタック。データ移行用 Lambda は `MigrationsStack` に分離）
   - 視聴ログ × 5 / 楽曲マスタ × 7（CRUD 5 + `getPieceChildren` + `replacePieceMovements`）/ 作曲家マスタ × 5 / コンサート記録 × 5 / 認証系 × 5（register・login・verify-email・resend-verification-code・refresh）/ PreSignUp トリガー × 1
-- **環境変数**: `DYNAMO_TABLE_{LISTENING_LOGS,PIECES,CONCERT_LOGS,COMPOSERS}`、`COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID`（認証系のみ）、`CORS_ALLOW_ORIGIN`
+- **環境変数**: `DYNAMO_TABLE_{LISTENING_LOGS,PIECES,CONCERT_LOGS,COMPOSERS}`、`COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID`（認証系のみ）、`CORS_ALLOW_ORIGIN`（本番カスタムドメインのみ）
+- **X-Ray トレーシング**: コスト削減のため無効化（Lambda の `tracing` は設定しない）
+- **CloudWatch Logs 保持期間**: 1 ヶ月（各ロググループの removalPolicy は DESTROY）
 - **IAM 権限ポリシー（視聴ログ系）**: `list` / `get` / `create` / `update` の各 Lambda は `ListeningLogDetail` の組み立てで `PieceRepository` / `ComposerRepository` を参照するため、`listening-logs` テーブルに加えて `pieces` テーブルと `composers` テーブルへの Read 権限も必要。`delete` は `204 No Content` を返すだけなので不要
 
 #### Cognito
@@ -421,18 +423,22 @@ interface ConcertLog {
 - **User Pool**: メールアドレスベースのサインアップ/サインイン、自己登録有効、メール確認必須、パスワード 8 文字以上で大文字・小文字・数字必須
 - **App Client**: SRP 認証フロー（シークレットなし）
 - **CDK Output**: `CognitoUserPoolId` / `CognitoClientId` / `CognitoUserPoolArn`
-- **グループ**: `admin`（CDK の `CfnUserPoolGroup` で全環境に定義）。所属ユーザーの ID Token に `cognito:groups: ["admin"]` クレーム付与。**付与・剥奪は AWS CLI/コンソールによる手動運用**（手順は `docs/OPERATIONS.md`）
+- **グループ**: `admin`（CDK の `CfnUserPoolGroup` で定義）。所属ユーザーの ID Token に `cognito:groups: ["admin"]` クレーム付与。**付与・剥奪は AWS CLI/コンソールによる手動運用**（手順は `docs/OPERATIONS.md`）
 
 #### Route53 / ACM
 
-- **Hosted Zone**: `nocturne-app.com`（`NocturneAppDnsStack`、us-east-1、全環境共有）
-- **A レコード**: prod=`nocturne-app.com` / stg=`stg.nocturne-app.com` / dev=`dev.nocturne-app.com`
+- **Hosted Zone**: `nocturne-app.com`（`NocturneAppDnsStack`、us-east-1）
+- **A レコード**: `nocturne-app.com`（prod）
 - **証明書**: `nocturne-app.com` + `*.nocturne-app.com`（ワイルドカード、us-east-1、DNS 検証）
+
+> `NocturneAppDnsStack` はワイルドカード証明書のまま据え置く（DNS スタックは本番ランタイムスタックから独立して管理する全環境共有のスタック）。
 
 #### API Gateway
 
 - **名前**: `classical-music-lake` / **ステージ**: `prod`
 - **認可**: §4.1 の認可マトリクス参照。書き込み系 API はさらに Lambda ハンドラ内 `requireAdmin(event)` で `admin` グループ判定を行う二段構え
+- **X-Ray トレーシング**: コスト削減のため無効化（`tracingEnabled: false`）
+- **アクセスログ**: 保持期間 1 ヶ月で維持
 
 #### S3 / CloudFront
 
@@ -441,11 +447,16 @@ interface ConcertLog {
 
 #### CloudWatch アラーム / SNS
 
-各環境のメインスタックでアラームと通知用 SNS トピックを作成。詳細手順は `docs/OPERATIONS.md` の「監視・アラート設定」を参照。
+本番スタックでアラームと通知用 SNS トピックを作成。コスト優先で集約方式に間引いており、合計 5 アラーム構成。詳細手順は `docs/OPERATIONS.md` の「監視・アラート設定」を参照。
 
-- **SNS トピック**: `classical-music-lake-<stage>-alerts`（CDK 出力 `AlertTopicArn`）
+- **SNS トピック**: `classical-music-lake-prod-alerts`（CDK 出力 `AlertTopicArn`）
 - **メール購読**: CDK デプロイ時の `ALERT_EMAIL`（カンマ区切り）から自動作成。未指定時はサブスクリプションなし
-- **アラーム**: Lambda Errors（関数ごと）/ API Gateway 5XX / API Gateway Latency p99 (3000ms 超 × 2 期間) / DynamoDB ThrottledRequests / DynamoDB SystemErrors。各アラームは ALARM / OK の両状態を SNS に送信
+- **アラーム（計 5 個）**: 各アラームは ALARM / OK の両状態を SNS に送信する
+  - `classical-music-lake-prod-lambda-errors`: ディメンションなしの `AWS/Lambda` `Errors` 集約（本プロジェクト専用 AWS アカウント前提でアカウント・リージョン内の全 Lambda を 1 アラームに束ねる）
+  - `classical-music-lake-prod-api-5xx`: API Gateway 5XX
+  - `classical-music-lake-prod-api-latency-p99`: API Gateway Latency p99（3000ms 超 × 2 期間）
+  - `classical-music-lake-prod-dynamo-throttle`: MathExpression で 4 テーブル合算した `ThrottledRequests`
+  - `classical-music-lake-prod-dynamo-system-errors`: MathExpression で 4 テーブル合算した `SystemErrors`
 
 ### 5.2 環境変数
 
@@ -476,27 +487,20 @@ CDK が自動設定。詳細は §5.1 参照。秘密情報は含まれない（
 
 ### 6.1 環境構成
 
-| 環境   | スタック名                    | カスタムドメイン       | DynamoDB（視聴ログ／コンサート記録）                                      | 削除ポリシー（コンサート） |
-| ------ | ----------------------------- | ---------------------- | ------------------------------------------------------------------------- | -------------------------- |
-| `prod` | `ClassicalMusicLakeStack`     | `nocturne-app.com`     | `classical-music-listening-logs` / `classical-music-concert-logs`         | RETAIN                     |
-| `stg`  | `ClassicalMusicLakeStack-stg` | `stg.nocturne-app.com` | `classical-music-listening-logs-stg` / `classical-music-concert-logs-stg` | DESTROY                    |
-| `dev`  | `ClassicalMusicLakeStack-dev` | `dev.nocturne-app.com` | `classical-music-listening-logs-dev` / `classical-music-concert-logs-dev` | DESTROY                    |
+prod 単一環境で運用する（dev / stg は廃止済み。撤去手順は `docs/OPERATIONS.md` 参照）。
 
-> **DNS スタック**: `NocturneAppDnsStack`（us-east-1）は全環境共有の Route53 / ACM を管理。初回のみ手動デプロイが必要（`npx cdk deploy NocturneAppDnsStack`）。
+| 環境   | スタック名                | カスタムドメイン   | DynamoDB（視聴ログ／コンサート記録）                              | 削除ポリシー（コンサート） |
+| ------ | ------------------------- | ------------------ | ----------------------------------------------------------------- | -------------------------- |
+| `prod` | `ClassicalMusicLakeStack` | `nocturne-app.com` | `classical-music-listening-logs` / `classical-music-concert-logs` | RETAIN                     |
+
+> **DNS スタック**: `NocturneAppDnsStack`（us-east-1）は Route53 / ACM を管理。初回のみ手動デプロイが必要（`npx cdk deploy NocturneAppDnsStack`）。
 
 ### 6.2 GitHub Actions
 
 #### deploy.yml
 
-- **トリガー**: `push to main` → stg 自動／`release published` → prod 自動／`push dev*` タグ → dev 自動／`workflow_dispatch` → dev/stg/prod を選択
+- **トリガー**: `release published` → prod 自動／`workflow_dispatch` → prod。常に prod へフルデプロイする（hotswap 分岐なし）
 - **処理**: CDK Bootstrap (ap-northeast-1 + us-east-1) → CDK デプロイ → スタック出力取得（API URL・Cognito ドメイン等）→ Nuxt + Storybook ビルド → S3 同期 → CloudFront キャッシュ無効化
-
-#### sync-db.yml（DB 同期）
-
-- **概要**: prod の DynamoDB データを stg へ全件コピーする
-- **対象**: `pieces` / `composers` のみ（視聴ログ・コンサート記録は個人情報のため対象外）
-- **トリガー**: 毎日 0:00 JST（UTC 15:00）の自動実行 + `workflow_dispatch`
-- **動作**: stg テーブルの既存データを全件削除 → prod の全データを `BatchWriteItem`（25 件単位）で stg へ書き込み → UnprocessedItems は指数バックオフで最大 5 回リトライ
 
 ### 6.3 ロールバック
 

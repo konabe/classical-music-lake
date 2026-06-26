@@ -1,25 +1,10 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - "dev*"
   release:
     types:
       - published
   workflow_dispatch:
-    inputs:
-      environment:
-        description: "デプロイ先の環境"
-        required: true
-        default: "stg"
-        type: choice
-        options:
-          - dev
-          - stg
-          - prod
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -43,24 +28,11 @@ jobs:
           cache: "pnpm"
 
       # ----------------------------------------
-      # デプロイ先環境の決定
-      # push: mainブランチ → stg、dev*タグ → dev
-      # release: published → prod
-      # workflow_dispatch: 入力値をそのまま使用
+      # デプロイ先は本番（prod）のみ（dev / stg 環境は廃止済み）
+      # release published / workflow_dispatch のいずれも prod を対象とする
       # ----------------------------------------
-      - name: Determine stage name
-        run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            echo "STAGE_NAME=prod" >> "$GITHUB_ENV"
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            if [[ "${{ github.ref }}" == refs/tags/dev* ]]; then
-              echo "STAGE_NAME=dev" >> "$GITHUB_ENV"
-            else
-              echo "STAGE_NAME=stg" >> "$GITHUB_ENV"
-            fi
-          else
-            echo "STAGE_NAME=${{ github.event.inputs.environment }}" >> "$GITHUB_ENV"
-          fi
+      - name: Set stage name
+        run: echo "STAGE_NAME=prod" >> "$GITHUB_ENV"
 
       # ----------------------------------------
       # 全依存関係をインストール
@@ -88,16 +60,11 @@ jobs:
           aws-region: ap-northeast-1
 
       # ----------------------------------------
-      # スタック名を決定
+      # スタック名を決定（本番のみ）
       # ----------------------------------------
       - name: Resolve stack name
         id: stack
-        run: |
-          if [ "$STAGE_NAME" = "prod" ]; then
-            echo "name=ClassicalMusicLakeStack" >> "$GITHUB_OUTPUT"
-          else
-            echo "name=ClassicalMusicLakeStack-${STAGE_NAME}" >> "$GITHUB_OUTPUT"
-          fi
+        run: echo "name=ClassicalMusicLakeStack" >> "$GITHUB_OUTPUT"
 
       # ----------------------------------------
       # CDK Bootstrap（bootstrap スタックを最新バージョンに更新）
@@ -146,18 +113,12 @@ jobs:
       # ----------------------------------------
       # CDK デプロイ（インフラのみ）
       # フロントエンドの S3 アップロードはこの後のステップで行う
-      # dev/stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
-      # prod: 安全のためフル CloudFormation デプロイ
+      # 本番のため安全のためフル CloudFormation デプロイ
       # NOTE: DnsStack は ACM 証明書の DNS 検証完了まで CloudFormation がペンディングするため
       #       CI/CD では対象外。初回は手動で `npx cdk deploy NocturneAppDnsStack` を実行すること
       # ----------------------------------------
       - name: CDK Deploy
-        run: |
-          if [ "$STAGE_NAME" = "prod" ]; then
-            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --exclusively
-          else
-            npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --hotswap-fallback --exclusively
-          fi
+        run: npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never --exclusively
         working-directory: cdk
         env:
           STAGE_NAME: ${{ env.STAGE_NAME }}
