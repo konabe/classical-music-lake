@@ -20,7 +20,10 @@ import type * as acm from "aws-cdk-lib/aws-certificatemanager";
 import type { Construct } from "constructs";
 import * as path from "node:path";
 
+export type StageName = "stg" | "prod";
+
 export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
+  stageName: StageName;
   hostedZone: route53.IHostedZone;
   certificate: acm.ICertificate;
 }
@@ -32,21 +35,23 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ClassicalMusicLakeStackProps) {
     super(scope, id, props);
 
-    const { hostedZone, certificate } = props;
-    // 単一の本番環境のみを運用する（dev / stg は廃止済み）。
-    const domainName = "nocturne-app.com";
+    const { stageName, hostedZone, certificate } = props;
+    const isProd = stageName === "prod";
+    const domainName = isProd ? "nocturne-app.com" : `${stageName}.nocturne-app.com`;
 
     // -------------------------
     // DynamoDB テーブル
     // -------------------------
-    const tableName = "classical-music-listening-logs";
+    const tableName = isProd
+      ? "classical-music-listening-logs"
+      : `classical-music-listening-logs-${stageName}`;
 
     const listeningLogsTable = new dynamodb.Table(this, "ListeningLogsTable", {
       tableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      // 本番データの誤削除防止のため RETAIN
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      // prod は RETAIN、stg は DESTROY（スタック削除時にテーブルも削除）
+      removalPolicy: this.removalPolicy(isProd),
       // ポイントインタイムリカバリ（PITR）有効化（35日間のバックアップ自動保持）
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
@@ -67,7 +72,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // DynamoDB テーブル（楽曲マスタ）
     // -------------------------
-    const piecesTableName = "classical-music-pieces";
+    const piecesTableName = isProd
+      ? "classical-music-pieces"
+      : `classical-music-pieces-${stageName}`;
 
     const piecesTable = new dynamodb.Table(this, "PiecesTable", {
       tableName: piecesTableName,
@@ -88,7 +95,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // DynamoDB テーブル（作曲家マスタ）
     // -------------------------
-    const composersTableName = "classical-music-composers";
+    const composersTableName = isProd
+      ? "classical-music-composers"
+      : `classical-music-composers-${stageName}`;
 
     const composersTable = new dynamodb.Table(this, "ComposersTable", {
       tableName: composersTableName,
@@ -100,11 +109,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // AWS Cognito User Pool
     // -------------------------
-    const userPoolName = "classical-music-lake";
+    const userPoolName = isProd ? "classical-music-lake" : `classical-music-lake-${stageName}`;
 
     const userPool = new cognito.UserPool(this, "CognitoUserPool", {
       userPoolName,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      removalPolicy: this.removalPolicy(isProd),
       selfSignUpEnabled: true,
       signInAliases: { email: true },
       passwordPolicy: {
@@ -140,11 +149,11 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const spaBucket = new s3.Bucket(this, "SpaBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
-      // 本番アセットの誤削除防止のため RETAIN
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-      autoDeleteObjects: false,
-      // 静的ファイルのロールバック用に S3 バージョニング有効
-      versioned: true,
+      // prod は RETAIN（本番アセットの誤削除防止）、stg は DESTROY
+      removalPolicy: this.removalPolicy(isProd),
+      autoDeleteObjects: !isProd,
+      // prod は S3 バージョニング有効（静的ファイルのロールバック用）
+      versioned: isProd,
     });
 
     // セキュリティヘッダポリシー（SPA 用: X-Frame-Options: DENY）
@@ -303,7 +312,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     }
 
     // Cognito Hosted UI ドメイン（Google OAuth のリダイレクト先として必要）
-    const cognitoDomainPrefix = "classical-music-lake";
+    const cognitoDomainPrefix = isProd
+      ? "classical-music-lake"
+      : `classical-music-lake-${stageName}`;
     userPool.addDomain("CognitoDomain", {
       cognitoDomain: { domainPrefix: cognitoDomainPrefix },
     });
@@ -316,13 +327,15 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // -------------------------
     // DynamoDB テーブル（コンサート記録）
     // -------------------------
-    const concertLogsTableName = "classical-music-concert-logs";
+    const concertLogsTableName = isProd
+      ? "classical-music-concert-logs"
+      : `classical-music-concert-logs-${stageName}`;
 
     const concertLogsTable = new dynamodb.Table(this, "ConcertLogsTable", {
       tableName: concertLogsTableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      removalPolicy: this.removalPolicy(isProd),
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
@@ -360,11 +373,10 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     };
 
     const fn = (id: string, entry: string): lambdaNodejs.NodejsFunction => {
-      // CloudWatch Logs 保持期間を 1 ヶ月に設定（保存コスト削減）。
-      // ログは再生成可能なため、スタック削除時は破棄（DESTROY）。
+      // CloudWatch Logs 保持期間を 1 ヶ月に設定（保存コスト削減）
       const logGroup = new logs.LogGroup(this, `${id}LogGroup`, {
         retention: logs.RetentionDays.ONE_MONTH,
-        removalPolicy: cdk.RemovalPolicy.DESTROY,
+        removalPolicy: this.removalPolicy(isProd),
       });
       return new lambdaNodejs.NodejsFunction(this, id, {
         ...commonFnProps,
@@ -529,13 +541,13 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // logGroupName を指定しない（CDK 自動生成名）ことで既存リソースとの名前衝突を回避
     const apiAccessLogGroup = new logs.LogGroup(this, "ApiAccessLogs", {
       retention: logs.RetentionDays.ONE_MONTH,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      removalPolicy: this.removalPolicy(isProd),
     });
 
     const api = new apigateway.RestApi(this, "Api", {
-      restApiName: "classical-music-lake-prod",
+      restApiName: `classical-music-lake-${stageName}`,
       deployOptions: {
-        stageName: "prod",
+        stageName,
         // X-Ray トレーシングはコスト削減のため無効化
         tracingEnabled: false,
         // アクセスログ有効化（リクエスト・レスポンス・エラーを記録）
@@ -808,8 +820,8 @@ function handler(event) {
     // 未設定でも SNS トピックは作成され、後から AWS コンソール / CLI で購読を追加できる。
     // -------------------------
     const alertTopic = new sns.Topic(this, "AlertTopic", {
-      topicName: "classical-music-lake-prod-alerts",
-      displayName: "Classical Music Lake (prod) alerts",
+      topicName: `classical-music-lake-${stageName}-alerts`,
+      displayName: `Classical Music Lake (${stageName}) alerts`,
     });
 
     const alertEmails = (process.env.ALERT_EMAIL ?? "")
@@ -830,32 +842,36 @@ function handler(event) {
 
     // -------------------------
     // CloudWatch アラーム（コスト最適化のため集約）
-    // 旧構成は Lambda 関数ごと（29 個）+ DynamoDB テーブルごと（8 個）に
-    // アラームを作成していたが、アラーム課金（$0.10/個/月）が嵩むため、
-    // 同種のメトリクスを 1 アラームに集約する。
-    // 個別の関数・テーブルの特定は発報後に CloudWatch Logs / メトリクスで行う。
+    // 旧構成は Lambda 関数ごと（29 個）+ DynamoDB テーブルごと（8 個）にアラームを
+    // 作成していたが、アラーム課金（$0.10/個/月）を抑えるため同種メトリクスを集約する。
+    // stg / prod は同一 AWS アカウントを共有するため、各スタックのリソースに紐づく
+    // メトリクス（API Gateway / DynamoDB テーブル）はスタックごとに作成し、Lambda
+    // エラーはアカウント全体集約として prod スタックにのみ 1 つ作成する。
     // -------------------------
 
-    // Lambda エラー監視：このアカウント・リージョン内の全 Lambda 関数の Errors を
-    // ディメンションなしで集約して 1 アラームに束ねる（本プロジェクト専用アカウント前提）。
-    createAlarm("LambdaErrorsAlarm", {
-      alarmName: "classical-music-lake-prod-lambda-errors",
-      alarmDescription: "いずれかの Lambda 関数でエラーが発生しています",
-      metric: new cloudwatch.Metric({
-        namespace: "AWS/Lambda",
-        metricName: "Errors",
-        statistic: "Sum",
-        period: cdk.Duration.minutes(5),
-      }),
-      threshold: 1,
-      evaluationPeriods: 1,
-      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
-    });
+    // Lambda エラー監視：アカウント・リージョン内の全 Lambda 関数の Errors を
+    // ディメンションなしで集約。stg / prod 双方の関数を 1 アラームで捕捉するため
+    // prod スタックにのみ作成する（本プロジェクト専用アカウント前提）。
+    if (isProd) {
+      createAlarm("LambdaErrorsAlarm", {
+        alarmName: "classical-music-lake-lambda-errors",
+        alarmDescription: "いずれかの Lambda 関数でエラーが発生しています",
+        metric: new cloudwatch.Metric({
+          namespace: "AWS/Lambda",
+          metricName: "Errors",
+          statistic: "Sum",
+          period: cdk.Duration.minutes(5),
+        }),
+        threshold: 1,
+        evaluationPeriods: 1,
+        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+    }
 
-    // API Gateway 5xx エラー監視
+    // API Gateway 5xx エラー監視（スタックごとの API に紐づく）
     createAlarm("ApiGateway5xxAlarm", {
-      alarmName: "classical-music-lake-prod-api-5xx",
+      alarmName: `classical-music-lake-${stageName}-api-5xx`,
       alarmDescription: "API Gateway で 5xx エラーが発生しています",
       metric: api.metricServerError({ period: cdk.Duration.minutes(5), statistic: "Sum" }),
       threshold: 1,
@@ -866,7 +882,7 @@ function handler(event) {
 
     // API Gateway レイテンシ監視（p99 が 3 秒を超えたら通知）
     createAlarm("ApiGatewayLatencyAlarm", {
-      alarmName: "classical-music-lake-prod-api-latency-p99",
+      alarmName: `classical-music-lake-${stageName}-api-latency-p99`,
       alarmDescription: "API Gateway のレイテンシ p99 が 3 秒を超えています",
       metric: api.metricLatency({ period: cdk.Duration.minutes(5), statistic: "p99" }),
       threshold: 3000,
@@ -875,7 +891,7 @@ function handler(event) {
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
 
-    // DynamoDB 監視：全テーブルのメトリクスを MathExpression で合算し、
+    // DynamoDB 監視：スタック内 4 テーブルのメトリクスを MathExpression で合算し、
     // スロットリング・SystemErrors をそれぞれ 1 アラームに集約する。
     const dynamoTables: Array<{ id: string; table: dynamodb.Table }> = [
       { id: "ListeningLogs", table: listeningLogsTable },
@@ -897,7 +913,7 @@ function handler(event) {
       });
 
     createAlarm("DynamoThrottleAlarm", {
-      alarmName: "classical-music-lake-prod-dynamo-throttle",
+      alarmName: `classical-music-lake-${stageName}-dynamo-throttle`,
       alarmDescription: "いずれかの DynamoDB テーブルでスロットリングが発生しています",
       metric: dynamoSum("ThrottledRequests"),
       threshold: 1,
@@ -907,7 +923,7 @@ function handler(event) {
     });
 
     createAlarm("DynamoSystemErrorAlarm", {
-      alarmName: "classical-music-lake-prod-dynamo-system-errors",
+      alarmName: `classical-music-lake-${stageName}-dynamo-system-errors`,
       alarmDescription: "いずれかの DynamoDB テーブルで SystemErrors が発生しています",
       metric: dynamoSum("SystemErrors"),
       threshold: 1,
@@ -968,6 +984,10 @@ function handler(event) {
       value: alertTopic.topicArn,
       description: "CloudWatch アラート通知用 SNS トピック ARN",
     });
+  }
+
+  private removalPolicy(isProd: boolean): cdk.RemovalPolicy {
+    return isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY;
   }
 
   private addCors(
