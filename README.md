@@ -8,11 +8,10 @@
 
 ## 環境
 
-| 環境 | URL                                          |
-| ---- | -------------------------------------------- |
-| prod | [nocturne-app.com](https://nocturne-app.com) |
-
-> 1 人開発のため dev / stg 環境は廃止し、本番（prod）単一構成で運用しています。
+| 環境 | URL                                                  |
+| ---- | ---------------------------------------------------- |
+| prod | [nocturne-app.com](https://nocturne-app.com)         |
+| stg  | [stg.nocturne-app.com](https://stg.nocturne-app.com) |
 
 ## 機能一覧
 
@@ -102,10 +101,11 @@ cdk deploy
 
 #### デプロイトリガー（`deploy.yml`）
 
-| トリガー                        | デプロイ先 |
-| ------------------------------- | ---------- |
-| GitHub Release の publish       | prod 環境  |
-| `workflow_dispatch`（手動実行） | prod 環境  |
+| トリガー                        | デプロイ先          |
+| ------------------------------- | ------------------- |
+| `main` ブランチへの push        | stg 環境            |
+| GitHub Release の publish       | prod 環境           |
+| `workflow_dispatch`（手動実行） | stg / prod から選択 |
 
 ### GitHub OIDC + IAM ロール設定
 
@@ -119,7 +119,7 @@ cdk deploy
      - `token.actions.githubusercontent.com:sub` = `repo:<org>/<repo>:ref:refs/heads/<branch>`（例: `repo:konabe/classical-music-lake:ref:refs/heads/main`）
 3. ロール ARN を `AWS_ROLE_TO_ASSUME` シークレットに設定
 
-GitHub Release の publish（または `workflow_dispatch` の手動実行）で prod 環境へデプロイされます。
+`main` ブランチへのプッシュで stg 環境へ、GitHub Release の publish で prod 環境へ自動デプロイされます。
 
 ## 環境変数
 

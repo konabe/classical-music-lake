@@ -21,7 +21,7 @@ CD・配信で聴いた演奏を記録し、作曲家・曲名・演奏家・指
 
 - 視聴ログ CRUD（`/listening-logs`）
 - 視聴ログのクライアントサイド検索フィルタ（`useListeningLogFilter`）と統計ダッシュボード（`useListeningLogStatistics`）
-- コンサート記録 CRUD（`/concert-logs`、楽曲マスタとの紐付け対応）
+- コンサート記録 CRUD（`/concert-logs`、楽曲マスタとの紐づけ対応）
 - 楽曲マスタ CRUD（`/pieces`、参照は公開／書き込みは admin のみ）
 - 作曲家マスタ CRUD（`/composers`、参照は公開／書き込みは admin のみ）
 - ユーザー認証（Cognito）：メール+パスワード／メール確認／Google OAuth（Hosted UI）／リフレッシュトークン
@@ -220,7 +220,7 @@ type(scope): 日本語の説明
 - 事前にローカルで `git add` / `git commit` まで済ませ、コミットの差分ファイルを `push_files` の `files` 引数に並べる（パスはリポジトリルートからの相対パス、`content` はファイル全文）
 - `branch` には作業ブランチ名（例: `claude/ddd-code-review-EQPXj`）を指定する。`message` はローカルのコミットメッセージと揃える
 - push 後にローカルとリモートの SHA がずれるので、`git fetch origin <branch>` → `git reset --hard origin/<branch>` で同期させる（ローカルの未コミット変更がないことを確認してから実行）
-- バイナリ・巨大ファイル・部分差分のみの送信には不向き。テキストファイルの全文置き換えにのみ使用する
+- バイナリ・巨大ファイル・部分差分のみの送信には不向き。テキストファイルの全文置換にのみ使用する
 
 通常は Bash の `git push -u origin <branch>` を優先し、上記はあくまでフォールバック。
 
@@ -262,8 +262,8 @@ type(scope): 日本語の説明
 - `any` 型の使用禁止
 - 認証なしの API を新規追加しないこと。マスタの参照系（`GET /pieces` `GET /composers`）以外はすべて Cognito Authorizer で保護する
 - 個人情報（視聴ログ・コンサート記録）を扱う API は GSI1（`userId`）で必ずユーザースコープに絞り込むこと
-- DynamoDB の削除ポリシーを変更しないこと（prod 単一環境運用）:
-  - `ListeningLogs` / `Pieces` / `Composers`: RETAIN
-  - `ConcertLogs`: RETAIN（本番のみ運用）
+- DynamoDB の削除ポリシーを変更しないこと:
+  - `ListeningLogs` / `Pieces` / `Composers`: 全環境 RETAIN
+  - `ConcertLogs`: prod は RETAIN、stg は DESTROY
 - 環境変数（`.env`）をコミットしないこと
 - バックエンドのレイヤー依存方向（handlers → usecases → domain / repositories）に違反しないこと（ESLint で error）
