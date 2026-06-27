@@ -6,7 +6,11 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import type { Construct } from "constructs";
 import * as path from "node:path";
 
-export type MigrationsStackProps = cdk.StackProps;
+import type { StageName } from "./classical-music-lake-stack";
+
+export interface MigrationsStackProps extends cdk.StackProps {
+  stageName: StageName;
+}
 
 /**
  * データ移行スクリプト（一時的なもの）を集約する専用スタック。
@@ -20,12 +24,16 @@ export type MigrationsStackProps = cdk.StackProps;
  * メインスタックを先にデプロイしてから本スタックをデプロイすること。
  */
 export class MigrationsStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: MigrationsStackProps) {
+  constructor(scope: Construct, id: string, props: MigrationsStackProps) {
     super(scope, id, props);
 
-    const removalPolicy = cdk.RemovalPolicy.RETAIN;
+    const { stageName } = props;
+    const isProd = stageName === "prod";
+    const removalPolicy = isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY;
 
-    const piecesTableName = "classical-music-pieces";
+    const piecesTableName = isProd
+      ? "classical-music-pieces"
+      : `classical-music-pieces-${stageName}`;
 
     const piecesTable = dynamodb.Table.fromTableName(this, "PiecesTable", piecesTableName);
 

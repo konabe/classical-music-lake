@@ -1,0 +1,60 @@
+name: Sync DB (prod → stg)
+
+# 毎日 0:00 JST (= UTC 15:00) に prod → stg の DynamoDB データを同期する
+# workflow_dispatch で手動実行も可能
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: sync-db
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      # ----------------------------------------
+      # AWS_ROLE_TO_ASSUME シークレットの存在確認
+      # ----------------------------------------
+      - name: Validate required secrets
+        env:
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          if [ -z "$AWS_ROLE_TO_ASSUME" ]; then
+            echo "::error::AWS_ROLE_TO_ASSUME secret is not set."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@acca2b1b2070338fb9fd1ca27ecee81d687e58e5 # v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ap-northeast-1
+
+      # ----------------------------------------
+      # バックエンド依存関係のインストール（AWS SDK 利用のため）
+      # ----------------------------------------
+      - name: Install backend dependencies
+        run: pnpm install --frozen-lockfile
+
+      # ----------------------------------------
+      # prod → stg DynamoDB 同期
+      # ----------------------------------------
+      - name: Sync DynamoDB prod → stg
+        run: node backend/scripts/sync-dynamodb.mjs
