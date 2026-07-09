@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "dev*"
   release:
     types:
       - published
@@ -17,7 +15,6 @@ on:
         default: "stg"
         type: choice
         options:
-          - dev
           - stg
           - prod
 
@@ -44,20 +41,16 @@ jobs:
 
       # ----------------------------------------
       # デプロイ先環境の決定
-      # push: mainブランチ → stg、dev*タグ → dev
+      # push: mainブランチ → stg
       # release: published → prod
-      # workflow_dispatch: 入力値をそのまま使用
+      # workflow_dispatch: 入力値をそのまま使用（stg / prod）
       # ----------------------------------------
       - name: Determine stage name
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
             echo "STAGE_NAME=prod" >> "$GITHUB_ENV"
           elif [ "${{ github.event_name }}" = "push" ]; then
-            if [[ "${{ github.ref }}" == refs/tags/dev* ]]; then
-              echo "STAGE_NAME=dev" >> "$GITHUB_ENV"
-            else
-              echo "STAGE_NAME=stg" >> "$GITHUB_ENV"
-            fi
+            echo "STAGE_NAME=stg" >> "$GITHUB_ENV"
           else
             echo "STAGE_NAME=${{ github.event.inputs.environment }}" >> "$GITHUB_ENV"
           fi
@@ -146,7 +139,7 @@ jobs:
       # ----------------------------------------
       # CDK デプロイ（インフラのみ）
       # フロントエンドの S3 アップロードはこの後のステップで行う
-      # dev/stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
+      # stg: --hotswap-fallback で Lambda 変更時は CloudFormation をバイパスして直接更新（高速化）
       # prod: 安全のためフル CloudFormation デプロイ
       # NOTE: DnsStack は ACM 証明書の DNS 検証完了まで CloudFormation がペンディングするため
       #       CI/CD では対象外。初回は手動で `npx cdk deploy NocturneAppDnsStack` を実行すること

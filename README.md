@@ -12,7 +12,6 @@
 | ---- | ---------------------------------------------------- |
 | prod | [nocturne-app.com](https://nocturne-app.com)         |
 | stg  | [stg.nocturne-app.com](https://stg.nocturne-app.com) |
-| dev  | [dev.nocturne-app.com](https://dev.nocturne-app.com) |
 
 ## 機能一覧
 
@@ -102,12 +101,11 @@ cdk deploy
 
 #### デプロイトリガー（`deploy.yml`）
 
-| トリガー                        | デプロイ先                |
-| ------------------------------- | ------------------------- |
-| `main` ブランチへの push        | stg 環境                  |
-| GitHub Release の publish       | prod 環境                 |
-| `dev*` タグの push              | dev 環境                  |
-| `workflow_dispatch`（手動実行） | dev / stg / prod から選択 |
+| トリガー                        | デプロイ先          |
+| ------------------------------- | ------------------- |
+| `main` ブランチへの push        | stg 環境            |
+| GitHub Release の publish       | prod 環境           |
+| `workflow_dispatch`（手動実行） | stg / prod から選択 |
 
 ### GitHub OIDC + IAM ロール設定
 

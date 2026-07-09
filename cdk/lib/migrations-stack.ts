@@ -49,7 +49,7 @@ export class MigrationsStack extends cdk.Stack {
       this,
       "MigratePieceKindBackfillLogGroup",
       {
-        retention: logs.RetentionDays.THREE_MONTHS,
+        retention: logs.RetentionDays.ONE_MONTH,
         removalPolicy,
       },
     );

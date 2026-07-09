@@ -20,7 +20,7 @@ import type * as acm from "aws-cdk-lib/aws-certificatemanager";
 import type { Construct } from "constructs";
 import * as path from "node:path";
 
-export type StageName = "dev" | "stg" | "prod";
+export type StageName = "stg" | "prod";
 
 export interface ClassicalMusicLakeStackProps extends cdk.StackProps {
   stageName: StageName;
@@ -50,7 +50,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       tableName,
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      // prod は RETAIN、stg/dev は DESTROY（スタック削除時にテーブルも削除）
+      // prod は RETAIN、stg は DESTROY（スタック削除時にテーブルも削除）
       removalPolicy: this.removalPolicy(isProd),
       // ポイントインタイムリカバリ（PITR）有効化（35日間のバックアップ自動保持）
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
@@ -149,7 +149,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     const spaBucket = new s3.Bucket(this, "SpaBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
-      // prod は RETAIN（本番アセットの誤削除防止）、stg/dev は DESTROY
+      // prod は RETAIN（本番アセットの誤削除防止）、stg は DESTROY
       removalPolicy: this.removalPolicy(isProd),
       autoDeleteObjects: !isProd,
       // prod は S3 バージョニング有効（静的ファイルのロールバック用）
@@ -247,11 +247,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     // 移行期間中は CloudFront デフォルトドメインも許可（DNS 切り替え完了後に削除可能）
     this.corsAllowOrigin = `https://${domainName}`;
     const cloudFrontOrigin = `https://${distribution.distributionDomainName}`;
-    // dev 環境のみローカル開発用に localhost を許可（NOTE: 3000だとなぜか起動できない）
-    this.corsAllowOrigins =
-      stageName === "dev"
-        ? [this.corsAllowOrigin, cloudFrontOrigin, "http://localhost:3010"]
-        : [this.corsAllowOrigin, cloudFrontOrigin];
+    this.corsAllowOrigins = [this.corsAllowOrigin, cloudFrontOrigin];
 
     // -------------------------
     // Google Identity Provider
@@ -286,10 +282,6 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       `https://${domainName}/auth/login`,
       `https://${distribution.distributionDomainName}/auth/login`,
     ];
-    if (stageName === "dev") {
-      callbackUrls.push("http://localhost:3010/auth/callback");
-      logoutUrls.push("http://localhost:3010/auth/login");
-    }
 
     const appClient = userPool.addClient("FrontendClient", {
       authFlows: {
@@ -371,8 +363,7 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       // 10s: DynamoDB 操作に対して十分な余裕を持たせつつ過剰な課金を防ぐ
       timeout: cdk.Duration.seconds(10),
       environment: commonEnv,
-      // X-Ray トレーシング有効化（コールドスタート・レスポンスタイムの可視化）
-      tracing: lambda.Tracing.ACTIVE,
+      // X-Ray トレーシングはコスト削減のため無効化（デフォルトの PASS_THROUGH）
       bundling: {
         minify: true,
         sourceMap: false,
@@ -382,9 +373,9 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
     };
 
     const fn = (id: string, entry: string): lambdaNodejs.NodejsFunction => {
-      // CloudWatch Logs 保持期間を 3 ヶ月に設定（カスタムリソース不要の explicit LogGroup）
+      // CloudWatch Logs 保持期間を 1 ヶ月に設定（保存コスト削減）
       const logGroup = new logs.LogGroup(this, `${id}LogGroup`, {
-        retention: logs.RetentionDays.THREE_MONTHS,
+        retention: logs.RetentionDays.ONE_MONTH,
         removalPolicy: this.removalPolicy(isProd),
       });
       return new lambdaNodejs.NodejsFunction(this, id, {
@@ -546,10 +537,10 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       cloudWatchRoleArn: apiGatewayCloudWatchRole.roleArn,
     });
 
-    // API Gateway アクセスログ用ロググループ（保持期間 3 ヶ月）
+    // API Gateway アクセスログ用ロググループ（保持期間 1 ヶ月、保存コスト削減）
     // logGroupName を指定しない（CDK 自動生成名）ことで既存リソースとの名前衝突を回避
     const apiAccessLogGroup = new logs.LogGroup(this, "ApiAccessLogs", {
-      retention: logs.RetentionDays.THREE_MONTHS,
+      retention: logs.RetentionDays.ONE_MONTH,
       removalPolicy: this.removalPolicy(isProd),
     });
 
@@ -557,8 +548,8 @@ export class ClassicalMusicLakeStack extends cdk.Stack {
       restApiName: `classical-music-lake-${stageName}`,
       deployOptions: {
         stageName,
-        // X-Ray トレーシング有効化（API Gateway → Lambda のレスポンスタイム可視化）
-        tracingEnabled: true,
+        // X-Ray トレーシングはコスト削減のため無効化
+        tracingEnabled: false,
         // アクセスログ有効化（リクエスト・レスポンス・エラーを記録）
         accessLogDestination: new apigateway.LogGroupLogDestination(apiAccessLogGroup),
         accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields({
@@ -849,54 +840,36 @@ function handler(event) {
       return alarm;
     };
 
-    // 新しい Lambda 関数は必ずこの配列の末尾に追加すること。
-    // 途中に挿入するとインデックスベースの論理 ID がズレ、
-    // CloudFormation のアラームリソースが競合してデプロイが失敗する。
-    const allFunctions = [
-      listeningLogsList,
-      listeningLogsGet,
-      listeningLogsCreate,
-      listeningLogsUpdate,
-      listeningLogsDelete,
-      listPieces,
-      createPiece,
-      getPiece,
-      updatePiece,
-      deletePiece,
-      authRegister,
-      authLogin,
-      authVerifyEmail,
-      authResendCode,
-      authRefresh,
-      authPreSignUp,
-      concertLogsList,
-      concertLogsCreate,
-      concertLogsGet,
-      concertLogsUpdate,
-      concertLogsDelete,
-      listComposers,
-      createComposer,
-      getComposer,
-      updateComposer,
-      deleteComposer,
-      getPieceChildren,
-      replacePieceMovements,
-    ];
+    // -------------------------
+    // CloudWatch アラーム（コスト最適化のため集約）
+    // 旧構成は Lambda 関数ごと（29 個）+ DynamoDB テーブルごと（8 個）にアラームを
+    // 作成していたが、アラーム課金（$0.10/個/月）を抑えるため同種メトリクスを集約する。
+    // stg / prod は同一 AWS アカウントを共有するため、各スタックのリソースに紐づく
+    // メトリクス（API Gateway / DynamoDB テーブル）はスタックごとに作成し、Lambda
+    // エラーはアカウント全体集約として prod スタックにのみ 1 つ作成する。
+    // -------------------------
 
-    // Lambda エラー監視：各関数ごとにアラームを作成
-    allFunctions.forEach((f, i) => {
-      createAlarm(`LambdaErrorAlarm${i}`, {
-        alarmName: `classical-music-lake-${stageName}-lambda-${f.node.id}-errors`,
-        alarmDescription: `Lambda 関数 ${f.node.id} でエラーが発生しています`,
-        metric: f.metricErrors({ period: cdk.Duration.minutes(5), statistic: "Sum" }),
+    // Lambda エラー監視：アカウント・リージョン内の全 Lambda 関数の Errors を
+    // ディメンションなしで集約。stg / prod 双方の関数を 1 アラームで捕捉するため
+    // prod スタックにのみ作成する（本プロジェクト専用アカウント前提）。
+    if (isProd) {
+      createAlarm("LambdaErrorsAlarm", {
+        alarmName: "classical-music-lake-lambda-errors",
+        alarmDescription: "いずれかの Lambda 関数でエラーが発生しています",
+        metric: new cloudwatch.Metric({
+          namespace: "AWS/Lambda",
+          metricName: "Errors",
+          statistic: "Sum",
+          period: cdk.Duration.minutes(5),
+        }),
         threshold: 1,
         evaluationPeriods: 1,
         comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
         treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
       });
-    });
+    }
 
-    // API Gateway 5xx エラー監視
+    // API Gateway 5xx エラー監視（スタックごとの API に紐づく）
     createAlarm("ApiGateway5xxAlarm", {
       alarmName: `classical-music-lake-${stageName}-api-5xx`,
       alarmDescription: "API Gateway で 5xx エラーが発生しています",
@@ -918,7 +891,8 @@ function handler(event) {
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
 
-    // DynamoDB の監視（全テーブルでスロットリング・SystemErrors を監視）
+    // DynamoDB 監視：スタック内 4 テーブルのメトリクスを MathExpression で合算し、
+    // スロットリング・SystemErrors をそれぞれ 1 アラームに集約する。
     const dynamoTables: Array<{ id: string; table: dynamodb.Table }> = [
       { id: "ListeningLogs", table: listeningLogsTable },
       { id: "Pieces", table: piecesTable },
@@ -926,32 +900,36 @@ function handler(event) {
       { id: "Composers", table: composersTable },
     ];
 
-    dynamoTables.forEach(({ id, table }) => {
-      createAlarm(`Dynamo${id}ThrottleAlarm`, {
-        alarmName: `classical-music-lake-${stageName}-dynamo-${id}-throttle`,
-        alarmDescription: `DynamoDB ${id} テーブルでスロットリングが発生しています`,
-        metric: table.metric("ThrottledRequests", {
-          statistic: "Sum",
-          period: cdk.Duration.minutes(5),
-        }),
-        threshold: 1,
-        evaluationPeriods: 1,
-        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    const dynamoSum = (metricName: string): cloudwatch.IMetric =>
+      new cloudwatch.MathExpression({
+        expression: dynamoTables.map((_, i) => `m${i}`).join(" + "),
+        usingMetrics: Object.fromEntries(
+          dynamoTables.map(({ table }, i) => [
+            `m${i}`,
+            table.metric(metricName, { statistic: "Sum", period: cdk.Duration.minutes(5) }),
+          ]),
+        ),
+        period: cdk.Duration.minutes(5),
       });
 
-      createAlarm(`Dynamo${id}SystemErrorAlarm`, {
-        alarmName: `classical-music-lake-${stageName}-dynamo-${id}-system-errors`,
-        alarmDescription: `DynamoDB ${id} テーブルで SystemErrors が発生しています`,
-        metric: table.metric("SystemErrors", {
-          statistic: "Sum",
-          period: cdk.Duration.minutes(5),
-        }),
-        threshold: 1,
-        evaluationPeriods: 1,
-        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
-      });
+    createAlarm("DynamoThrottleAlarm", {
+      alarmName: `classical-music-lake-${stageName}-dynamo-throttle`,
+      alarmDescription: "いずれかの DynamoDB テーブルでスロットリングが発生しています",
+      metric: dynamoSum("ThrottledRequests"),
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    createAlarm("DynamoSystemErrorAlarm", {
+      alarmName: `classical-music-lake-${stageName}-dynamo-system-errors`,
+      alarmDescription: "いずれかの DynamoDB テーブルで SystemErrors が発生しています",
+      metric: dynamoSum("SystemErrors"),
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
 
     // -------------------------

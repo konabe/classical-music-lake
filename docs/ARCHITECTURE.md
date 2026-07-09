@@ -434,7 +434,7 @@ classical-music-lake/
 
 ### CORS オリジン制限
 
-- **設定**: prod・stg は CloudFront URL のみ許可。dev 環境のみ `http://localhost:3010` を追加で許可
+- **設定**: prod・stg ともに CloudFront URL のみ許可。localhost 許可は廃止（カスタムドメインのみ）
 - **実装**: CDK が各環境に応じた `CORS_ALLOW_ORIGIN` 環境変数を Lambda に設定し、API Gateway プリフライトも同じオリジンに限定
 
 ### フロントエンド・バックエンドの型定義が分離

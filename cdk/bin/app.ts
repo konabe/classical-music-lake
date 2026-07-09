@@ -7,7 +7,7 @@ import { MigrationsStack } from "../lib/migrations-stack";
 
 const app = new cdk.App();
 
-const validStages: StageName[] = ["dev", "stg", "prod"];
+const validStages: StageName[] = ["stg", "prod"];
 const rawStageName = process.env.STAGE_NAME ?? "prod";
 if (!validStages.includes(rawStageName as StageName)) {
   throw new Error(
@@ -44,7 +44,7 @@ const dnsStack = new DnsStack(app, "NocturneAppDnsStack", {
 // STAGE_NAME で分岐して 1 ステージ分だけ synth すると、DnsStack の
 // テンプレートから他ステージ用の SSM エクスポートが消え、別ステージの
 // deploy 時に "Parameters cannot be found" で失敗する。
-// 3 環境分を常に synth し、CI/CD では `cdk deploy <stackName> --exclusively`
+// 2 環境分（stg / prod）を常に synth し、CI/CD では `cdk deploy <stackName> --exclusively`
 // で対象のみデプロイする運用とする。
 // -------------------------
 for (const stage of validStages) {
